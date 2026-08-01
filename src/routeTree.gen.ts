@@ -16,6 +16,7 @@ import { Route as DestinationsRouteImport } from './routes/destinations'
 import { Route as ForOperatorsRouteImport } from './routes/for-operators'
 import { Route as HotRouteImport } from './routes/hot'
 import { Route as PremiumRouteImport } from './routes/premium'
+import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as AdminAnalyticsRouteImport } from './routes/admin/analytics'
@@ -71,6 +72,11 @@ const HotRoute = HotRouteImport.update({
 const PremiumRoute = PremiumRouteImport.update({
   id: '/premium',
   path: '/premium',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SearchRoute = SearchRouteImport.update({
@@ -187,6 +193,7 @@ export interface FileRoutesByFullPath {
   '/for-operators': typeof ForOperatorsRoute
   '/hot': typeof HotRoute
   '/premium': typeof PremiumRoute
+  '/profile': typeof ProfileRoute
   '/search': typeof SearchRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/bookings': typeof AdminBookingsRoute
@@ -217,6 +224,7 @@ export interface FileRoutesByTo {
   '/for-operators': typeof ForOperatorsRoute
   '/hot': typeof HotRoute
   '/premium': typeof PremiumRoute
+  '/profile': typeof ProfileRoute
   '/search': typeof SearchRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/bookings': typeof AdminBookingsRoute
@@ -248,6 +256,7 @@ export interface FileRoutesById {
   '/for-operators': typeof ForOperatorsRoute
   '/hot': typeof HotRoute
   '/premium': typeof PremiumRoute
+  '/profile': typeof ProfileRoute
   '/search': typeof SearchRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/bookings': typeof AdminBookingsRoute
@@ -280,6 +289,7 @@ export interface FileRouteTypes {
     | '/for-operators'
     | '/hot'
     | '/premium'
+    | '/profile'
     | '/search'
     | '/admin/analytics'
     | '/admin/bookings'
@@ -310,6 +320,7 @@ export interface FileRouteTypes {
     | '/for-operators'
     | '/hot'
     | '/premium'
+    | '/profile'
     | '/search'
     | '/admin/analytics'
     | '/admin/bookings'
@@ -340,6 +351,7 @@ export interface FileRouteTypes {
     | '/for-operators'
     | '/hot'
     | '/premium'
+    | '/profile'
     | '/search'
     | '/admin/analytics'
     | '/admin/bookings'
@@ -371,6 +383,7 @@ export interface RootRouteChildren {
   ForOperatorsRoute: typeof ForOperatorsRoute
   HotRoute: typeof HotRoute
   PremiumRoute: typeof PremiumRoute
+  ProfileRoute: typeof ProfileRoute
   SearchRoute: typeof SearchRoute
   AdminAnalyticsRoute: typeof AdminAnalyticsRoute
   AdminBookingsRoute: typeof AdminBookingsRoute
@@ -443,6 +456,13 @@ declare module '@tanstack/react-router' {
       path: '/premium'
       fullPath: '/premium'
       preLoaderRoute: typeof PremiumRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/search': {
@@ -603,6 +623,7 @@ const rootRouteChildren: RootRouteChildren = {
   ForOperatorsRoute: ForOperatorsRoute,
   HotRoute: HotRoute,
   PremiumRoute: PremiumRoute,
+  ProfileRoute: ProfileRoute,
   SearchRoute: SearchRoute,
   AdminAnalyticsRoute: AdminAnalyticsRoute,
   AdminBookingsRoute: AdminBookingsRoute,
