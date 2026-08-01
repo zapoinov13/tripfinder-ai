@@ -12,6 +12,8 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ForOperatorsRouteImport } from './routes/for-operators'
 import { Route as SearchRouteImport } from './routes/search'
+import { Route as AdminIndexRouteImport } from './routes/admin/index'
+import { Route as OperatorIndexRouteImport } from './routes/operator/index'
 import { Route as TourTourIdRouteImport } from './routes/tour.$tourId'
 
 const IndexRoute = IndexRouteImport.update({
@@ -29,6 +31,16 @@ const SearchRoute = SearchRouteImport.update({
   path: '/search',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/admin/',
+  path: '/admin/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OperatorIndexRoute = OperatorIndexRouteImport.update({
+  id: '/operator/',
+  path: '/operator/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TourTourIdRoute = TourTourIdRouteImport.update({
   id: '/tour/$tourId',
   path: '/tour/$tourId',
@@ -40,12 +52,16 @@ export interface FileRoutesByFullPath {
   '/for-operators': typeof ForOperatorsRoute
   '/search': typeof SearchRoute
   '/tour/$tourId': typeof TourTourIdRoute
+  '/admin/': typeof AdminIndexRoute
+  '/operator/': typeof OperatorIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/for-operators': typeof ForOperatorsRoute
   '/search': typeof SearchRoute
   '/tour/$tourId': typeof TourTourIdRoute
+  '/admin': typeof AdminIndexRoute
+  '/operator': typeof OperatorIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -53,13 +69,34 @@ export interface FileRoutesById {
   '/for-operators': typeof ForOperatorsRoute
   '/search': typeof SearchRoute
   '/tour/$tourId': typeof TourTourIdRoute
+  '/admin/': typeof AdminIndexRoute
+  '/operator/': typeof OperatorIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/for-operators' | '/search' | '/tour/$tourId'
+  fullPaths:
+    | '/'
+    | '/for-operators'
+    | '/search'
+    | '/tour/$tourId'
+    | '/admin/'
+    | '/operator/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/for-operators' | '/search' | '/tour/$tourId'
-  id: '__root__' | '/' | '/for-operators' | '/search' | '/tour/$tourId'
+  to:
+    | '/'
+    | '/for-operators'
+    | '/search'
+    | '/tour/$tourId'
+    | '/admin'
+    | '/operator'
+  id:
+    | '__root__'
+    | '/'
+    | '/for-operators'
+    | '/search'
+    | '/tour/$tourId'
+    | '/admin/'
+    | '/operator/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -67,6 +104,8 @@ export interface RootRouteChildren {
   ForOperatorsRoute: typeof ForOperatorsRoute
   SearchRoute: typeof SearchRoute
   TourTourIdRoute: typeof TourTourIdRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+  OperatorIndexRoute: typeof OperatorIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -92,6 +131,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SearchRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/': {
+      id: '/admin/'
+      path: '/admin'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/operator/': {
+      id: '/operator/'
+      path: '/operator'
+      fullPath: '/operator/'
+      preLoaderRoute: typeof OperatorIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/tour/$tourId': {
       id: '/tour/$tourId'
       path: '/tour/$tourId'
@@ -107,6 +160,8 @@ const rootRouteChildren: RootRouteChildren = {
   ForOperatorsRoute: ForOperatorsRoute,
   SearchRoute: SearchRoute,
   TourTourIdRoute: TourTourIdRoute,
+  AdminIndexRoute: AdminIndexRoute,
+  OperatorIndexRoute: OperatorIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
