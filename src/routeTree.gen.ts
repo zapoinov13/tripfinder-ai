@@ -10,12 +10,18 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ForOperatorsRouteImport } from './routes/for-operators'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as TourTourIdRouteImport } from './routes/tour.$tourId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForOperatorsRoute = ForOperatorsRouteImport.update({
+  id: '/for-operators',
+  path: '/for-operators',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SearchRoute = SearchRouteImport.update({
@@ -31,30 +37,34 @@ const TourTourIdRoute = TourTourIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/for-operators': typeof ForOperatorsRoute
   '/search': typeof SearchRoute
   '/tour/$tourId': typeof TourTourIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/for-operators': typeof ForOperatorsRoute
   '/search': typeof SearchRoute
   '/tour/$tourId': typeof TourTourIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/for-operators': typeof ForOperatorsRoute
   '/search': typeof SearchRoute
   '/tour/$tourId': typeof TourTourIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/search' | '/tour/$tourId'
+  fullPaths: '/' | '/for-operators' | '/search' | '/tour/$tourId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/search' | '/tour/$tourId'
-  id: '__root__' | '/' | '/search' | '/tour/$tourId'
+  to: '/' | '/for-operators' | '/search' | '/tour/$tourId'
+  id: '__root__' | '/' | '/for-operators' | '/search' | '/tour/$tourId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ForOperatorsRoute: typeof ForOperatorsRoute
   SearchRoute: typeof SearchRoute
   TourTourIdRoute: typeof TourTourIdRoute
 }
@@ -66,6 +76,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/for-operators': {
+      id: '/for-operators'
+      path: '/for-operators'
+      fullPath: '/for-operators'
+      preLoaderRoute: typeof ForOperatorsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/search': {
@@ -87,6 +104,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ForOperatorsRoute: ForOperatorsRoute,
   SearchRoute: SearchRoute,
   TourTourIdRoute: TourTourIdRoute,
 }
