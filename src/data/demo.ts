@@ -23,6 +23,72 @@ export type Destination = {
   image: string;
 };
 
+export type Resort = {
+  name: string;
+  blurb: string;
+  tours: number;
+};
+
+export const resortsByDestination: Record<string, Resort[]> = {
+  turkey: [
+    { name: "Анталия", blurb: "Центр курортной жизни и старый город", tours: 412 },
+    { name: "Алания", blurb: "Доступные отели и длинные пляжи", tours: 268 },
+    { name: "Белек", blurb: "Люкс-отели, гольф и хвойные леса", tours: 194 },
+    { name: "Кемер", blurb: "Горы у моря и галечные бухты", tours: 157 },
+    { name: "Сиде", blurb: "Античные руины и песчаные пляжи", tours: 128 },
+    { name: "Мармарис", blurb: "Яхты, бухты и ночная жизнь", tours: 76 },
+    { name: "Бодрум", blurb: "Бутик-отели и эгейский стиль", tours: 49 },
+  ],
+  uae: [
+    { name: "Дубай", blurb: "Городской люкс и пляжные резорты", tours: 486 },
+    { name: "Абу-Даби", blurb: "Культура, парки и спокойные пляжи", tours: 178 },
+    { name: "Шарджа", blurb: "Бюджетные отели рядом с Дубаем", tours: 121 },
+    { name: "Рас-эль-Хайма", blurb: "Горы Джебель-Джайс и тихое море", tours: 97 },
+    { name: "Фуджейра", blurb: "Индийский океан и дайвинг", tours: 60 },
+  ],
+  thailand: [
+    { name: "Пхукет", blurb: "Главный островной курорт страны", tours: 342 },
+    { name: "Паттайя", blurb: "Развлечения и близость к Бангкоку", tours: 201 },
+    { name: "Краби", blurb: "Скалы, лагуны и спокойный отдых", tours: 118 },
+    { name: "Самуи", blurb: "Пальмы, спа и бутик-виллы", tours: 102 },
+  ],
+  egypt: [
+    { name: "Хургада", blurb: "Классика Красного моря", tours: 289 },
+    { name: "Шарм-эль-Шейх", blurb: "Лучшие рифы и дайвинг", tours: 214 },
+    { name: "Марса-Алам", blurb: "Тихие резорты и черепахи", tours: 88 },
+    { name: "Эль-Гуна", blurb: "Каналы, лагуны и сёрфинг", tours: 60 },
+  ],
+  vietnam: [
+    { name: "Нячанг", blurb: "Городской пляж и острова", tours: 186 },
+    { name: "Фукуок", blurb: "Белый песок и новые резорты", tours: 132 },
+    { name: "Дананг", blurb: "Мосты, горы и длинный пляж", tours: 100 },
+  ],
+  maldives: [
+    { name: "Северный Мале Атолл", blurb: "Быстрый трансфер на катере", tours: 124 },
+    { name: "Баа Атолл", blurb: "Биосферный заповедник и манты", tours: 87 },
+    { name: "Ари Атолл", blurb: "Дайвинг с китовыми акулами", tours: 76 },
+  ],
+  georgia: [
+    { name: "Батуми", blurb: "Море, набережная и казино", tours: 168 },
+    { name: "Тбилиси", blurb: "Гастрономия и серные бани", tours: 94 },
+    { name: "Гудаури", blurb: "Горы и активный отдых", tours: 50 },
+  ],
+  qatar: [
+    { name: "Доха", blurb: "Новые отели и музеи", tours: 112 },
+    { name: "Аль-Хор", blurb: "Тихие пляжи у залива", tours: 52 },
+  ],
+  srilanka: [
+    { name: "Бентота", blurb: "Пляжи и аюрведа", tours: 96 },
+    { name: "Хиккадува", blurb: "Кораллы и сёрфинг", tours: 62 },
+    { name: "Ахунгалла", blurb: "Тихие резорты у океана", tours: 50 },
+  ],
+  indonesia: [
+    { name: "Кута", blurb: "Сёрф-школы и ночная жизнь", tours: 142 },
+    { name: "Семиньяк", blurb: "Дизайнерские виллы и рестораны", tours: 116 },
+    { name: "Убуд", blurb: "Джунгли, рисовые террасы и йога", tours: 98 },
+  ],
+};
+
 export const destinations: Destination[] = [
   {
     id: "turkey",
@@ -258,6 +324,10 @@ export const tours: Tour[] = Array.from({ length: 30 }, (_, i) => {
 });
 
 export const getHotel = (id: string) => hotels.find((h) => h.id === id)!;
+export const getDestination = (id: string) => destinations.find((d) => d.id === id);
+export const getResorts = (id: string) => resortsByDestination[id] ?? [];
+export const getToursByDestination = (id: string) =>
+  tours.filter((t) => getHotel(t.hotelId).destinationId === id);
 export const getOperator = (id: string) => operators.find((o) => o.id === id)!;
 export const getTour = (id: string) => tours.find((t) => t.id === id);
 
