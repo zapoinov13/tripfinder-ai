@@ -28,7 +28,8 @@ function DestinationsPage() {
           {destinations.map((dest) => (
             <Link
               key={dest.id}
-              to="/search"
+              to="/destination/$destinationId"
+              params={{ destinationId: dest.id }}
               className="hover-lift group relative overflow-hidden rounded-3xl"
             >
               <img
