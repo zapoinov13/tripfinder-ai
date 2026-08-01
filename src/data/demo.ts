@@ -189,7 +189,7 @@ export const hotels: Hotel[] = hotelSeed.map(
       beachLine,
       distanceToSea,
       amenities: amenityPool.slice(0, 5 + (i % 4)),
-      image: hotelImages[i % hotelImages.length],
+      image: hotelImages[i % hotelImages.length]!,
     };
   },
 );
@@ -222,8 +222,8 @@ const cities = ["Алматы", "Астана", "Шымкент"];
 const months = ["августа", "сентября", "октября"];
 
 export const tours: Tour[] = Array.from({ length: 30 }, (_, i) => {
-  const hotel = hotels[i % hotels.length];
-  const nights = [5, 7, 9, 10, 12][i % 5];
+  const hotel = hotels[i % hotels.length]!;
+  const nights = [5, 7, 9, 10, 12][i % 5]!;
   const startDay = 3 + ((i * 3) % 18);
   const monthIdx = i % 3;
   const endDay = startDay + nights;
@@ -239,15 +239,15 @@ export const tours: Tour[] = Array.from({ length: 30 }, (_, i) => {
   return {
     id: `tour-${i + 1}`,
     hotelId: hotel.id,
-    operatorId: operators[i % operators.length].id,
-    from: cities[i % cities.length],
+    operatorId: operators[i % operators.length]!.id,
+    from: cities[i % cities.length]!,
     nights,
-    dateStart: `${startDay} ${months[monthIdx]}`,
-    dateEnd: `${endDay} ${months[monthIdx]}`,
-    meal: meals[i % meals.length],
+    dateStart: `${startDay} ${months[monthIdx]!}`,
+    dateEnd: `${endDay} ${months[monthIdx]!}`,
+    meal: meals[i % meals.length]!,
     price,
-    oldPrice: isHot ? Math.round((price * 1.28) / 1000) * 1000 : undefined,
-    premiumPrice: isPremium ? Math.round((price * 0.82) / 1000) * 1000 : undefined,
+    ...(isHot ? { oldPrice: Math.round((price * 1.28) / 1000) * 1000 } : {}),
+    ...(isPremium ? { premiumPrice: Math.round((price * 0.82) / 1000) * 1000 } : {}),
     tags,
     adults: 2,
     children: i % 3,
