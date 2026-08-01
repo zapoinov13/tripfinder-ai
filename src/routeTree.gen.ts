@@ -28,6 +28,7 @@ import { Route as AdminPromotionsRouteImport } from './routes/admin/promotions'
 import { Route as AdminSettingsRouteImport } from './routes/admin/settings'
 import { Route as AdminToursRouteImport } from './routes/admin/tours'
 import { Route as AdminUsersRouteImport } from './routes/admin/users'
+import { Route as DestinationDestinationIdRouteImport } from './routes/destination.$destinationId'
 import { Route as OperatorIndexRouteImport } from './routes/operator/index'
 import { Route as OperatorAnalyticsRouteImport } from './routes/operator/analytics'
 import { Route as OperatorApiRouteImport } from './routes/operator/api'
@@ -134,6 +135,12 @@ const AdminUsersRoute = AdminUsersRouteImport.update({
   path: '/admin/users',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DestinationDestinationIdRoute =
+  DestinationDestinationIdRouteImport.update({
+    id: '/destination/$destinationId',
+    path: '/destination/$destinationId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const OperatorIndexRoute = OperatorIndexRouteImport.update({
   id: '/operator/',
   path: '/operator/',
@@ -204,6 +211,7 @@ export interface FileRoutesByFullPath {
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/tours': typeof AdminToursRoute
   '/admin/users': typeof AdminUsersRoute
+  '/destination/$destinationId': typeof DestinationDestinationIdRoute
   '/operator/analytics': typeof OperatorAnalyticsRoute
   '/operator/api': typeof OperatorApiRoute
   '/operator/billing': typeof OperatorBillingRoute
@@ -235,6 +243,7 @@ export interface FileRoutesByTo {
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/tours': typeof AdminToursRoute
   '/admin/users': typeof AdminUsersRoute
+  '/destination/$destinationId': typeof DestinationDestinationIdRoute
   '/operator/analytics': typeof OperatorAnalyticsRoute
   '/operator/api': typeof OperatorApiRoute
   '/operator/billing': typeof OperatorBillingRoute
@@ -267,6 +276,7 @@ export interface FileRoutesById {
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/tours': typeof AdminToursRoute
   '/admin/users': typeof AdminUsersRoute
+  '/destination/$destinationId': typeof DestinationDestinationIdRoute
   '/operator/analytics': typeof OperatorAnalyticsRoute
   '/operator/api': typeof OperatorApiRoute
   '/operator/billing': typeof OperatorBillingRoute
@@ -300,6 +310,7 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/tours'
     | '/admin/users'
+    | '/destination/$destinationId'
     | '/operator/analytics'
     | '/operator/api'
     | '/operator/billing'
@@ -331,6 +342,7 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/tours'
     | '/admin/users'
+    | '/destination/$destinationId'
     | '/operator/analytics'
     | '/operator/api'
     | '/operator/billing'
@@ -362,6 +374,7 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/tours'
     | '/admin/users'
+    | '/destination/$destinationId'
     | '/operator/analytics'
     | '/operator/api'
     | '/operator/billing'
@@ -394,6 +407,7 @@ export interface RootRouteChildren {
   AdminSettingsRoute: typeof AdminSettingsRoute
   AdminToursRoute: typeof AdminToursRoute
   AdminUsersRoute: typeof AdminUsersRoute
+  DestinationDestinationIdRoute: typeof DestinationDestinationIdRoute
   OperatorAnalyticsRoute: typeof OperatorAnalyticsRoute
   OperatorApiRoute: typeof OperatorApiRoute
   OperatorBillingRoute: typeof OperatorBillingRoute
@@ -542,6 +556,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminUsersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/destination/$destinationId': {
+      id: '/destination/$destinationId'
+      path: '/destination/$destinationId'
+      fullPath: '/destination/$destinationId'
+      preLoaderRoute: typeof DestinationDestinationIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/operator/': {
       id: '/operator/'
       path: '/operator'
@@ -634,6 +655,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminSettingsRoute: AdminSettingsRoute,
   AdminToursRoute: AdminToursRoute,
   AdminUsersRoute: AdminUsersRoute,
+  DestinationDestinationIdRoute: DestinationDestinationIdRoute,
   OperatorAnalyticsRoute: OperatorAnalyticsRoute,
   OperatorApiRoute: OperatorApiRoute,
   OperatorBillingRoute: OperatorBillingRoute,
@@ -649,13 +671,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
