@@ -13,7 +13,20 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ForOperatorsRouteImport } from './routes/for-operators'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
+import { Route as AdminAnalyticsRouteImport } from './routes/admin/analytics'
+import { Route as AdminBookingsRouteImport } from './routes/admin/bookings'
+import { Route as AdminOperatorsRouteImport } from './routes/admin/operators'
+import { Route as AdminPaymentsRouteImport } from './routes/admin/payments'
+import { Route as AdminPremiumRouteImport } from './routes/admin/premium'
+import { Route as AdminPromotionsRouteImport } from './routes/admin/promotions'
+import { Route as AdminSettingsRouteImport } from './routes/admin/settings'
+import { Route as AdminToursRouteImport } from './routes/admin/tours'
+import { Route as AdminUsersRouteImport } from './routes/admin/users'
 import { Route as OperatorIndexRouteImport } from './routes/operator/index'
+import { Route as OperatorAnalyticsRouteImport } from './routes/operator/analytics'
+import { Route as OperatorBookingsRouteImport } from './routes/operator/bookings'
+import { Route as OperatorCompanyRouteImport } from './routes/operator/company'
+import { Route as OperatorSettingsRouteImport } from './routes/operator/settings'
 import { Route as TourTourIdRouteImport } from './routes/tour.$tourId'
 
 const IndexRoute = IndexRouteImport.update({
@@ -36,9 +49,74 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   path: '/admin/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminAnalyticsRoute = AdminAnalyticsRouteImport.update({
+  id: '/admin/analytics',
+  path: '/admin/analytics',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminBookingsRoute = AdminBookingsRouteImport.update({
+  id: '/admin/bookings',
+  path: '/admin/bookings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminOperatorsRoute = AdminOperatorsRouteImport.update({
+  id: '/admin/operators',
+  path: '/admin/operators',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminPaymentsRoute = AdminPaymentsRouteImport.update({
+  id: '/admin/payments',
+  path: '/admin/payments',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminPremiumRoute = AdminPremiumRouteImport.update({
+  id: '/admin/premium',
+  path: '/admin/premium',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminPromotionsRoute = AdminPromotionsRouteImport.update({
+  id: '/admin/promotions',
+  path: '/admin/promotions',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminSettingsRoute = AdminSettingsRouteImport.update({
+  id: '/admin/settings',
+  path: '/admin/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminToursRoute = AdminToursRouteImport.update({
+  id: '/admin/tours',
+  path: '/admin/tours',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminUsersRoute = AdminUsersRouteImport.update({
+  id: '/admin/users',
+  path: '/admin/users',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const OperatorIndexRoute = OperatorIndexRouteImport.update({
   id: '/operator/',
   path: '/operator/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OperatorAnalyticsRoute = OperatorAnalyticsRouteImport.update({
+  id: '/operator/analytics',
+  path: '/operator/analytics',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OperatorBookingsRoute = OperatorBookingsRouteImport.update({
+  id: '/operator/bookings',
+  path: '/operator/bookings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OperatorCompanyRoute = OperatorCompanyRouteImport.update({
+  id: '/operator/company',
+  path: '/operator/company',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OperatorSettingsRoute = OperatorSettingsRouteImport.update({
+  id: '/operator/settings',
+  path: '/operator/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TourTourIdRoute = TourTourIdRouteImport.update({
@@ -51,6 +129,19 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/for-operators': typeof ForOperatorsRoute
   '/search': typeof SearchRoute
+  '/admin/analytics': typeof AdminAnalyticsRoute
+  '/admin/bookings': typeof AdminBookingsRoute
+  '/admin/operators': typeof AdminOperatorsRoute
+  '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/premium': typeof AdminPremiumRoute
+  '/admin/promotions': typeof AdminPromotionsRoute
+  '/admin/settings': typeof AdminSettingsRoute
+  '/admin/tours': typeof AdminToursRoute
+  '/admin/users': typeof AdminUsersRoute
+  '/operator/analytics': typeof OperatorAnalyticsRoute
+  '/operator/bookings': typeof OperatorBookingsRoute
+  '/operator/company': typeof OperatorCompanyRoute
+  '/operator/settings': typeof OperatorSettingsRoute
   '/tour/$tourId': typeof TourTourIdRoute
   '/admin/': typeof AdminIndexRoute
   '/operator/': typeof OperatorIndexRoute
@@ -59,6 +150,19 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/for-operators': typeof ForOperatorsRoute
   '/search': typeof SearchRoute
+  '/admin/analytics': typeof AdminAnalyticsRoute
+  '/admin/bookings': typeof AdminBookingsRoute
+  '/admin/operators': typeof AdminOperatorsRoute
+  '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/premium': typeof AdminPremiumRoute
+  '/admin/promotions': typeof AdminPromotionsRoute
+  '/admin/settings': typeof AdminSettingsRoute
+  '/admin/tours': typeof AdminToursRoute
+  '/admin/users': typeof AdminUsersRoute
+  '/operator/analytics': typeof OperatorAnalyticsRoute
+  '/operator/bookings': typeof OperatorBookingsRoute
+  '/operator/company': typeof OperatorCompanyRoute
+  '/operator/settings': typeof OperatorSettingsRoute
   '/tour/$tourId': typeof TourTourIdRoute
   '/admin': typeof AdminIndexRoute
   '/operator': typeof OperatorIndexRoute
@@ -68,6 +172,19 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/for-operators': typeof ForOperatorsRoute
   '/search': typeof SearchRoute
+  '/admin/analytics': typeof AdminAnalyticsRoute
+  '/admin/bookings': typeof AdminBookingsRoute
+  '/admin/operators': typeof AdminOperatorsRoute
+  '/admin/payments': typeof AdminPaymentsRoute
+  '/admin/premium': typeof AdminPremiumRoute
+  '/admin/promotions': typeof AdminPromotionsRoute
+  '/admin/settings': typeof AdminSettingsRoute
+  '/admin/tours': typeof AdminToursRoute
+  '/admin/users': typeof AdminUsersRoute
+  '/operator/analytics': typeof OperatorAnalyticsRoute
+  '/operator/bookings': typeof OperatorBookingsRoute
+  '/operator/company': typeof OperatorCompanyRoute
+  '/operator/settings': typeof OperatorSettingsRoute
   '/tour/$tourId': typeof TourTourIdRoute
   '/admin/': typeof AdminIndexRoute
   '/operator/': typeof OperatorIndexRoute
@@ -78,6 +195,19 @@ export interface FileRouteTypes {
     | '/'
     | '/for-operators'
     | '/search'
+    | '/admin/analytics'
+    | '/admin/bookings'
+    | '/admin/operators'
+    | '/admin/payments'
+    | '/admin/premium'
+    | '/admin/promotions'
+    | '/admin/settings'
+    | '/admin/tours'
+    | '/admin/users'
+    | '/operator/analytics'
+    | '/operator/bookings'
+    | '/operator/company'
+    | '/operator/settings'
     | '/tour/$tourId'
     | '/admin/'
     | '/operator/'
@@ -86,6 +216,19 @@ export interface FileRouteTypes {
     | '/'
     | '/for-operators'
     | '/search'
+    | '/admin/analytics'
+    | '/admin/bookings'
+    | '/admin/operators'
+    | '/admin/payments'
+    | '/admin/premium'
+    | '/admin/promotions'
+    | '/admin/settings'
+    | '/admin/tours'
+    | '/admin/users'
+    | '/operator/analytics'
+    | '/operator/bookings'
+    | '/operator/company'
+    | '/operator/settings'
     | '/tour/$tourId'
     | '/admin'
     | '/operator'
@@ -94,6 +237,19 @@ export interface FileRouteTypes {
     | '/'
     | '/for-operators'
     | '/search'
+    | '/admin/analytics'
+    | '/admin/bookings'
+    | '/admin/operators'
+    | '/admin/payments'
+    | '/admin/premium'
+    | '/admin/promotions'
+    | '/admin/settings'
+    | '/admin/tours'
+    | '/admin/users'
+    | '/operator/analytics'
+    | '/operator/bookings'
+    | '/operator/company'
+    | '/operator/settings'
     | '/tour/$tourId'
     | '/admin/'
     | '/operator/'
@@ -103,6 +259,19 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ForOperatorsRoute: typeof ForOperatorsRoute
   SearchRoute: typeof SearchRoute
+  AdminAnalyticsRoute: typeof AdminAnalyticsRoute
+  AdminBookingsRoute: typeof AdminBookingsRoute
+  AdminOperatorsRoute: typeof AdminOperatorsRoute
+  AdminPaymentsRoute: typeof AdminPaymentsRoute
+  AdminPremiumRoute: typeof AdminPremiumRoute
+  AdminPromotionsRoute: typeof AdminPromotionsRoute
+  AdminSettingsRoute: typeof AdminSettingsRoute
+  AdminToursRoute: typeof AdminToursRoute
+  AdminUsersRoute: typeof AdminUsersRoute
+  OperatorAnalyticsRoute: typeof OperatorAnalyticsRoute
+  OperatorBookingsRoute: typeof OperatorBookingsRoute
+  OperatorCompanyRoute: typeof OperatorCompanyRoute
+  OperatorSettingsRoute: typeof OperatorSettingsRoute
   TourTourIdRoute: typeof TourTourIdRoute
   AdminIndexRoute: typeof AdminIndexRoute
   OperatorIndexRoute: typeof OperatorIndexRoute
@@ -138,11 +307,102 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/analytics': {
+      id: '/admin/analytics'
+      path: '/admin/analytics'
+      fullPath: '/admin/analytics'
+      preLoaderRoute: typeof AdminAnalyticsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/bookings': {
+      id: '/admin/bookings'
+      path: '/admin/bookings'
+      fullPath: '/admin/bookings'
+      preLoaderRoute: typeof AdminBookingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/operators': {
+      id: '/admin/operators'
+      path: '/admin/operators'
+      fullPath: '/admin/operators'
+      preLoaderRoute: typeof AdminOperatorsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/payments': {
+      id: '/admin/payments'
+      path: '/admin/payments'
+      fullPath: '/admin/payments'
+      preLoaderRoute: typeof AdminPaymentsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/premium': {
+      id: '/admin/premium'
+      path: '/admin/premium'
+      fullPath: '/admin/premium'
+      preLoaderRoute: typeof AdminPremiumRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/promotions': {
+      id: '/admin/promotions'
+      path: '/admin/promotions'
+      fullPath: '/admin/promotions'
+      preLoaderRoute: typeof AdminPromotionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/settings': {
+      id: '/admin/settings'
+      path: '/admin/settings'
+      fullPath: '/admin/settings'
+      preLoaderRoute: typeof AdminSettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/tours': {
+      id: '/admin/tours'
+      path: '/admin/tours'
+      fullPath: '/admin/tours'
+      preLoaderRoute: typeof AdminToursRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/users': {
+      id: '/admin/users'
+      path: '/admin/users'
+      fullPath: '/admin/users'
+      preLoaderRoute: typeof AdminUsersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/operator/': {
       id: '/operator/'
       path: '/operator'
       fullPath: '/operator/'
       preLoaderRoute: typeof OperatorIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/operator/analytics': {
+      id: '/operator/analytics'
+      path: '/operator/analytics'
+      fullPath: '/operator/analytics'
+      preLoaderRoute: typeof OperatorAnalyticsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/operator/bookings': {
+      id: '/operator/bookings'
+      path: '/operator/bookings'
+      fullPath: '/operator/bookings'
+      preLoaderRoute: typeof OperatorBookingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/operator/company': {
+      id: '/operator/company'
+      path: '/operator/company'
+      fullPath: '/operator/company'
+      preLoaderRoute: typeof OperatorCompanyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/operator/settings': {
+      id: '/operator/settings'
+      path: '/operator/settings'
+      fullPath: '/operator/settings'
+      preLoaderRoute: typeof OperatorSettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/tour/$tourId': {
@@ -159,6 +419,19 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ForOperatorsRoute: ForOperatorsRoute,
   SearchRoute: SearchRoute,
+  AdminAnalyticsRoute: AdminAnalyticsRoute,
+  AdminBookingsRoute: AdminBookingsRoute,
+  AdminOperatorsRoute: AdminOperatorsRoute,
+  AdminPaymentsRoute: AdminPaymentsRoute,
+  AdminPremiumRoute: AdminPremiumRoute,
+  AdminPromotionsRoute: AdminPromotionsRoute,
+  AdminSettingsRoute: AdminSettingsRoute,
+  AdminToursRoute: AdminToursRoute,
+  AdminUsersRoute: AdminUsersRoute,
+  OperatorAnalyticsRoute: OperatorAnalyticsRoute,
+  OperatorBookingsRoute: OperatorBookingsRoute,
+  OperatorCompanyRoute: OperatorCompanyRoute,
+  OperatorSettingsRoute: OperatorSettingsRoute,
   TourTourIdRoute: TourTourIdRoute,
   AdminIndexRoute: AdminIndexRoute,
   OperatorIndexRoute: OperatorIndexRoute,

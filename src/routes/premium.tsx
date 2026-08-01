@@ -1,0 +1,100 @@
+import { createFileRoute } from "@tanstack/react-router";
+
+import { SiteLayout } from "@/components/site/site-layout";
+import { Button } from "@/components/ui/button";
+import { formatPrice, getHotel, premiumTours } from "@/data/demo";
+
+export const Route = createFileRoute("/premium")({
+  head: () => ({
+    meta: [
+      { title: "Premium — закрытые цены и эксклюзивные туры | Voyago" },
+      {
+        name: "description",
+        content:
+          "Premium открывает доступ к эксклюзивным ценам, горящим турам, раннему доступу и AI-рекомендациям.",
+      },
+      { property: "og:title", content: "Premium — Voyago" },
+      {
+        property: "og:description",
+        content: "Открывайте предложения, которые недоступны другим.",
+      },
+    ],
+  }),
+  component: PremiumPage,
+});
+
+const perks = [
+  { emoji: "💎", title: "Premium Deals", text: "Закрытые предложения только для подписчиков." },
+  { emoji: "🔥", title: "Горящие туры", text: "Первыми видите лучшие цены на ближайшие даты." },
+  { emoji: "💰", title: "Закрытые цены", text: "Тарифы, недоступные в обычном поиске." },
+  { emoji: "⚡", title: "Ранний доступ", text: "Новые туры появляются у вас раньше." },
+  { emoji: "✨", title: "AI-рекомендации", text: "Персональные подборки под ваш стиль отдыха." },
+  { emoji: "🔔", title: "Уведомления о цене", text: "Сообщаем, когда цена на тур снижается." },
+];
+
+function PremiumPage() {
+  return (
+    <SiteLayout>
+      <div className="container-page py-8">
+        <section className="gradient-premium rounded-4xl px-6 py-16 text-center md:px-14 md:py-24">
+          <span className="rounded-full bg-premium/20 px-3 py-1 text-xs font-semibold text-premium">
+            💎 PREMIUM
+          </span>
+          <h1 className="mx-auto mt-6 max-w-3xl font-display text-3xl font-semibold text-primary-foreground md:text-5xl">
+            Открывайте предложения, которые недоступны другим
+          </h1>
+          <p className="mx-auto mt-4 max-w-xl text-primary-foreground/80">
+            Premium даёт доступ к эксклюзивным ценам, горящим турам и специальным предложениям.
+          </p>
+          <Button size="lg" className="mt-8">
+            Подключить Premium
+          </Button>
+        </section>
+
+        <section className="mt-16">
+          <h2 className="font-display text-2xl font-semibold md:text-3xl">Что входит</h2>
+          <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {perks.map((perk) => (
+              <div key={perk.title} className="surface-card p-6">
+                <span className="text-2xl">{perk.emoji}</span>
+                <h3 className="mt-4 font-display text-lg font-semibold">{perk.title}</h3>
+                <p className="mt-2 text-sm text-muted-foreground">{perk.text}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="mt-16">
+          <h2 className="font-display text-2xl font-semibold md:text-3xl">Premium-предложения</h2>
+          <div className="mt-8 grid gap-5 md:grid-cols-3">
+            {premiumTours.map((tour) => {
+              const hotel = getHotel(tour.hotelId);
+              return (
+                <div key={tour.id} className="surface-card overflow-hidden">
+                  <img
+                    src={hotel.image}
+                    alt={hotel.name}
+                    loading="lazy"
+                    className="h-44 w-full object-cover"
+                  />
+                  <div className="p-5">
+                    <div className="text-xs font-semibold text-premium">💎 PREMIUM</div>
+                    <h3 className="mt-2 truncate font-display text-lg font-semibold">
+                      {hotel.name}
+                    </h3>
+                    <div className="mt-4 text-sm text-muted-foreground line-through">
+                      {formatPrice(tour.price)}
+                    </div>
+                    <div className="font-display text-2xl font-semibold">
+                      {formatPrice(tour.premiumPrice ?? tour.price)}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      </div>
+    </SiteLayout>
+  );
+}
