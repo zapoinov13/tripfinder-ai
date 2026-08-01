@@ -10,7 +10,11 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CompareRouteImport } from './routes/compare'
+import { Route as DestinationsRouteImport } from './routes/destinations'
 import { Route as ForOperatorsRouteImport } from './routes/for-operators'
+import { Route as HotRouteImport } from './routes/hot'
+import { Route as PremiumRouteImport } from './routes/premium'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as AdminAnalyticsRouteImport } from './routes/admin/analytics'
@@ -34,9 +38,29 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CompareRoute = CompareRouteImport.update({
+  id: '/compare',
+  path: '/compare',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DestinationsRoute = DestinationsRouteImport.update({
+  id: '/destinations',
+  path: '/destinations',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ForOperatorsRoute = ForOperatorsRouteImport.update({
   id: '/for-operators',
   path: '/for-operators',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HotRoute = HotRouteImport.update({
+  id: '/hot',
+  path: '/hot',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PremiumRoute = PremiumRouteImport.update({
+  id: '/premium',
+  path: '/premium',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SearchRoute = SearchRouteImport.update({
@@ -127,7 +151,11 @@ const TourTourIdRoute = TourTourIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/compare': typeof CompareRoute
+  '/destinations': typeof DestinationsRoute
   '/for-operators': typeof ForOperatorsRoute
+  '/hot': typeof HotRoute
+  '/premium': typeof PremiumRoute
   '/search': typeof SearchRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/bookings': typeof AdminBookingsRoute
@@ -148,7 +176,11 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/compare': typeof CompareRoute
+  '/destinations': typeof DestinationsRoute
   '/for-operators': typeof ForOperatorsRoute
+  '/hot': typeof HotRoute
+  '/premium': typeof PremiumRoute
   '/search': typeof SearchRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/bookings': typeof AdminBookingsRoute
@@ -170,7 +202,11 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/compare': typeof CompareRoute
+  '/destinations': typeof DestinationsRoute
   '/for-operators': typeof ForOperatorsRoute
+  '/hot': typeof HotRoute
+  '/premium': typeof PremiumRoute
   '/search': typeof SearchRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/bookings': typeof AdminBookingsRoute
@@ -193,7 +229,11 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/compare'
+    | '/destinations'
     | '/for-operators'
+    | '/hot'
+    | '/premium'
     | '/search'
     | '/admin/analytics'
     | '/admin/bookings'
@@ -214,7 +254,11 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/compare'
+    | '/destinations'
     | '/for-operators'
+    | '/hot'
+    | '/premium'
     | '/search'
     | '/admin/analytics'
     | '/admin/bookings'
@@ -235,7 +279,11 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/compare'
+    | '/destinations'
     | '/for-operators'
+    | '/hot'
+    | '/premium'
     | '/search'
     | '/admin/analytics'
     | '/admin/bookings'
@@ -257,7 +305,11 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CompareRoute: typeof CompareRoute
+  DestinationsRoute: typeof DestinationsRoute
   ForOperatorsRoute: typeof ForOperatorsRoute
+  HotRoute: typeof HotRoute
+  PremiumRoute: typeof PremiumRoute
   SearchRoute: typeof SearchRoute
   AdminAnalyticsRoute: typeof AdminAnalyticsRoute
   AdminBookingsRoute: typeof AdminBookingsRoute
@@ -286,11 +338,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/compare': {
+      id: '/compare'
+      path: '/compare'
+      fullPath: '/compare'
+      preLoaderRoute: typeof CompareRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/destinations': {
+      id: '/destinations'
+      path: '/destinations'
+      fullPath: '/destinations'
+      preLoaderRoute: typeof DestinationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/for-operators': {
       id: '/for-operators'
       path: '/for-operators'
       fullPath: '/for-operators'
       preLoaderRoute: typeof ForOperatorsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/hot': {
+      id: '/hot'
+      path: '/hot'
+      fullPath: '/hot'
+      preLoaderRoute: typeof HotRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/premium': {
+      id: '/premium'
+      path: '/premium'
+      fullPath: '/premium'
+      preLoaderRoute: typeof PremiumRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/search': {
@@ -417,7 +497,11 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CompareRoute: CompareRoute,
+  DestinationsRoute: DestinationsRoute,
   ForOperatorsRoute: ForOperatorsRoute,
+  HotRoute: HotRoute,
+  PremiumRoute: PremiumRoute,
   SearchRoute: SearchRoute,
   AdminAnalyticsRoute: AdminAnalyticsRoute,
   AdminBookingsRoute: AdminBookingsRoute,

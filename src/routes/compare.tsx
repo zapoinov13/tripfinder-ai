@@ -20,8 +20,6 @@ export const Route = createFileRoute("/compare")({
   component: ComparePage,
 });
 
-const rows: Array<{ label: string; render: (i: number) => string }> = [];
-
 function ComparePage() {
   const selected = tours.slice(0, 3);
 
