@@ -1,23 +1,161 @@
 import { useNavigate } from "@tanstack/react-router";
-import { CalendarDays, MapPin, Mic, Search, SlidersHorizontal, Sparkles, Users, Wallet } from "lucide-react";
+import {
+  CalendarDays,
+  Check,
+  MapPin,
+  Mic,
+  Minus,
+  Plus,
+  Search,
+  SlidersHorizontal,
+  Sparkles,
+  Users,
+  Wallet,
+} from "lucide-react";
+import type { DateRange } from "react-day-picker";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
+import { destinations, formatPrice } from "@/data/demo";
 import { cn } from "@/lib/utils";
 
-const fields = [
-  { label: "Откуда", value: "Алматы", icon: MapPin },
-  { label: "Куда", value: "Дубай", icon: MapPin },
-  { label: "Дата", value: "10–17 августа", icon: CalendarDays },
-  { label: "Туристы", value: "2 взрослых + 2 детей", icon: Users },
-  { label: "Бюджет", value: "до 1 500 000 ₸", icon: Wallet },
-];
+const originCities = ["Алматы", "Астана", "Шымкент", "Актау", "Атырау", "Караганда"];
+const destinationCities = destinations.map((d) => `${d.city}, ${d.country}`);
+
+const dateFormatter = new Intl.DateTimeFormat("ru-RU", { day: "numeric", month: "long" });
+
+function FieldShell({
+  label,
+  value,
+  icon: Icon,
+}: {
+  label: string;
+  value: string;
+  icon: typeof MapPin;
+}) {
+  return (
+    <span className="flex w-full min-w-0 items-center gap-2.5 rounded-2xl border border-border bg-card px-3.5 py-3 text-left transition-colors hover:border-primary/40">
+      <Icon className="size-4 shrink-0 text-muted-foreground" />
+      <span className="min-w-0 flex-1">
+        <span className="block text-[11px] uppercase tracking-wide text-muted-foreground">{label}</span>
+        <span className="block truncate text-sm font-medium">{value}</span>
+      </span>
+    </span>
+  );
+}
+
+function CityField({
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  options: string[];
+  onChange: (v: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button type="button" className="min-w-0">
+          <FieldShell label={label} value={value} icon={MapPin} />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent align="start" className="w-64 p-1.5">
+        <div className="max-h-72 overflow-y-auto">
+          {options.map((option) => (
+            <button
+              key={option}
+              type="button"
+              onClick={() => {
+                onChange(option);
+                setOpen(false);
+              }}
+              className={cn(
+                "flex w-full items-center justify-between gap-2 rounded-xl px-3 py-2 text-left text-sm transition-colors hover:bg-secondary",
+                option === value && "font-semibold text-primary",
+              )}
+            >
+              <span className="truncate">{option}</span>
+              {option === value ? <Check className="size-4 shrink-0" /> : null}
+            </button>
+          ))}
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+function Counter({
+  label,
+  value,
+  min,
+  onChange,
+}: {
+  label: string;
+  value: number;
+  min: number;
+  onChange: (v: number) => void;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-4">
+      <span className="text-sm font-medium">{label}</span>
+      <div className="flex items-center gap-2">
+        <Button
+          type="button"
+          size="icon"
+          variant="outline"
+          className="size-8 rounded-full"
+          aria-label={`Уменьшить: ${label}`}
+          disabled={value <= min}
+          onClick={() => onChange(value - 1)}
+        >
+          <Minus className="size-4" />
+        </Button>
+        <span className="w-6 text-center text-sm font-semibold">{value}</span>
+        <Button
+          type="button"
+          size="icon"
+          variant="outline"
+          className="size-8 rounded-full"
+          aria-label={`Увеличить: ${label}`}
+          disabled={value >= 9}
+          onClick={() => onChange(value + 1)}
+        >
+          <Plus className="size-4" />
+        </Button>
+      </div>
+    </div>
+  );
+}
 
 export function SearchPanel() {
   const [tab, setTab] = useState<"classic" | "ai">("classic");
+  const [from, setFrom] = useState("Алматы");
+  const [to, setTo] = useState("Дубай, ОАЭ");
+  const [range, setRange] = useState<DateRange | undefined>({
+    from: new Date(2026, 7, 10),
+    to: new Date(2026, 7, 17),
+  });
+  const [adults, setAdults] = useState(2);
+  const [children, setChildren] = useState(2);
+  const [budget, setBudget] = useState(1500000);
   const navigate = useNavigate();
   const goSearch = () => navigate({ to: "/search" });
+
+  const dateLabel = range?.from
+    ? range.to
+      ? `${dateFormatter.format(range.from).replace(/\s\S+$/, "")}–${dateFormatter.format(range.to)}`
+      : dateFormatter.format(range.from)
+    : "Выберите даты";
+  const guestsLabelText =
+    children > 0 ? `${adults} взрослых + ${children} ${children === 1 ? "ребёнок" : "детей"}` : `${adults} взрослых`;
 
   return (
     <div className="surface-card overflow-hidden p-2 shadow-lift">
@@ -47,20 +185,55 @@ export function SearchPanel() {
       {tab === "classic" ? (
         <div className="p-3 md:p-4">
           <div className="grid gap-2 lg:grid-cols-[repeat(5,minmax(0,1fr))_auto]">
-            {fields.map((field) => (
-              <label
-                key={field.label}
-                className="flex min-w-0 cursor-pointer items-center gap-2.5 rounded-2xl border border-border bg-card px-3.5 py-3 transition-colors hover:border-primary/40"
-              >
-                <field.icon className="size-4 shrink-0 text-muted-foreground" />
-                <span className="min-w-0">
-                  <span className="block text-[11px] uppercase tracking-wide text-muted-foreground">
-                    {field.label}
-                  </span>
-                  <span className="block truncate text-sm font-medium">{field.value}</span>
-                </span>
-              </label>
-            ))}
+            <CityField label="Откуда" value={from} options={originCities} onChange={setFrom} />
+            <CityField label="Куда" value={to} options={destinationCities} onChange={setTo} />
+
+            <Popover>
+              <PopoverTrigger asChild>
+                <button type="button" className="min-w-0">
+                  <FieldShell label="Дата" value={dateLabel} icon={CalendarDays} />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent align="start" className="w-auto p-2">
+                <Calendar mode="range" selected={range} onSelect={setRange} numberOfMonths={1} />
+              </PopoverContent>
+            </Popover>
+
+            <Popover>
+              <PopoverTrigger asChild>
+                <button type="button" className="min-w-0">
+                  <FieldShell label="Туристы" value={guestsLabelText} icon={Users} />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent align="start" className="w-72 space-y-4 p-4">
+                <Counter label="Взрослые" value={adults} min={1} onChange={setAdults} />
+                <Counter label="Дети" value={children} min={0} onChange={setChildren} />
+              </PopoverContent>
+            </Popover>
+
+            <Popover>
+              <PopoverTrigger asChild>
+                <button type="button" className="min-w-0">
+                  <FieldShell label="Бюджет" value={`до ${formatPrice(budget)}`} icon={Wallet} />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent align="start" className="w-72 p-4">
+                <p className="text-sm font-medium">до {formatPrice(budget)}</p>
+                <Slider
+                  className="mt-4"
+                  value={[budget]}
+                  min={300000}
+                  max={5000000}
+                  step={50000}
+                  onValueChange={(v) => setBudget(v[0] ?? budget)}
+                />
+                <div className="mt-3 flex justify-between text-xs text-muted-foreground">
+                  <span>300 000 ₸</span>
+                  <span>5 000 000 ₸</span>
+                </div>
+              </PopoverContent>
+            </Popover>
+
             <Button size="lg" className="h-full min-h-13 rounded-2xl px-7" onClick={goSearch}>
               <Search className="size-4" />
               Найти туры
