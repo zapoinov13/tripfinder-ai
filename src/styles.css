@@ -61,6 +61,19 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
+@theme inline {
+  --color-ink: var(--ink);
+  --color-premium: var(--premium);
+  --color-premium-foreground: var(--premium-foreground);
+  --color-success: var(--success);
+  --color-ai: var(--ai);
+  --color-primary-soft: var(--primary-soft);
+  --font-display: "Sora", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
+  --shadow-card: var(--shadow-card);
+  --shadow-lift: var(--shadow-lift);
+}
+
 :root {
   --radius: 1rem;
   --background: oklch(0.985 0.004 90);
