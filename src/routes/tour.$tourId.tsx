@@ -5,6 +5,7 @@ import {
   CheckCircle2,
   Heart,
   MapPin,
+  MessageSquare,
   Plane,
   Scale,
   Sparkles,
@@ -13,18 +14,32 @@ import {
   Waves,
   Wifi,
 } from "lucide-react";
+import { useState } from "react";
 
 import { SiteLayout } from "@/components/site/site-layout";
 import { Button } from "@/components/ui/button";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  amenityLabels,
   formatPrice,
+  formatNumber,
   galleryImages,
   getHotel,
   getOperator,
   getTour,
   guestsLabel,
   nightsLabel,
+  type Hotel,
+  type Tour,
 } from "@/data/demo";
+import { useTourState } from "@/lib/tour-state";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/tour/$tourId")({
   loader: ({ params }) => {
@@ -54,29 +69,43 @@ export const Route = createFileRoute("/tour/$tourId")({
   component: TourPage,
 });
 
-const amenityIcons = [
-  { icon: Wifi, label: "Wi-Fi" },
-  { icon: Waves, label: "Pool" },
-  { icon: Bath, label: "Spa" },
-  { icon: Bus, label: "Kids Club" },
-  { icon: MapPin, label: "Beach" },
-  { icon: UtensilsCrossed, label: "Restaurant" },
-];
+const amenityIconMap: Record<string, typeof Wifi> = {
+  "Wi-Fi": Wifi,
+  Pool: Waves,
+  Spa: Bath,
+  "Kids Club": Bus,
+  Beach: MapPin,
+  Transfer: Bus,
+};
 
-const aiReasons = [
-  "Первая линия",
-  "Подходит для отдыха с детьми",
-  "All Inclusive",
-  "В вашем бюджете",
-  "Рядом с инфраструктурой",
-];
+function buildAiReasons(tour: Tour, hotel: Hotel) {
+  const reasons: string[] = [];
+  if (tour.price <= 1500000) reasons.push("Подходит под средний бюджет туристов из Казахстана");
+  if (tour.mealCode === "AI" || tour.mealCode === "UAI") reasons.push(`Питание ${tour.meal}`);
+  if (hotel.beachLine === 1) reasons.push("Первая линия у моря");
+  if (hotel.distanceToSea <= 150) reasons.push(`Всего ${hotel.distanceToSea} м до пляжа`);
+  if (hotel.amenities.includes("Kids Club") || tour.children > 0)
+    reasons.push("Подходит для отдыха с детьми");
+  if (hotel.amenities.includes("Spa")) reasons.push("Spa-центр на территории");
+  if (hotel.rating >= 9) reasons.push(`Рейтинг ${hotel.rating.toFixed(1)} — превосходно`);
+  else reasons.push(`Рейтинг ${hotel.rating.toFixed(1)} по отзывам гостей`);
+  if (tour.transfer) reasons.push("Трансфер включён в стоимость");
+  if (tour.tags.includes("hot")) reasons.push("Горящая цена — дешевле обычной");
+  if (tour.nights <= 7) reasons.push(`Короткая поездка на ${nightsLabel(tour.nights)}`);
+  return reasons.slice(0, 6);
+}
 
 function TourPage() {
   const { tour, hotel, operator } = Route.useLoaderData();
+  const { isFavorite, toggleFavorite, isCompared, toggleCompare } = useTourState();
+  const [bookingOpen, setBookingOpen] = useState(false);
+  const fav = isFavorite(tour.id);
+  const compared = isCompared(tour.id);
+  const aiReasons = buildAiReasons(tour, hotel);
 
   return (
     <SiteLayout>
-      <div className="container-page py-6">
+      <div className="container-page py-6 pb-28 lg:pb-6">
         <div className="grid gap-2 overflow-hidden rounded-3xl md:grid-cols-[2fr_1fr] md:grid-rows-2">
           <img
             src={galleryImages[0]}
@@ -109,6 +138,10 @@ function TourPage() {
               <span className="rounded-lg bg-accent/10 px-2.5 py-1 text-sm font-semibold text-accent">
                 {hotel.rating.toFixed(1)} / 10
               </span>
+              <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                <MessageSquare className="size-4" />
+                {formatNumber(hotel.reviews)} отзывов
+              </span>
             </div>
           </div>
         </div>
@@ -131,8 +164,8 @@ function TourPage() {
                 {[
                   { icon: Plane, text: `Перелёт ${tour.from} → ${hotel.city}` },
                   { icon: MapPin, text: `Проживание, ${nightsLabel(tour.nights)}` },
-                  { icon: UtensilsCrossed, text: tour.meal },
-                  { icon: Bus, text: "Групповой трансфер" },
+                  { icon: UtensilsCrossed, text: `${tour.mealCode} · ${tour.meal}` },
+                  { icon: Bus, text: tour.transfer ? "Групповой трансфер" : "Трансфер не включён" },
                 ].map((item) => (
                   <li key={item.text} className="flex items-center gap-3 text-sm">
                     <span className="grid size-9 place-items-center rounded-xl bg-secondary">
@@ -147,15 +180,18 @@ function TourPage() {
             <section className="surface-card p-6 md:p-8">
               <h2 className="font-display text-xl font-semibold">Удобства</h2>
               <div className="mt-4 flex flex-wrap gap-2">
-                {amenityIcons.map((item) => (
-                  <span
-                    key={item.label}
-                    className="inline-flex items-center gap-2 rounded-full border border-border px-3.5 py-2 text-sm"
-                  >
-                    <item.icon className="size-4 text-muted-foreground" />
-                    {item.label}
-                  </span>
-                ))}
+                {hotel.amenities.map((key: string) => {
+                  const Icon = amenityIconMap[key] ?? CheckCircle2;
+                  return (
+                    <span
+                      key={key}
+                      className="inline-flex items-center gap-2 rounded-full border border-border px-3.5 py-2 text-sm"
+                    >
+                      <Icon className="size-4 text-muted-foreground" />
+                      {amenityLabels[key] ?? key}
+                    </span>
+                  );
+                })}
               </div>
             </section>
 
@@ -217,6 +253,16 @@ function TourPage() {
                   <span className="text-muted-foreground">Питание</span>
                   <span className="font-medium">{tour.meal}</span>
                 </li>
+                <li className="flex justify-between gap-4">
+                  <span className="text-muted-foreground">Номер</span>
+                  <span className="font-medium">
+                    {hotel.stars >= 5 ? "Deluxe Sea View" : "Standard Room"}
+                  </span>
+                </li>
+                <li className="flex justify-between gap-4">
+                  <span className="text-muted-foreground">Трансфер</span>
+                  <span className="font-medium">{tour.transfer ? "Включён" : "Нет"}</span>
+                </li>
               </ul>
 
               <div className="mt-6 border-t border-border pt-6">
@@ -225,25 +271,78 @@ function TourPage() {
                 <div className="mt-1 text-xs text-muted-foreground">от {operator.name}</div>
               </div>
 
-              <Button size="lg" className="mt-6 w-full">
+              <Button size="lg" className="mt-6 w-full" onClick={() => setBookingOpen(true)}>
                 Забронировать
               </Button>
               <div className="mt-3 grid grid-cols-2 gap-2">
-                <Button variant="outline" size="sm">
-                  <Heart className="size-4" />
-                  В избранное
+                <Button
+                  variant={fav ? "secondary" : "outline"}
+                  size="sm"
+                  onClick={() => toggleFavorite(tour.id)}
+                >
+                  <Heart className={cn("size-4", fav && "fill-current text-primary")} />
+                  {fav ? "В избранном" : "В избранное"}
                 </Button>
-                <Button variant="outline" size="sm" asChild>
-                  <Link to="/compare">
-                    <Scale className="size-4" />
-                    Сравнить
-                  </Link>
+                <Button
+                  variant={compared ? "secondary" : "outline"}
+                  size="sm"
+                  onClick={() => toggleCompare(tour.id)}
+                >
+                  <Scale className="size-4" />
+                  {compared ? "В сравнении" : "Сравнить"}
                 </Button>
               </div>
+              <Button variant="ghost" size="sm" className="mt-2 w-full" asChild>
+                <Link to="/compare">Перейти к сравнению</Link>
+              </Button>
             </div>
           </aside>
         </div>
       </div>
+
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur-xl md:hidden">
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="icon"
+            aria-label="В избранное"
+            onClick={() => toggleFavorite(tour.id)}
+          >
+            <Heart className={cn("size-4", fav && "fill-current text-primary")} />
+          </Button>
+          <Button
+            variant="outline"
+            size="icon"
+            aria-label="Сравнить"
+            onClick={() => toggleCompare(tour.id)}
+          >
+            <Scale className="size-4" />
+          </Button>
+          <Button className="flex-1" onClick={() => setBookingOpen(true)}>
+            Забронировать — {formatPrice(tour.price)}
+          </Button>
+        </div>
+      </div>
+
+      <Dialog open={bookingOpen} onOpenChange={setBookingOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="font-display">Бронирование</DialogTitle>
+            <DialogDescription>
+              Бронирование будет доступно после подключения оператора.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="rounded-2xl bg-secondary p-4 text-sm">
+            <div className="font-semibold">{hotel.name}</div>
+            <div className="mt-1 text-muted-foreground">
+              {tour.dateStart} – {tour.dateEnd} · {nightsLabel(tour.nights)} · {tour.meal}
+            </div>
+            <div className="mt-2 font-display text-xl font-semibold">{formatPrice(tour.price)}</div>
+            <div className="text-xs text-muted-foreground">от {operator.name}</div>
+          </div>
+          <Button onClick={() => setBookingOpen(false)}>Понятно</Button>
+        </DialogContent>
+      </Dialog>
     </SiteLayout>
   );
 }

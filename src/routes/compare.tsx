@@ -1,9 +1,19 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { Sparkles } from "lucide-react";
+import { Link, createFileRoute } from "@tanstack/react-router";
+import { Scale, Sparkles, X } from "lucide-react";
 
 import { SiteLayout } from "@/components/site/site-layout";
 import { Button } from "@/components/ui/button";
-import { formatPrice, getHotel, getOperator, nightsLabel, tours } from "@/data/demo";
+import {
+  amenityLabels,
+  formatPrice,
+  getHotel,
+  getOperator,
+  getTour,
+  nightsLabel,
+  type Tour,
+} from "@/data/demo";
+import { useTourState } from "@/lib/tour-state";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/compare")({
   head: () => ({
@@ -21,26 +31,66 @@ export const Route = createFileRoute("/compare")({
 });
 
 function ComparePage() {
-  const selected = tours.slice(0, 3);
+  const { compare, removeCompare, clearCompare } = useTourState();
+  const selected = compare.map((id) => getTour(id)).filter((t) => t !== undefined);
 
-  const fields: Array<[string, (t: (typeof tours)[number]) => string]> = [
+  const bestId =
+    selected.length > 1
+      ? selected.reduce((best, t) => {
+          const score = (x: Tour) => getHotel(x.hotelId).rating / (x.price / 1000000);
+          return score(t) > score(best) ? t : best;
+        }, selected[0]!).id
+      : selected[0]?.id;
+
+  const fields: Array<[string, (t: Tour) => string]> = [
     ["Отель", (t) => getHotel(t.hotelId).name],
-    ["Рейтинг", (t) => `${getHotel(t.hotelId).rating.toFixed(1)} / 10`],
+    ["Оператор", (t) => getOperator(t.operatorId).name],
     ["Цена", (t) => formatPrice(t.price)],
+    ["Рейтинг", (t) => `${getHotel(t.hotelId).rating.toFixed(1)} / 10`],
+    ["Звёзды", (t) => `${getHotel(t.hotelId).stars}★`],
     ["Даты", (t) => `${t.dateStart} – ${t.dateEnd}`],
     ["Ночи", (t) => nightsLabel(t.nights)],
-    ["Питание", (t) => t.meal],
+    ["Питание", (t) => `${t.mealCode} · ${t.meal}`],
     ["Перелёт", (t) => `${t.from} → ${getHotel(t.hotelId).city}`],
     ["Трансфер", (t) => (t.transfer ? "Включён" : "Нет")],
     ["До моря", (t) => `${getHotel(t.hotelId).distanceToSea} м`],
-    ["Удобства", (t) => getHotel(t.hotelId).amenities.join(", ")],
-    ["Оператор", (t) => getOperator(t.operatorId).name],
+    [
+      "Удобства",
+      (t) => getHotel(t.hotelId).amenities.map((a: string) => amenityLabels[a] ?? a).join(", "),
+    ],
+    ["Premium", (t) => (t.tags.includes("premium") ? "Да" : "—")],
+    ["Hot Deal", (t) => (t.tags.includes("hot") ? "Да" : "—")],
   ];
+
+  if (selected.length === 0) {
+    return (
+      <SiteLayout>
+        <div className="container-page py-10">
+          <h1 className="font-display text-3xl font-semibold md:text-4xl">Сравните туры</h1>
+          <div className="surface-card mt-8 p-10 text-center">
+            <Scale className="mx-auto size-10 text-muted-foreground" />
+            <h2 className="mt-4 font-display text-xl font-semibold">Список сравнения пуст</h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Добавьте до 4 туров кнопкой «Сравнить» на карточке тура.
+            </p>
+            <Button className="mt-6" asChild>
+              <Link to="/search">Найти туры</Link>
+            </Button>
+          </div>
+        </div>
+      </SiteLayout>
+    );
+  }
 
   return (
     <SiteLayout>
       <div className="container-page py-10">
-        <h1 className="font-display text-3xl font-semibold md:text-4xl">Сравните туры</h1>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h1 className="font-display text-3xl font-semibold md:text-4xl">Сравните туры</h1>
+          <Button variant="ghost" size="sm" onClick={clearCompare}>
+            Очистить список
+          </Button>
+        </div>
 
         <div className="surface-card mt-8 overflow-x-auto">
           <table className="w-full min-w-3xl text-sm">
@@ -50,14 +100,40 @@ function ComparePage() {
                 {selected.map((tour) => {
                   const hotel = getHotel(tour.hotelId);
                   return (
-                    <th key={tour.id} className="px-5 py-4 text-left align-top">
-                      <img
-                        src={hotel.image}
-                        alt={hotel.name}
-                        loading="lazy"
-                        className="h-32 w-full rounded-2xl object-cover"
-                      />
-                      <div className="mt-3 font-display text-base font-semibold">{hotel.name}</div>
+                    <th
+                      key={tour.id}
+                      className={cn(
+                        "px-5 py-4 text-left align-top",
+                        tour.id === bestId && "bg-success/10",
+                      )}
+                    >
+                      <div className="relative">
+                        <img
+                          src={hotel.image}
+                          alt={hotel.name}
+                          loading="lazy"
+                          className="h-32 w-full rounded-2xl object-cover"
+                        />
+                        <button
+                          type="button"
+                          aria-label="Убрать из сравнения"
+                          onClick={() => removeCompare(tour.id)}
+                          className="absolute right-2 top-2 grid size-8 place-items-center rounded-full bg-card/90 shadow-card"
+                        >
+                          <X className="size-4" />
+                        </button>
+                      </div>
+                      {tour.id === bestId ? (
+                        <span className="mt-3 inline-block rounded-full bg-success px-2.5 py-1 text-[11px] font-semibold text-primary-foreground">
+                          Лучшее предложение
+                        </span>
+                      ) : null}
+                      <div className="mt-2 font-display text-base font-semibold">{hotel.name}</div>
+                      <Button variant="outline" size="sm" className="mt-3" asChild>
+                        <Link to="/tour/$tourId" params={{ tourId: tour.id }}>
+                          Открыть тур
+                        </Link>
+                      </Button>
                     </th>
                   );
                 })}
@@ -68,7 +144,10 @@ function ComparePage() {
                 <tr key={label} className="border-t border-border">
                   <td className="px-5 py-3 font-medium text-muted-foreground">{label}</td>
                   {selected.map((tour) => (
-                    <td key={tour.id} className="px-5 py-3">
+                    <td
+                      key={tour.id}
+                      className={cn("px-5 py-3", tour.id === bestId && "bg-success/10")}
+                    >
                       {get(tour)}
                     </td>
                   ))}
@@ -83,10 +162,14 @@ function ComparePage() {
             <Sparkles className="size-5" /> AI рекомендует
           </h2>
           <p className="mt-2 text-primary-foreground/85">
-            «Лучшее соотношение цена / качество — вариант №2.»
+            {`«Лучшее соотношение цена / качество — ${
+              getHotel(selected.find((t) => t.id === bestId)!.hotelId).name
+            }.»`}
           </p>
-          <Button variant="secondary" className="mt-5">
-            Показать детали
+          <Button variant="secondary" className="mt-5" asChild>
+            <Link to="/tour/$tourId" params={{ tourId: bestId! }}>
+              Показать детали
+            </Link>
           </Button>
         </div>
       </div>

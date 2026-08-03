@@ -1,8 +1,10 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { SlidersHorizontal } from "lucide-react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { SearchX, SlidersHorizontal } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 
 import { SiteLayout } from "@/components/site/site-layout";
 import { TourCard } from "@/components/tours/tour-card";
+import { TourCardSkeleton } from "@/components/tours/tour-card-skeleton";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -10,15 +12,27 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from "@/components/ui/separator";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Slider } from "@/components/ui/slider";
-import { tours } from "@/data/demo";
+import { AMENITIES, amenityLabels, destinations, formatPrice, mealOptions } from "@/data/demo";
+import {
+  filterTours,
+  formatSearchDates,
+  guestsSummary,
+  PRICE_MAX,
+  PRICE_MIN,
+  sortTours,
+  validateSearchParams,
+  type SearchParams,
+  type SortKey,
+} from "@/lib/search";
 
 export const Route = createFileRoute("/search")({
+  validateSearch: validateSearchParams,
   head: () => ({
     meta: [
-      { title: "Поиск туров Алматы → Дубай — Voyago" },
+      { title: "Поиск туров — сравните предложения операторов | Voyago" },
       {
         name: "description",
-        content: "128 туров от проверенных операторов: фильтры по цене, питанию, отелю и рейтингу.",
+        content: "Туры от проверенных операторов: фильтры по цене, питанию, отелю, рейтингу и удобствам.",
       },
       { property: "og:title", content: "Поиск туров — Voyago" },
       { property: "og:description", content: "Сравните туры от разных операторов в одном месте." },
@@ -27,65 +41,226 @@ export const Route = createFileRoute("/search")({
   component: SearchPage,
 });
 
-const filterGroups = [
-  { title: "Отель", options: ["Первая линия", "Бассейн", "Детский бассейн", "Трансфер", "Spa"] },
-  { title: "Звёзды", options: ["5★", "4★", "3★"] },
-  { title: "Питание", options: ["Ultra All Inclusive", "All Inclusive", "Полупансион", "Завтрак"] },
-  { title: "Длительность", options: ["5–7 ночей", "8–10 ночей", "11–14 ночей"] },
-  { title: "Район", options: ["Jumeirah Beach", "Palm Jumeirah", "JBR", "Deira"] },
-  { title: "Рейтинг", options: ["9+ Превосходно", "8+ Очень хорошо", "7+ Хорошо"] },
+const nightBuckets = [
+  { value: "1-3", label: "1–3 ночи" },
+  { value: "4-7", label: "4–7 ночей" },
+  { value: "8-14", label: "8–14 ночей" },
+  { value: "14+", label: "14+ ночей" },
+];
+const offerOptions = [
+  { value: "hot", label: "Hot Deal" },
+  { value: "premium", label: "Premium" },
+  { value: "sponsored", label: "Sponsored" },
 ];
 
-function Filters() {
+type Update = (patch: Partial<SearchParams>) => void;
+
+function CheckGroup({
+  title,
+  options,
+  selected,
+  onToggle,
+}: {
+  title: string;
+  options: Array<{ value: string; label: string }>;
+  selected: string[];
+  onToggle: (value: string) => void;
+}) {
+  return (
+    <div>
+      <Separator className="mb-6" />
+      <h3 className="text-sm font-semibold">{title}</h3>
+      <div className="mt-3 space-y-3">
+        {options.map((option) => {
+          const id = `${title}-${option.value}`;
+          return (
+            <div key={option.value} className="flex items-center gap-3">
+              <Checkbox
+                id={id}
+                checked={selected.includes(option.value)}
+                onCheckedChange={() => onToggle(option.value)}
+              />
+              <Label htmlFor={id} className="text-sm font-normal">
+                {option.label}
+              </Label>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function Filters({ params, update }: { params: SearchParams; update: Update }) {
+  const [price, setPrice] = useState<[number, number]>([params.priceMin, params.priceMax]);
+  useEffect(() => {
+    setPrice([params.priceMin, params.priceMax]);
+  }, [params.priceMin, params.priceMax]);
+
+  const toggle = (key: keyof SearchParams, value: string | number) => {
+    const current = params[key] as Array<string | number>;
+    const next = current.includes(value)
+      ? current.filter((v) => v !== value)
+      : [...current, value];
+    update({ [key]: next } as Partial<SearchParams>);
+  };
+
   return (
     <div className="space-y-6">
       <div>
         <h3 className="text-sm font-semibold">Цена</h3>
-        <Slider defaultValue={[35]} max={100} className="mt-4" />
+        <Slider
+          className="mt-4"
+          min={PRICE_MIN}
+          max={PRICE_MAX}
+          step={50000}
+          value={price}
+          onValueChange={(v) => setPrice([v[0] ?? PRICE_MIN, v[1] ?? PRICE_MAX])}
+          onValueCommit={(v) => update({ priceMin: v[0] ?? PRICE_MIN, priceMax: v[1] ?? PRICE_MAX })}
+        />
         <div className="mt-3 flex justify-between text-xs text-muted-foreground">
-          <span>480 000 ₸</span>
-          <span>2 400 000 ₸</span>
+          <span>{formatPrice(price[0])}</span>
+          <span>{formatPrice(price[1])}</span>
         </div>
       </div>
-      <Separator />
+
       <div>
-        <h3 className="text-sm font-semibold">Даты</h3>
-        <div className="mt-3 rounded-2xl border border-border px-3 py-2.5 text-sm">
-          10–17 августа
+        <Separator className="mb-6" />
+        <h3 className="text-sm font-semibold">Направление</h3>
+        <Select
+          value={params.destination || "all"}
+          onValueChange={(v) => update({ destination: v === "all" ? "" : v, city: "" })}
+        >
+          <SelectTrigger className="mt-3 w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Все направления</SelectItem>
+            {destinations.map((d) => (
+              <SelectItem key={d.id} value={d.id}>
+                {d.flag} {d.country}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <CheckGroup
+        title="Длительность"
+        options={nightBuckets}
+        selected={params.nights}
+        onToggle={(v) => toggle("nights", v)}
+      />
+      <CheckGroup
+        title="Отель"
+        options={[5, 4, 3].map((s) => ({ value: String(s), label: `${s}★` }))}
+        selected={params.stars.map(String)}
+        onToggle={(v) => toggle("stars", Number(v))}
+      />
+      <CheckGroup
+        title="Питание"
+        options={mealOptions.map((m) => ({ value: m.code, label: `${m.code} · ${m.label}` }))}
+        selected={params.meals}
+        onToggle={(v) => toggle("meals", v)}
+      />
+      <CheckGroup
+        title="Удобства"
+        options={AMENITIES.map((a) => ({ value: a, label: amenityLabels[a] ?? a }))}
+        selected={params.amenities}
+        onToggle={(v) => toggle("amenities", v)}
+      />
+
+      <div>
+        <Separator className="mb-6" />
+        <h3 className="text-sm font-semibold">Рейтинг</h3>
+        <div className="mt-3 space-y-3">
+          {[
+            { value: 9, label: "9+ Превосходно" },
+            { value: 8, label: "8+ Очень хорошо" },
+          ].map((r) => (
+            <div key={r.value} className="flex items-center gap-3">
+              <Checkbox
+                id={`rating-${r.value}`}
+                checked={params.rating === r.value}
+                onCheckedChange={() => update({ rating: params.rating === r.value ? 0 : r.value })}
+              />
+              <Label htmlFor={`rating-${r.value}`} className="text-sm font-normal">
+                {r.label}
+              </Label>
+            </div>
+          ))}
         </div>
       </div>
-      {filterGroups.map((group) => (
-        <div key={group.title}>
-          <Separator className="mb-6" />
-          <h3 className="text-sm font-semibold">{group.title}</h3>
-          <div className="mt-3 space-y-3">
-            {group.options.map((option) => (
-              <div key={option} className="flex items-center gap-3">
-                <Checkbox id={`${group.title}-${option}`} />
-                <Label htmlFor={`${group.title}-${option}`} className="text-sm font-normal">
-                  {option}
-                </Label>
-              </div>
-            ))}
-          </div>
-        </div>
-      ))}
+
+      <CheckGroup
+        title="Тип предложения"
+        options={offerOptions}
+        selected={params.offers}
+        onToggle={(v) => toggle("offers", v)}
+      />
     </div>
   );
 }
 
 function SearchPage() {
+  const params = Route.useSearch();
+  const navigate = useNavigate({ from: "/search" });
+  const [loading, setLoading] = useState(true);
+
+  const update: Update = (patch) => {
+    navigate({ search: ((prev: SearchParams) => ({ ...prev, ...patch })) as never });
+  };
+
+  const results = useMemo(() => sortTours(filterTours(params), params.sort), [params]);
+  const cheapest = useMemo(
+    () => results.reduce<number | null>((min, t) => (min === null || t.price < min ? t.price : min), null),
+    [results],
+  );
+
+  useEffect(() => {
+    setLoading(true);
+    const timer = setTimeout(() => setLoading(false), 350);
+    return () => clearTimeout(timer);
+  }, [params]);
+
+  const routeLabel = `${params.from || "Любой город"} → ${
+    params.city || (params.destination ? destinations.find((d) => d.id === params.destination)?.country : "") ||
+    "Все направления"
+  }`;
+
+  const chips = [
+    formatSearchDates(params.dateStart, params.dateEnd),
+    guestsSummary(params.adults, params.children),
+    params.meals.length ? `Питание: ${params.meals.join(", ")}` : null,
+    `${formatPrice(params.priceMin)} – ${formatPrice(params.priceMax)}`,
+  ].filter(Boolean) as string[];
+
+  const reset = () =>
+    navigate({
+      search: {
+        from: params.from,
+        destination: params.destination,
+        adults: params.adults,
+        children: params.children,
+      } as never,
+    });
+
   return (
     <SiteLayout>
       <div className="container-page py-8">
         <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4">
           <div className="min-w-0">
-            <h1 className="truncate font-display text-2xl font-semibold md:text-3xl">
-              Алматы → Дубай
-            </h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              10–17 августа · 2 взрослых + 2 детей
-            </p>
+            <h1 className="truncate font-display text-2xl font-semibold md:text-3xl">{routeLabel}</h1>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {chips.map((chip) => (
+                <span
+                  key={chip}
+                  className="rounded-full bg-secondary px-3 py-1 text-xs font-medium text-muted-foreground"
+                >
+                  {chip}
+                </span>
+              ))}
+            </div>
           </div>
           <Sheet>
             <SheetTrigger asChild>
@@ -99,8 +274,10 @@ function SearchPage() {
                 <SheetTitle className="font-display">Фильтры</SheetTitle>
               </SheetHeader>
               <div className="px-4 pb-8">
-                <Filters />
-                <Button className="mt-6 w-full">Показать 128 туров</Button>
+                <Filters params={params} update={update} />
+                <Button className="mt-6 w-full" onClick={reset} variant="outline">
+                  Сбросить фильтры
+                </Button>
               </div>
             </SheetContent>
           </Sheet>
@@ -109,34 +286,66 @@ function SearchPage() {
         <div className="mt-8 grid gap-8 lg:grid-cols-[300px_minmax(0,1fr)]">
           <aside className="hidden lg:block">
             <div className="surface-card sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto p-6">
-              <h2 className="font-display text-lg font-semibold">Фильтры</h2>
+              <div className="flex items-center justify-between gap-2">
+                <h2 className="font-display text-lg font-semibold">Фильтры</h2>
+                <Button variant="ghost" size="sm" onClick={reset}>
+                  Сбросить
+                </Button>
+              </div>
               <div className="mt-6">
-                <Filters />
+                <Filters params={params} update={update} />
               </div>
             </div>
           </aside>
 
           <div>
             <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4">
-              <p className="truncate text-sm font-medium text-muted-foreground">Найдено 128 туров</p>
-              <Select defaultValue="recommended">
+              <p className="truncate text-sm font-medium text-muted-foreground">
+                Найдено {results.length} туров
+              </p>
+              <Select value={params.sort} onValueChange={(v) => update({ sort: v as SortKey })}>
                 <SelectTrigger className="w-48">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="recommended">Рекомендуемые</SelectItem>
-                  <SelectItem value="price-asc">Сначала дешевле</SelectItem>
-                  <SelectItem value="price-desc">Сначала дороже</SelectItem>
-                  <SelectItem value="rating">По рейтингу</SelectItem>
+                  <SelectItem value="price-asc">Цена: сначала дешёвые</SelectItem>
+                  <SelectItem value="price-desc">Цена: сначала дорогие</SelectItem>
+                  <SelectItem value="rating">Рейтинг</SelectItem>
+                  <SelectItem value="popular">Популярные</SelectItem>
+                  <SelectItem value="new">Новые</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            <div className="mt-5 space-y-5">
-              {tours.slice(0, 12).map((tour) => (
-                <TourCard key={tour.id} tour={tour} />
-              ))}
-            </div>
+            {loading ? (
+              <div className="mt-5 space-y-5">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <TourCardSkeleton key={i} />
+                ))}
+              </div>
+            ) : results.length === 0 ? (
+              <div className="surface-card mt-5 p-10 text-center">
+                <SearchX className="mx-auto size-10 text-muted-foreground" />
+                <h2 className="mt-4 font-display text-xl font-semibold">
+                  По вашему запросу ничего не найдено
+                </h2>
+                <ul className="mt-4 space-y-1.5 text-sm text-muted-foreground">
+                  <li>Попробуйте увеличить бюджет</li>
+                  <li>Измените даты</li>
+                  <li>Выберите другое направление</li>
+                </ul>
+                <Button className="mt-6" onClick={reset}>
+                  Сбросить фильтры
+                </Button>
+              </div>
+            ) : (
+              <div className="mt-5 space-y-5">
+                {results.map((tour) => (
+                  <TourCard key={tour.id} tour={tour} bestPrice={tour.price === cheapest} />
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>

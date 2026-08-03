@@ -1,15 +1,17 @@
 import { Link } from "@tanstack/react-router";
-import { Heart, Plane, Scale, Star, UtensilsCrossed, Users } from "lucide-react";
+import { Heart, MessageSquare, Plane, Scale, Star, UtensilsCrossed, Users } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
   formatPrice,
+  formatNumber,
   getHotel,
   getOperator,
   guestsLabel,
   nightsLabel,
   type Tour,
 } from "@/data/demo";
+import { useTourState } from "@/lib/tour-state";
 import { cn } from "@/lib/utils";
 
 function TagBadge({ tag }: { tag: string }) {
@@ -17,6 +19,8 @@ function TagBadge({ tag }: { tag: string }) {
     hot: { label: "🔥 HOT DEAL", className: "bg-primary text-primary-foreground" },
     premium: { label: "💎 PREMIUM", className: "bg-ink text-primary-foreground" },
     best: { label: "BEST MATCH", className: "bg-success text-primary-foreground" },
+    sponsored: { label: "SPONSORED", className: "bg-premium text-ink" },
+    price: { label: "BEST PRICE", className: "bg-accent text-primary-foreground" },
   };
   const item = map[tag];
   if (!item) return null;
@@ -32,17 +36,34 @@ function TagBadge({ tag }: { tag: string }) {
   );
 }
 
-export function TourCard({ tour, layout = "row" }: { tour: Tour; layout?: "row" | "grid" }) {
+export function TourCard({
+  tour,
+  layout = "row",
+  bestPrice = false,
+}: {
+  tour: Tour;
+  layout?: "row" | "grid";
+  bestPrice?: boolean;
+}) {
   const hotel = getHotel(tour.hotelId);
   const operator = getOperator(tour.operatorId);
+  const { isFavorite, toggleFavorite, isCompared, toggleCompare } = useTourState();
+  const fav = isFavorite(tour.id);
+  const compared = isCompared(tour.id);
 
   return (
     <article
       className={cn(
-        "surface-card hover-lift overflow-hidden",
+        "surface-card hover-lift relative overflow-hidden",
         layout === "row" ? "grid sm:grid-cols-[minmax(0,320px)_minmax(0,1fr)]" : "flex flex-col",
       )}
     >
+      <Link
+        to="/tour/$tourId"
+        params={{ tourId: tour.id }}
+        aria-label={hotel.name}
+        className="absolute inset-0 z-10"
+      />
       <div className={cn("relative", layout === "row" ? "aspect-[4/3] sm:aspect-auto" : "aspect-[4/3]")}>
         <img
           src={hotel.image}
@@ -50,25 +71,30 @@ export function TourCard({ tour, layout = "row" }: { tour: Tour; layout?: "row" 
           loading="lazy"
           className="size-full object-cover"
         />
-        <div className="absolute left-3 top-3 flex flex-wrap gap-2">
+        <div className="absolute left-3 top-3 z-20 flex flex-wrap gap-2">
+          {bestPrice ? <TagBadge tag="price" /> : null}
           {tour.tags.map((tag) => (
             <TagBadge key={tag} tag={tag} />
           ))}
         </div>
         <button
           type="button"
-          aria-label="Сохранить"
-          className="absolute right-3 top-3 grid size-9 place-items-center rounded-full bg-card/90 text-foreground shadow-card transition-colors hover:text-primary"
+          aria-label={fav ? "Убрать из избранного" : "Сохранить"}
+          onClick={() => toggleFavorite(tour.id)}
+          className={cn(
+            "absolute right-3 top-3 z-20 grid size-9 place-items-center rounded-full bg-card/90 shadow-card transition-colors hover:text-primary",
+            fav ? "text-primary" : "text-foreground",
+          )}
         >
-          <Heart className="size-4" />
+          <Heart className={cn("size-4", fav && "fill-current")} />
         </button>
       </div>
 
-      <div className="flex flex-col gap-4 p-5">
+      <div className="pointer-events-none relative z-20 flex flex-col gap-4 p-5">
         <div className="min-w-0">
           <div className="flex items-center gap-2 text-[13px] text-muted-foreground">
             <span>
-              {hotel.flag} {hotel.city}
+              {hotel.flag} {hotel.city}, {hotel.country}
             </span>
             <span className="flex items-center gap-0.5 text-premium">
               {Array.from({ length: hotel.stars }).map((_, i) => (
@@ -81,7 +107,10 @@ export function TourCard({ tour, layout = "row" }: { tour: Tour; layout?: "row" 
             <span className="rounded-lg bg-accent/10 px-2 py-0.5 font-semibold text-accent">
               {hotel.rating.toFixed(1)}
             </span>
-            <span className="text-muted-foreground">Отлично</span>
+            <span className="flex items-center gap-1 text-muted-foreground">
+              <MessageSquare className="size-3.5" />
+              {formatNumber(hotel.reviews)} отзывов
+            </span>
           </div>
         </div>
 
@@ -93,7 +122,7 @@ export function TourCard({ tour, layout = "row" }: { tour: Tour; layout?: "row" 
             <Plane className="size-3.5" /> {tour.from} → {hotel.city}
           </li>
           <li className="flex items-center gap-1.5">
-            <UtensilsCrossed className="size-3.5" /> {tour.meal}
+            <UtensilsCrossed className="size-3.5" /> {tour.mealCode} · {tour.meal}
           </li>
           <li className="flex items-center gap-1.5">
             <Users className="size-3.5" /> {guestsLabel(tour.adults, tour.children)}
@@ -110,10 +139,15 @@ export function TourCard({ tour, layout = "row" }: { tour: Tour; layout?: "row" 
             <div className="font-display text-2xl font-semibold">{formatPrice(tour.price)}</div>
             <div className="text-xs text-muted-foreground">от {operator.name}</div>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <Button variant="ghost" size="sm" className="text-muted-foreground">
+          <div className="pointer-events-auto flex flex-wrap items-center gap-2">
+            <Button
+              variant={compared ? "secondary" : "ghost"}
+              size="sm"
+              className={compared ? "" : "text-muted-foreground"}
+              onClick={() => toggleCompare(tour.id)}
+            >
               <Scale className="size-4" />
-              Сравнить
+              {compared ? "В сравнении" : "Сравнить"}
             </Button>
             <Button size="sm" asChild>
               <Link to="/tour/$tourId" params={{ tourId: tour.id }}>

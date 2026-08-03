@@ -9,6 +9,7 @@ import {
   Search,
   SlidersHorizontal,
   Sparkles,
+  UtensilsCrossed,
   Users,
   Wallet,
 } from "lucide-react";
@@ -20,13 +21,26 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
-import { destinations, formatPrice } from "@/data/demo";
+import { destinations, formatPrice, mealOptions, resortsByDestination } from "@/data/demo";
+import { originCities, PRICE_MAX, PRICE_MIN, toSearchLink } from "@/lib/search";
 import { cn } from "@/lib/utils";
 
-const originCities = ["Алматы", "Астана", "Шымкент", "Актау", "Атырау", "Караганда"];
-const destinationCities = destinations.map((d) => `${d.city}, ${d.country}`);
+type DestOption = { value: string; label: string; destination: string; city: string };
+
+const destinationOptions: DestOption[] = destinations.flatMap((d) => [
+  { value: `${d.id}|`, label: `${d.flag} ${d.country} — все курорты`, destination: d.id, city: "" },
+  ...(resortsByDestination[d.id] ?? []).map((r) => ({
+    value: `${d.id}|${r.name}`,
+    label: `${r.name}, ${d.country}`,
+    destination: d.id,
+    city: r.name,
+  })),
+]);
 
 const dateFormatter = new Intl.DateTimeFormat("ru-RU", { day: "numeric", month: "long" });
+
+const toIso = (d: Date) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 
 function FieldShell({
   label,
@@ -48,7 +62,7 @@ function FieldShell({
   );
 }
 
-function CityField({
+function SelectField({
   label,
   value,
   options,
@@ -56,34 +70,35 @@ function CityField({
 }: {
   label: string;
   value: string;
-  options: string[];
+  options: Array<{ value: string; label: string }>;
   onChange: (v: string) => void;
 }) {
   const [open, setOpen] = useState(false);
+  const current = options.find((o) => o.value === value);
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <button type="button" className="min-w-0">
-          <FieldShell label={label} value={value} icon={MapPin} />
+          <FieldShell label={label} value={current?.label ?? "Выберите"} icon={MapPin} />
         </button>
       </PopoverTrigger>
       <PopoverContent align="start" className="w-64 p-1.5">
         <div className="max-h-72 overflow-y-auto">
           {options.map((option) => (
             <button
-              key={option}
+              key={option.value}
               type="button"
               onClick={() => {
-                onChange(option);
+                onChange(option.value);
                 setOpen(false);
               }}
               className={cn(
                 "flex w-full items-center justify-between gap-2 rounded-xl px-3 py-2 text-left text-sm transition-colors hover:bg-secondary",
-                option === value && "font-semibold text-primary",
+                option.value === value && "font-semibold text-primary",
               )}
             >
-              <span className="truncate">{option}</span>
-              {option === value ? <Check className="size-4 shrink-0" /> : null}
+              <span className="truncate">{option.label}</span>
+              {option.value === value ? <Check className="size-4 shrink-0" /> : null}
             </button>
           ))}
         </div>
@@ -138,16 +153,37 @@ function Counter({
 export function SearchPanel() {
   const [tab, setTab] = useState<"classic" | "ai">("classic");
   const [from, setFrom] = useState("Алматы");
-  const [to, setTo] = useState("Дубай, ОАЭ");
+  const [to, setTo] = useState("uae|Дубай");
   const [range, setRange] = useState<DateRange | undefined>({
     from: new Date(2026, 7, 10),
     to: new Date(2026, 7, 17),
   });
   const [adults, setAdults] = useState(2);
   const [children, setChildren] = useState(2);
-  const [budget, setBudget] = useState(1500000);
+  const [childAges, setChildAges] = useState<number[]>([7, 10]);
+  const [budget, setBudget] = useState<[number, number]>([PRICE_MIN, 2500000]);
+  const [meals, setMeals] = useState<string[]>([]);
   const navigate = useNavigate();
-  const goSearch = () => navigate({ to: "/search" });
+
+  const goSearch = () => {
+    const [destination = "", city = ""] = to.split("|");
+    navigate({
+      to: "/search",
+      search: toSearchLink({
+        from,
+        destination,
+        city,
+        dateStart: range?.from ? toIso(range.from) : "",
+        dateEnd: range?.to ? toIso(range.to) : "",
+        adults,
+        children,
+        childAges: childAges.slice(0, children),
+        priceMin: budget[0],
+        priceMax: budget[1],
+        meals,
+      }) as never,
+    });
+  };
 
   const dateLabel = range?.from
     ? range.to
@@ -156,6 +192,7 @@ export function SearchPanel() {
     : "Выберите даты";
   const guestsLabelText =
     children > 0 ? `${adults} взрослых + ${children} ${children === 1 ? "ребёнок" : "детей"}` : `${adults} взрослых`;
+  const mealLabelText = meals.length ? meals.join(", ") : "Любое";
 
   return (
     <div className="surface-card overflow-hidden p-2 shadow-lift">
@@ -184,9 +221,14 @@ export function SearchPanel() {
 
       {tab === "classic" ? (
         <div className="p-3 md:p-4">
-          <div className="grid gap-2 lg:grid-cols-[repeat(5,minmax(0,1fr))_auto]">
-            <CityField label="Откуда" value={from} options={originCities} onChange={setFrom} />
-            <CityField label="Куда" value={to} options={destinationCities} onChange={setTo} />
+          <div className="grid gap-2 lg:grid-cols-[repeat(3,minmax(0,1fr))] xl:grid-cols-[repeat(6,minmax(0,1fr))_auto]">
+            <SelectField
+              label="Откуда"
+              value={from}
+              options={originCities.map((c) => ({ value: c, label: c }))}
+              onChange={setFrom}
+            />
+            <SelectField label="Куда" value={to} options={destinationOptions} onChange={setTo} />
 
             <Popover>
               <PopoverTrigger asChild>
@@ -208,29 +250,92 @@ export function SearchPanel() {
               <PopoverContent align="start" className="w-72 space-y-4 p-4">
                 <Counter label="Взрослые" value={adults} min={1} onChange={setAdults} />
                 <Counter label="Дети" value={children} min={0} onChange={setChildren} />
+                {children > 0 ? (
+                  <div className="space-y-2 border-t border-border pt-3">
+                    <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                      Возраст детей
+                    </p>
+                    {Array.from({ length: children }).map((_, i) => (
+                      <label key={i} className="flex items-center justify-between gap-3 text-sm">
+                        <span>Ребёнок {i + 1}</span>
+                        <select
+                          className="rounded-xl border border-border bg-card px-2 py-1.5 text-sm"
+                          value={childAges[i] ?? 7}
+                          onChange={(e) => {
+                            const next = [...childAges];
+                            next[i] = Number(e.target.value);
+                            setChildAges(next);
+                          }}
+                        >
+                          {Array.from({ length: 18 }).map((__, age) => (
+                            <option key={age} value={age}>
+                              {age} лет
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                    ))}
+                  </div>
+                ) : null}
               </PopoverContent>
             </Popover>
 
             <Popover>
               <PopoverTrigger asChild>
                 <button type="button" className="min-w-0">
-                  <FieldShell label="Бюджет" value={`до ${formatPrice(budget)}`} icon={Wallet} />
+                  <FieldShell
+                    label="Бюджет"
+                    value={`${formatPrice(budget[0])} – ${formatPrice(budget[1])}`}
+                    icon={Wallet}
+                  />
                 </button>
               </PopoverTrigger>
               <PopoverContent align="start" className="w-72 p-4">
-                <p className="text-sm font-medium">до {formatPrice(budget)}</p>
+                <p className="text-sm font-medium">
+                  {formatPrice(budget[0])} – {formatPrice(budget[1])}
+                </p>
                 <Slider
                   className="mt-4"
-                  value={[budget]}
-                  min={300000}
-                  max={5000000}
+                  value={budget}
+                  min={PRICE_MIN}
+                  max={PRICE_MAX}
                   step={50000}
-                  onValueChange={(v) => setBudget(v[0] ?? budget)}
+                  onValueChange={(v) => setBudget([v[0] ?? PRICE_MIN, v[1] ?? PRICE_MAX])}
                 />
                 <div className="mt-3 flex justify-between text-xs text-muted-foreground">
                   <span>300 000 ₸</span>
                   <span>5 000 000 ₸</span>
                 </div>
+              </PopoverContent>
+            </Popover>
+
+            <Popover>
+              <PopoverTrigger asChild>
+                <button type="button" className="min-w-0">
+                  <FieldShell label="Питание" value={mealLabelText} icon={UtensilsCrossed} />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent align="start" className="w-64 p-1.5">
+                {mealOptions.map((m) => (
+                  <button
+                    key={m.code}
+                    type="button"
+                    onClick={() =>
+                      setMeals((prev) =>
+                        prev.includes(m.code) ? prev.filter((x) => x !== m.code) : [...prev, m.code],
+                      )
+                    }
+                    className={cn(
+                      "flex w-full items-center justify-between gap-2 rounded-xl px-3 py-2 text-left text-sm transition-colors hover:bg-secondary",
+                      meals.includes(m.code) && "font-semibold text-primary",
+                    )}
+                  >
+                    <span className="truncate">
+                      {m.code} · {m.label}
+                    </span>
+                    {meals.includes(m.code) ? <Check className="size-4 shrink-0" /> : null}
+                  </button>
+                ))}
               </PopoverContent>
             </Popover>
 
@@ -241,6 +346,7 @@ export function SearchPanel() {
           </div>
           <button
             type="button"
+            onClick={goSearch}
             className="mt-3 inline-flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
           >
             <SlidersHorizontal className="size-4" />
