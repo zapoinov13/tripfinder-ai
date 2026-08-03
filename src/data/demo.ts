@@ -360,7 +360,7 @@ export const tours: Tour[] = Array.from({ length: 60 }, (_, i) => {
     id: `tour-${i + 1}`,
     hotelId: hotel.id,
     operatorId: operators[i % operators.length]!.id,
-    from: cities[i % cities.length]!,
+    from: cities[(i + Math.floor(i / hotels.length)) % cities.length]!,
     nights,
     dateStart: fmtDay(start),
     dateEnd: fmtDay(end),
