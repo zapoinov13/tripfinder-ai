@@ -1,11 +1,11 @@
 import { Link } from "@tanstack/react-router";
-import { Heart, Home, Luggage, Search, User } from "lucide-react";
+import { Heart, Home, Scale, Search, User } from "lucide-react";
 
 const items = [
   { label: "Главная", to: "/", icon: Home },
   { label: "Поиск", to: "/search", icon: Search },
-  { label: "Избранное", to: "/profile", icon: Heart },
-  { label: "Поездки", to: "/profile", icon: Luggage },
+  { label: "Избранное", to: "/favorites", icon: Heart },
+  { label: "Сравнение", to: "/compare", icon: Scale },
   { label: "Профиль", to: "/profile", icon: User },
 ];
 

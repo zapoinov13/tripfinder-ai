@@ -206,6 +206,7 @@ export type Hotel = {
   flag: string;
   stars: number;
   rating: number;
+  reviews: number;
   district: string;
   beachLine: 1 | 2 | 3;
   distanceToSea: number;
@@ -213,55 +214,94 @@ export type Hotel = {
   image: string;
 };
 
-const hotelSeed: Array<[string, string, number, number, string, 1 | 2 | 3, number]> = [
-  ["Rixos Premium Dubai", "uae", 5, 9.4, "Jumeirah Beach", 1, 50],
-  ["Atlantis The Palm", "uae", 5, 9.6, "Palm Jumeirah", 1, 80],
-  ["Address Beach Resort", "uae", 5, 9.2, "JBR", 1, 120],
-  ["Maxx Royal Belek", "turkey", 5, 9.5, "Белек", 1, 60],
-  ["Titanic Deluxe Lara", "turkey", 5, 9.1, "Лара", 1, 100],
-  ["Delphin Imperial", "turkey", 5, 8.9, "Лара", 1, 150],
-  ["Sherwood Exclusive", "turkey", 4, 8.4, "Кемер", 2, 300],
-  ["Katathani Phuket Beach", "thailand", 5, 9.3, "Ката Ной", 1, 40],
-  ["Amari Phuket", "thailand", 4, 8.7, "Патонг", 2, 250],
-  ["Banyan Tree Krabi", "thailand", 5, 9.5, "Краби", 1, 70],
-  ["Steigenberger Aldau", "egypt", 5, 9.0, "Хургада", 1, 90],
-  ["Rixos Sharm El Sheikh", "egypt", 5, 9.2, "Набк Бей", 1, 110],
-  ["Albatros Palace", "egypt", 5, 8.6, "Хургада", 2, 320],
-  ["Vinpearl Nha Trang", "vietnam", 5, 9.0, "Хон Че", 1, 60],
-  ["Amiana Resort", "vietnam", 5, 8.8, "Нячанг", 1, 80],
-  ["Soneva Fushi", "maldives", 5, 9.8, "Баа Атолл", 1, 10],
-  ["Kuramathi Island", "maldives", 5, 9.4, "Расду Атолл", 1, 20],
-  ["Radisson Blu Batumi", "georgia", 5, 8.9, "Батуми", 1, 150],
-  ["Heritance Ahungalla", "srilanka", 5, 9.1, "Ахунгалла", 1, 40],
-  ["Padma Resort Legian", "indonesia", 5, 9.3, "Легиан", 1, 70],
+/** Canonical amenity keys used by filters. */
+export const AMENITIES = ["Beach", "Pool", "Kids Club", "Spa", "Wi-Fi", "Transfer"] as const;
+export type Amenity = (typeof AMENITIES)[number];
+
+export const amenityLabels: Record<string, string> = {
+  Beach: "Пляж",
+  Pool: "Бассейн",
+  "Kids Club": "Детский клуб",
+  Spa: "Spa",
+  "Wi-Fi": "Wi-Fi",
+  Transfer: "Трансфер",
+};
+
+// name, destinationId, city (курорт), stars, rating, district, beachLine, metres to sea, amenities
+const hotelSeed: Array<
+  [string, string, string, number, number, string, 1 | 2 | 3, number, Amenity[]]
+> = [
+  ["Rixos Premium Dubai", "uae", "Дубай", 5, 9.4, "Jumeirah Beach", 1, 50, ["Beach", "Pool", "Spa", "Wi-Fi", "Transfer"]],
+  ["Atlantis The Palm", "uae", "Дубай", 5, 9.6, "Palm Jumeirah", 1, 80, ["Beach", "Pool", "Kids Club", "Spa", "Wi-Fi", "Transfer"]],
+  ["Address Beach Resort", "uae", "Дубай", 5, 9.2, "JBR", 1, 120, ["Beach", "Pool", "Spa", "Wi-Fi"]],
+  ["Centro Barsha", "uae", "Дубай", 3, 7.9, "Al Barsha", 3, 4200, ["Pool", "Wi-Fi"]],
+  ["Bab Al Qasr", "uae", "Абу-Даби", 5, 9.1, "Corniche", 1, 60, ["Beach", "Pool", "Kids Club", "Spa", "Wi-Fi"]],
+  ["Maxx Royal Belek", "turkey", "Белек", 5, 9.5, "Белек", 1, 60, ["Beach", "Pool", "Kids Club", "Spa", "Wi-Fi", "Transfer"]],
+  ["Titanic Deluxe Lara", "turkey", "Анталия", 5, 9.1, "Лара", 1, 100, ["Beach", "Pool", "Kids Club", "Spa", "Wi-Fi", "Transfer"]],
+  ["Delphin Imperial", "turkey", "Анталия", 5, 8.9, "Лара", 1, 150, ["Beach", "Pool", "Kids Club", "Wi-Fi", "Transfer"]],
+  ["Sherwood Exclusive", "turkey", "Кемер", 4, 8.4, "Кемер", 2, 300, ["Beach", "Pool", "Wi-Fi", "Transfer"]],
+  ["Grand Alanya Hotel", "turkey", "Алания", 3, 7.6, "Махмутлар", 2, 450, ["Pool", "Wi-Fi"]],
+  ["Katathani Phuket Beach", "thailand", "Пхукет", 5, 9.3, "Ката Ной", 1, 40, ["Beach", "Pool", "Kids Club", "Spa", "Wi-Fi"]],
+  ["Amari Phuket", "thailand", "Пхукет", 4, 8.7, "Патонг", 2, 250, ["Beach", "Pool", "Spa", "Wi-Fi"]],
+  ["Banyan Tree Krabi", "thailand", "Краби", 5, 9.5, "Краби", 1, 70, ["Beach", "Pool", "Spa", "Wi-Fi", "Transfer"]],
+  ["Steigenberger Aldau", "egypt", "Хургада", 5, 9.0, "Хургада", 1, 90, ["Beach", "Pool", "Kids Club", "Spa", "Wi-Fi", "Transfer"]],
+  ["Rixos Sharm El Sheikh", "egypt", "Шарм-эль-Шейх", 5, 9.2, "Набк Бей", 1, 110, ["Beach", "Pool", "Spa", "Wi-Fi", "Transfer"]],
+  ["Albatros Palace", "egypt", "Хургада", 4, 8.6, "Хургада", 2, 320, ["Beach", "Pool", "Kids Club", "Wi-Fi"]],
+  ["Vinpearl Nha Trang", "vietnam", "Нячанг", 5, 9.0, "Хон Че", 1, 60, ["Beach", "Pool", "Kids Club", "Spa", "Wi-Fi", "Transfer"]],
+  ["Amiana Resort", "vietnam", "Нячанг", 4, 8.8, "Нячанг", 1, 80, ["Beach", "Pool", "Spa", "Wi-Fi"]],
+  ["Soneva Fushi", "maldives", "Баа Атолл", 5, 9.8, "Баа Атолл", 1, 10, ["Beach", "Pool", "Spa", "Wi-Fi", "Transfer"]],
+  ["Kuramathi Island", "maldives", "Ари Атолл", 5, 9.4, "Расду Атолл", 1, 20, ["Beach", "Pool", "Kids Club", "Spa", "Wi-Fi"]],
+  ["Radisson Blu Batumi", "georgia", "Батуми", 5, 8.9, "Батуми", 1, 150, ["Beach", "Pool", "Spa", "Wi-Fi"]],
+  ["Hotel Old Batumi", "georgia", "Батуми", 3, 7.8, "Старый город", 3, 900, ["Wi-Fi"]],
+  ["Heritance Ahungalla", "srilanka", "Ахунгалла", 5, 9.1, "Ахунгалла", 1, 40, ["Beach", "Pool", "Spa", "Wi-Fi", "Transfer"]],
+  ["Padma Resort Legian", "indonesia", "Кута", 5, 9.3, "Легиан", 1, 70, ["Beach", "Pool", "Kids Club", "Spa", "Wi-Fi"]],
+  ["Alaya Resort Ubud", "indonesia", "Убуд", 4, 8.9, "Убуд", 3, 25000, ["Pool", "Spa", "Wi-Fi"]],
+  ["Marsa Alam Oasis", "egypt", "Марса-Алам", 4, 8.2, "Марса-Алам", 1, 200, ["Beach", "Pool", "Wi-Fi"]],
+  ["Souq Waqif Boutique", "qatar", "Доха", 5, 9.0, "Souq Waqif", 3, 3500, ["Pool", "Spa", "Wi-Fi"]],
+  ["Hilton Salwa Beach", "qatar", "Доха", 5, 9.2, "Salwa", 1, 50, ["Beach", "Pool", "Kids Club", "Spa", "Wi-Fi", "Transfer"]],
+  ["Bentota Beach Hotel", "srilanka", "Бентота", 4, 8.5, "Бентота", 1, 60, ["Beach", "Pool", "Spa", "Wi-Fi"]],
+  ["Fusion Resort Phu Quoc", "vietnam", "Фукуок", 5, 9.4, "Фукуок", 1, 30, ["Beach", "Pool", "Kids Club", "Spa", "Wi-Fi", "Transfer"]],
 ];
 
-const amenityPool = ["Wi-Fi", "Бассейн", "Детский бассейн", "Spa", "Пляж", "Ресторан", "Kids Club", "Фитнес"];
 const hotelImages = [hotel1, hotel2, hotel3, hotel4];
 
 export const hotels: Hotel[] = hotelSeed.map(
-  ([name, destinationId, stars, rating, district, beachLine, distanceToSea], i) => {
+  ([name, destinationId, city, stars, rating, district, beachLine, distanceToSea, amenities], i) => {
     const dest = destinations.find((d) => d.id === destinationId)!;
     return {
       id: `hotel-${i + 1}`,
       name,
       destinationId,
-      city: dest.city,
+      city,
       country: dest.country,
       flag: dest.flag,
       stars,
       rating,
+      reviews: 180 + ((i * 137) % 2400),
       district,
       beachLine,
       distanceToSea,
-      amenities: amenityPool.slice(0, 5 + (i % 4)),
+      amenities,
       image: hotelImages[i % hotelImages.length]!,
     };
   },
 );
 
-export type Meal = "All Inclusive" | "Ultra All Inclusive" | "Завтрак" | "Полупансион";
-export type TourTag = "hot" | "premium" | "best";
+export type MealCode = "RO" | "BB" | "HB" | "FB" | "AI" | "UAI";
+export type Meal = string;
+export type TourTag = "hot" | "premium" | "best" | "sponsored";
+
+export const mealOptions: Array<{ code: MealCode; label: string }> = [
+  { code: "RO", label: "Без питания" },
+  { code: "BB", label: "Завтрак" },
+  { code: "HB", label: "Полупансион" },
+  { code: "FB", label: "Полный пансион" },
+  { code: "AI", label: "All Inclusive" },
+  { code: "UAI", label: "Ultra All Inclusive" },
+];
+
+export const mealLabel = (code: MealCode) =>
+  mealOptions.find((m) => m.code === code)?.label ?? code;
 
 export type Tour = {
   id: string;
@@ -271,6 +311,9 @@ export type Tour = {
   nights: number;
   dateStart: string;
   dateEnd: string;
+  /** ISO date of departure */
+  departure: string;
+  mealCode: MealCode;
   meal: Meal;
   price: number;
   oldPrice?: number;
@@ -281,25 +324,36 @@ export type Tour = {
   transfer: boolean;
   views: number;
   bookings: number;
+  createdAt: string;
 };
 
-const meals: Meal[] = ["All Inclusive", "Ultra All Inclusive", "Завтрак", "Полупансион"];
 const cities = ["Алматы", "Астана", "Шымкент"];
-const months = ["августа", "сентября", "октября"];
+const monthNames = [
+  "января", "февраля", "марта", "апреля", "мая", "июня",
+  "июля", "августа", "сентября", "октября", "ноября", "декабря",
+];
+const mealCycle: MealCode[] = ["AI", "UAI", "BB", "HB", "FB", "AI", "UAI", "RO", "BB", "AI"];
 
-export const tours: Tour[] = Array.from({ length: 30 }, (_, i) => {
+const fmtDay = (d: Date) => `${d.getDate()} ${monthNames[d.getMonth()]}`;
+const iso = (d: Date) => d.toISOString().slice(0, 10);
+
+export const tours: Tour[] = Array.from({ length: 60 }, (_, i) => {
   const hotel = hotels[i % hotels.length]!;
-  const nights = [5, 7, 9, 10, 12][i % 5]!;
-  const startDay = 3 + ((i * 3) % 18);
-  const monthIdx = i % 3;
-  const endDay = startDay + nights;
-  const base = 480000 + ((i * 137) % 14) * 85000 + hotel.stars * 60000;
+  const nights = [3, 5, 7, 9, 10, 12, 14, 16][i % 8]!;
+  const start = new Date(2026, 7, 3 + ((i * 5) % 55));
+  const end = new Date(start.getTime() + nights * 86400000);
+  const mealCode = mealCycle[i % mealCycle.length]!;
+  const mealBonus = mealCode === "UAI" ? 180000 : mealCode === "AI" ? 120000 : mealCode === "FB" ? 70000 : 0;
+  const base =
+    360000 + ((i * 137) % 17) * 62000 + hotel.stars * 95000 + nights * 21000 + mealBonus;
   const price = Math.round(base / 1000) * 1000;
   const isHot = i % 5 === 0;
   const isPremium = i % 7 === 3;
+  const isSponsored = i % 9 === 2;
   const tags: TourTag[] = [];
   if (isHot) tags.push("hot");
   if (isPremium) tags.push("premium");
+  if (isSponsored) tags.push("sponsored");
   if (i % 11 === 1) tags.push("best");
 
   return {
@@ -308,18 +362,21 @@ export const tours: Tour[] = Array.from({ length: 30 }, (_, i) => {
     operatorId: operators[i % operators.length]!.id,
     from: cities[i % cities.length]!,
     nights,
-    dateStart: `${startDay} ${months[monthIdx]!}`,
-    dateEnd: `${endDay} ${months[monthIdx]!}`,
-    meal: meals[i % meals.length]!,
+    dateStart: fmtDay(start),
+    dateEnd: fmtDay(end),
+    departure: iso(start),
+    mealCode,
+    meal: mealLabel(mealCode),
     price,
     ...(isHot ? { oldPrice: Math.round((price * 1.28) / 1000) * 1000 } : {}),
     ...(isPremium ? { premiumPrice: Math.round((price * 0.82) / 1000) * 1000 } : {}),
     tags,
-    adults: 2,
-    children: i % 3,
-    transfer: true,
+    adults: [2, 2, 1, 3, 2, 4][i % 6]!,
+    children: [0, 2, 1, 0, 2, 1][i % 6]!,
+    transfer: hotel.amenities.includes("Transfer") || i % 3 !== 0,
     views: 1200 + ((i * 371) % 9000),
     bookings: 3 + ((i * 7) % 40),
+    createdAt: iso(new Date(2026, 5, 1 + ((i * 11) % 60))),
   };
 });
 

@@ -15,6 +15,7 @@ const nav = [
   { label: "Направления", to: "/destinations" },
   { label: "Горящие туры", to: "/hot" },
   { label: "Premium", to: "/premium" },
+  { label: "Сравнение", to: "/compare" },
 ];
 
 export function SiteHeader() {
@@ -45,7 +46,7 @@ export function SiteHeader() {
 
         <div className="hidden items-center gap-2 md:flex">
           <Button variant="ghost" size="sm" asChild>
-            <Link to="/profile">
+            <Link to="/favorites">
               <Heart className="size-4" />
               Избранное
             </Link>
