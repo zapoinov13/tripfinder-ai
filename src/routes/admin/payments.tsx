@@ -1,7 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useMemo, useState } from "react";
 
+import {
+  EmptyState,
+  FilterBar,
+  KpiLinkCard,
+  StatusBadge,
+  paymentStatusLabel,
+  paymentTypeLabel,
+  toneForPaymentStatus,
+  userName,
+} from "@/components/admin";
 import { DashShell } from "@/components/dash/dash-shell";
-import { adminNav } from "@/components/dash/nav-items";
+import { useAdminNav } from "@/components/dash/nav-items";
 import {
   Table,
   TableBody,
@@ -14,40 +25,105 @@ import { formatPrice } from "@/data/demo";
 import { useRequireAuth } from "@/lib/platform/auth";
 import { usePlatformStore } from "@/lib/platform/hooks";
 
-const paymentTypeLabel: Record<string, string> = {
-  subscription: "Подписка",
-  premium_subscription: "Premium-подписка",
-  promotion: "Продвижение",
-  advertising: "Реклама",
-  booking: "Бронирование",
-  topup: "Пополнение",
-};
-
-const paymentStatusLabel: Record<string, string> = {
-  pending: "Ожидает",
-  paid: "Оплачен",
-  failed: "Ошибка",
-  refunded: "Возврат",
-};
-
 export const Route = createFileRoute("/admin/payments")({
   head: () => ({ meta: [{ title: "Платежи — Админ" }] }),
-  component: () => {
-    const { allowed } = useRequireAuth(["PLATFORM_ADMIN"]);
-    const state = usePlatformStore();
-    if (!allowed) return null;
-    return (
-      <DashShell
-        brand="Voyago Админ"
-        items={adminNav}
-        title="Платежи"
-        subtitle="Все транзакции платформы"
-      >
+  component: AdminPaymentsPage,
+});
+
+function AdminPaymentsPage() {
+  const { allowed } = useRequireAuth(["PLATFORM_ADMIN"]);
+  const nav = useAdminNav();
+  const state = usePlatformStore();
+  const [q, setQ] = useState("");
+  const [type, setType] = useState("all");
+  const [status, setStatus] = useState("all");
+  if (!allowed) return null;
+
+  const paidSum = state.payments
+    .filter((p) => p.status === "paid")
+    .reduce((s, p) => s + p.amount, 0);
+  const pendingSum = state.payments
+    .filter((p) => p.status === "pending")
+    .reduce((s, p) => s + p.amount, 0);
+  const failedCount = state.payments.filter((p) => p.status === "failed").length;
+
+  const payments = useMemo(() => {
+    const query = q.trim().toLowerCase();
+    return state.payments.filter((p) => {
+      if (type !== "all" && p.type !== type) return false;
+      if (status !== "all" && p.status !== status) return false;
+      if (!query) return true;
+      return (
+        userName(p.userId).toLowerCase().includes(query) ||
+        p.providerPaymentId.toLowerCase().includes(query) ||
+        (paymentTypeLabel[p.type] ?? "").toLowerCase().includes(query)
+      );
+    });
+  }, [state.payments, q, type, status]);
+
+  return (
+    <DashShell
+      brand="Voyago Админ"
+      items={nav}
+      title="Платежи"
+      subtitle="Транзакции платформы"
+    >
+      <div className="mb-6 grid gap-4 sm:grid-cols-3">
+        <KpiLinkCard label="Оплачено" value={formatPrice(paidSum)} hint="Успешные платежи" />
+        <KpiLinkCard
+          label="Ожидает"
+          value={formatPrice(pendingSum)}
+          hint="В обработке"
+          tone="warning"
+        />
+        <KpiLinkCard
+          label="Ошибки"
+          value={String(failedCount)}
+          hint="Неудачные платежи"
+          tone={failedCount ? "danger" : "default"}
+        />
+      </div>
+
+      <FilterBar
+        search={q}
+        onSearchChange={setQ}
+        searchPlaceholder="Пользователь, ID платежа…"
+        filters={[
+          {
+            key: "type",
+            value: type,
+            placeholder: "Тип",
+            onChange: setType,
+            options: [
+              { value: "all", label: "Все типы" },
+              ...Object.entries(paymentTypeLabel).map(([value, label]) => ({ value, label })),
+            ],
+          },
+          {
+            key: "status",
+            value: status,
+            placeholder: "Статус",
+            onChange: setStatus,
+            options: [
+              { value: "all", label: "Все статусы" },
+              { value: "paid", label: "Оплачен" },
+              { value: "pending", label: "Ожидает" },
+              { value: "failed", label: "Ошибка" },
+              { value: "cancelled", label: "Отменён" },
+            ],
+          },
+        ]}
+      />
+
+      {payments.length === 0 ? (
+        <EmptyState title="Платежей нет" />
+      ) : (
         <div className="surface-card overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>ID</TableHead>
+                <TableHead>Пользователь</TableHead>
                 <TableHead>Тип</TableHead>
                 <TableHead>Сумма</TableHead>
                 <TableHead>Статус</TableHead>
@@ -55,12 +131,18 @@ export const Route = createFileRoute("/admin/payments")({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {state.payments.map((p) => (
+              {payments.map((p) => (
                 <TableRow key={p.id}>
                   <TableCell className="text-xs">{p.providerPaymentId}</TableCell>
+                  <TableCell>{userName(p.userId)}</TableCell>
                   <TableCell>{paymentTypeLabel[p.type] ?? p.type}</TableCell>
                   <TableCell>{formatPrice(p.amount)}</TableCell>
-                  <TableCell>{paymentStatusLabel[p.status] ?? p.status}</TableCell>
+                  <TableCell>
+                    <StatusBadge
+                      label={paymentStatusLabel[p.status]}
+                      tone={toneForPaymentStatus(p.status)}
+                    />
+                  </TableCell>
                   <TableCell className="text-xs">
                     {new Date(p.createdAt).toLocaleString("ru-RU")}
                   </TableCell>
@@ -69,7 +151,7 @@ export const Route = createFileRoute("/admin/payments")({
             </TableBody>
           </Table>
         </div>
-      </DashShell>
-    );
-  },
-});
+      )}
+    </DashShell>
+  );
+}

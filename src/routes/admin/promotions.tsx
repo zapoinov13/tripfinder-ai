@@ -2,31 +2,33 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 
+import {
+  ConfirmAction,
+  EmptyState,
+  StatusBadge,
+  orgName,
+  promoStatusLabel,
+  promoTypeLabel,
+  tourTitle,
+} from "@/components/admin";
 import { DashShell } from "@/components/dash/dash-shell";
-import { adminNav } from "@/components/dash/nav-items";
+import { useAdminNav } from "@/components/dash/nav-items";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { formatPrice } from "@/data/demo";
 import { appendAudit } from "@/lib/platform/catalog";
 import { useAuth, useRequireAuth } from "@/lib/platform/auth";
 import { usePlatformStore } from "@/lib/platform/hooks";
 import { setState } from "@/lib/platform/store";
 import type { PromotionType } from "@/lib/platform/types";
-
-const promoTypeLabel: Record<PromotionType, string> = {
-  BOOST: "Буст",
-  FEATURED: "В топе",
-  SPONSORED: "Спонсорский",
-  PREMIUM_PLACEMENT: "Premium-размещение",
-  HOME_FEATURE: "На главной",
-};
-
-const promoStatusLabel: Record<string, string> = {
-  active: "Активно",
-  pending: "Ожидает",
-  expired: "Истекло",
-  cancelled: "Отменено",
-};
 
 export const Route = createFileRoute("/admin/promotions")({
   head: () => ({ meta: [{ title: "Продвижение — Админ" }] }),
@@ -36,6 +38,7 @@ export const Route = createFileRoute("/admin/promotions")({
 function AdminPromotionsPage() {
   const { allowed } = useRequireAuth(["PLATFORM_ADMIN"]);
   const { user } = useAuth();
+  const nav = useAdminNav();
   const state = usePlatformStore();
   const [draft, setDraft] = useState(state.config.promotionPrices);
   if (!allowed || !user) return null;
@@ -43,16 +46,16 @@ function AdminPromotionsPage() {
   return (
     <DashShell
       brand="Voyago Админ"
-      items={adminNav}
+      items={nav}
       title="Продвижение"
-      subtitle="Цены и заказы промо"
+      subtitle="Цены пакетов и заказы операторов"
     >
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="surface-card space-y-3 p-6">
           <h2 className="font-display text-lg font-semibold">Цены (за 7 дней)</h2>
           {(Object.keys(draft) as PromotionType[]).map((key) => (
             <div key={key} className="flex items-center gap-3">
-              <span className="w-40 text-sm">{promoTypeLabel[key] ?? key}</span>
+              <span className="w-44 text-sm">{promoTypeLabel[key]}</span>
               <Input
                 value={draft[key]}
                 onChange={(e) =>
@@ -78,20 +81,73 @@ function AdminPromotionsPage() {
             Сохранить цены
           </Button>
         </div>
-        <div className="surface-card p-6">
-          <h2 className="font-display text-lg font-semibold">Заказы</h2>
-          <ul className="mt-4 space-y-2 text-sm">
-            {state.promotions.map((p) => (
-              <li key={p.id} className="rounded-xl bg-secondary p-3">
-                {promoTypeLabel[p.type as PromotionType] ?? p.type} ·{" "}
-                {promoStatusLabel[p.status] ?? p.status} · {formatPrice(p.price)} ·{" "}
-                {p.tourOfferId}
-              </li>
-            ))}
-            {state.promotions.length === 0 ? (
-              <li className="text-muted-foreground">Пока нет заказов продвижения</li>
-            ) : null}
-          </ul>
+
+        <div className="surface-card overflow-x-auto p-2">
+          <h2 className="px-4 pt-4 font-display text-lg font-semibold">Заказы</h2>
+          {state.promotions.length === 0 ? (
+            <EmptyState title="Заказов продвижения нет" />
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Тип</TableHead>
+                  <TableHead>Тур</TableHead>
+                  <TableHead>Оператор</TableHead>
+                  <TableHead>Сумма</TableHead>
+                  <TableHead>Статус</TableHead>
+                  <TableHead></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {state.promotions.map((p) => (
+                  <TableRow key={p.id}>
+                    <TableCell>{promoTypeLabel[p.type]}</TableCell>
+                    <TableCell>{tourTitle(p.tourOfferId)}</TableCell>
+                    <TableCell>{orgName(p.organizationId)}</TableCell>
+                    <TableCell>{formatPrice(p.price)}</TableCell>
+                    <TableCell>
+                      <StatusBadge
+                        label={promoStatusLabel[p.status] ?? p.status}
+                        tone={
+                          p.status === "ACTIVE"
+                            ? "success"
+                            : p.status === "CANCELLED"
+                              ? "danger"
+                              : "neutral"
+                        }
+                      />
+                    </TableCell>
+                    <TableCell>
+                      {p.status === "ACTIVE" ? (
+                        <ConfirmAction
+                          triggerLabel="Снять"
+                          title="Деактивировать продвижение?"
+                          description={`${promoTypeLabel[p.type]} · ${tourTitle(p.tourOfferId)}`}
+                          confirmLabel="Деактивировать"
+                          destructive
+                          onConfirm={() => {
+                            setState((s) => ({
+                              ...s,
+                              promotions: s.promotions.map((x) =>
+                                x.id === p.id ? { ...x, status: "CANCELLED" } : x,
+                              ),
+                            }));
+                            appendAudit({
+                              actorId: user.id,
+                              action: "promotion_deactivate",
+                              entityType: "promotion",
+                              entityId: p.id,
+                            });
+                            toast.success("Продвижение снято");
+                          }}
+                        />
+                      ) : null}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </div>
       </div>
     </DashShell>

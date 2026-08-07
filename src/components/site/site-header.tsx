@@ -7,7 +7,7 @@ import { useAuth } from "@/lib/platform/auth";
 
 const nav = [
   { label: "Туры", to: "/search" },
-  { label: "AI Search", to: "/ai-search" },
+  { label: "Найти с AI", to: "/ai-search" },
   { label: "Направления", to: "/destinations" },
   { label: "Горящие туры", to: "/hot" },
   { label: "Premium", to: "/premium" },

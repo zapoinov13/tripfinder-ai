@@ -20,6 +20,8 @@ import {
   Users,
 } from "lucide-react";
 
+import { usePlatformStore } from "@/lib/platform/hooks";
+
 import type { DashItem } from "./dash-shell";
 
 export const operatorNav: DashItem[] = [
@@ -34,7 +36,7 @@ export const operatorNav: DashItem[] = [
   { label: "Настройки", to: "/operator/settings", icon: Settings },
 ];
 
-export const adminNav: DashItem[] = [
+const adminNavBase: DashItem[] = [
   { label: "Обзор", to: "/admin", icon: Gauge },
   { label: "Пользователи", to: "/admin/users", icon: Users },
   { label: "Операторы", to: "/admin/operators", icon: Building },
@@ -48,6 +50,23 @@ export const adminNav: DashItem[] = [
   { label: "Аналитика", to: "/admin/analytics", icon: BarChart3 },
   { label: "Настройки", to: "/admin/settings", icon: Settings },
 ];
+
+/** Static nav (no live badges). Prefer `useAdminNav()` in admin pages. */
+export const adminNav = adminNavBase;
+
+export function useAdminNav(): DashItem[] {
+  const state = usePlatformStore();
+  const pendingOps = state.organizations.filter((o) => o.status === "PENDING_APPROVAL").length;
+  const apiErrors =
+    state.apiConnections.filter((c) => c.status === "error").length +
+    state.syncLogs.filter((l) => l.status === "error").length;
+
+  return adminNavBase.map((item) => {
+    if (item.to === "/admin/operators" && pendingOps > 0) return { ...item, badge: pendingOps };
+    if (item.to === "/admin/api-monitoring" && apiErrors > 0) return { ...item, badge: apiErrors };
+    return item;
+  });
+}
 
 export const profileNav: DashItem[] = [
   { label: "Мой профиль", to: "/profile", icon: User },

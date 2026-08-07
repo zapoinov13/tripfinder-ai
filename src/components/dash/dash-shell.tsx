@@ -9,6 +9,7 @@ export type DashItem = {
   label: string;
   to: string;
   icon: ComponentType<{ className?: string }>;
+  badge?: number;
 };
 
 function NavList({ items }: { items: DashItem[] }) {
@@ -23,7 +24,12 @@ function NavList({ items }: { items: DashItem[] }) {
           className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
         >
           <item.icon className="size-4 shrink-0" />
-          <span className="truncate">{item.label}</span>
+          <span className="min-w-0 flex-1 truncate">{item.label}</span>
+          {item.badge && item.badge > 0 ? (
+            <span className="rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-semibold text-primary-foreground">
+              {item.badge > 99 ? "99+" : item.badge}
+            </span>
+          ) : null}
         </Link>
       ))}
     </nav>

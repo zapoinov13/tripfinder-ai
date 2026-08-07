@@ -1,7 +1,19 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
+import { toast } from "sonner";
 
+import {
+  EmptyState,
+  StatusBadge,
+  connectionStatusLabel,
+  formatRelativeRu,
+  orgName,
+  syncStatusLabel,
+  toneForConnectionStatus,
+} from "@/components/admin";
 import { DashShell } from "@/components/dash/dash-shell";
-import { adminNav } from "@/components/dash/nav-items";
+import { useAdminNav } from "@/components/dash/nav-items";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -10,93 +22,135 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useRequireAuth } from "@/lib/platform/auth";
+import { getAdapterForOrg } from "@/lib/platform/adapters";
+import { appendAudit } from "@/lib/platform/catalog";
+import { useAuth, useRequireAuth } from "@/lib/platform/auth";
 import { usePlatformStore } from "@/lib/platform/hooks";
-
-const connectionStatusLabel: Record<string, string> = {
-  connected: "Подключено",
-  disconnected: "Отключено",
-  error: "Ошибка",
-  syncing: "Синхронизация",
-};
-
-const syncStatusLabel: Record<string, string> = {
-  success: "Успех",
-  error: "Ошибка",
-  partial: "Частично",
-};
 
 export const Route = createFileRoute("/admin/api-monitoring")({
   head: () => ({ meta: [{ title: "Мониторинг API — Админ" }] }),
-  component: () => {
-    const { allowed } = useRequireAuth(["PLATFORM_ADMIN", "PLATFORM_MANAGER"]);
-    const state = usePlatformStore();
-    if (!allowed) return null;
+  component: AdminApiMonitoringPage,
+});
 
-    return (
-      <DashShell
-        brand="Voyago Админ"
-        items={adminNav}
-        title="Мониторинг API"
-        subtitle="Статус интеграций операторов"
-      >
+function AdminApiMonitoringPage() {
+  const { allowed } = useRequireAuth(["PLATFORM_ADMIN", "PLATFORM_MANAGER"]);
+  const { user } = useAuth();
+  const nav = useAdminNav();
+  const state = usePlatformStore();
+  const [busyId, setBusyId] = useState<string | null>(null);
+  if (!allowed || !user) return null;
+
+  const runSync = async (organizationId: string) => {
+    setBusyId(organizationId);
+    try {
+      const adapter = getAdapterForOrg(organizationId);
+      const test = await adapter.testConnection();
+      if (!test.ok) {
+        toast.error(test.message);
+        return;
+      }
+      const log = await adapter.sync();
+      appendAudit({
+        actorId: user.id,
+        action: "api_sync",
+        entityType: "api_connection",
+        entityId: organizationId,
+        meta: { status: log.status },
+      });
+      toast[log.status === "success" ? "success" : "error"](log.message);
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  return (
+    <DashShell
+      brand="Voyago Админ"
+      items={nav}
+      title="Мониторинг API"
+      subtitle="Статус интеграций операторов"
+    >
+      {state.apiConnections.length === 0 ? (
+        <EmptyState
+          title="Нет подключений"
+          description="Операторы ещё не настроили API"
+        />
+      ) : (
         <div className="surface-card overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Оператор</TableHead>
                 <TableHead>Статус</TableHead>
-                <TableHead>Последняя синхронизация</TableHead>
+                <TableHead>Синхронизация</TableHead>
                 <TableHead>Ошибка</TableHead>
+                <TableHead></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {state.apiConnections.map((c) => {
-                const org = state.organizations.find((o) => o.id === c.organizationId);
-                const mins = c.lastSyncAt
-                  ? Math.round((Date.now() - new Date(c.lastSyncAt).getTime()) / 60000)
-                  : null;
-                return (
-                  <TableRow key={c.id}>
-                    <TableCell>{org?.name ?? c.organizationId}</TableCell>
-                    <TableCell>{connectionStatusLabel[c.status] ?? c.status}</TableCell>
-                    <TableCell>
-                      {mins !== null
-                        ? `Последняя успешная синхронизация: ${mins} мин назад`
-                        : "Ещё не было"}
-                    </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
-                      {c.lastError ?? "—"}
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-              {state.apiConnections.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={4} className="text-muted-foreground">
-                    Нет подключённых API
+              {state.apiConnections.map((c) => (
+                <TableRow
+                  key={c.id}
+                  className={c.status === "error" ? "bg-destructive/5" : undefined}
+                >
+                  <TableCell>
+                    <div className="font-medium">{orgName(c.organizationId)}</div>
+                    <div className="text-xs text-muted-foreground">{c.provider}</div>
+                  </TableCell>
+                  <TableCell>
+                    <StatusBadge
+                      label={connectionStatusLabel[c.status] ?? c.status}
+                      tone={toneForConnectionStatus(c.status)}
+                    />
+                  </TableCell>
+                  <TableCell>{formatRelativeRu(c.lastSyncAt)}</TableCell>
+                  <TableCell className="max-w-xs text-sm text-muted-foreground">
+                    {c.lastError ?? "—"}
+                  </TableCell>
+                  <TableCell>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={busyId === c.organizationId}
+                      onClick={() => runSync(c.organizationId)}
+                    >
+                      {busyId === c.organizationId ? "Синхронизация…" : "Перезапустить"}
+                    </Button>
                   </TableCell>
                 </TableRow>
-              ) : null}
+              ))}
             </TableBody>
           </Table>
         </div>
+      )}
 
-        <div className="surface-card mt-6 p-6">
-          <h2 className="font-display text-lg font-semibold">Недавние логи синхронизации</h2>
+      <div className="surface-card mt-6 p-6">
+        <h2 className="font-display text-lg font-semibold">Недавние логи</h2>
+        {state.syncLogs.length === 0 ? (
+          <p className="mt-4 text-sm text-muted-foreground">Логов пока нет</p>
+        ) : (
           <ul className="mt-4 space-y-2 text-sm">
             {state.syncLogs.slice(0, 20).map((l) => (
-              <li key={l.id}>
-                {syncStatusLabel[l.status] ?? l.status} · {l.message} ·{" "}
+              <li
+                key={l.id}
+                className={
+                  l.status === "error"
+                    ? "rounded-xl bg-destructive/10 px-3 py-2"
+                    : "rounded-xl bg-secondary/60 px-3 py-2"
+                }
+              >
+                <StatusBadge
+                  label={syncStatusLabel[l.status] ?? l.status}
+                  tone={l.status === "error" ? "danger" : l.status === "success" ? "success" : "warning"}
+                  className="mr-2"
+                />
+                {orgName(l.organizationId)} · {l.message} ·{" "}
                 {new Date(l.createdAt).toLocaleString("ru-RU")}
               </li>
             ))}
-            {state.syncLogs.length === 0 ? (
-              <li className="text-muted-foreground">Логов пока нет</li>
-            ) : null}
           </ul>
-        </div>
-      </DashShell>
-    );
-  },
-});
+        )}
+      </div>
+    </DashShell>
+  );
+}
