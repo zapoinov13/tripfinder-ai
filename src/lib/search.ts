@@ -1,13 +1,17 @@
-import {
-  destinations,
-  getHotel,
-  tours,
-  type Tour,
-} from "@/data/demo";
+import { destinations, getHotel, tours, type Tour } from "@/data/demo";
 
 export const originCities = ["Алматы", "Астана", "Шымкент", "Актау", "Атырау", "Караганда"];
 
-export type SortKey = "recommended" | "price-asc" | "price-desc" | "rating" | "popular" | "new";
+export type SortKey =
+  | "recommended"
+  | "price-asc"
+  | "price-desc"
+  | "match"
+  | "rating"
+  | "popular"
+  | "new"
+  | "premium"
+  | "hot";
 
 export type SearchParams = {
   from: string;
@@ -15,6 +19,7 @@ export type SearchParams = {
   city: string; // resort/city name or ""
   dateStart: string; // ISO or ""
   dateEnd: string;
+  flexibleDates?: boolean;
   adults: number;
   children: number;
   childAges: number[];
@@ -48,6 +53,7 @@ export const validateSearchParams = (search: Record<string, unknown>): SearchPar
   city: typeof search["city"] === "string" ? search["city"] : "",
   dateStart: typeof search["dateStart"] === "string" ? search["dateStart"] : "",
   dateEnd: typeof search["dateEnd"] === "string" ? search["dateEnd"] : "",
+  flexibleDates: search["flexibleDates"] === false || search["flexibleDates"] === "false" ? false : true,
   adults: Math.max(1, Math.min(9, toNum(search["adults"], 2))),
   children: Math.max(0, Math.min(6, toNum(search["children"], 0))),
   childAges: toArray(search["childAges"]).map((a) => toNum(a, 7)),
@@ -55,7 +61,9 @@ export const validateSearchParams = (search: Record<string, unknown>): SearchPar
   priceMax: toNum(search["priceMax"], PRICE_MAX),
   meals: toArray(search["meals"]),
   nights: toArray(search["nights"]),
-  stars: toArray(search["stars"]).map((s) => toNum(s, 0)).filter(Boolean),
+  stars: toArray(search["stars"])
+    .map((s) => toNum(s, 0))
+    .filter(Boolean),
   amenities: toArray(search["amenities"]),
   rating: toNum(search["rating"], 0),
   offers: toArray(search["offers"]),
@@ -86,9 +94,11 @@ export function filterTours(params: SearchParams, source: Tour[] = tours): Tour[
     if (params.rating && hotel.rating < params.rating) return false;
     if (params.offers.length && !params.offers.some((o) => tour.tags.includes(o as never)))
       return false;
-    // ±7 дней гибкости по датам вылета
-    if (params.dateStart && tour.departure < shiftDays(params.dateStart, -7)) return false;
-    if (params.dateEnd && tour.departure > shiftDays(params.dateEnd, 7)) return false;
+    // ±7 дней гибкости по датам вылета (если flexibleDates; иначе почти точные ±1)
+    const flex = (params as SearchParams & { flexibleDates?: boolean }).flexibleDates !== false;
+    const window = flex ? 7 : 1;
+    if (params.dateStart && tour.departure < shiftDays(params.dateStart, -window)) return false;
+    if (params.dateEnd && tour.departure > shiftDays(params.dateEnd, window)) return false;
     return true;
   });
 }
@@ -112,15 +122,45 @@ export function sortTours(list: Tour[], sort: SortKey): Tour[] {
       return out.sort((a, b) => b.bookings - a.bookings);
     case "new":
       return out.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    case "premium":
+      return out.sort(
+        (a, b) => Number(b.tags.includes("premium")) - Number(a.tags.includes("premium")),
+      );
+    case "hot":
+      return out.sort((a, b) => Number(b.tags.includes("hot")) - Number(a.tags.includes("hot")));
+    case "match":
+      return out.sort((a, b) => rankingScore(b) - rankingScore(a));
     default:
-      return out.sort((a, b) => {
-        const score = (t: Tour) =>
-          (t.tags.includes("sponsored") ? 3 : 0) +
-          (t.tags.includes("best") ? 2 : 0) +
-          getHotel(t.hotelId).rating / 10;
-        return score(b) - score(a);
-      });
+      return out.sort((a, b) => rankingScore(b) - rankingScore(a));
   }
+}
+
+export function rankingScore(t: Tour) {
+  const hotel = getHotel(t.hotelId);
+  const relevanceScore = t.tags.includes("best") ? 24 : 12;
+  const priceScore = Math.max(0, 22 - t.price / 180000);
+  const qualityScore = hotel.stars * 3;
+  const ratingScore = hotel.rating * 3;
+  const availabilityScore = t.transfer ? 6 : 3;
+  const conversionScore = Math.min(10, t.bookings / 4);
+  const freshnessScore = Math.max(
+    0,
+    8 - (Date.now() - new Date(t.createdAt).getTime()) / 86400000 / 45,
+  );
+  const sponsoredScore = t.tags.includes("sponsored") ? 4 : 0;
+  const premiumScore = t.tags.includes("premium") ? 5 : 0;
+
+  return (
+    relevanceScore +
+    priceScore +
+    qualityScore +
+    ratingScore +
+    availabilityScore +
+    conversionScore +
+    freshnessScore +
+    sponsoredScore +
+    premiumScore
+  );
 }
 
 export const destinationLabel = (id: string) => {
@@ -146,7 +186,7 @@ export const guestsSummary = (adults: number, children: number) =>
 export const toSearchLink = (p: Partial<SearchParams>) => {
   const out: Record<string, string> = {};
   Object.entries(p).forEach(([k, v]) => {
-    if (v === undefined || v === null || v === "" ) return;
+    if (v === undefined || v === null || v === "") return;
     if (Array.isArray(v)) {
       if (v.length) out[k] = v.join(",");
       return;

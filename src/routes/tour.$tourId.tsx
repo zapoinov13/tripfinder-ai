@@ -1,6 +1,7 @@
-import { Link, createFileRoute, notFound } from "@tanstack/react-router";
+import { Link, createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
 import {
   Bath,
+  Bell,
   Bus,
   CheckCircle2,
   Heart,
@@ -8,13 +9,14 @@ import {
   MessageSquare,
   Plane,
   Scale,
+  Share2,
   Sparkles,
   Star,
   UtensilsCrossed,
   Waves,
   Wifi,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { SiteLayout } from "@/components/site/site-layout";
 import { Button } from "@/components/ui/button";
@@ -38,8 +40,14 @@ import {
   type Hotel,
   type Tour,
 } from "@/data/demo";
+import { useAuth } from "@/lib/platform/auth";
+import { aiExplanationService } from "@/lib/platform/ai-services";
+import { createBookingFlow } from "@/lib/platform/booking";
+import { trackEvent } from "@/lib/platform/catalog";
 import { useTourState } from "@/lib/tour-state";
 import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export const Route = createFileRoute("/tour/$tourId")({
   loader: ({ params }) => {
@@ -79,29 +87,101 @@ const amenityIconMap: Record<string, typeof Wifi> = {
 };
 
 function buildAiReasons(tour: Tour, hotel: Hotel) {
-  const reasons: string[] = [];
-  if (tour.price <= 1500000) reasons.push("Подходит под средний бюджет туристов из Казахстана");
-  if (tour.mealCode === "AI" || tour.mealCode === "UAI") reasons.push(`Питание ${tour.meal}`);
-  if (hotel.beachLine === 1) reasons.push("Первая линия у моря");
-  if (hotel.distanceToSea <= 150) reasons.push(`Всего ${hotel.distanceToSea} м до пляжа`);
-  if (hotel.amenities.includes("Kids Club") || tour.children > 0)
-    reasons.push("Подходит для отдыха с детьми");
-  if (hotel.amenities.includes("Spa")) reasons.push("Spa-центр на территории");
-  if (hotel.rating >= 9) reasons.push(`Рейтинг ${hotel.rating.toFixed(1)} — превосходно`);
-  else reasons.push(`Рейтинг ${hotel.rating.toFixed(1)} по отзывам гостей`);
-  if (tour.transfer) reasons.push("Трансфер включён в стоимость");
-  if (tour.tags.includes("hot")) reasons.push("Горящая цена — дешевле обычной");
-  if (tour.nights <= 7) reasons.push(`Короткая поездка на ${nightsLabel(tour.nights)}`);
-  return reasons.slice(0, 6);
+  return aiExplanationService.explain(tour, hotel);
+}
+
+function buildPriceBreakdown(tour: Tour) {
+  const flight = Math.round((tour.price * 0.28) / 1000) * 1000;
+  const stay = Math.round((tour.price * 0.48) / 1000) * 1000;
+  const meal = Math.round((tour.price * 0.12) / 1000) * 1000;
+  const transfer = tour.transfer ? Math.round((tour.price * 0.04) / 1000) * 1000 : 0;
+  const extras = Math.max(0, tour.price - flight - stay - meal - transfer);
+  const discount = tour.oldPrice ? tour.oldPrice - tour.price : 0;
+
+  return [
+    ["Авиаперелёт", flight],
+    ["Проживание", stay],
+    ["Питание", meal],
+    ["Трансфер", transfer],
+    ["Дополнительные услуги", extras],
+    ...(discount > 0 ? [["Скидка", -discount] as [string, number]] : []),
+    ...(tour.premiumPrice ? [["Premium price", tour.premiumPrice] as [string, number]] : []),
+  ] as Array<[string, number]>;
 }
 
 function TourPage() {
   const { tour, hotel, operator } = Route.useLoaderData();
-  const { isFavorite, toggleFavorite, isCompared, toggleCompare } = useTourState();
+  const navigate = useNavigate();
+  const { user, isAuthenticated, isPremium } = useAuth();
+  const {
+    isFavorite,
+    toggleFavorite,
+    isCompared,
+    toggleCompare,
+    getPriceAlert,
+    upsertPriceAlert,
+    removePriceAlert,
+  } = useTourState();
   const [bookingOpen, setBookingOpen] = useState(false);
+  const [alertOpen, setAlertOpen] = useState(false);
+  const [bookingStep, setBookingStep] = useState<"form" | "loading" | "done">("form");
+  const [passengerName, setPassengerName] = useState("");
+  const [bookingError, setBookingError] = useState("");
+  const [confirmedId, setConfirmedId] = useState("");
   const fav = isFavorite(tour.id);
   const compared = isCompared(tour.id);
+  const priceAlert = getPriceAlert(tour.id);
   const aiReasons = buildAiReasons(tour, hotel);
+  const targetPrice = Math.round((tour.price * 0.9) / 1000) * 1000;
+  const priceBreakdown = buildPriceBreakdown(tour);
+  const isPremiumDeal = tour.tags.includes("premium") && Boolean(tour.premiumPrice);
+  const displayPrice =
+    isPremiumDeal && isPremium && tour.premiumPrice ? tour.premiumPrice : tour.price;
+
+  useEffect(() => {
+    trackEvent("TOUR_VIEWED", user?.id, { tourId: tour.id });
+  }, [tour.id, user?.id]);
+
+  const shareTour = async () => {
+    const url = typeof window !== "undefined" ? window.location.href : "";
+    if (navigator.share) {
+      await navigator.share({ title: hotel.name, text: `${hotel.name} — ${formatPrice(displayPrice)}`, url });
+      return;
+    }
+    await navigator.clipboard?.writeText(url);
+  };
+
+  const startBooking = async () => {
+    if (!isAuthenticated || !user) {
+      navigate({ to: "/login" });
+      return;
+    }
+    const [firstName, ...rest] = passengerName.trim().split(/\s+/);
+    if (!firstName) {
+      setBookingError("Укажите имя пассажира");
+      return;
+    }
+    setBookingStep("loading");
+    setBookingError("");
+    try {
+      const booking = await createBookingFlow({
+        userId: user.id,
+        tourId: tour.id,
+        passengers: [
+          {
+            firstName,
+            lastName: rest.join(" ") || "—",
+            type: "adult",
+          },
+        ],
+      });
+      setConfirmedId(booking.id);
+      setBookingStep("done");
+    } catch (e) {
+      setBookingStep("form");
+      setBookingError(e instanceof Error ? e.message : "Ошибка бронирования");
+    }
+  };
 
   return (
     <SiteLayout>
@@ -230,6 +310,25 @@ function TourPage() {
                 Спросить AI
               </Button>
             </section>
+
+            <section className="surface-card p-6 md:p-8">
+              <h2 className="font-display text-xl font-semibold">Price breakdown</h2>
+              <div className="mt-4 space-y-3">
+                {priceBreakdown.map(([label, value]) => (
+                  <div key={label} className="flex justify-between gap-4 text-sm">
+                    <span className="text-muted-foreground">{label}</span>
+                    <span className={cn("font-medium", value < 0 && "text-success")}>
+                      {value < 0 ? "−" : ""}
+                      {formatPrice(Math.abs(value))}
+                    </span>
+                  </div>
+                ))}
+                <div className="flex justify-between gap-4 border-t border-border pt-4 font-display text-lg font-semibold">
+                  <span>Итого</span>
+                  <span>{formatPrice(tour.price)}</span>
+                </div>
+              </div>
+            </section>
           </div>
 
           <aside>
@@ -267,11 +366,29 @@ function TourPage() {
 
               <div className="mt-6 border-t border-border pt-6">
                 <div className="text-sm text-muted-foreground">Цена за тур</div>
-                <div className="font-display text-3xl font-semibold">{formatPrice(tour.price)}</div>
+                {isPremiumDeal && !isPremium ? (
+                  <>
+                    <div className="font-display text-3xl font-semibold">Premium Deal</div>
+                    <Button className="mt-3 w-full" asChild>
+                      <Link to="/premium">Открыть Premium</Link>
+                    </Button>
+                  </>
+                ) : (
+                  <div className="font-display text-3xl font-semibold">
+                    {formatPrice(displayPrice)}
+                  </div>
+                )}
                 <div className="mt-1 text-xs text-muted-foreground">от {operator.name}</div>
               </div>
 
-              <Button size="lg" className="mt-6 w-full" onClick={() => setBookingOpen(true)}>
+              <Button
+                size="lg"
+                className="mt-6 w-full"
+                onClick={() => {
+                  setBookingOpen(true);
+                  setBookingStep("form");
+                }}
+              >
                 Забронировать
               </Button>
               <div className="mt-3 grid grid-cols-2 gap-2">
@@ -292,8 +409,23 @@ function TourPage() {
                   {compared ? "В сравнении" : "Сравнить"}
                 </Button>
               </div>
+              <Button variant="outline" size="sm" className="mt-2 w-full" onClick={shareTour}>
+                <Share2 className="size-4" />
+                Поделиться
+              </Button>
               <Button variant="ghost" size="sm" className="mt-2 w-full" asChild>
                 <Link to="/compare">Перейти к сравнению</Link>
+              </Button>
+              <Button
+                variant={priceAlert ? "secondary" : "outline"}
+                size="sm"
+                className="mt-2 w-full"
+                onClick={() => setAlertOpen(true)}
+              >
+                <Bell className="size-4" />
+                {priceAlert
+                  ? `Alert до ${formatPrice(priceAlert.targetPrice)}`
+                  : "Сообщить о снижении цены"}
               </Button>
             </div>
           </aside>
@@ -324,12 +456,21 @@ function TourPage() {
         </div>
       </div>
 
-      <Dialog open={bookingOpen} onOpenChange={setBookingOpen}>
+      <Dialog
+        open={bookingOpen}
+        onOpenChange={(open) => {
+          setBookingOpen(open);
+          if (!open) {
+            setBookingStep("form");
+            setBookingError("");
+          }
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="font-display">Бронирование</DialogTitle>
             <DialogDescription>
-              Бронирование будет доступно после подключения оператора.
+              Перед оплатой проверяем цену и наличие через API оператора.
             </DialogDescription>
           </DialogHeader>
           <div className="rounded-2xl bg-secondary p-4 text-sm">
@@ -337,10 +478,87 @@ function TourPage() {
             <div className="mt-1 text-muted-foreground">
               {tour.dateStart} – {tour.dateEnd} · {nightsLabel(tour.nights)} · {tour.meal}
             </div>
-            <div className="mt-2 font-display text-xl font-semibold">{formatPrice(tour.price)}</div>
+            <div className="mt-2 font-display text-xl font-semibold">
+              {formatPrice(displayPrice)}
+            </div>
             <div className="text-xs text-muted-foreground">от {operator.name}</div>
           </div>
-          <Button onClick={() => setBookingOpen(false)}>Понятно</Button>
+          {bookingStep === "form" ? (
+            <div className="space-y-3">
+              <div className="space-y-2">
+                <Label htmlFor="passenger">Пассажир (ФИО)</Label>
+                <Input
+                  id="passenger"
+                  placeholder="Айгерим Касымова"
+                  value={passengerName}
+                  onChange={(e) => setPassengerName(e.target.value)}
+                />
+              </div>
+              {bookingError ? <p className="text-sm text-destructive">{bookingError}</p> : null}
+              <Button onClick={startBooking} className="w-full">
+                Проверить и оплатить
+              </Button>
+            </div>
+          ) : null}
+          {bookingStep === "loading" ? (
+            <p className="text-sm text-muted-foreground">
+              Проверяем цену и наличие… Сравниваем предложения операторов…
+            </p>
+          ) : null}
+          {bookingStep === "done" ? (
+            <div className="space-y-3">
+              <p className="text-sm text-success">Бронирование {confirmedId} подтверждено.</p>
+              <Button asChild className="w-full">
+                <Link to="/profile/trips">Мои поездки</Link>
+              </Button>
+            </div>
+          ) : null}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={alertOpen} onOpenChange={setAlertOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="font-display">Price alert</DialogTitle>
+            <DialogDescription>
+              Сообщим, если цена на этот тур опустится ниже выбранного порога.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="rounded-2xl bg-secondary p-4 text-sm">
+            <div className="font-semibold">{hotel.name}</div>
+            <div className="mt-1 text-muted-foreground">
+              Текущая цена: {formatPrice(tour.price)}
+            </div>
+            <div className="mt-2 font-display text-xl font-semibold">
+              Порог: {formatPrice(priceAlert?.targetPrice ?? targetPrice)}
+            </div>
+          </div>
+          <div className="grid gap-2 sm:grid-cols-2">
+            <Button
+              onClick={() => {
+                upsertPriceAlert({
+                  tourId: tour.id,
+                  currentPrice: tour.price,
+                  targetPrice: priceAlert?.targetPrice ?? targetPrice,
+                });
+                setAlertOpen(false);
+              }}
+            >
+              <Bell className="size-4" />
+              Сохранить alert
+            </Button>
+            {priceAlert ? (
+              <Button
+                variant="outline"
+                onClick={() => {
+                  removePriceAlert(tour.id);
+                  setAlertOpen(false);
+                }}
+              >
+                Удалить
+              </Button>
+            ) : null}
+          </div>
         </DialogContent>
       </Dialog>
     </SiteLayout>

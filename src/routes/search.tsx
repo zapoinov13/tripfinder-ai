@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { SearchX, SlidersHorizontal } from "lucide-react";
+import { SearchX, SlidersHorizontal, Sparkles } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 import { SiteLayout } from "@/components/site/site-layout";
@@ -8,18 +8,25 @@ import { TourCardSkeleton } from "@/components/tours/tour-card-skeleton";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Slider } from "@/components/ui/slider";
+import { Textarea } from "@/components/ui/textarea";
 import { AMENITIES, amenityLabels, destinations, formatPrice, mealOptions } from "@/data/demo";
+import { useAuth } from "@/lib/platform/auth";
+import { searchService } from "@/lib/platform/search-service";
 import {
-  filterTours,
   formatSearchDates,
   guestsSummary,
   PRICE_MAX,
   PRICE_MIN,
-  sortTours,
   validateSearchParams,
   type SearchParams,
   type SortKey,
@@ -32,7 +39,8 @@ export const Route = createFileRoute("/search")({
       { title: "Поиск туров — сравните предложения операторов | Voyago" },
       {
         name: "description",
-        content: "Туры от проверенных операторов: фильтры по цене, питанию, отелю, рейтингу и удобствам.",
+        content:
+          "Туры от проверенных операторов: фильтры по цене, питанию, отелю, рейтингу и удобствам.",
       },
       { property: "og:title", content: "Поиск туров — Voyago" },
       { property: "og:description", content: "Сравните туры от разных операторов в одном месте." },
@@ -99,9 +107,7 @@ function Filters({ params, update }: { params: SearchParams; update: Update }) {
 
   const toggle = (key: keyof SearchParams, value: string | number) => {
     const current = params[key] as Array<string | number>;
-    const next = current.includes(value)
-      ? current.filter((v) => v !== value)
-      : [...current, value];
+    const next = current.includes(value) ? current.filter((v) => v !== value) : [...current, value];
     update({ [key]: next } as Partial<SearchParams>);
   };
 
@@ -116,7 +122,9 @@ function Filters({ params, update }: { params: SearchParams; update: Update }) {
           step={50000}
           value={price}
           onValueChange={(v) => setPrice([v[0] ?? PRICE_MIN, v[1] ?? PRICE_MAX])}
-          onValueCommit={(v) => update({ priceMin: v[0] ?? PRICE_MIN, priceMax: v[1] ?? PRICE_MAX })}
+          onValueCommit={(v) =>
+            update({ priceMin: v[0] ?? PRICE_MIN, priceMax: v[1] ?? PRICE_MAX })
+          }
         />
         <div className="mt-3 flex justify-between text-xs text-muted-foreground">
           <span>{formatPrice(price[0])}</span>
@@ -198,6 +206,20 @@ function Filters({ params, update }: { params: SearchParams; update: Update }) {
         selected={params.offers}
         onToggle={(v) => toggle("offers", v)}
       />
+
+      <div>
+        <Separator className="mb-6" />
+        <div className="flex items-center gap-3">
+          <Checkbox
+            id="flexible-dates"
+            checked={params.flexibleDates !== false}
+            onCheckedChange={(v) => update({ flexibleDates: v === true })}
+          />
+          <Label htmlFor="flexible-dates" className="text-sm font-normal">
+            Гибкие даты (±7 дней)
+          </Label>
+        </div>
+      </div>
     </div>
   );
 }
@@ -205,15 +227,24 @@ function Filters({ params, update }: { params: SearchParams; update: Update }) {
 function SearchPage() {
   const params = Route.useSearch();
   const navigate = useNavigate({ from: "/search" });
+  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
+  const [refinement, setRefinement] = useState("");
 
   const update: Update = (patch) => {
     navigate({ search: ((prev: SearchParams) => ({ ...prev, ...patch })) as never });
   };
 
-  const results = useMemo(() => sortTours(filterTours(params), params.sort), [params]);
+  const results = useMemo(
+    () => searchService.search(params as Record<string, unknown>, user?.id),
+    [params, user?.id],
+  );
   const cheapest = useMemo(
-    () => results.reduce<number | null>((min, t) => (min === null || t.price < min ? t.price : min), null),
+    () =>
+      results.reduce<number | null>(
+        (min, t) => (min === null || t.price < min ? t.price : min),
+        null,
+      ),
     [results],
   );
 
@@ -224,7 +255,8 @@ function SearchPage() {
   }, [params]);
 
   const routeLabel = `${params.from || "Любой город"} → ${
-    params.city || (params.destination ? destinations.find((d) => d.id === params.destination)?.country : "") ||
+    params.city ||
+    (params.destination ? destinations.find((d) => d.id === params.destination)?.country : "") ||
     "Все направления"
   }`;
 
@@ -245,12 +277,28 @@ function SearchPage() {
       } as never,
     });
 
+  const applyRefinement = () => {
+    const text = refinement.toLowerCase();
+    const patch: Partial<SearchParams> = {};
+    if (/дешев/.test(text)) patch.priceMax = Math.max(PRICE_MIN, Math.round(params.priceMax * 0.85));
+    if (/5\s*зв|пять зв/.test(text)) patch.stars = [5];
+    if (/рейтинг|отзыв/.test(text)) patch.sort = "rating";
+    if (/премиум|premium/.test(text)) patch.offers = Array.from(new Set([...params.offers, "premium"]));
+    if (/горящ/.test(text)) patch.offers = Array.from(new Set([...params.offers, "hot"]));
+    if (/центр|инфраструкт/.test(text)) patch.amenities = Array.from(new Set([...params.amenities, "Wi-Fi"]));
+    if (/2\s*(?:дня|дней|ночи|ночей)\s*(?:дольше|больше)/.test(text)) patch.nights = ["8-14"];
+    if (Object.keys(patch).length > 0) update(patch);
+    setRefinement("");
+  };
+
   return (
     <SiteLayout>
       <div className="container-page py-8">
         <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4">
           <div className="min-w-0">
-            <h1 className="truncate font-display text-2xl font-semibold md:text-3xl">{routeLabel}</h1>
+            <h1 className="truncate font-display text-2xl font-semibold md:text-3xl">
+              {routeLabel}
+            </h1>
             <div className="mt-2 flex flex-wrap gap-2">
               {chips.map((chip) => (
                 <span
@@ -299,6 +347,26 @@ function SearchPage() {
           </aside>
 
           <div>
+            <div className="gradient-ai mb-5 rounded-3xl p-5">
+              <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
+                <div>
+                  <h2 className="flex items-center gap-2 font-display text-lg font-semibold text-primary-foreground">
+                    <Sparkles className="size-5" />
+                    Уточнить AI-поиск
+                  </h2>
+                  <Textarea
+                    value={refinement}
+                    onChange={(e) => setRefinement(e.target.value)}
+                    placeholder="Например: покажи дешевле, только 5 звёзд, ближе к центру или с лучшими отзывами"
+                    className="mt-3 min-h-20 border-primary-foreground/20 bg-primary-foreground/10 text-primary-foreground placeholder:text-primary-foreground/65"
+                  />
+                </div>
+                <Button variant="secondary" onClick={applyRefinement} disabled={!refinement.trim()}>
+                  Применить
+                </Button>
+              </div>
+            </div>
+
             <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4">
               <p className="truncate text-sm font-medium text-muted-foreground">
                 Найдено {results.length} туров
@@ -311,9 +379,12 @@ function SearchPage() {
                   <SelectItem value="recommended">Рекомендуемые</SelectItem>
                   <SelectItem value="price-asc">Цена: сначала дешёвые</SelectItem>
                   <SelectItem value="price-desc">Цена: сначала дорогие</SelectItem>
+                  <SelectItem value="match">Лучшее совпадение</SelectItem>
                   <SelectItem value="rating">Рейтинг</SelectItem>
                   <SelectItem value="popular">Популярные</SelectItem>
                   <SelectItem value="new">Новые</SelectItem>
+                  <SelectItem value="premium">Premium Deals</SelectItem>
+                  <SelectItem value="hot">Горящие</SelectItem>
                 </SelectContent>
               </Select>
             </div>

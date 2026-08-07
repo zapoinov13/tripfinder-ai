@@ -1,5 +1,6 @@
 import {
   BarChart3,
+  Bell,
   Building,
   Cable,
   CreditCard,
@@ -12,6 +13,7 @@ import {
   Receipt,
   Scale,
   Settings,
+  ShieldCheck,
   Sparkles,
   Ticket,
   User,
@@ -21,7 +23,7 @@ import {
 import type { DashItem } from "./dash-shell";
 
 export const operatorNav: DashItem[] = [
-  { label: "Dashboard", to: "/operator", icon: LayoutDashboard },
+  { label: "Обзор", to: "/operator", icon: LayoutDashboard },
   { label: "Мои туры", to: "/operator/tours", icon: Luggage },
   { label: "Бронирования", to: "/operator/bookings", icon: Ticket },
   { label: "Продвижение", to: "/operator/promotion", icon: Megaphone },
@@ -33,16 +35,18 @@ export const operatorNav: DashItem[] = [
 ];
 
 export const adminNav: DashItem[] = [
-  { label: "Dashboard", to: "/admin", icon: Gauge },
-  { label: "Users", to: "/admin/users", icon: Users },
-  { label: "Operators", to: "/admin/operators", icon: Building },
-  { label: "Tours", to: "/admin/tours", icon: Luggage },
-  { label: "Bookings", to: "/admin/bookings", icon: Ticket },
-  { label: "Payments", to: "/admin/payments", icon: Receipt },
+  { label: "Обзор", to: "/admin", icon: Gauge },
+  { label: "Пользователи", to: "/admin/users", icon: Users },
+  { label: "Операторы", to: "/admin/operators", icon: Building },
+  { label: "Туры", to: "/admin/tours", icon: Luggage },
+  { label: "Бронирования", to: "/admin/bookings", icon: Ticket },
+  { label: "Платежи", to: "/admin/payments", icon: Receipt },
   { label: "Premium", to: "/admin/premium", icon: Gem },
-  { label: "Promotions", to: "/admin/promotions", icon: Megaphone },
-  { label: "Analytics", to: "/admin/analytics", icon: BarChart3 },
-  { label: "Settings", to: "/admin/settings", icon: Settings },
+  { label: "Продвижение", to: "/admin/promotions", icon: Megaphone },
+  { label: "Мониторинг API", to: "/admin/api-monitoring", icon: Cable },
+  { label: "Журнал аудита", to: "/admin/audit-logs", icon: ShieldCheck },
+  { label: "Аналитика", to: "/admin/analytics", icon: BarChart3 },
+  { label: "Настройки", to: "/admin/settings", icon: Settings },
 ];
 
 export const profileNav: DashItem[] = [
@@ -51,7 +55,7 @@ export const profileNav: DashItem[] = [
   { label: "Избранное", to: "/profile/favorites", icon: Heart },
   { label: "Сравнение", to: "/compare", icon: Scale },
   { label: "AI-поиски", to: "/profile/ai", icon: Sparkles },
-  { label: "Уведомления", to: "/profile/notifications", icon: Megaphone },
+  { label: "Уведомления", to: "/notifications", icon: Bell },
   { label: "Premium", to: "/premium", icon: Gem },
   { label: "Настройки", to: "/profile/settings", icon: Settings },
 ];

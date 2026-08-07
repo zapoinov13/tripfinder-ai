@@ -42,7 +42,9 @@ function FavoritesPage() {
               Нажмите ♡ на карточке тура, чтобы вернуться к нему позже.
             </p>
             <Button className="mt-6" asChild>
-              <Link to="/search">Найти туры</Link>
+              <Link to="/search" search={{} as never}>
+Найти туры
+              </Link>
             </Button>
           </div>
         ) : (

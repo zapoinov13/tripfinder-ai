@@ -240,7 +240,7 @@ function Index() {
               бюджет.
             </p>
             <Button size="lg" variant="secondary" className="mt-7" asChild>
-              <Link to="/search">
+              <Link to="/ai-search">
                 <Sparkles className="size-4" />
                 Найти с AI
               </Link>

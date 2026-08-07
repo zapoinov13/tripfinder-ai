@@ -2,15 +2,8 @@ import { Link } from "@tanstack/react-router";
 import { Heart, MessageSquare, Plane, Scale, Star, UtensilsCrossed, Users } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import {
-  formatPrice,
-  formatNumber,
-  getHotel,
-  getOperator,
-  guestsLabel,
-  nightsLabel,
-  type Tour,
-} from "@/data/demo";
+import { formatPrice, formatNumber, getHotel, getOperator, guestsLabel, nightsLabel, type Tour } from "@/data/demo";
+import { useAuth } from "@/lib/platform/auth";
 import { useTourState } from "@/lib/tour-state";
 import { cn } from "@/lib/utils";
 
@@ -48,8 +41,12 @@ export function TourCard({
   const hotel = getHotel(tour.hotelId);
   const operator = getOperator(tour.operatorId);
   const { isFavorite, toggleFavorite, isCompared, toggleCompare } = useTourState();
+  const { isPremium } = useAuth();
   const fav = isFavorite(tour.id);
   const compared = isCompared(tour.id);
+  const isPremiumDeal = tour.tags.includes("premium") && Boolean(tour.premiumPrice);
+  const displayPrice =
+    isPremiumDeal && isPremium && tour.premiumPrice ? tour.premiumPrice : tour.price;
 
   return (
     <article
@@ -136,7 +133,16 @@ export function TourCard({
                 {formatPrice(tour.oldPrice)}
               </div>
             ) : null}
-            <div className="font-display text-2xl font-semibold">{formatPrice(tour.price)}</div>
+            {isPremiumDeal && !isPremium ? (
+              <>
+                <div className="font-display text-2xl font-semibold">Premium Deal</div>
+                <Button size="sm" className="pointer-events-auto mt-2" asChild>
+                  <Link to="/premium">Открыть Premium</Link>
+                </Button>
+              </>
+            ) : (
+              <div className="font-display text-2xl font-semibold">{formatPrice(displayPrice)}</div>
+            )}
             <div className="text-xs text-muted-foreground">от {operator.name}</div>
           </div>
           <div className="pointer-events-auto flex flex-wrap items-center gap-2">

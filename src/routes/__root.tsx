@@ -12,7 +12,10 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster } from "@/components/ui/sonner";
+import { AuthProvider } from "@/lib/platform/auth";
 import { TourStateProvider } from "@/lib/tour-state";
+import { hydrateCatalogFromSupabase } from "@/lib/supabase/hydrate";
+import { isSupabaseConfigured } from "@/lib/supabase/client";
 
 function NotFoundComponent() {
   return (
@@ -134,13 +137,27 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
+  useEffect(() => {
+    if (isSupabaseConfigured) {
+      void hydrateCatalogFromSupabase().then((res) => {
+        if (res.ok) {
+          console.info("[supabase] catalog hydrated", res);
+        } else {
+          console.warn("[supabase] catalog hydrate skipped", res.reason);
+        }
+      });
+    }
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
-      <TourStateProvider>
-        {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-        <Outlet />
-        <Toaster position="top-center" />
-      </TourStateProvider>
+      <AuthProvider>
+        <TourStateProvider>
+          {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+          <Outlet />
+          <Toaster position="top-center" />
+        </TourStateProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }

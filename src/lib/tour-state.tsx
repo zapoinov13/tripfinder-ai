@@ -1,89 +1,79 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { toast } from "sonner";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  type ReactNode,
+} from "react";
 
-const FAV_KEY = "voyago:favorites";
-const CMP_KEY = "voyago:compare";
-export const COMPARE_LIMIT = 4;
+import { usePlatformStore } from "@/lib/platform/hooks";
+import type { PriceAlert } from "@/lib/platform/types";
+import {
+  COMPARE_LIMIT,
+  clearCompare as clearCompareStore,
+  getCompare,
+  getFavorites,
+  getPriceAlerts,
+  removeCompare as removeCompareStore,
+  removePriceAlert as removePriceAlertStore,
+  toggleCompare as toggleCompareStore,
+  toggleFavorite as toggleFavoriteStore,
+  upsertPriceAlert as upsertPriceAlertStore,
+} from "@/lib/platform/user-data";
+
+export { COMPARE_LIMIT };
+export type { PriceAlert };
 
 type Ctx = {
   favorites: string[];
   compare: string[];
+  priceAlerts: PriceAlert[];
   isFavorite: (id: string) => boolean;
   toggleFavorite: (id: string) => void;
   isCompared: (id: string) => boolean;
   toggleCompare: (id: string) => void;
   removeCompare: (id: string) => void;
   clearCompare: () => void;
+  getPriceAlert: (tourId: string) => PriceAlert | undefined;
+  upsertPriceAlert: (
+    alert: Omit<PriceAlert, "id" | "userId" | "currency" | "status" | "createdAt">,
+  ) => void;
+  removePriceAlert: (tourId: string) => void;
 };
 
 const TourStateContext = createContext<Ctx | null>(null);
 
-const read = (key: string): string[] => {
-  try {
-    const raw = localStorage.getItem(key);
-    const parsed = raw ? JSON.parse(raw) : [];
-    return Array.isArray(parsed) ? parsed.filter((v) => typeof v === "string") : [];
-  } catch {
-    return [];
-  }
-};
-
 export function TourStateProvider({ children }: { children: ReactNode }) {
-  const [favorites, setFavorites] = useState<string[]>([]);
-  const [compare, setCompare] = useState<string[]>([]);
-  const [hydrated, setHydrated] = useState(false);
+  usePlatformStore();
 
-  useEffect(() => {
-    setFavorites(read(FAV_KEY));
-    setCompare(read(CMP_KEY));
-    setHydrated(true);
-  }, []);
-
-  useEffect(() => {
-    if (hydrated) localStorage.setItem(FAV_KEY, JSON.stringify(favorites));
-  }, [favorites, hydrated]);
-  useEffect(() => {
-    if (hydrated) localStorage.setItem(CMP_KEY, JSON.stringify(compare));
-  }, [compare, hydrated]);
+  const favorites = getFavorites();
+  const compare = getCompare();
+  const priceAlerts = getPriceAlerts();
 
   const toggleFavorite = useCallback((id: string) => {
-    setFavorites((prev) => {
-      if (prev.includes(id)) {
-        toast("Удалено из избранного");
-        return prev.filter((x) => x !== id);
-      }
-      toast.success("Добавлено в избранное");
-      return [...prev, id];
-    });
+    toggleFavoriteStore(id);
   }, []);
 
   const toggleCompare = useCallback((id: string) => {
-    setCompare((prev) => {
-      if (prev.includes(id)) {
-        toast("Убрано из сравнения");
-        return prev.filter((x) => x !== id);
-      }
-      if (prev.length >= COMPARE_LIMIT) {
-        toast.error("Можно сравнить максимум 4 тура.");
-        return prev;
-      }
-      toast.success("Добавлено к сравнению");
-      return [...prev, id];
-    });
+    toggleCompareStore(id);
   }, []);
 
   const value = useMemo<Ctx>(
     () => ({
       favorites,
       compare,
+      priceAlerts,
       isFavorite: (id) => favorites.includes(id),
       toggleFavorite,
       isCompared: (id) => compare.includes(id),
       toggleCompare,
-      removeCompare: (id) => setCompare((prev) => prev.filter((x) => x !== id)),
-      clearCompare: () => setCompare([]),
+      removeCompare: (id) => removeCompareStore(id),
+      clearCompare: () => clearCompareStore(),
+      getPriceAlert: (tourId) => priceAlerts.find((alert) => alert.tourId === tourId),
+      upsertPriceAlert: (alert) => upsertPriceAlertStore(alert),
+      removePriceAlert: (tourId) => removePriceAlertStore(tourId),
     }),
-    [favorites, compare, toggleFavorite, toggleCompare],
+    [favorites, compare, priceAlerts, toggleFavorite, toggleCompare],
   );
 
   return <TourStateContext.Provider value={value}>{children}</TourStateContext.Provider>;

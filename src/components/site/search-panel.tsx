@@ -22,7 +22,17 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
 import { destinations, formatPrice, mealOptions, resortsByDestination } from "@/data/demo";
+import {
+  buildAiChips,
+  parseTravelQuery,
+  parsedQueryToSearch,
+  type ParsedTravelQuery,
+} from "@/lib/ai-search";
+import { saveAiSearch } from "@/lib/platform/ai-services";
+import { searchService } from "@/lib/platform/search-service";
+import { getState } from "@/lib/platform/store";
 import { originCities, PRICE_MAX, PRICE_MIN, toSearchLink } from "@/lib/search";
+import { speechService } from "@/lib/speech-service";
 import { cn } from "@/lib/utils";
 
 type DestOption = { value: string; label: string; destination: string; city: string };
@@ -55,7 +65,9 @@ function FieldShell({
     <span className="flex w-full min-w-0 items-center gap-2.5 rounded-2xl border border-border bg-card px-3.5 py-3 text-left transition-colors hover:border-primary/40">
       <Icon className="size-4 shrink-0 text-muted-foreground" />
       <span className="min-w-0 flex-1">
-        <span className="block text-[11px] uppercase tracking-wide text-muted-foreground">{label}</span>
+        <span className="block text-[11px] uppercase tracking-wide text-muted-foreground">
+          {label}
+        </span>
         <span className="block truncate text-sm font-medium">{value}</span>
       </span>
     </span>
@@ -150,8 +162,8 @@ function Counter({
   );
 }
 
-export function SearchPanel() {
-  const [tab, setTab] = useState<"classic" | "ai">("classic");
+export function SearchPanel({ defaultTab = "classic" }: { defaultTab?: "classic" | "ai" }) {
+  const [tab, setTab] = useState<"classic" | "ai">(defaultTab);
   const [from, setFrom] = useState("Алматы");
   const [to, setTo] = useState("uae|Дубай");
   const [range, setRange] = useState<DateRange | undefined>({
@@ -163,6 +175,9 @@ export function SearchPanel() {
   const [childAges, setChildAges] = useState<number[]>([7, 10]);
   const [budget, setBudget] = useState<[number, number]>([PRICE_MIN, 2500000]);
   const [meals, setMeals] = useState<string[]>([]);
+  const [aiQuery, setAiQuery] = useState("");
+  const [parsedAi, setParsedAi] = useState<ParsedTravelQuery | null>(null);
+  const [recording, setRecording] = useState(false);
   const navigate = useNavigate();
 
   const goSearch = () => {
@@ -191,8 +206,42 @@ export function SearchPanel() {
       : dateFormatter.format(range.from)
     : "Выберите даты";
   const guestsLabelText =
-    children > 0 ? `${adults} взрослых + ${children} ${children === 1 ? "ребёнок" : "детей"}` : `${adults} взрослых`;
+    children > 0
+      ? `${adults} взрослых + ${children} ${children === 1 ? "ребёнок" : "детей"}`
+      : `${adults} взрослых`;
   const mealLabelText = meals.length ? meals.join(", ") : "Любое";
+
+  const parseAi = (query = aiQuery) => {
+    const parsed = parseTravelQuery(
+      query ||
+        "Хочу из Алматы в Дубай на 7 дней. Нас двое взрослых и ребёнок 5 лет. Бюджет до 1 200 000 ₸. Хотим хороший семейный отель рядом с морем и всё включено.",
+    );
+    setAiQuery(parsed.originalQuery);
+    setParsedAi(parsed);
+  };
+
+  const goAiSearch = () => {
+    const parsed = parsedAi ?? parseTravelQuery(aiQuery);
+    const userId = getState().session?.userId;
+    const results = searchService.search(parsedQueryToSearch(parsed));
+    if (userId) saveAiSearch(userId, parsed.originalQuery, parsed, results.length);
+    navigate({ to: "/search", search: parsedQueryToSearch(parsed) as never });
+  };
+
+  const runVoiceSearch = async () => {
+    setRecording(true);
+    try {
+      const transcript = await speechService.start();
+      setAiQuery(transcript.text);
+      parseAi(transcript.text);
+    } finally {
+      setRecording(false);
+    }
+  };
+
+  const patchParsedAi = (patch: Partial<ParsedTravelQuery>) => {
+    setParsedAi((prev) => (prev ? { ...prev, ...patch } : prev));
+  };
 
   return (
     <div className="surface-card overflow-hidden p-2 shadow-lift">
@@ -212,7 +261,9 @@ export function SearchPanel() {
           onClick={() => setTab("ai")}
           className={cn(
             "flex-1 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors",
-            tab === "ai" ? "gradient-ai text-primary-foreground shadow-card" : "text-muted-foreground",
+            tab === "ai"
+              ? "gradient-ai text-primary-foreground shadow-card"
+              : "text-muted-foreground",
           )}
         >
           ✨ Найти с AI
@@ -322,7 +373,9 @@ export function SearchPanel() {
                     type="button"
                     onClick={() =>
                       setMeals((prev) =>
-                        prev.includes(m.code) ? prev.filter((x) => x !== m.code) : [...prev, m.code],
+                        prev.includes(m.code)
+                          ? prev.filter((x) => x !== m.code)
+                          : [...prev, m.code],
                       )
                     }
                     className={cn(
@@ -358,23 +411,74 @@ export function SearchPanel() {
           <div className="relative rounded-2xl border border-ai/25 bg-ai/[0.04] p-3">
             <Textarea
               placeholder="Например: хочу из Алматы в Дубай на неделю с женой и двумя детьми. Бюджет до 1,5 млн ₸, всё включено, рядом с морем..."
+              value={aiQuery}
+              onChange={(e) => {
+                setAiQuery(e.target.value);
+                setParsedAi(null);
+              }}
               className="min-h-32 resize-none border-0 bg-transparent pr-12 text-base shadow-none focus-visible:ring-0"
             />
             <button
               type="button"
-              aria-label="Голосовой ввод"
-              className="absolute right-4 top-4 grid size-10 place-items-center rounded-full bg-card text-ai shadow-card"
+              aria-label={recording ? "Идёт запись" : "Голосовой ввод"}
+              onClick={runVoiceSearch}
+              className={cn(
+                "absolute right-4 top-4 grid size-10 place-items-center rounded-full bg-card text-ai shadow-card transition-colors",
+                recording && "bg-ai text-primary-foreground",
+              )}
             >
               <Mic className="size-4" />
             </button>
           </div>
+          {parsedAi ? (
+            <div className="mt-3 rounded-2xl border border-ai/20 bg-card p-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm font-semibold">Я правильно понял ваш запрос?</p>
+                </div>
+                <Button size="sm" variant="outline" onClick={() => parseAi(aiQuery)}>
+                  Обновить parsing
+                </Button>
+              </div>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {buildAiChips(parsedAi).map((chip) => (
+                  <button
+                    key={`${chip.label}-${chip.value}`}
+                    type="button"
+                    className="rounded-full bg-secondary px-3 py-1.5 text-xs font-medium transition-colors hover:bg-primary-soft hover:text-primary"
+                    onClick={() => {
+                      if (chip.key === "adults") {
+                        patchParsedAi({ adults: Math.min(9, parsedAi.adults + 1) });
+                      } else if (chip.key === "children") {
+                        const childrenNext = Math.min(6, parsedAi.children + 1);
+                        patchParsedAi({
+                          children: childrenNext,
+                          childAges: [...parsedAi.childAges, 7].slice(0, childrenNext),
+                        });
+                      } else if (chip.key === "budgetMax") {
+                        patchParsedAi({
+                          budgetMax: Math.max(PRICE_MIN, parsedAi.budgetMax - 100000),
+                        });
+                      } else if (chip.key === "duration") {
+                        patchParsedAi({ duration: parsedAi.duration + 1 });
+                      } else if (chip.key === "meals") {
+                        patchParsedAi({ meals: parsedAi.meals.includes("AI") ? ["UAI"] : ["AI"] });
+                      }
+                    }}
+                  >
+                    <span className="text-muted-foreground">{chip.label}:</span> {chip.value}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : null}
           <Button
             size="lg"
             className="gradient-ai mt-3 w-full rounded-2xl text-primary-foreground hover:opacity-90"
-            onClick={goSearch}
+            onClick={parsedAi ? goAiSearch : () => parseAi()}
           >
             <Sparkles className="size-4" />
-            Найти подходящий тур
+            {parsedAi ? "Показать варианты" : "Найти подходящие туры"}
           </Button>
         </div>
       )}

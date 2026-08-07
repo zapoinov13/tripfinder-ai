@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
 
 import { DashShell, KpiCard } from "@/components/dash/dash-shell";
 import { operatorNav } from "@/components/dash/nav-items";
@@ -12,38 +12,62 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { formatNumber, formatPrice, getHotel, tours } from "@/data/demo";
+import { formatNumber, formatPrice, getHotel } from "@/data/demo";
+import { useAuth, useRequireAuth } from "@/lib/platform/auth";
+import { usePlatformStore } from "@/lib/platform/hooks";
 
 export const Route = createFileRoute("/operator/")({
   head: () => ({
-    meta: [
-      { title: "Кабинет туроператора — Voyago" },
-      {
-        name: "description",
-        content: "Продажи, заявки, брони и эффективность туров в одном рабочем кабинете.",
-      },
-      { property: "og:title", content: "Кабинет туроператора — Voyago" },
-      { property: "og:description", content: "KPI, продажи и лучшие туры вашей компании." },
-    ],
+    meta: [{ title: "Кабинет туроператора — Voyago" }],
   }),
   component: OperatorDashboard,
 });
 
 function OperatorDashboard() {
+  const { allowed } = useRequireAuth(["OPERATOR_ADMIN", "OPERATOR_MANAGER"]);
+  const { user, organization } = useAuth();
+  const state = usePlatformStore();
+  if (!allowed || !user || !organization) {
+    return <div className="grid min-h-screen place-items-center text-sm">Нет доступа…</div>;
+  }
+
+  const orgTours = state.tours.filter((t) => t.operatorOrgId === organization.id);
+  const active = orgTours.filter((t) => t.status === "active");
+  const bookings = state.bookings.filter((b) => b.organizationId === organization.id);
+  const views = orgTours.reduce((s, t) => s + t.views, 0);
+  const revenue = bookings
+    .filter((b) => ["PAID", "CONFIRMED", "COMPLETED"].includes(b.status))
+    .reduce((s, b) => s + b.price, 0);
+  const api = state.apiConnections.find((c) => c.organizationId === organization.id);
+  const plan = state.config.operatorPlans.find((p) => p.code === organization.planCode);
+
   return (
     <DashShell
-      brand="Travel Company"
+      brand={organization.name}
       items={operatorNav}
-      title="Добрый день, Travel Company"
-      subtitle="Обзор за последние 30 дней"
-      actions={<Button size="sm">+ Добавить тур</Button>}
+      title={`Добрый день, ${organization.name}`}
+      subtitle={`План ${organization.planCode} · API: ${api?.status ?? "disconnected"} · ${organization.status}`}
+      actions={
+        <Button size="sm" asChild>
+          <Link to="/operator/tours">Мои туры</Link>
+        </Button>
+      }
     >
+      {organization.status === "PENDING_APPROVAL" ? (
+        <div className="mb-6 rounded-2xl bg-premium/15 p-4 text-sm">
+          Компания ожидает одобрения администратора (PENDING_APPROVAL).
+        </div>
+      ) : null}
+
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
-        <KpiCard label="Активные туры" value="1 284" hint="+42 за неделю" />
-        <KpiCard label="Просмотры" value="24 830" hint="+12,4%" />
-        <KpiCard label="Заявки" value="428" hint="+6,1%" />
-        <KpiCard label="Бронирования" value="87" hint="+9 брони" />
-        <KpiCard label="Продажи" value="12.4M ₸" hint="+18,2%" />
+        <KpiCard label="Активные туры" value={formatNumber(active.length)} hint={`лимит ${plan?.tourLimit ?? "—"}`} />
+        <KpiCard label="Просмотры" value={formatNumber(views)} />
+        <KpiCard label="Заявки / брони" value={formatNumber(bookings.length)} />
+        <KpiCard label="Revenue" value={formatPrice(revenue)} />
+        <KpiCard
+          label="Conversion"
+          value={`${views ? ((bookings.length / views) * 100).toFixed(2) : 0}%`}
+        />
       </div>
 
       <div className="mt-6 grid gap-6 xl:grid-cols-[1.4fr_minmax(0,1fr)]">
@@ -54,27 +78,12 @@ function OperatorDashboard() {
           </div>
         </div>
         <div className="surface-card p-6">
-          <h2 className="font-display text-lg font-semibold">Каналы заявок</h2>
-          <ul className="mt-6 space-y-4">
-            {[
-              ["Поиск на маркетплейсе", 62],
-              ["AI-подбор", 21],
-              ["Горящие туры", 11],
-              ["Premium-аудитория", 6],
-            ].map(([label, value]) => (
-              <li key={label as string}>
-                <div className="flex justify-between text-sm">
-                  <span>{label}</span>
-                  <span className="font-medium">{value}%</span>
-                </div>
-                <div className="mt-2 h-2 rounded-full bg-secondary">
-                  <div
-                    className="h-2 rounded-full bg-primary"
-                    style={{ width: `${value as number}%` }}
-                  />
-                </div>
-              </li>
-            ))}
+          <h2 className="font-display text-lg font-semibold">Статус</h2>
+          <ul className="mt-6 space-y-3 text-sm">
+            <li>Тариф: {organization.planCode}</li>
+            <li>API: {api?.status ?? "нет"}</li>
+            <li>Последний sync: {api?.lastSyncAt ? new Date(api.lastSyncAt).toLocaleString("ru-RU") : "—"}</li>
+            <li>Promo balance: {formatPrice(organization.promotionBalance)}</li>
           </ul>
         </div>
       </div>
@@ -89,29 +98,30 @@ function OperatorDashboard() {
               <TableRow>
                 <TableHead>Тур</TableHead>
                 <TableHead>Просмотры</TableHead>
-                <TableHead>Заявки</TableHead>
                 <TableHead>Брони</TableHead>
                 <TableHead className="text-right">Цена</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {tours.slice(0, 6).map((tour) => {
-                const hotel = getHotel(tour.hotelId);
-                return (
-                  <TableRow key={tour.id}>
-                    <TableCell className="font-medium">
-                      {hotel.name}
-                      <span className="block text-xs text-muted-foreground">
-                        {hotel.flag} {hotel.city} · {tour.nights} ночей
-                      </span>
-                    </TableCell>
-                    <TableCell>{formatNumber(tour.views)}</TableCell>
-                    <TableCell>{Math.round(tour.views / 58)}</TableCell>
-                    <TableCell>{tour.bookings}</TableCell>
-                    <TableCell className="text-right">{formatPrice(tour.price)}</TableCell>
-                  </TableRow>
-                );
-              })}
+              {[...orgTours]
+                .sort((a, b) => b.bookings - a.bookings)
+                .slice(0, 6)
+                .map((tour) => {
+                  const hotel = getHotel(tour.hotelId);
+                  return (
+                    <TableRow key={tour.id}>
+                      <TableCell className="font-medium">
+                        {hotel.name}
+                        <span className="block text-xs text-muted-foreground">
+                          {hotel.city} · {tour.nights} ночей
+                        </span>
+                      </TableCell>
+                      <TableCell>{formatNumber(tour.views)}</TableCell>
+                      <TableCell>{tour.bookings}</TableCell>
+                      <TableCell className="text-right">{formatPrice(tour.price)}</TableCell>
+                    </TableRow>
+                  );
+                })}
             </TableBody>
           </Table>
         </div>

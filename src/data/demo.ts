@@ -337,7 +337,7 @@ const mealCycle: MealCode[] = ["AI", "UAI", "BB", "HB", "FB", "AI", "UAI", "RO",
 const fmtDay = (d: Date) => `${d.getDate()} ${monthNames[d.getMonth()]}`;
 const iso = (d: Date) => d.toISOString().slice(0, 10);
 
-export const tours: Tour[] = Array.from({ length: 60 }, (_, i) => {
+export const tours: Tour[] = Array.from({ length: 200 }, (_, i) => {
   const hotel = hotels[i % hotels.length]!;
   const nights = [3, 5, 7, 9, 10, 12, 14, 16][i % 8]!;
   const start = new Date(2026, 7, 3 + ((i * 5) % 55));
@@ -386,7 +386,22 @@ export const getResorts = (id: string) => resortsByDestination[id] ?? [];
 export const getToursByDestination = (id: string) =>
   tours.filter((t) => getHotel(t.hotelId).destinationId === id);
 export const getOperator = (id: string) => operators.find((o) => o.id === id)!;
-export const getTour = (id: string) => tours.find((t) => t.id === id);
+/** Prefer platform store tour when available (client), else static seed */
+export const getTour = (id: string) => {
+  if (typeof window !== "undefined") {
+    try {
+      const raw = localStorage.getItem("voyago:platform-v1");
+      if (raw) {
+        const parsed = JSON.parse(raw) as { tours?: Tour[] };
+        const live = parsed.tours?.find((t) => t.id === id);
+        if (live) return live;
+      }
+    } catch {
+      /* ignore */
+    }
+  }
+  return tours.find((t) => t.id === id);
+};
 
 export const hotTours = tours.filter((t) => t.tags.includes("hot")).slice(0, 4);
 export const premiumTours = tours.filter((t) => t.tags.includes("premium")).slice(0, 3);

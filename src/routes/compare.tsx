@@ -13,6 +13,7 @@ import {
   type Tour,
 } from "@/data/demo";
 import { useTourState } from "@/lib/tour-state";
+import { aiRecommendationService } from "@/lib/platform/ai-services";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/compare")({
@@ -74,7 +75,9 @@ function ComparePage() {
               Добавьте до 4 туров кнопкой «Сравнить» на карточке тура.
             </p>
             <Button className="mt-6" asChild>
-              <Link to="/search">Найти туры</Link>
+              <Link to="/search" search={{} as never}>
+                Найти туры
+              </Link>
             </Button>
           </div>
         </div>
@@ -159,13 +162,19 @@ function ComparePage() {
 
         <div className="gradient-ai mt-8 rounded-3xl p-6 md:p-8">
           <h2 className="flex items-center gap-2 font-display text-lg font-semibold text-primary-foreground">
-            <Sparkles className="size-5" /> AI рекомендует
+            <Sparkles className="size-5" /> AI Summary
           </h2>
-          <p className="mt-2 text-primary-foreground/85">
-            {`«Лучшее соотношение цена / качество — ${
-              getHotel(selected.find((t) => t.id === bestId)!.hotelId).name
-            }.»`}
-          </p>
+          <ul className="mt-4 space-y-2 text-sm text-primary-foreground/90">
+            {aiRecommendationService
+              .summarizeCompare(
+                selected.map((tour) => ({ tour, hotel: getHotel(tour.hotelId) })),
+              )
+              .map((row) => (
+                <li key={row.label}>
+                  <span className="font-semibold">{row.label}:</span> {row.hotel}
+                </li>
+              ))}
+          </ul>
           <Button variant="secondary" className="mt-5" asChild>
             <Link to="/tour/$tourId" params={{ tourId: bestId! }}>
               Показать детали

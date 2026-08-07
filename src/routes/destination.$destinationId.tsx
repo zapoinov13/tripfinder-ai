@@ -82,6 +82,7 @@ function DestinationPage() {
             <Link
               key={resort.name}
               to="/search"
+              search={{ destination: dest.id, city: resort.name } as never}
               className="surface-card hover-lift group flex items-start gap-3 p-5"
             >
               <span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-secondary text-primary">
@@ -113,7 +114,7 @@ function DestinationPage() {
             ))}
           </div>
           <Button variant="outline" asChild className="mt-8">
-            <Link to="/search">
+            <Link to="/search" search={{ destination: dest.id } as never}>
               Все туры <ArrowRight className="size-4" />
             </Link>
           </Button>

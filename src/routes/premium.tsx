@@ -1,8 +1,12 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 
 import { SiteLayout } from "@/components/site/site-layout";
 import { Button } from "@/components/ui/button";
-import { formatPrice, getHotel, premiumTours } from "@/data/demo";
+import { formatPrice, getHotel } from "@/data/demo";
+import { useAuth } from "@/lib/platform/auth";
+import { trackEvent } from "@/lib/platform/catalog";
+import { usePlatformStore } from "@/lib/platform/hooks";
+import { useEffect } from "react";
 
 export const Route = createFileRoute("/premium")({
   head: () => ({
@@ -12,11 +16,6 @@ export const Route = createFileRoute("/premium")({
         name: "description",
         content:
           "Premium открывает доступ к эксклюзивным ценам, горящим турам, раннему доступу и AI-рекомендациям.",
-      },
-      { property: "og:title", content: "Premium — Voyago" },
-      {
-        property: "og:description",
-        content: "Открывайте предложения, которые недоступны другим.",
       },
     ],
   }),
@@ -33,22 +32,50 @@ const perks = [
 ];
 
 function PremiumPage() {
+  const { isAuthenticated, isPremium, purchasePremium } = useAuth();
+  const navigate = useNavigate();
+  const state = usePlatformStore();
+  const price = state.config.premiumMonthlyPrice;
+  const premiumTours = state.tours.filter((t) => t.tags.includes("premium")).slice(0, 3);
+
+  useEffect(() => {
+    trackEvent("PREMIUM_VIEWED");
+  }, []);
+
   return (
     <SiteLayout>
       <div className="container-page py-8">
         <section className="gradient-premium rounded-4xl px-6 py-16 text-center md:px-14 md:py-24">
           <span className="rounded-full bg-premium/20 px-3 py-1 text-xs font-semibold text-premium">
-            💎 PREMIUM
+            PREMIUM
           </span>
           <h1 className="mx-auto mt-6 max-w-3xl font-display text-3xl font-semibold text-primary-foreground md:text-5xl">
-            Открывайте предложения, которые недоступны другим
+            Получайте доступ к предложениям, которых нет в обычной выдаче
           </h1>
           <p className="mx-auto mt-4 max-w-xl text-primary-foreground/80">
-            Premium даёт доступ к эксклюзивным ценам, горящим турам и специальным предложениям.
+            MONTHLY · {formatPrice(price)} — цена из конфигурации платформы (editable в Admin).
           </p>
-          <Button size="lg" className="mt-8">
-            Подключить Premium
-          </Button>
+          {isPremium ? (
+            <Button size="lg" className="mt-8" variant="secondary" asChild>
+              <Link to="/search" search={{ offers: "premium" } as never}>
+                Смотреть Premium Deals
+              </Link>
+            </Button>
+          ) : (
+            <Button
+              size="lg"
+              className="mt-8"
+              onClick={() => {
+                if (!isAuthenticated) {
+                  navigate({ to: "/login" });
+                  return;
+                }
+                purchasePremium();
+              }}
+            >
+              Подключить Premium — {formatPrice(price)}
+            </Button>
+          )}
         </section>
 
         <section className="mt-16">
@@ -78,16 +105,27 @@ function PremiumPage() {
                     className="h-44 w-full object-cover"
                   />
                   <div className="p-5">
-                    <div className="text-xs font-semibold text-premium">💎 PREMIUM</div>
+                    <div className="text-xs font-semibold text-premium">PREMIUM</div>
                     <h3 className="mt-2 truncate font-display text-lg font-semibold">
                       {hotel.name}
                     </h3>
-                    <div className="mt-4 text-sm text-muted-foreground line-through">
-                      {formatPrice(tour.price)}
-                    </div>
-                    <div className="font-display text-2xl font-semibold">
-                      {formatPrice(tour.premiumPrice ?? tour.price)}
-                    </div>
+                    {isPremium ? (
+                      <>
+                        <div className="mt-4 text-sm text-muted-foreground line-through">
+                          {formatPrice(tour.price)}
+                        </div>
+                        <div className="font-display text-2xl font-semibold">
+                          {formatPrice(tour.premiumPrice ?? tour.price)}
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="mt-4 font-display text-xl font-semibold">Premium Deal</div>
+                        <Button className="mt-3" size="sm" asChild>
+                          <Link to="/premium">Открыть Premium</Link>
+                        </Button>
+                      </>
+                    )}
                   </div>
                 </div>
               );

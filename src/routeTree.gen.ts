@@ -11,16 +11,22 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AboutRouteImport } from './routes/about'
+import { Route as AiSearchRouteImport } from './routes/ai-search'
 import { Route as CompareRouteImport } from './routes/compare'
 import { Route as DestinationsRouteImport } from './routes/destinations'
 import { Route as FavoritesRouteImport } from './routes/favorites'
 import { Route as ForOperatorsRouteImport } from './routes/for-operators'
 import { Route as HotRouteImport } from './routes/hot'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as PremiumRouteImport } from './routes/premium'
-import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as ProfileRouteRouteImport } from './routes/profile/route'
+import { Route as RegistrationRouteImport } from './routes/registration'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as AdminAnalyticsRouteImport } from './routes/admin/analytics'
+import { Route as AdminApiMonitoringRouteImport } from './routes/admin/api-monitoring'
+import { Route as AdminAuditLogsRouteImport } from './routes/admin/audit-logs'
 import { Route as AdminBookingsRouteImport } from './routes/admin/bookings'
 import { Route as AdminOperatorsRouteImport } from './routes/admin/operators'
 import { Route as AdminPaymentsRouteImport } from './routes/admin/payments'
@@ -39,6 +45,11 @@ import { Route as OperatorCompanyRouteImport } from './routes/operator/company'
 import { Route as OperatorPromotionRouteImport } from './routes/operator/promotion'
 import { Route as OperatorSettingsRouteImport } from './routes/operator/settings'
 import { Route as OperatorToursRouteImport } from './routes/operator/tours'
+import { Route as ProfileIndexRouteImport } from './routes/profile/index'
+import { Route as ProfileAiRouteImport } from './routes/profile/ai'
+import { Route as ProfileFavoritesRouteImport } from './routes/profile/favorites'
+import { Route as ProfileSettingsRouteImport } from './routes/profile/settings'
+import { Route as ProfileTripsRouteImport } from './routes/profile/trips'
 import { Route as TourTourIdRouteImport } from './routes/tour.$tourId'
 
 const IndexRoute = IndexRouteImport.update({
@@ -49,6 +60,11 @@ const IndexRoute = IndexRouteImport.update({
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
   path: '/about',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AiSearchRoute = AiSearchRouteImport.update({
+  id: '/ai-search',
+  path: '/ai-search',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CompareRoute = CompareRouteImport.update({
@@ -76,14 +92,29 @@ const HotRoute = HotRouteImport.update({
   path: '/hot',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NotificationsRoute = NotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PremiumRoute = PremiumRouteImport.update({
   id: '/premium',
   path: '/premium',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ProfileRoute = ProfileRouteImport.update({
+const ProfileRouteRoute = ProfileRouteRouteImport.update({
   id: '/profile',
   path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RegistrationRoute = RegistrationRouteImport.update({
+  id: '/registration',
+  path: '/registration',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SearchRoute = SearchRouteImport.update({
@@ -99,6 +130,16 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
 const AdminAnalyticsRoute = AdminAnalyticsRouteImport.update({
   id: '/admin/analytics',
   path: '/admin/analytics',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminApiMonitoringRoute = AdminApiMonitoringRouteImport.update({
+  id: '/admin/api-monitoring',
+  path: '/admin/api-monitoring',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminAuditLogsRoute = AdminAuditLogsRouteImport.update({
+  id: '/admin/audit-logs',
+  path: '/admin/audit-logs',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminBookingsRoute = AdminBookingsRouteImport.update({
@@ -192,6 +233,31 @@ const OperatorToursRoute = OperatorToursRouteImport.update({
   path: '/operator/tours',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProfileIndexRoute = ProfileIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ProfileRouteRoute,
+} as any)
+const ProfileAiRoute = ProfileAiRouteImport.update({
+  id: '/ai',
+  path: '/ai',
+  getParentRoute: () => ProfileRouteRoute,
+} as any)
+const ProfileFavoritesRoute = ProfileFavoritesRouteImport.update({
+  id: '/favorites',
+  path: '/favorites',
+  getParentRoute: () => ProfileRouteRoute,
+} as any)
+const ProfileSettingsRoute = ProfileSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => ProfileRouteRoute,
+} as any)
+const ProfileTripsRoute = ProfileTripsRouteImport.update({
+  id: '/trips',
+  path: '/trips',
+  getParentRoute: () => ProfileRouteRoute,
+} as any)
 const TourTourIdRoute = TourTourIdRouteImport.update({
   id: '/tour/$tourId',
   path: '/tour/$tourId',
@@ -200,16 +266,22 @@ const TourTourIdRoute = TourTourIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/profile': typeof ProfileRouteRouteWithChildren
   '/about': typeof AboutRoute
+  '/ai-search': typeof AiSearchRoute
   '/compare': typeof CompareRoute
   '/destinations': typeof DestinationsRoute
   '/favorites': typeof FavoritesRoute
   '/for-operators': typeof ForOperatorsRoute
   '/hot': typeof HotRoute
+  '/login': typeof LoginRoute
+  '/notifications': typeof NotificationsRoute
   '/premium': typeof PremiumRoute
-  '/profile': typeof ProfileRoute
+  '/registration': typeof RegistrationRoute
   '/search': typeof SearchRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
+  '/admin/api-monitoring': typeof AdminApiMonitoringRoute
+  '/admin/audit-logs': typeof AdminAuditLogsRoute
   '/admin/bookings': typeof AdminBookingsRoute
   '/admin/operators': typeof AdminOperatorsRoute
   '/admin/payments': typeof AdminPaymentsRoute
@@ -227,22 +299,32 @@ export interface FileRoutesByFullPath {
   '/operator/promotion': typeof OperatorPromotionRoute
   '/operator/settings': typeof OperatorSettingsRoute
   '/operator/tours': typeof OperatorToursRoute
+  '/profile/ai': typeof ProfileAiRoute
+  '/profile/favorites': typeof ProfileFavoritesRoute
+  '/profile/settings': typeof ProfileSettingsRoute
+  '/profile/trips': typeof ProfileTripsRoute
   '/tour/$tourId': typeof TourTourIdRoute
   '/admin/': typeof AdminIndexRoute
   '/operator/': typeof OperatorIndexRoute
+  '/profile/': typeof ProfileIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/ai-search': typeof AiSearchRoute
   '/compare': typeof CompareRoute
   '/destinations': typeof DestinationsRoute
   '/favorites': typeof FavoritesRoute
   '/for-operators': typeof ForOperatorsRoute
   '/hot': typeof HotRoute
+  '/login': typeof LoginRoute
+  '/notifications': typeof NotificationsRoute
   '/premium': typeof PremiumRoute
-  '/profile': typeof ProfileRoute
+  '/registration': typeof RegistrationRoute
   '/search': typeof SearchRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
+  '/admin/api-monitoring': typeof AdminApiMonitoringRoute
+  '/admin/audit-logs': typeof AdminAuditLogsRoute
   '/admin/bookings': typeof AdminBookingsRoute
   '/admin/operators': typeof AdminOperatorsRoute
   '/admin/payments': typeof AdminPaymentsRoute
@@ -260,23 +342,34 @@ export interface FileRoutesByTo {
   '/operator/promotion': typeof OperatorPromotionRoute
   '/operator/settings': typeof OperatorSettingsRoute
   '/operator/tours': typeof OperatorToursRoute
+  '/profile/ai': typeof ProfileAiRoute
+  '/profile/favorites': typeof ProfileFavoritesRoute
+  '/profile/settings': typeof ProfileSettingsRoute
+  '/profile/trips': typeof ProfileTripsRoute
   '/tour/$tourId': typeof TourTourIdRoute
   '/admin': typeof AdminIndexRoute
   '/operator': typeof OperatorIndexRoute
+  '/profile': typeof ProfileIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/profile': typeof ProfileRouteRouteWithChildren
   '/about': typeof AboutRoute
+  '/ai-search': typeof AiSearchRoute
   '/compare': typeof CompareRoute
   '/destinations': typeof DestinationsRoute
   '/favorites': typeof FavoritesRoute
   '/for-operators': typeof ForOperatorsRoute
   '/hot': typeof HotRoute
+  '/login': typeof LoginRoute
+  '/notifications': typeof NotificationsRoute
   '/premium': typeof PremiumRoute
-  '/profile': typeof ProfileRoute
+  '/registration': typeof RegistrationRoute
   '/search': typeof SearchRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
+  '/admin/api-monitoring': typeof AdminApiMonitoringRoute
+  '/admin/audit-logs': typeof AdminAuditLogsRoute
   '/admin/bookings': typeof AdminBookingsRoute
   '/admin/operators': typeof AdminOperatorsRoute
   '/admin/payments': typeof AdminPaymentsRoute
@@ -294,24 +387,35 @@ export interface FileRoutesById {
   '/operator/promotion': typeof OperatorPromotionRoute
   '/operator/settings': typeof OperatorSettingsRoute
   '/operator/tours': typeof OperatorToursRoute
+  '/profile/ai': typeof ProfileAiRoute
+  '/profile/favorites': typeof ProfileFavoritesRoute
+  '/profile/settings': typeof ProfileSettingsRoute
+  '/profile/trips': typeof ProfileTripsRoute
   '/tour/$tourId': typeof TourTourIdRoute
   '/admin/': typeof AdminIndexRoute
   '/operator/': typeof OperatorIndexRoute
+  '/profile/': typeof ProfileIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/profile'
     | '/about'
+    | '/ai-search'
     | '/compare'
     | '/destinations'
     | '/favorites'
     | '/for-operators'
     | '/hot'
+    | '/login'
+    | '/notifications'
     | '/premium'
-    | '/profile'
+    | '/registration'
     | '/search'
     | '/admin/analytics'
+    | '/admin/api-monitoring'
+    | '/admin/audit-logs'
     | '/admin/bookings'
     | '/admin/operators'
     | '/admin/payments'
@@ -329,22 +433,32 @@ export interface FileRouteTypes {
     | '/operator/promotion'
     | '/operator/settings'
     | '/operator/tours'
+    | '/profile/ai'
+    | '/profile/favorites'
+    | '/profile/settings'
+    | '/profile/trips'
     | '/tour/$tourId'
     | '/admin/'
     | '/operator/'
+    | '/profile/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/about'
+    | '/ai-search'
     | '/compare'
     | '/destinations'
     | '/favorites'
     | '/for-operators'
     | '/hot'
+    | '/login'
+    | '/notifications'
     | '/premium'
-    | '/profile'
+    | '/registration'
     | '/search'
     | '/admin/analytics'
+    | '/admin/api-monitoring'
+    | '/admin/audit-logs'
     | '/admin/bookings'
     | '/admin/operators'
     | '/admin/payments'
@@ -362,22 +476,33 @@ export interface FileRouteTypes {
     | '/operator/promotion'
     | '/operator/settings'
     | '/operator/tours'
+    | '/profile/ai'
+    | '/profile/favorites'
+    | '/profile/settings'
+    | '/profile/trips'
     | '/tour/$tourId'
     | '/admin'
     | '/operator'
+    | '/profile'
   id:
     | '__root__'
     | '/'
+    | '/profile'
     | '/about'
+    | '/ai-search'
     | '/compare'
     | '/destinations'
     | '/favorites'
     | '/for-operators'
     | '/hot'
+    | '/login'
+    | '/notifications'
     | '/premium'
-    | '/profile'
+    | '/registration'
     | '/search'
     | '/admin/analytics'
+    | '/admin/api-monitoring'
+    | '/admin/audit-logs'
     | '/admin/bookings'
     | '/admin/operators'
     | '/admin/payments'
@@ -395,23 +520,34 @@ export interface FileRouteTypes {
     | '/operator/promotion'
     | '/operator/settings'
     | '/operator/tours'
+    | '/profile/ai'
+    | '/profile/favorites'
+    | '/profile/settings'
+    | '/profile/trips'
     | '/tour/$tourId'
     | '/admin/'
     | '/operator/'
+    | '/profile/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ProfileRouteRoute: typeof ProfileRouteRouteWithChildren
   AboutRoute: typeof AboutRoute
+  AiSearchRoute: typeof AiSearchRoute
   CompareRoute: typeof CompareRoute
   DestinationsRoute: typeof DestinationsRoute
   FavoritesRoute: typeof FavoritesRoute
   ForOperatorsRoute: typeof ForOperatorsRoute
   HotRoute: typeof HotRoute
+  LoginRoute: typeof LoginRoute
+  NotificationsRoute: typeof NotificationsRoute
   PremiumRoute: typeof PremiumRoute
-  ProfileRoute: typeof ProfileRoute
+  RegistrationRoute: typeof RegistrationRoute
   SearchRoute: typeof SearchRoute
   AdminAnalyticsRoute: typeof AdminAnalyticsRoute
+  AdminApiMonitoringRoute: typeof AdminApiMonitoringRoute
+  AdminAuditLogsRoute: typeof AdminAuditLogsRoute
   AdminBookingsRoute: typeof AdminBookingsRoute
   AdminOperatorsRoute: typeof AdminOperatorsRoute
   AdminPaymentsRoute: typeof AdminPaymentsRoute
@@ -450,6 +586,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AboutRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/ai-search': {
+      id: '/ai-search'
+      path: '/ai-search'
+      fullPath: '/ai-search'
+      preLoaderRoute: typeof AiSearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/compare': {
       id: '/compare'
       path: '/compare'
@@ -485,6 +628,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HotRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/notifications': {
+      id: '/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof NotificationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/premium': {
       id: '/premium'
       path: '/premium'
@@ -496,7 +653,14 @@ declare module '@tanstack/react-router' {
       id: '/profile'
       path: '/profile'
       fullPath: '/profile'
-      preLoaderRoute: typeof ProfileRouteImport
+      preLoaderRoute: typeof ProfileRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/registration': {
+      id: '/registration'
+      path: '/registration'
+      fullPath: '/registration'
+      preLoaderRoute: typeof RegistrationRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/search': {
@@ -518,6 +682,20 @@ declare module '@tanstack/react-router' {
       path: '/admin/analytics'
       fullPath: '/admin/analytics'
       preLoaderRoute: typeof AdminAnalyticsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/api-monitoring': {
+      id: '/admin/api-monitoring'
+      path: '/admin/api-monitoring'
+      fullPath: '/admin/api-monitoring'
+      preLoaderRoute: typeof AdminApiMonitoringRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/audit-logs': {
+      id: '/admin/audit-logs'
+      path: '/admin/audit-logs'
+      fullPath: '/admin/audit-logs'
+      preLoaderRoute: typeof AdminAuditLogsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/bookings': {
@@ -646,6 +824,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OperatorToursRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/profile/': {
+      id: '/profile/'
+      path: '/'
+      fullPath: '/profile/'
+      preLoaderRoute: typeof ProfileIndexRouteImport
+      parentRoute: typeof ProfileRouteRoute
+    }
+    '/profile/ai': {
+      id: '/profile/ai'
+      path: '/ai'
+      fullPath: '/profile/ai'
+      preLoaderRoute: typeof ProfileAiRouteImport
+      parentRoute: typeof ProfileRouteRoute
+    }
+    '/profile/favorites': {
+      id: '/profile/favorites'
+      path: '/favorites'
+      fullPath: '/profile/favorites'
+      preLoaderRoute: typeof ProfileFavoritesRouteImport
+      parentRoute: typeof ProfileRouteRoute
+    }
+    '/profile/settings': {
+      id: '/profile/settings'
+      path: '/settings'
+      fullPath: '/profile/settings'
+      preLoaderRoute: typeof ProfileSettingsRouteImport
+      parentRoute: typeof ProfileRouteRoute
+    }
+    '/profile/trips': {
+      id: '/profile/trips'
+      path: '/trips'
+      fullPath: '/profile/trips'
+      preLoaderRoute: typeof ProfileTripsRouteImport
+      parentRoute: typeof ProfileRouteRoute
+    }
     '/tour/$tourId': {
       id: '/tour/$tourId'
       path: '/tour/$tourId'
@@ -656,18 +869,44 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface ProfileRouteRouteChildren {
+  ProfileAiRoute: typeof ProfileAiRoute
+  ProfileFavoritesRoute: typeof ProfileFavoritesRoute
+  ProfileSettingsRoute: typeof ProfileSettingsRoute
+  ProfileTripsRoute: typeof ProfileTripsRoute
+  ProfileIndexRoute: typeof ProfileIndexRoute
+}
+
+const ProfileRouteRouteChildren: ProfileRouteRouteChildren = {
+  ProfileAiRoute: ProfileAiRoute,
+  ProfileFavoritesRoute: ProfileFavoritesRoute,
+  ProfileSettingsRoute: ProfileSettingsRoute,
+  ProfileTripsRoute: ProfileTripsRoute,
+  ProfileIndexRoute: ProfileIndexRoute,
+}
+
+const ProfileRouteRouteWithChildren = ProfileRouteRoute._addFileChildren(
+  ProfileRouteRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ProfileRouteRoute: ProfileRouteRouteWithChildren,
   AboutRoute: AboutRoute,
+  AiSearchRoute: AiSearchRoute,
   CompareRoute: CompareRoute,
   DestinationsRoute: DestinationsRoute,
   FavoritesRoute: FavoritesRoute,
   ForOperatorsRoute: ForOperatorsRoute,
   HotRoute: HotRoute,
+  LoginRoute: LoginRoute,
+  NotificationsRoute: NotificationsRoute,
   PremiumRoute: PremiumRoute,
-  ProfileRoute: ProfileRoute,
+  RegistrationRoute: RegistrationRoute,
   SearchRoute: SearchRoute,
   AdminAnalyticsRoute: AdminAnalyticsRoute,
+  AdminApiMonitoringRoute: AdminApiMonitoringRoute,
+  AdminAuditLogsRoute: AdminAuditLogsRoute,
   AdminBookingsRoute: AdminBookingsRoute,
   AdminOperatorsRoute: AdminOperatorsRoute,
   AdminPaymentsRoute: AdminPaymentsRoute,

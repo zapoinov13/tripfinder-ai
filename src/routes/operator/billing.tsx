@@ -1,60 +1,108 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { toast } from "sonner";
 
 import { DashShell } from "@/components/dash/dash-shell";
 import { operatorNav } from "@/components/dash/nav-items";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
+import { formatPrice } from "@/data/demo";
+import { mockPaymentProvider } from "@/lib/platform/adapters";
+import { appendAudit, pushNotification } from "@/lib/platform/catalog";
+import { useAuth, useRequireAuth } from "@/lib/platform/auth";
+import { usePlatformStore } from "@/lib/platform/hooks";
+import { nowIso, setState, uid } from "@/lib/platform/store";
+import type { OperatorPlanCode } from "@/lib/platform/types";
 
 export const Route = createFileRoute("/operator/billing")({
-  head: () => ({
-    meta: [
-      { title: "Тариф и оплата — кабинет туроператора | Voyago" },
-      { name: "description", content: "Текущий тариф, лимиты активных туров и другие планы." },
-      { property: "og:title", content: "Тариф и оплата — Voyago" },
-      { property: "og:description", content: "Управляйте подпиской вашей компании." },
-    ],
-  }),
-  component: BillingPage,
+  head: () => ({ meta: [{ title: "Тариф оператора — Voyago" }] }),
+  component: OperatorBillingPage,
 });
 
-const plans = [
-  { name: "START", limit: "100 активных туров", price: "39 000 ₸ / месяц" },
-  { name: "GROWTH", limit: "400 активных туров", price: "89 000 ₸ / месяц" },
-  { name: "ENTERPRISE", limit: "Без лимита", price: "по запросу" },
-];
+function OperatorBillingPage() {
+  const { allowed } = useRequireAuth(["OPERATOR_ADMIN"]);
+  const { user, organization } = useAuth();
+  const state = usePlatformStore();
+  if (!allowed || !organization || !user) {
+    return (
+      <DashShell brand="Operator" items={operatorNav} title="Тариф" subtitle="Только OPERATOR_ADMIN">
+        <p className="text-sm text-muted-foreground">Недостаточно прав или нет организации.</p>
+      </DashShell>
+    );
+  }
 
-function BillingPage() {
+  const selectPlan = async (code: OperatorPlanCode) => {
+    const plan = state.config.operatorPlans.find((p) => p.code === code)!;
+    const payment = await mockPaymentProvider.createPayment({
+      amount: plan.price,
+      currency: plan.currency,
+      type: "operator_subscription",
+      metadata: { plan: code },
+    });
+    setState((s) => ({
+      ...s,
+      organizations: s.organizations.map((o) =>
+        o.id === organization.id ? { ...o, planCode: code } : o,
+      ),
+      payments: [
+        {
+          id: uid("pay"),
+          userId: user.id,
+          organizationId: organization.id,
+          amount: plan.price,
+          currency: plan.currency,
+          type: "operator_subscription",
+          provider: "mock",
+          providerPaymentId: payment.providerPaymentId,
+          status: "paid",
+          createdAt: nowIso(),
+          metadata: { plan: code },
+        },
+        ...s.payments,
+      ],
+      subscriptions: [
+        {
+          id: uid("sub"),
+          organizationId: organization.id,
+          planId: code,
+          status: "active",
+          startedAt: nowIso(),
+          expiresAt: new Date(Date.now() + 30 * 86400000).toISOString(),
+          autoRenew: true,
+          providerSubscriptionId: payment.providerPaymentId,
+        },
+        ...s.subscriptions.filter((sub) => sub.organizationId !== organization.id),
+      ],
+    }));
+    appendAudit({
+      actorId: user.id,
+      action: "operator_plan_change",
+      entityType: "organization",
+      entityId: organization.id,
+      meta: { plan: code },
+    });
+    pushNotification(user.id, "subscription_expiry", `Тариф ${code}`, `Активирован план ${plan.name}`);
+    toast.success(`Тариф ${code} активен`);
+  };
+
   return (
-    <DashShell brand="Travel Company" items={operatorNav} title="Тариф и оплата">
-      <div className="surface-card p-6 md:p-8">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <span className="rounded-full bg-primary-soft px-3 py-1 text-xs font-semibold text-primary">
-              BUSINESS
-            </span>
-            <h2 className="mt-4 font-display text-2xl font-semibold">1 000 активных туров</h2>
-            <p className="mt-1 text-muted-foreground">149 000 ₸ / месяц</p>
-          </div>
-          <Button>Увеличить лимит</Button>
-        </div>
-        <div className="mt-8">
-          <div className="flex justify-between text-sm">
-            <span className="text-muted-foreground">Использовано</span>
-            <span className="font-medium">728 / 1 000</span>
-          </div>
-          <Progress value={72.8} className="mt-3" />
-        </div>
-      </div>
-
-      <h2 className="mt-10 font-display text-lg font-semibold">Другие тарифы</h2>
-      <div className="mt-4 grid gap-5 md:grid-cols-3">
-        {plans.map((plan) => (
-          <div key={plan.name} className="surface-card p-6">
-            <p className="text-xs font-semibold tracking-wide text-muted-foreground">{plan.name}</p>
-            <p className="mt-3 font-display text-lg font-semibold">{plan.limit}</p>
-            <p className="mt-1 text-sm text-muted-foreground">{plan.price}</p>
-            <Button variant="outline" className="mt-5 w-full">
-              Выбрать
+    <DashShell brand={organization.name} items={operatorNav} title="Тариф" subtitle={`Текущий: ${organization.planCode}`}>
+      <div className="grid gap-5 md:grid-cols-3">
+        {state.config.operatorPlans.map((plan) => (
+          <div key={plan.code} className="surface-card p-6">
+            <h2 className="font-display text-xl font-semibold">{plan.name}</h2>
+            <p className="mt-2 font-display text-2xl">{formatPrice(plan.price)}</p>
+            <p className="mt-1 text-sm text-muted-foreground">до {plan.tourLimit} туров</p>
+            <ul className="mt-4 space-y-1 text-sm text-muted-foreground">
+              {plan.features.map((f) => (
+                <li key={f}>· {f}</li>
+              ))}
+            </ul>
+            <Button
+              className="mt-6 w-full"
+              variant={organization.planCode === plan.code ? "secondary" : "default"}
+              disabled={organization.planCode === plan.code}
+              onClick={() => selectPlan(plan.code)}
+            >
+              {organization.planCode === plan.code ? "Текущий" : "Выбрать"}
             </Button>
           </div>
         ))}
