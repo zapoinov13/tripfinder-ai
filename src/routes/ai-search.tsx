@@ -1,10 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Sparkles } from "lucide-react";
 
+import { QuickPrompts } from "@/components/site/quick-prompts";
 import { SearchPanel } from "@/components/site/search-panel";
 import { SiteLayout } from "@/components/site/site-layout";
 
 export const Route = createFileRoute("/ai-search")({
+  validateSearch: (search: Record<string, unknown>): { q?: string } =>
+    typeof search["q"] === "string" && search["q"].length > 0 ? { q: search["q"] } : {},
   head: () => ({
     meta: [
       { title: "AI Search — Voyago" },
@@ -15,6 +18,8 @@ export const Route = createFileRoute("/ai-search")({
 });
 
 function AiSearchPage() {
+  const { q } = Route.useSearch();
+
   return (
     <SiteLayout>
       <div className="container-page py-10">
@@ -31,8 +36,9 @@ function AiSearchPage() {
           </p>
         </div>
         <div className="mt-8">
-          <SearchPanel defaultTab="ai" />
+          <SearchPanel defaultTab="ai" initialAiQuery={q ?? ""} />
         </div>
+        <QuickPrompts className="mt-6" />
       </div>
     </SiteLayout>
   );

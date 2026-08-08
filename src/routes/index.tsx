@@ -9,6 +9,10 @@ import {
   Tag,
 } from "lucide-react";
 
+import { ChatDemo, ChatDemoFeatures } from "@/components/site/chat-demo";
+import { CompareTable } from "@/components/site/compare-table";
+import { FaqSection } from "@/components/site/faq-section";
+import { QuickPrompts } from "@/components/site/quick-prompts";
 import { SearchPanel } from "@/components/site/search-panel";
 import { SiteLayout } from "@/components/site/site-layout";
 import { TourCard } from "@/components/tours/tour-card";
@@ -64,6 +68,13 @@ const benefits = [
     title: "Premium-доступ",
     text: "Закрытые цены и ранний доступ к горящим турам.",
   },
+];
+
+const trustStats = [
+  { value: "12", label: "подключённых туроператоров" },
+  { value: "~30 сек", label: "до первой подборки туров" },
+  { value: "0 ₸", label: "наценки к цене оператора" },
+  { value: "24/7", label: "AI-подбор без выходных" },
 ];
 
 const steps = [
@@ -126,7 +137,12 @@ function Index() {
             <SearchPanel />
           </div>
 
-          <div className="animate-fade-up animation-delay-300 mt-5 flex gap-2 overflow-x-auto pb-1 no-scrollbar">
+          <QuickPrompts
+            variant="onImage"
+            className="animate-fade-up animation-delay-300 mt-5"
+          />
+
+          <div className="animate-fade-up animation-delay-300 mt-3 flex gap-2 overflow-x-auto pb-1 no-scrollbar">
             {destinations.slice(0, 6).map((dest) => (
               <Link
                 key={dest.id}
@@ -138,6 +154,17 @@ function Index() {
               </Link>
             ))}
           </div>
+        </div>
+      </section>
+
+      <section className="container-page mt-10 md:mt-12">
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+          {trustStats.map((stat) => (
+            <div key={stat.label} className="rounded-2xl border border-border bg-card/70 px-5 py-4">
+              <p className="font-display text-2xl font-semibold md:text-3xl">{stat.value}</p>
+              <p className="mt-1 text-xs text-muted-foreground md:text-sm">{stat.label}</p>
+            </div>
+          ))}
         </div>
       </section>
 
@@ -305,31 +332,57 @@ function Index() {
       </section>
 
       <section className="container-page mt-16 md:mt-24">
-        <div className="relative overflow-hidden rounded-[2rem]">
-          <img
-            src={destinations[1]?.image ?? heroImage}
-            alt=""
-            loading="lazy"
-            className="h-[380px] w-full object-cover md:h-[420px]"
-          />
-          <div className="absolute inset-0 bg-[linear-gradient(120deg,oklch(0.28_0.08_250/0.88),oklch(0.45_0.14_285/0.72))]" />
-          <div className="absolute inset-0 flex flex-col items-start justify-center px-6 md:items-center md:px-10 md:text-center">
-            <p className="text-xs font-semibold tracking-[0.18em] text-primary-foreground/70 uppercase">
+        <div className="grid gap-8 lg:grid-cols-2 lg:items-center lg:gap-12">
+          <div>
+            <span className="inline-flex items-center gap-2 rounded-full bg-ai/10 px-3 py-1 text-xs font-semibold text-ai">
+              <Sparkles className="size-3.5" />
               AI Concierge
-            </p>
-            <h2 className="mt-3 max-w-2xl font-display text-3xl font-semibold text-primary-foreground md:text-4xl">
-              Не знаете, куда поехать?
+            </span>
+            <h2 className="mt-4 font-display text-2xl font-semibold tracking-tight md:text-3xl">
+              Диалог вместо десятка фильтров
             </h2>
-            <p className="mt-3 max-w-xl text-primary-foreground/85">
-              Расскажите, какой отдых хотите — AI подберёт направления и туры под бюджет.
+            <p className="mt-3 max-w-xl text-muted-foreground">
+              Не знаете, куда поехать? Опишите отдых своими словами — AI уточнит детали и соберёт
+              подборку туров от разных операторов под ваш бюджет.
             </p>
-            <Button size="lg" variant="secondary" className="mt-8" asChild>
-              <Link to="/ai-search">
-                <Sparkles className="size-4" />
-                Найти с AI
-              </Link>
+            <div className="mt-7">
+              <ChatDemoFeatures />
+            </div>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Button size="lg" asChild>
+                <Link to="/ai-search">
+                  <Sparkles className="size-4" />
+                  Попробовать AI-подбор
+                </Link>
+              </Button>
+              <Button size="lg" variant="outline" asChild>
+                <a href="#search">Обычный поиск</a>
+              </Button>
+            </div>
+          </div>
+          <ChatDemo />
+        </div>
+      </section>
+
+      <section className="container-page mt-16 md:mt-24">
+        <SectionHead
+          title="Voyago и альтернативы"
+          subtitle="Что вы получаете по сравнению с поиском вручную и походом в турагентство"
+        />
+        <div className="mt-8">
+          <CompareTable />
+        </div>
+      </section>
+
+      <section className="container-page mt-16 md:mt-24">
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:gap-12">
+          <div>
+            <SectionHead title="Частые вопросы" subtitle="Коротко о том, как всё устроено" />
+            <Button variant="outline" className="mt-6" asChild>
+              <Link to="/about">Подробнее о Voyago</Link>
             </Button>
           </div>
+          <FaqSection />
         </div>
       </section>
 

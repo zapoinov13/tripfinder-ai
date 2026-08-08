@@ -14,7 +14,7 @@ import {
   Wallet,
 } from "lucide-react";
 import type { DateRange } from "react-day-picker";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -162,7 +162,13 @@ function Counter({
   );
 }
 
-export function SearchPanel({ defaultTab = "classic" }: { defaultTab?: "classic" | "ai" }) {
+export function SearchPanel({
+  defaultTab = "classic",
+  initialAiQuery = "",
+}: {
+  defaultTab?: "classic" | "ai";
+  initialAiQuery?: string;
+}) {
   const [tab, setTab] = useState<"classic" | "ai">(defaultTab);
   const [from, setFrom] = useState("Алматы");
   const [to, setTo] = useState("uae|Дубай");
@@ -175,10 +181,14 @@ export function SearchPanel({ defaultTab = "classic" }: { defaultTab?: "classic"
   const [childAges, setChildAges] = useState<number[]>([7, 10]);
   const [budget, setBudget] = useState<[number, number]>([PRICE_MIN, 2500000]);
   const [meals, setMeals] = useState<string[]>([]);
-  const [aiQuery, setAiQuery] = useState("");
+  const [aiQuery, setAiQuery] = useState(initialAiQuery);
   const [parsedAi, setParsedAi] = useState<ParsedTravelQuery | null>(null);
   const [recording, setRecording] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (initialAiQuery) setAiQuery(initialAiQuery);
+  }, [initialAiQuery]);
 
   const goSearch = () => {
     const [destination = "", city = ""] = to.split("|");
