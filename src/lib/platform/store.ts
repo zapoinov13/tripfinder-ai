@@ -2,9 +2,19 @@ import { createSeedState, STORE_KEY } from "./seed";
 import type { PlatformState } from "./types";
 
 type Listener = () => void;
+type MutationObserver = (prev: PlatformState, next: PlatformState) => void;
 
 let state: PlatformState | null = null;
 const listeners = new Set<Listener>();
+let observer: MutationObserver | null = null;
+
+/**
+ * Единственная точка, откуда изменения стора уходят в бэкенд.
+ * Экраны продолжают вызывать setState, ничего про Supabase не зная.
+ */
+export function observeMutations(next: MutationObserver | null) {
+  observer = next;
+}
 
 function canUseStorage() {
   return typeof window !== "undefined" && typeof localStorage !== "undefined";
@@ -42,12 +52,22 @@ export function getState(): PlatformState {
   return state;
 }
 
-export function setState(updater: (prev: PlatformState) => PlatformState) {
+export function setState(
+  updater: (prev: PlatformState) => PlatformState,
+  options?: { silent?: boolean },
+) {
   const prev = getState();
   const next = updater(prev);
   state = { ...next, version: prev.version + 1 };
   persist(state);
   listeners.forEach((l) => l());
+  if (observer && !options?.silent) {
+    try {
+      observer(prev, state);
+    } catch (e) {
+      console.warn("[store] mutation observer failed", e);
+    }
+  }
   return state;
 }
 
@@ -63,8 +83,19 @@ export function resetPlatformStore() {
   return state;
 }
 
-export function uid(prefix: string) {
-  return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+/** UUID, а не читаемый префикс: тот же id уходит в Postgres, где PK — uuid. */
+export function uid() {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  const hex = "0123456789abcdef";
+  let out = "";
+  for (let i = 0; i < 36; i += 1) {
+    if (i === 8 || i === 13 || i === 18 || i === 23) out += "-";
+    else if (i === 14) out += "4";
+    else out += hex[Math.floor(Math.random() * 16)];
+  }
+  return out;
 }
 
 export function nowIso() {

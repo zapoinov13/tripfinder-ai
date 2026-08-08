@@ -12,6 +12,8 @@ import { toast } from "sonner";
 
 import { rolePermissions, type Role } from "@/lib/platform-contracts";
 import { getSupabase, isSupabaseConfigured } from "@/lib/supabase/client";
+import { hydrateUserDataFromSupabase } from "@/lib/supabase/hydrate";
+import { startPlatformSync } from "@/lib/supabase/sync";
 import { appendAudit, pushNotification, trackEvent } from "./catalog";
 import { usePlatformStore } from "./hooks";
 import { DEMO_PASSWORD } from "./seed";
@@ -76,11 +78,14 @@ function upsertLocalUser(profile: {
     ...(profile.organization_id ? { organizationId: profile.organization_id } : {}),
     createdAt: nowIso(),
   };
-  setState((s) => ({
-    ...s,
-    users: [...s.users.filter((u) => u.id !== user.id && u.email !== user.email), user],
-    session: { userId: user.id, createdAt: nowIso() },
-  }));
+  setState(
+    (s) => ({
+      ...s,
+      users: [...s.users.filter((u) => u.id !== user.id && u.email !== user.email), user],
+      session: { userId: user.id, createdAt: nowIso() },
+    }),
+    { silent: true },
+  );
   return user;
 }
 
@@ -120,16 +125,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
 
+    startPlatformSync();
+
     let mounted = true;
     const syncSession = async (userId: string | undefined) => {
       if (!userId) {
-        setState((s) => ({ ...s, session: null }));
+        setState((s) => ({ ...s, session: null }), { silent: true });
         return;
       }
       const profile = await fetchProfile(userId);
       if (!mounted) return;
-      if (profile) upsertLocalUser(profile);
-      else {
+      if (profile) {
+        upsertLocalUser(profile);
+        void hydrateUserDataFromSupabase(userId).then((res) => {
+          if (res.ok) console.info("[supabase] данные пользователя загружены", res);
+        });
+      } else {
         // profile trigger may lag — keep auth uid session with email from auth
         const { data } = await sb.auth.getUser();
         if (data.user) {
@@ -273,7 +284,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { ok: false, error: "Email уже зарегистрирован" };
       }
       const user: PlatformUser = {
-        id: uid("user"),
+        id: uid(),
         email,
         password,
         name: input.name.trim(),
@@ -402,8 +413,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (getState().users.some((u) => u.email === email)) {
         return { ok: false, error: "Email уже зарегистрирован" };
       }
-      const orgId = uid("org");
-      const userId = uid("user");
+      const orgId = uid();
+      const userId = uid();
       const org: Organization = {
         ...input.company,
         id: orgId,
@@ -432,7 +443,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         users: [...s.users, user],
         members: [
           ...s.members,
-          { id: uid("mem"), organizationId: orgId, userId, role: "OPERATOR_ADMIN" },
+          { id: uid(), organizationId: orgId, userId, role: "OPERATOR_ADMIN" },
         ],
         session: { userId, createdAt: nowIso() },
       }));
@@ -455,13 +466,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       ),
       payments: [
         {
-          id: uid("pay"),
+          id: uid(),
           userId: current,
           amount: config.premiumMonthlyPrice,
           currency: config.premiumCurrency,
           type: "premium_subscription",
           provider: "mock",
-          providerPaymentId: uid("mockpay"),
+          providerPaymentId: uid(),
           status: "paid",
           createdAt: nowIso(),
         },
@@ -469,7 +480,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       ],
       subscriptions: [
         {
-          id: uid("sub"),
+          id: uid(),
           userId: current,
           planId: "premium-monthly",
           status: "active",
@@ -497,7 +508,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         currency: config.premiumCurrency,
         type: "premium_subscription",
         provider: "mock",
-        provider_payment_id: uid("mockpay"),
+        provider_payment_id: uid(),
         status: "paid",
       });
     }

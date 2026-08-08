@@ -65,7 +65,7 @@ function OperatorPromotionPage() {
       ...s,
       promotions: [
         {
-          id: uid("promo"),
+          id: uid(),
           organizationId: organization.id,
           tourOfferId: tourId,
           type,
@@ -80,7 +80,7 @@ function OperatorPromotionPage() {
       ],
       payments: [
         {
-          id: uid("pay"),
+          id: uid(),
           userId: user.id,
           organizationId: organization.id,
           amount: price,

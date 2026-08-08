@@ -68,7 +68,7 @@ export class MockOperatorAdapter implements TourOperatorAdapter {
         t.id === tour.id ? { ...t, availability: Math.max(0, t.availability - 1) } : t,
       ),
     }));
-    return { externalBookingId: uid("extbook") };
+    return { externalBookingId: uid() };
   }
 
   async getBookingStatus(externalBookingId: string) {
@@ -95,7 +95,7 @@ export class MockOperatorAdapter implements TourOperatorAdapter {
     await delay(500);
     if (options?.fail) {
       const log = {
-        id: uid("sync"),
+        id: uid(),
         organizationId: this.organizationId,
         status: "error" as const,
         toursImported: 0,
@@ -132,7 +132,7 @@ export class MockOperatorAdapter implements TourOperatorAdapter {
     }));
 
     const log = {
-      id: uid("sync"),
+      id: uid(),
       organizationId: this.organizationId,
       status: "success" as const,
       toursImported: 0,
@@ -182,7 +182,7 @@ export class MockPaymentProvider implements PaymentProvider {
     metadata?: Record<string, unknown>;
   }) {
     await delay(250);
-    const providerPaymentId = uid("mockpay");
+    const providerPaymentId = uid();
     return { providerPaymentId };
   }
 

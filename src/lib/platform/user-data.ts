@@ -31,7 +31,7 @@ export function toggleFavorite(tourId: string, userId = userKey()) {
     ...s,
     favorites: [
       ...s.favorites,
-      { id: uid("fav"), userId, tourId, createdAt: nowIso() },
+      { id: uid(), userId, tourId, createdAt: nowIso() },
     ],
   }));
   trackEvent("TOUR_FAVORITED", userId === ANON ? undefined : userId, { tourId });
@@ -103,7 +103,7 @@ export function upsertPriceAlert(
     priceAlerts: [
       ...s.priceAlerts.filter((a) => !(a.userId === userId && a.tourId === alert.tourId)),
       {
-        id: uid("alert"),
+        id: uid(),
         userId,
         tourId: alert.tourId,
         targetPrice: alert.targetPrice,
@@ -134,7 +134,7 @@ export function migrateAnonymousToUser(userId: string) {
       ...s,
       favorites: [
         ...s.favorites.filter((f) => f.userId !== ANON),
-        ...anonFavs.map((f) => ({ ...f, userId, id: uid("fav") })),
+        ...anonFavs.map((f) => ({ ...f, userId, id: uid() })),
       ],
       comparisons: [
         ...s.comparisons.filter((c) => c.userId !== ANON && c.userId !== userId),
@@ -150,7 +150,7 @@ export function migrateAnonymousToUser(userId: string) {
       ],
       priceAlerts: [
         ...s.priceAlerts.filter((a) => a.userId !== ANON),
-        ...anonAlerts.map((a) => ({ ...a, userId, id: uid("alert") })),
+        ...anonAlerts.map((a) => ({ ...a, userId, id: uid() })),
       ],
     };
   });

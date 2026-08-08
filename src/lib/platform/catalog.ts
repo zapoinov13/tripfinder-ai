@@ -30,7 +30,7 @@ export function appendAudit(input: Omit<AuditLog, "id" | "createdAt">) {
   setState((s) => ({
     ...s,
     auditLogs: [
-      { ...input, id: uid("audit"), createdAt: nowIso() },
+      { ...input, id: uid(), createdAt: nowIso() },
       ...s.auditLogs,
     ].slice(0, 500),
   }));
@@ -38,7 +38,7 @@ export function appendAudit(input: Omit<AuditLog, "id" | "createdAt">) {
 
 export function trackEvent(type: string, userId?: string, payload?: Record<string, unknown>) {
   const event: AnalyticsEvent = {
-    id: uid("evt"),
+    id: uid(),
     type,
     createdAt: nowIso(),
     ...(userId ? { userId } : {}),
@@ -58,7 +58,7 @@ export function pushNotification(
   payload?: Record<string, unknown>,
 ) {
   const n: PlatformNotification = {
-    id: uid("notif"),
+    id: uid(),
     userId,
     type,
     title,

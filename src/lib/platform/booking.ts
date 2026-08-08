@@ -40,7 +40,7 @@ export async function createBookingFlow(input: {
   trackEvent("BOOKING_STARTED", input.userId, { tourId: input.tourId });
 
   let booking: Booking = {
-    id: uid("book"),
+    id: uid(),
     userId: input.userId,
     operatorId: tour.operatorId,
     organizationId: tour.operatorOrgId,
@@ -83,7 +83,7 @@ export async function createBookingFlow(input: {
       ...s,
       payments: [
         {
-          id: uid("pay"),
+          id: uid(),
           userId: input.userId,
           organizationId: tour.operatorOrgId,
           amount: booking.price,

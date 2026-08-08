@@ -37,7 +37,7 @@ function OperatorApiPage() {
     setState((s) => {
       const existing = s.apiConnections.find((c) => c.organizationId === organization.id);
       const next = {
-        id: existing?.id ?? uid("api"),
+        id: existing?.id ?? uid(),
         organizationId: organization.id,
         provider: "MockOperator",
         endpoint,

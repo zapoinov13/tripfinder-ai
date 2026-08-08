@@ -44,7 +44,7 @@ function OperatorBillingPage() {
       ),
       payments: [
         {
-          id: uid("pay"),
+          id: uid(),
           userId: user.id,
           organizationId: organization.id,
           amount: plan.price,
@@ -60,7 +60,7 @@ function OperatorBillingPage() {
       ],
       subscriptions: [
         {
-          id: uid("sub"),
+          id: uid(),
           organizationId: organization.id,
           planId: code,
           status: "active",

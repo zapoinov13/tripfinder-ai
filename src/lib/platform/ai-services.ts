@@ -97,7 +97,7 @@ export function saveAiSearch(
     ...s,
     aiSearches: [
       {
-        id: uid("ai"),
+        id: uid(),
         userId,
         originalQuery,
         parsed: parsed as unknown as Record<string, unknown>,

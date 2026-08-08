@@ -106,7 +106,7 @@ function OperatorCompanyPage() {
                 onClick={() => {
                   const email = managerEmail.trim().toLowerCase();
                   if (!email) return;
-                  const id = uid("user");
+                  const id = uid();
                   setState((s) => ({
                     ...s,
                     users: [
@@ -126,7 +126,7 @@ function OperatorCompanyPage() {
                     members: [
                       ...s.members,
                       {
-                        id: uid("mem"),
+                        id: uid(),
                         organizationId: organization.id,
                         userId: id,
                         role: "OPERATOR_MANAGER",
