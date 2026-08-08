@@ -226,7 +226,7 @@
   }
 }
 
-@keyframes voyago-fade-up {
+@keyframes tourgo-fade-up {
   from {
     opacity: 0;
     transform: translateY(18px);
@@ -237,7 +237,7 @@
   }
 }
 
-@keyframes voyago-soft-zoom {
+@keyframes tourgo-soft-zoom {
   from {
     transform: scale(1.06);
   }
@@ -247,11 +247,11 @@
 }
 
 @utility animate-fade-up {
-  animation: voyago-fade-up 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: tourgo-fade-up 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 @utility animate-soft-zoom {
-  animation: voyago-soft-zoom 1.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: tourgo-soft-zoom 1.4s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 @utility animation-delay-150 {

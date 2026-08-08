@@ -8,13 +8,13 @@ import { heroImage } from "@/data/demo";
 export const Route = createFileRoute("/for-operators")({
   head: () => ({
     meta: [
-      { title: "Для туроператоров — продавайте больше туров | Voyago" },
+      { title: "Для туроператоров — продавайте больше туров | TourGo" },
       {
         name: "description",
         content:
-          "Подключите свои туры к маркетплейсу Voyago через API и получайте новых клиентов из нашей аудитории.",
+          "Подключите свои туры к маркетплейсу TourGo через API и получайте новых клиентов из нашей аудитории.",
       },
-      { property: "og:title", content: "Для туроператоров — Voyago" },
+      { property: "og:title", content: "Для туроператоров — TourGo" },
       {
         property: "og:description",
         content: "Продавайте больше туров через единый marketplace.",

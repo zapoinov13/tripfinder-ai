@@ -1,4 +1,4 @@
-# Supabase setup (Voyago)
+# Supabase setup (TourGo)
 
 **Проект:** [mgyufoyornzbwvgdfojb](https://supabase.com/dashboard/project/mgyufoyornzbwvgdfojb)  
 **URL:** `https://mgyufoyornzbwvgdfojb.supabase.co`
@@ -37,7 +37,7 @@ VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_...
 ## Логины
 
 - `zapoinov@bk.ru` / `zapoinov@bk.ru` (PLATFORM_ADMIN)
-- демо: `*@voyago.demo` / `demo1234`
+- демо: `*@tourgo.demo` / `demo1234`
 
 ## Security
 

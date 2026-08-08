@@ -30,13 +30,13 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Voyago — найдите путешествие, которое подходит именно вам" },
+      { title: "TourGo — найдите путешествие, которое подходит именно вам" },
       {
         name: "description",
         content:
           "Маркетплейс туров: сравниваем предложения туроператоров, горящие туры и Premium-цены. Подбор тура с AI.",
       },
-      { property: "og:title", content: "Voyago — найдите путешествие, которое подходит именно вам" },
+      { property: "og:title", content: "TourGo — найдите путешествие, которое подходит именно вам" },
       {
         property: "og:description",
         content:
@@ -104,7 +104,7 @@ function Index() {
         <div className="container-page relative flex min-h-[92vh] flex-col justify-end pb-8 pt-24 md:min-h-[88vh] md:pb-12 md:pt-28">
           <div className="animate-fade-up max-w-3xl">
             <p className="font-display text-sm font-semibold tracking-[0.22em] text-primary-foreground/90 uppercase md:text-base">
-              Voyago
+              TourGo
             </p>
             <h1 className="mt-4 font-display text-4xl font-semibold tracking-tight text-primary-foreground md:text-6xl md:leading-[1.05]">
               Найдите путешествие, которое подходит именно вам
@@ -249,7 +249,7 @@ function Index() {
                 Больше путешествий. Меньше цены.
               </h2>
               <p className="mt-3 text-primary-foreground/75">
-                Эксклюзивные предложения и закрытые цены для подписчиков Voyago Premium.
+                Эксклюзивные предложения и закрытые цены для подписчиков TourGo Premium.
               </p>
               <Button size="lg" variant="secondary" className="mt-8" asChild>
                 <Link to="/premium">Открыть Premium</Link>
@@ -293,7 +293,7 @@ function Index() {
 
       <section className="container-page mt-16 md:mt-24">
         <SectionHead
-          title="Почему Voyago"
+          title="Почему TourGo"
           subtitle="Один маркетплейс — меньше хаоса при поиске тура"
         />
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -366,7 +366,7 @@ function Index() {
 
       <section className="container-page mt-16 md:mt-24">
         <SectionHead
-          title="Voyago и альтернативы"
+          title="TourGo и альтернативы"
           subtitle="Что вы получаете по сравнению с поиском вручную и походом в турагентство"
         />
         <div className="mt-8">
@@ -379,7 +379,7 @@ function Index() {
           <div>
             <SectionHead title="Частые вопросы" subtitle="Коротко о том, как всё устроено" />
             <Button variant="outline" className="mt-6" asChild>
-              <Link to="/about">Подробнее о Voyago</Link>
+              <Link to="/about">Подробнее о TourGo</Link>
             </Button>
           </div>
           <FaqSection />
@@ -395,7 +395,7 @@ function Index() {
             <div className="min-w-0">
               <h3 className="font-display text-lg font-semibold">Вы туроператор?</h3>
               <p className="mt-1 text-sm text-muted-foreground">
-                Подключите каталог и получайте бронирования из Voyago.
+                Подключите каталог и получайте бронирования из TourGo.
               </p>
             </div>
           </div>

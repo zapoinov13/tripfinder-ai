@@ -45,7 +45,7 @@ function AdminPromotionsPage() {
 
   return (
     <DashShell
-      brand="Voyago Админ"
+      brand="TourGo Админ"
       items={nav}
       title="Продвижение"
       subtitle="Цены пакетов и заказы операторов"

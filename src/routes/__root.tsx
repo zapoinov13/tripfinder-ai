@@ -82,12 +82,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Voyago — найдите путешествие, которое подходит именно вам" },
+      { title: "TourGo — найдите путешествие, которое подходит именно вам" },
       {
         name: "description",
         content: "Маркетплейс туров: сравниваем предложения туроператоров, горящие туры и Premium-цены. Подбор тура с AI.",
       },
-      { property: "og:title", content: "Voyago — найдите путешествие, которое подходит именно вам" },
+      { property: "og:title", content: "TourGo — найдите путешествие, которое подходит именно вам" },
       {
         property: "og:description",
         content: "Маркетплейс туров: сравниваем предложения туроператоров, горящие туры и Premium-цены. Подбор тура с AI.",
@@ -95,7 +95,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:site", content: "@Lovable" },
-      { name: "twitter:title", content: "Voyago — найдите путешествие, которое подходит именно вам" },
+      { name: "twitter:title", content: "TourGo — найдите путешествие, которое подходит именно вам" },
       { name: "twitter:description", content: "Маркетплейс туров: сравниваем предложения туроператоров, горящие туры и Premium-цены. Подбор тура с AI." },
       { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/324f72f0-8940-4e4a-88ed-890c8f9e59e4/id-preview-7349a270--1f9480c7-348a-4034-8bb8-191f4d4f153d.lovable.app-1785600063132.png" },
       { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/324f72f0-8940-4e4a-88ed-890c8f9e59e4/id-preview-7349a270--1f9480c7-348a-4034-8bb8-191f4d4f153d.lovable.app-1785600063132.png" },

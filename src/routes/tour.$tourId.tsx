@@ -59,7 +59,7 @@ export const Route = createFileRoute("/tour/$tourId")({
   head: ({ loaderData }) => {
     if (!loaderData) {
       return {
-        meta: [{ title: "Тур не найден — Voyago" }, { name: "robots", content: "noindex" }],
+        meta: [{ title: "Тур не найден — TourGo" }, { name: "robots", content: "noindex" }],
       };
     }
     const { hotel, tour } = loaderData;

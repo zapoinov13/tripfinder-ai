@@ -36,7 +36,7 @@ import { setState } from "@/lib/platform/store";
 import type { OperatorPlanCode, OrganizationStatus } from "@/lib/platform/types";
 
 export const Route = createFileRoute("/admin/operators")({
-  head: () => ({ meta: [{ title: "Операторы — Админ Voyago" }] }),
+  head: () => ({ meta: [{ title: "Операторы — Админ TourGo" }] }),
   component: AdminOperatorsPage,
 });
 
@@ -92,7 +92,7 @@ function AdminOperatorsPage() {
 
   return (
     <DashShell
-      brand="Voyago Админ"
+      brand="TourGo Админ"
       items={nav}
       title="Операторы"
       subtitle="Одобрение компаний и тарифы"

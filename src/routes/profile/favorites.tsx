@@ -9,7 +9,7 @@ import { useRequireAuth } from "@/lib/platform/auth";
 import { useTourState } from "@/lib/tour-state";
 
 export const Route = createFileRoute("/profile/favorites")({
-  head: () => ({ meta: [{ title: "Избранное — Voyago" }] }),
+  head: () => ({ meta: [{ title: "Избранное — TourGo" }] }),
   component: FavoritesProfilePage,
 });
 
@@ -20,7 +20,7 @@ function FavoritesProfilePage() {
   const tours = favorites.map((id) => getTour(id)).filter(Boolean);
 
   return (
-    <DashShell brand="Voyago" items={profileNav} title="Избранное" subtitle="Сохранённые туры">
+    <DashShell brand="TourGo" items={profileNav} title="Избранное" subtitle="Сохранённые туры">
       {tours.length === 0 ? (
         <div className="surface-card p-8 text-center">
           <p className="text-muted-foreground">Список пуст</p>

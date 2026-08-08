@@ -11,7 +11,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/profile/settings")({
-  head: () => ({ meta: [{ title: "Настройки — Voyago" }] }),
+  head: () => ({ meta: [{ title: "Настройки — TourGo" }] }),
   component: SettingsPage,
 });
 
@@ -23,7 +23,7 @@ function SettingsPage() {
   if (!allowed || !user) return null;
 
   return (
-    <DashShell brand="Voyago" items={profileNav} title="Настройки" subtitle="Профиль">
+    <DashShell brand="TourGo" items={profileNav} title="Настройки" subtitle="Профиль">
       <div className="surface-card max-w-lg space-y-4 p-6">
         <div className="space-y-2">
           <Label htmlFor="name">Имя</Label>

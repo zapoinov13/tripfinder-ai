@@ -42,7 +42,7 @@ function AdminPremiumPage() {
 
   return (
     <DashShell
-      brand="Voyago Админ"
+      brand="TourGo Админ"
       items={nav}
       title="Premium"
       subtitle="Цена подписки и активные подписчики"

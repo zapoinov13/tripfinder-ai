@@ -18,7 +18,7 @@ import { usePlatformStore } from "@/lib/platform/hooks";
 
 export const Route = createFileRoute("/operator/")({
   head: () => ({
-    meta: [{ title: "Кабинет туроператора — Voyago" }],
+    meta: [{ title: "Кабинет туроператора — TourGo" }],
   }),
   component: OperatorDashboard,
 });

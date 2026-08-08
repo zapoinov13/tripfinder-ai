@@ -22,7 +22,7 @@ import { nowIso, setState, uid } from "@/lib/platform/store";
 import type { PromotionType } from "@/lib/platform/types";
 
 export const Route = createFileRoute("/operator/promotion")({
-  head: () => ({ meta: [{ title: "Продвижение — Voyago" }] }),
+  head: () => ({ meta: [{ title: "Продвижение — TourGo" }] }),
   component: OperatorPromotionPage,
 });
 

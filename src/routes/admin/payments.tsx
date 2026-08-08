@@ -63,7 +63,7 @@ function AdminPaymentsPage() {
 
   return (
     <DashShell
-      brand="Voyago Админ"
+      brand="TourGo Админ"
       items={nav}
       title="Платежи"
       subtitle="Транзакции платформы"

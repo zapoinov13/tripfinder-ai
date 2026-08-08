@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 
 type Cell = boolean | "partial";
 
-const columns = ["Voyago", "Сайты операторов", "Турагентство"] as const;
+const columns = ["TourGo", "Сайты операторов", "Турагентство"] as const;
 
 const rows: { label: string; values: [Cell, Cell, Cell] }[] = [
   { label: "Все операторы в одном поиске", values: [true, false, "partial"] },

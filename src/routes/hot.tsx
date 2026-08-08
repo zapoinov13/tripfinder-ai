@@ -7,12 +7,12 @@ import { tours } from "@/data/demo";
 export const Route = createFileRoute("/hot")({
   head: () => ({
     meta: [
-      { title: "Горящие туры — лучшие цены на ближайшие даты | Voyago" },
+      { title: "Горящие туры — лучшие цены на ближайшие даты | TourGo" },
       {
         name: "description",
         content: "Горящие туры со скидками до 30% на ближайшие вылеты от проверенных операторов.",
       },
-      { property: "og:title", content: "Горящие туры — Voyago" },
+      { property: "og:title", content: "Горящие туры — TourGo" },
       { property: "og:description", content: "Лучшие предложения на ближайшие даты." },
     ],
   }),

@@ -43,7 +43,7 @@ export function ChatDemo() {
           <Sparkles className="size-4" />
         </span>
         <div className="min-w-0">
-          <p className="font-display text-sm font-semibold">Voyago AI</p>
+          <p className="font-display text-sm font-semibold">TourGo AI</p>
           <p className="text-xs text-success">● онлайн · отвечает за секунды</p>
         </div>
       </div>

@@ -19,12 +19,12 @@ declare
 begin
   for u in
     select * from (values
-      ('aaaaaaaa-bbbb-cccc-dddd-000000000001'::uuid, 'tourist@voyago.demo', 'Айгерим Турист', 'Алматы', 'TOURIST', null::uuid),
-      ('aaaaaaaa-bbbb-cccc-dddd-000000000002'::uuid, 'premium@voyago.demo', 'Данияр Premium', 'Астана', 'PREMIUM_TOURIST', null::uuid),
-      ('aaaaaaaa-bbbb-cccc-dddd-000000000003'::uuid, 'operator@voyago.demo', 'Алишер Оператор', 'Алматы', 'OPERATOR_ADMIN', '11111111-1111-1111-1111-111111111101'::uuid),
-      ('aaaaaaaa-bbbb-cccc-dddd-000000000004'::uuid, 'pending@voyago.demo', 'Новый Оператор', 'Шымкент', 'OPERATOR_ADMIN', '11111111-1111-1111-1111-111111111105'::uuid),
-      ('aaaaaaaa-bbbb-cccc-dddd-000000000005'::uuid, 'admin@voyago.demo', 'Admin Voyago', 'Алматы', 'PLATFORM_ADMIN', null::uuid),
-      ('aaaaaaaa-bbbb-cccc-dddd-000000000006'::uuid, 'manager@voyago.demo', 'Менеджер Оператор', 'Алматы', 'OPERATOR_MANAGER', '11111111-1111-1111-1111-111111111101'::uuid)
+      ('aaaaaaaa-bbbb-cccc-dddd-000000000001'::uuid, 'tourist@tourgo.demo', 'Айгерим Турист', 'Алматы', 'TOURIST', null::uuid),
+      ('aaaaaaaa-bbbb-cccc-dddd-000000000002'::uuid, 'premium@tourgo.demo', 'Данияр Premium', 'Астана', 'PREMIUM_TOURIST', null::uuid),
+      ('aaaaaaaa-bbbb-cccc-dddd-000000000003'::uuid, 'operator@tourgo.demo', 'Алишер Оператор', 'Алматы', 'OPERATOR_ADMIN', '11111111-1111-1111-1111-111111111101'::uuid),
+      ('aaaaaaaa-bbbb-cccc-dddd-000000000004'::uuid, 'pending@tourgo.demo', 'Новый Оператор', 'Шымкент', 'OPERATOR_ADMIN', '11111111-1111-1111-1111-111111111105'::uuid),
+      ('aaaaaaaa-bbbb-cccc-dddd-000000000005'::uuid, 'admin@tourgo.demo', 'Admin TourGo', 'Алматы', 'PLATFORM_ADMIN', null::uuid),
+      ('aaaaaaaa-bbbb-cccc-dddd-000000000006'::uuid, 'manager@tourgo.demo', 'Менеджер Оператор', 'Алматы', 'OPERATOR_MANAGER', '11111111-1111-1111-1111-111111111101'::uuid)
     ) as t(id, email, name, city, role, org_id)
   loop
     insert into auth.users (

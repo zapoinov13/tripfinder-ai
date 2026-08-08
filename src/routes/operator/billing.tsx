@@ -13,7 +13,7 @@ import { nowIso, setState, uid } from "@/lib/platform/store";
 import type { OperatorPlanCode } from "@/lib/platform/types";
 
 export const Route = createFileRoute("/operator/billing")({
-  head: () => ({ meta: [{ title: "Тариф оператора — Voyago" }] }),
+  head: () => ({ meta: [{ title: "Тариф оператора — TourGo" }] }),
   component: OperatorBillingPage,
 });
 

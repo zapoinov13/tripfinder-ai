@@ -43,7 +43,7 @@ function AdminAnalyticsPage() {
 
   return (
     <DashShell
-      brand="Voyago Админ"
+      brand="TourGo Админ"
       items={nav}
       title="Аналитика"
       subtitle="События и трекинг"

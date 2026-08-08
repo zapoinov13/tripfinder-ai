@@ -8,7 +8,7 @@ import { useAuth, useRequireAuth } from "@/lib/platform/auth";
 import { usePlatformStore } from "@/lib/platform/hooks";
 
 export const Route = createFileRoute("/operator/analytics")({
-  head: () => ({ meta: [{ title: "Аналитика оператора — Voyago" }] }),
+  head: () => ({ meta: [{ title: "Аналитика оператора — TourGo" }] }),
   component: OperatorAnalyticsPage,
 });
 

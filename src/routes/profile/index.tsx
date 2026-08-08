@@ -12,7 +12,7 @@ import { useTourState } from "@/lib/tour-state";
 export const Route = createFileRoute("/profile/")({
   head: () => ({
     meta: [
-      { title: "Личный кабинет путешественника — Voyago" },
+      { title: "Личный кабинет путешественника — TourGo" },
       {
         name: "description",
         content: "Избранные туры, история поиска, заявки и настройки Premium-подписки.",
@@ -45,7 +45,7 @@ function ProfilePage() {
 
   return (
     <DashShell
-      brand="Voyago"
+      brand="TourGo"
       items={profileNav}
       title={user.name}
       subtitle={`${user.email} · ${user.city}`}

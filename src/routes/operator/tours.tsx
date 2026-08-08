@@ -20,7 +20,7 @@ import { nowIso, setState } from "@/lib/platform/store";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/operator/tours")({
-  head: () => ({ meta: [{ title: "Туры оператора — Voyago" }] }),
+  head: () => ({ meta: [{ title: "Туры оператора — TourGo" }] }),
   component: OperatorToursPage,
 });
 

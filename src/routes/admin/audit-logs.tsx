@@ -51,7 +51,7 @@ function AdminAuditLogsPage() {
 
   return (
     <DashShell
-      brand="Voyago Админ"
+      brand="TourGo Админ"
       items={nav}
       title="Журнал аудита"
       subtitle="Действия администраторов"

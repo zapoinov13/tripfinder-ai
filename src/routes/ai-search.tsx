@@ -10,7 +10,7 @@ export const Route = createFileRoute("/ai-search")({
     typeof search["q"] === "string" && search["q"].length > 0 ? { q: search["q"] } : {},
   head: () => ({
     meta: [
-      { title: "AI Search — Voyago" },
+      { title: "AI Search — TourGo" },
       { name: "description", content: "Опишите путешествие обычным текстом или голосом." },
     ],
   }),
@@ -32,7 +32,7 @@ function AiSearchPage() {
             Расскажите, куда хотите поехать
           </h1>
           <p className="mt-3 text-muted-foreground">
-            Voyago превратит свободный запрос в параметры поиска и покажет подходящие туры.
+            TourGo превратит свободный запрос в параметры поиска и покажет подходящие туры.
           </p>
         </div>
         <div className="mt-8">

@@ -15,7 +15,7 @@ import type {
 } from "./types";
 
 export const DEMO_PASSWORD = "demo1234";
-export const STORE_KEY = "voyago:platform-v1";
+export const STORE_KEY = "tourgo:platform-v1";
 
 const cities = ["Алматы", "Астана", "Шымкент", "Актау"];
 const monthNames = [
@@ -170,7 +170,7 @@ function buildUsers(orgs: Organization[]): PlatformUser[] {
   return [
     {
       id: "user-tourist",
-      email: "tourist@voyago.demo",
+      email: "tourist@tourgo.demo",
       password: DEMO_PASSWORD,
       name: "Айгерим Турист",
       city: "Алматы",
@@ -180,7 +180,7 @@ function buildUsers(orgs: Organization[]): PlatformUser[] {
     },
     {
       id: "user-premium",
-      email: "premium@voyago.demo",
+      email: "premium@tourgo.demo",
       password: DEMO_PASSWORD,
       name: "Данияр Premium",
       city: "Астана",
@@ -190,7 +190,7 @@ function buildUsers(orgs: Organization[]): PlatformUser[] {
     },
     {
       id: "user-operator",
-      email: "operator@voyago.demo",
+      email: "operator@tourgo.demo",
       password: DEMO_PASSWORD,
       name: "Алишер Оператор",
       city: "Алматы",
@@ -201,7 +201,7 @@ function buildUsers(orgs: Organization[]): PlatformUser[] {
     },
     {
       id: "user-pending",
-      email: "pending@voyago.demo",
+      email: "pending@tourgo.demo",
       password: DEMO_PASSWORD,
       name: "Новый Оператор",
       city: "Шымкент",
@@ -212,9 +212,9 @@ function buildUsers(orgs: Organization[]): PlatformUser[] {
     },
     {
       id: "user-admin",
-      email: "admin@voyago.demo",
+      email: "admin@tourgo.demo",
       password: DEMO_PASSWORD,
-      name: "Admin Voyago",
+      name: "Admin TourGo",
       city: "Алматы",
       role: "PLATFORM_ADMIN",
       status: "active",
@@ -222,7 +222,7 @@ function buildUsers(orgs: Organization[]): PlatformUser[] {
     },
     {
       id: "user-manager",
-      email: "manager@voyago.demo",
+      email: "manager@tourgo.demo",
       password: DEMO_PASSWORD,
       name: "Менеджер Оператор",
       city: "Алматы",
@@ -302,7 +302,7 @@ export function createSeedState(): PlatformState {
         id: "notif-1",
         userId: "user-tourist",
         type: "important_update",
-        title: "Добро пожаловать в Voyago",
+        title: "Добро пожаловать в TourGo",
         body: "Начните поиск тура или опишите поездку AI-консьержу.",
         read: false,
         createdAt: ts,
@@ -351,7 +351,7 @@ export function createSeedState(): PlatformState {
         id: "api-1",
         organizationId: orgs[0]!.id,
         provider: "MockOperator",
-        endpoint: "https://mock.voyago.local/api",
+        endpoint: "https://mock.tourgo.local/api",
         apiKeyMasked: "****demo",
         secretMasked: "****cret",
         apiKey: "demo-api-key",

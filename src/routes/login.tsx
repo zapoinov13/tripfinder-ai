@@ -14,8 +14,8 @@ import { migrateAnonymousToUser } from "@/lib/platform/user-data";
 export const Route = createFileRoute("/login")({
   head: () => ({
     meta: [
-      { title: "Вход — Voyago" },
-      { name: "description", content: "Войдите в личный кабинет Voyago." },
+      { title: "Вход — TourGo" },
+      { name: "description", content: "Войдите в личный кабинет TourGo." },
     ],
   }),
   component: LoginPage,
@@ -24,7 +24,7 @@ export const Route = createFileRoute("/login")({
 function LoginPage() {
   const { login, user, supabaseEnabled } = useAuth();
   const navigate = useNavigate();
-  const [email, setEmail] = useState("tourist@voyago.demo");
+  const [email, setEmail] = useState("tourist@tourgo.demo");
   const [password, setPassword] = useState(DEMO_PASSWORD);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -42,9 +42,9 @@ function LoginPage() {
     <SiteLayout>
       <div className="container-page grid min-h-[70vh] place-items-center py-10">
         <div className="surface-card w-full max-w-md p-6 md:p-8">
-          <h1 className="font-display text-2xl font-semibold">Войти в Voyago</h1>
+          <h1 className="font-display text-2xl font-semibold">Войти в TourGo</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Демо: tourist / premium / operator / admin @voyago.demo · пароль {DEMO_PASSWORD}
+            Демо: tourist / premium / operator / admin @tourgo.demo · пароль {DEMO_PASSWORD}
             {supabaseEnabled ? " · Supabase Auth" : " · local store"}
           </p>
           <form

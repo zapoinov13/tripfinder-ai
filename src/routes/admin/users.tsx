@@ -35,7 +35,7 @@ import { usePlatformStore } from "@/lib/platform/hooks";
 import { setState } from "@/lib/platform/store";
 
 export const Route = createFileRoute("/admin/users")({
-  head: () => ({ meta: [{ title: "Пользователи — Админ Voyago" }] }),
+  head: () => ({ meta: [{ title: "Пользователи — Админ TourGo" }] }),
   component: AdminUsersPage,
 });
 
@@ -68,7 +68,7 @@ function AdminUsersPage() {
 
   return (
     <DashShell
-      brand="Voyago Админ"
+      brand="TourGo Админ"
       items={nav}
       title="Пользователи"
       subtitle="Поиск, роли и блокировка"

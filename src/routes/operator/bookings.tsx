@@ -17,7 +17,7 @@ import { setBookingStatus } from "@/lib/platform/booking";
 import { usePlatformStore } from "@/lib/platform/hooks";
 
 export const Route = createFileRoute("/operator/bookings")({
-  head: () => ({ meta: [{ title: "Бронирования оператора — Voyago" }] }),
+  head: () => ({ meta: [{ title: "Бронирования оператора — TourGo" }] }),
   component: OperatorBookingsPage,
 });
 

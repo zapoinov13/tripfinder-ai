@@ -65,7 +65,7 @@ function AdminApiMonitoringPage() {
 
   return (
     <DashShell
-      brand="Voyago Админ"
+      brand="TourGo Админ"
       items={nav}
       title="Мониторинг API"
       subtitle="Статус интеграций операторов"

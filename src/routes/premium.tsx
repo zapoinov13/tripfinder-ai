@@ -11,7 +11,7 @@ import { useEffect } from "react";
 export const Route = createFileRoute("/premium")({
   head: () => ({
     meta: [
-      { title: "Premium — закрытые цены и эксклюзивные туры | Voyago" },
+      { title: "Premium — закрытые цены и эксклюзивные туры | TourGo" },
       {
         name: "description",
         content:

@@ -19,9 +19,9 @@ export const Route = createFileRoute("/destination/$destinationId")({
   },
   head: ({ loaderData }) => {
     if (!loaderData) {
-      return { meta: [{ title: "Направление не найдено — Voyago" }, { name: "robots", content: "noindex" }] };
+      return { meta: [{ title: "Направление не найдено — TourGo" }, { name: "robots", content: "noindex" }] };
     }
-    const title = `Туры в ${loaderData.dest.country} — курорты и цены | Voyago`;
+    const title = `Туры в ${loaderData.dest.country} — курорты и цены | TourGo`;
     const description = `Все курорты направления ${loaderData.dest.country}: ${getResorts(loaderData.dest.id)
       .slice(0, 4)
       .map((r) => r.name)

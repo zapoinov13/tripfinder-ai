@@ -13,7 +13,7 @@ import { DEMO_PASSWORD } from "@/lib/platform/seed";
 import { nowIso, setState, uid } from "@/lib/platform/store";
 
 export const Route = createFileRoute("/operator/company")({
-  head: () => ({ meta: [{ title: "Компания — Voyago" }] }),
+  head: () => ({ meta: [{ title: "Компания — TourGo" }] }),
   component: OperatorCompanyPage,
 });
 

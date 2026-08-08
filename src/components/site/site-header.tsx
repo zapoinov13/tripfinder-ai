@@ -31,7 +31,7 @@ export function SiteHeader() {
           <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground">
             <Plane className="size-4" />
           </span>
-          <span className="truncate font-display text-lg font-semibold tracking-tight">Voyago</span>
+          <span className="truncate font-display text-lg font-semibold tracking-tight">TourGo</span>
         </Link>
 
         <nav className="hidden items-center justify-center gap-1 md:flex">

@@ -1,6 +1,6 @@
 # Local Platform Layer
 
-Voyago MVP runs without Supabase. All domain data is in `localStorage` (`voyago:platform-v1`).
+TourGo MVP runs without Supabase. All domain data is in `localStorage` (`tourgo:platform-v1`).
 
 ## Demo accounts
 
@@ -8,12 +8,12 @@ Password for all: `demo1234`
 
 | Email | Role |
 |-------|------|
-| tourist@voyago.demo | TOURIST |
-| premium@voyago.demo | PREMIUM_TOURIST |
-| operator@voyago.demo | OPERATOR_ADMIN |
-| manager@voyago.demo | OPERATOR_MANAGER |
-| pending@voyago.demo | OPERATOR_ADMIN (pending org) |
-| admin@voyago.demo | PLATFORM_ADMIN |
+| tourist@tourgo.demo | TOURIST |
+| premium@tourgo.demo | PREMIUM_TOURIST |
+| operator@tourgo.demo | OPERATOR_ADMIN |
+| manager@tourgo.demo | OPERATOR_MANAGER |
+| pending@tourgo.demo | OPERATOR_ADMIN (pending org) |
+| admin@tourgo.demo | PLATFORM_ADMIN |
 
 ## Swap to Supabase later
 

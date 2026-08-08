@@ -6,12 +6,12 @@ import { destinations } from "@/data/demo";
 export const Route = createFileRoute("/destinations")({
   head: () => ({
     meta: [
-      { title: "Направления — куда поехать | Voyago" },
+      { title: "Направления — куда поехать | TourGo" },
       {
         name: "description",
         content: "10 популярных направлений: Турция, ОАЭ, Таиланд, Египет, Мальдивы и другие.",
       },
-      { property: "og:title", content: "Направления — Voyago" },
+      { property: "og:title", content: "Направления — TourGo" },
       { property: "og:description", content: "Идеи для вашего следующего путешествия." },
     ],
   }),

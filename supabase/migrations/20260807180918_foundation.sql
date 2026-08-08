@@ -1,4 +1,4 @@
--- Voyago foundation schema + RLS
+-- TourGo foundation schema + RLS
 create extension if not exists "pgcrypto";
 
 -- Roles enum-like text checked in app

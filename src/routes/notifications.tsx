@@ -10,7 +10,7 @@ import { setState } from "@/lib/platform/store";
 export const Route = createFileRoute("/notifications")({
   head: () => ({
     meta: [
-      { title: "Уведомления — Voyago" },
+      { title: "Уведомления — TourGo" },
       {
         name: "description",
         content: "Центр уведомлений: бронирования, снижение цены, Premium deals и важные обновления.",

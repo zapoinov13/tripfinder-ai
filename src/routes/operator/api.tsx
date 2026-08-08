@@ -14,7 +14,7 @@ import { usePlatformStore } from "@/lib/platform/hooks";
 import { nowIso, setState, uid } from "@/lib/platform/store";
 
 export const Route = createFileRoute("/operator/api")({
-  head: () => ({ meta: [{ title: "API интеграции — Voyago" }] }),
+  head: () => ({ meta: [{ title: "API интеграции — TourGo" }] }),
   component: OperatorApiPage,
 });
 
@@ -22,7 +22,7 @@ function OperatorApiPage() {
   const { allowed } = useRequireAuth(["OPERATOR_ADMIN", "OPERATOR_MANAGER"]);
   const { user, organization } = useAuth();
   const state = usePlatformStore();
-  const [endpoint, setEndpoint] = useState("https://mock.voyago.local/api");
+  const [endpoint, setEndpoint] = useState("https://mock.tourgo.local/api");
   const [apiKey, setApiKey] = useState("");
   const [secret, setSecret] = useState("");
   const [busy, setBusy] = useState(false);

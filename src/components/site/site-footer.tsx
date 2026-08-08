@@ -40,7 +40,7 @@ export function SiteFooter() {
             <span className="grid size-9 place-items-center rounded-xl bg-primary text-primary-foreground">
               <Plane className="size-4" />
             </span>
-            <span className="font-display text-lg font-semibold">Voyago</span>
+            <span className="font-display text-lg font-semibold">TourGo</span>
           </div>
           <p className="mt-4 max-w-xs text-sm text-muted-foreground">
             Маркетплейс туров: сравниваем предложения операторов и помогаем найти лучшее.

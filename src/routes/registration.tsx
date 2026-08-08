@@ -13,7 +13,7 @@ import { DEMO_PASSWORD } from "@/lib/platform/seed";
 export const Route = createFileRoute("/registration")({
   head: () => ({
     meta: [
-      { title: "Регистрация — Voyago" },
+      { title: "Регистрация — TourGo" },
       { name: "description", content: "Создайте аккаунт туриста или подайте заявку туроператора." },
     ],
   }),

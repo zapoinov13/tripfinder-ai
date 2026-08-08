@@ -36,13 +36,13 @@ export const Route = createFileRoute("/search")({
   validateSearch: validateSearchParams,
   head: () => ({
     meta: [
-      { title: "Поиск туров — сравните предложения операторов | Voyago" },
+      { title: "Поиск туров — сравните предложения операторов | TourGo" },
       {
         name: "description",
         content:
           "Туры от проверенных операторов: фильтры по цене, питанию, отелю, рейтингу и удобствам.",
       },
-      { property: "og:title", content: "Поиск туров — Voyago" },
+      { property: "og:title", content: "Поиск туров — TourGo" },
       { property: "og:description", content: "Сравните туры от разных операторов в одном месте." },
     ],
   }),

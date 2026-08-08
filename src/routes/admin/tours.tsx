@@ -29,7 +29,7 @@ import { usePlatformStore } from "@/lib/platform/hooks";
 import { setState } from "@/lib/platform/store";
 
 export const Route = createFileRoute("/admin/tours")({
-  head: () => ({ meta: [{ title: "Туры — Админ Voyago" }] }),
+  head: () => ({ meta: [{ title: "Туры — Админ TourGo" }] }),
   component: AdminToursPage,
 });
 
@@ -66,7 +66,7 @@ function AdminToursPage() {
 
   return (
     <DashShell
-      brand="Voyago Админ"
+      brand="TourGo Админ"
       items={nav}
       title="Туры"
       subtitle="Модерация каталога"

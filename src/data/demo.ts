@@ -390,7 +390,7 @@ export const getOperator = (id: string) => operators.find((o) => o.id === id)!;
 export const getTour = (id: string) => {
   if (typeof window !== "undefined") {
     try {
-      const raw = localStorage.getItem("voyago:platform-v1");
+      const raw = localStorage.getItem("tourgo:platform-v1");
       if (raw) {
         const parsed = JSON.parse(raw) as { tours?: Tour[] };
         const live = parsed.tours?.find((t) => t.id === id);

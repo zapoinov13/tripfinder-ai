@@ -76,7 +76,7 @@ function AdminBookingsPage() {
 
   return (
     <DashShell
-      brand="Voyago Админ"
+      brand="TourGo Админ"
       items={nav}
       title="Бронирования"
       subtitle="Все заказы на платформе"

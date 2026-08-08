@@ -16,7 +16,7 @@ import { useRequireAuth } from "@/lib/platform/auth";
 import { usePlatformStore } from "@/lib/platform/hooks";
 
 export const Route = createFileRoute("/admin/")({
-  head: () => ({ meta: [{ title: "Админ — Voyago" }] }),
+  head: () => ({ meta: [{ title: "Админ — TourGo" }] }),
   component: AdminDashboard,
 });
 
@@ -70,7 +70,7 @@ function AdminDashboard() {
 
   return (
     <DashShell
-      brand="Voyago Админ"
+      brand="TourGo Админ"
       items={nav}
       title="Обзор"
       subtitle="Ключевые показатели и задачи"

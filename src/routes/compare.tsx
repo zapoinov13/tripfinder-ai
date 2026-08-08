@@ -19,12 +19,12 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/compare")({
   head: () => ({
     meta: [
-      { title: "Сравнение туров — Voyago" },
+      { title: "Сравнение туров — TourGo" },
       {
         name: "description",
         content: "Сравните выбранные туры по цене, отелю, питанию, перелёту и удобствам.",
       },
-      { property: "og:title", content: "Сравните туры — Voyago" },
+      { property: "og:title", content: "Сравните туры — TourGo" },
       { property: "og:description", content: "Все параметры выбранных туров рядом." },
     ],
   }),
