@@ -1,4 +1,8 @@
-import type { NormalizedTourOffer, PaymentProvider, TourOperatorAdapter } from "@/lib/platform-contracts";
+import type {
+  NormalizedTourOffer,
+  PaymentProvider,
+  TourOperatorAdapter,
+} from "@/lib/platform-contracts";
 import { getTour } from "./catalog";
 import { getState, nowIso, setState, uid } from "./store";
 import type { PlatformTour } from "./types";
@@ -46,7 +50,10 @@ export class MockOperatorAdapter implements TourOperatorAdapter {
     await delay(150);
     const tour = findByExternal(externalTourId);
     if (!tour) return { available: false, seats: 0 };
-    return { available: tour.availability > 0 && tour.status === "active", seats: tour.availability };
+    return {
+      available: tour.availability > 0 && tour.status === "active",
+      seats: tour.availability,
+    };
   }
 
   async getPrices(externalTourId: string) {
@@ -54,7 +61,7 @@ export class MockOperatorAdapter implements TourOperatorAdapter {
     const tour = findByExternal(externalTourId);
     if (!tour) throw new Error("Tour not found");
     // slight price jitter for recheck realism
-    const jitter = Math.round((Math.random() * 2 - 1) * 5000 / 1000) * 1000;
+    const jitter = Math.round(((Math.random() * 2 - 1) * 5000) / 1000) * 1000;
     return { price: Math.max(100000, tour.price + jitter), currency: tour.currency };
   }
 
@@ -124,11 +131,11 @@ export class MockOperatorAdapter implements TourOperatorAdapter {
         updated += 1;
         return { ...t, lastSyncedAt: nowIso(), availability: Math.max(1, t.availability) };
       }),
-        apiConnections: s.apiConnections.map((c) => {
-          if (c.organizationId !== this.organizationId) return c;
-          const { lastError: _drop, ...rest } = c;
-          return { ...rest, status: "connected" as const, lastSyncAt: nowIso() };
-        }),
+      apiConnections: s.apiConnections.map((c) => {
+        if (c.organizationId !== this.organizationId) return c;
+        const { lastError: _drop, ...rest } = c;
+        return { ...rest, status: "connected" as const, lastSyncAt: nowIso() };
+      }),
     }));
 
     const log = {

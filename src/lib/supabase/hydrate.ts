@@ -20,94 +20,99 @@ export async function hydrateCatalogFromSupabase() {
   }
 
   // silent: приезжающие из БД данные не должны улетать обратно как изменения
-  setState((s) => {
-    let next = { ...s };
+  setState(
+    (s) => {
+      let next = { ...s };
 
-    if (configRes.data) {
-      const c = configRes.data;
-      next = {
-        ...next,
-        config: {
-          ...next.config,
-          premiumMonthlyPrice: Number(c.premium_monthly_price),
-          premiumCurrency: c.premium_currency,
-          operatorPlans: (c.operator_plans as PlatformConfig["operatorPlans"]) ?? next.config.operatorPlans,
-          promotionPrices:
-            (c.promotion_prices as PlatformConfig["promotionPrices"]) ?? next.config.promotionPrices,
-          rankingWeights:
-            (c.ranking_weights as PlatformConfig["rankingWeights"]) ?? next.config.rankingWeights,
-        },
-      };
-    }
-
-    if (orgsRes.data?.length) {
-      next = {
-        ...next,
-        organizations: orgsRes.data.map((o) => ({
-          id: o.id,
-          name: o.name,
-          legalName: o.legal_name,
-          registrationNumber: o.registration_number,
-          country: o.country,
-          city: o.city,
-          address: o.address,
-          phone: o.phone,
-          email: o.email,
-          website: o.website,
-          contactPerson: o.contact_person,
-          status: o.status,
-          planCode: o.plan_code,
-          additionalTourLimit: o.additional_tour_limit,
-          advertisingBalance: Number(o.advertising_balance),
-          promotionBalance: Number(o.promotion_balance),
-          createdAt: o.created_at,
-        })),
-      };
-    }
-
-    if (toursRes.data?.length) {
-      const mapped: PlatformTour[] = toursRes.data.map((t) => {
-        // ensure hotel exists locally for images
-        try {
-          getHotel(t.hotel_id);
-        } catch {
-          /* ignore */
-        }
-        return {
-          id: t.id,
-          hotelId: t.hotel_id,
-          operatorId: t.operator_id,
-          operatorOrgId: t.operator_org_id ?? `org-${t.operator_id}`,
-          from: t.from_city,
-          nights: t.nights,
-          dateStart: t.date_start,
-          dateEnd: t.date_end,
-          departure: t.departure,
-          mealCode: t.meal_code,
-          meal: t.meal,
-          price: Number(t.price),
-          ...(t.old_price != null ? { oldPrice: Number(t.old_price) } : {}),
-          ...(t.premium_price != null ? { premiumPrice: Number(t.premium_price) } : {}),
-          tags: (t.tags ?? []) as TourTag[],
-          adults: t.adults,
-          children: t.children,
-          transfer: t.transfer,
-          views: t.views,
-          bookings: t.bookings,
-          createdAt: t.created_at?.slice?.(0, 10) ?? t.created_at,
-          externalId: t.external_id,
-          roomType: t.room_type,
-          currency: t.currency,
-          availability: t.availability,
-          status: t.status,
-          lastSyncedAt: t.last_synced_at,
+      if (configRes.data) {
+        const c = configRes.data;
+        next = {
+          ...next,
+          config: {
+            ...next.config,
+            premiumMonthlyPrice: Number(c.premium_monthly_price),
+            premiumCurrency: c.premium_currency,
+            operatorPlans:
+              (c.operator_plans as PlatformConfig["operatorPlans"]) ?? next.config.operatorPlans,
+            promotionPrices:
+              (c.promotion_prices as PlatformConfig["promotionPrices"]) ??
+              next.config.promotionPrices,
+            rankingWeights:
+              (c.ranking_weights as PlatformConfig["rankingWeights"]) ?? next.config.rankingWeights,
+          },
         };
-      });
-      next = { ...next, tours: mapped };
-    }
+      }
 
-    return next;
-  }, { silent: true });
+      if (orgsRes.data?.length) {
+        next = {
+          ...next,
+          organizations: orgsRes.data.map((o) => ({
+            id: o.id,
+            name: o.name,
+            legalName: o.legal_name,
+            registrationNumber: o.registration_number,
+            country: o.country,
+            city: o.city,
+            address: o.address,
+            phone: o.phone,
+            email: o.email,
+            website: o.website,
+            contactPerson: o.contact_person,
+            status: o.status,
+            planCode: o.plan_code,
+            additionalTourLimit: o.additional_tour_limit,
+            advertisingBalance: Number(o.advertising_balance),
+            promotionBalance: Number(o.promotion_balance),
+            createdAt: o.created_at,
+          })),
+        };
+      }
+
+      if (toursRes.data?.length) {
+        const mapped: PlatformTour[] = toursRes.data.map((t) => {
+          // ensure hotel exists locally for images
+          try {
+            getHotel(t.hotel_id);
+          } catch {
+            /* ignore */
+          }
+          return {
+            id: t.id,
+            hotelId: t.hotel_id,
+            operatorId: t.operator_id,
+            operatorOrgId: t.operator_org_id ?? `org-${t.operator_id}`,
+            from: t.from_city,
+            nights: t.nights,
+            dateStart: t.date_start,
+            dateEnd: t.date_end,
+            departure: t.departure,
+            mealCode: t.meal_code,
+            meal: t.meal,
+            price: Number(t.price),
+            ...(t.old_price != null ? { oldPrice: Number(t.old_price) } : {}),
+            ...(t.premium_price != null ? { premiumPrice: Number(t.premium_price) } : {}),
+            tags: (t.tags ?? []) as TourTag[],
+            adults: t.adults,
+            children: t.children,
+            transfer: t.transfer,
+            views: t.views,
+            bookings: t.bookings,
+            createdAt: t.created_at?.slice?.(0, 10) ?? t.created_at,
+            externalId: t.external_id,
+            roomType: t.room_type,
+            currency: t.currency,
+            availability: t.availability,
+            status: t.status,
+            lastSyncedAt: t.last_synced_at,
+          };
+        });
+        next = { ...next, tours: mapped };
+      }
+
+      return next;
+    },
+    { silent: true },
+  );
 
   return {
     ok: true as const,
@@ -164,153 +169,157 @@ async function loadUserData(userId: string): Promise<UserDataResult> {
       ])
     : [null, null];
 
-  setState((s) => {
-    let next = { ...s };
+  setState(
+    (s) => {
+      let next = { ...s };
 
-    if (favRes.data) {
-      const rows = favRes.data as Row[];
-      next = {
-        ...next,
-        favorites: [
-          ...next.favorites.filter((f) => f.userId !== userId),
-          ...rows.map((r) => ({
+      if (favRes.data) {
+        const rows = favRes.data as Row[];
+        next = {
+          ...next,
+          favorites: [
+            ...next.favorites.filter((f) => f.userId !== userId),
+            ...rows.map((r) => ({
+              id: str(r["id"]),
+              userId,
+              tourId: str(r["tour_id"]),
+              createdAt: str(r["created_at"]),
+            })),
+          ],
+        };
+      }
+
+      const cmp = cmpRes.data as Row | null;
+      if (cmp) {
+        const tourIds = Array.isArray(cmp["tour_ids"]) ? (cmp["tour_ids"] as string[]) : [];
+        next = {
+          ...next,
+          comparisons: [
+            ...next.comparisons.filter((c) => c.userId !== userId),
+            { userId, tourIds },
+          ],
+        };
+      }
+
+      if (alertRes.data) {
+        const rows = alertRes.data as Row[];
+        next = {
+          ...next,
+          priceAlerts: [
+            ...next.priceAlerts.filter((a) => a.userId !== userId),
+            ...rows.map((r) => ({
+              id: str(r["id"]),
+              userId,
+              tourId: str(r["tour_id"]),
+              targetPrice: num(r["target_price"]),
+              currentPrice: num(r["current_price"]),
+              currency: str(r["currency"], "KZT") as PlatformTour["currency"],
+              status: str(r["status"], "active") as "active" | "triggered",
+              createdAt: str(r["created_at"]),
+            })),
+          ],
+        };
+      }
+
+      if (notifRes.data) {
+        const rows = notifRes.data as Row[];
+        next = {
+          ...next,
+          notifications: rows.map((r) => ({
             id: str(r["id"]),
-            userId,
-            tourId: str(r["tour_id"]),
+            userId: str(r["user_id"]),
+            type: str(r["type"]),
+            title: str(r["title"]),
+            body: str(r["body"]),
+            read: Boolean(r["read"]),
             createdAt: str(r["created_at"]),
+            payload: (r["payload"] as Record<string, unknown>) ?? {},
           })),
-        ],
-      };
-    }
+        };
+      }
 
-    const cmp = cmpRes.data as Row | null;
-    if (cmp) {
-      const tourIds = Array.isArray(cmp["tour_ids"]) ? (cmp["tour_ids"] as string[]) : [];
-      next = {
-        ...next,
-        comparisons: [
-          ...next.comparisons.filter((c) => c.userId !== userId),
-          { userId, tourIds },
-        ],
-      };
-    }
-
-    if (alertRes.data) {
-      const rows = alertRes.data as Row[];
-      next = {
-        ...next,
-        priceAlerts: [
-          ...next.priceAlerts.filter((a) => a.userId !== userId),
-          ...rows.map((r) => ({
+      if (bookRes.data) {
+        const rows = bookRes.data as Row[];
+        next = {
+          ...next,
+          bookings: rows.map((r) => ({
             id: str(r["id"]),
-            userId,
-            tourId: str(r["tour_id"]),
-            targetPrice: num(r["target_price"]),
-            currentPrice: num(r["current_price"]),
+            userId: str(r["user_id"]),
+            operatorId: str(r["operator_id"]),
+            organizationId: str(r["organization_id"]),
+            tourOfferId: str(r["tour_offer_id"]),
+            ...(r["external_booking_id"]
+              ? { externalBookingId: str(r["external_booking_id"]) }
+              : {}),
+            status: str(r["status"], "PENDING") as PlatformState["bookings"][number]["status"],
+            passengers: (r["passengers"] as PlatformState["bookings"][number]["passengers"]) ?? [],
+            price: num(r["price"]),
             currency: str(r["currency"], "KZT") as PlatformTour["currency"],
-            status: str(r["status"], "active") as "active" | "triggered",
+            paymentStatus: str(
+              r["payment_status"],
+              "pending",
+            ) as PlatformState["bookings"][number]["paymentStatus"],
+            createdAt: str(r["created_at"]),
+            updatedAt: str(r["updated_at"], str(r["created_at"])),
+          })),
+        };
+      }
+
+      if (aiRes.data) {
+        const rows = aiRes.data as Row[];
+        next = {
+          ...next,
+          aiSearches: rows.map((r) => ({
+            id: str(r["id"]),
+            userId: str(r["user_id"]),
+            originalQuery: str(r["original_query"]),
+            parsed: (r["parsed"] as Record<string, unknown>) ?? {},
+            searchParams:
+              (r["search_params"] as PlatformState["aiSearches"][number]["searchParams"]) ?? {},
+            resultsCount: num(r["results_count"]),
             createdAt: str(r["created_at"]),
           })),
-        ],
-      };
-    }
+        };
+      }
 
-    if (notifRes.data) {
-      const rows = notifRes.data as Row[];
-      next = {
-        ...next,
-        notifications: rows.map((r) => ({
-          id: str(r["id"]),
-          userId: str(r["user_id"]),
-          type: str(r["type"]),
-          title: str(r["title"]),
-          body: str(r["body"]),
-          read: Boolean(r["read"]),
-          createdAt: str(r["created_at"]),
-          payload: (r["payload"] as Record<string, unknown>) ?? {},
-        })),
-      };
-    }
+      if (allProfilesRes?.data) {
+        const rows = allProfilesRes.data as Row[];
+        next = {
+          ...next,
+          users: rows.map((r) => ({
+            id: str(r["id"]),
+            email: str(r["email"]),
+            password: "",
+            name: str(r["name"]),
+            city: str(r["city"], "Алматы"),
+            role: str(r["role"], "TOURIST") as PlatformState["users"][number]["role"],
+            status: str(r["status"], "active") as PlatformState["users"][number]["status"],
+            ...(r["organization_id"] ? { organizationId: str(r["organization_id"]) } : {}),
+            createdAt: str(r["created_at"]),
+          })),
+        };
+      }
 
-    if (bookRes.data) {
-      const rows = bookRes.data as Row[];
-      next = {
-        ...next,
-        bookings: rows.map((r) => ({
-          id: str(r["id"]),
-          userId: str(r["user_id"]),
-          operatorId: str(r["operator_id"]),
-          organizationId: str(r["organization_id"]),
-          tourOfferId: str(r["tour_offer_id"]),
-          ...(r["external_booking_id"]
-            ? { externalBookingId: str(r["external_booking_id"]) }
-            : {}),
-          status: str(r["status"], "PENDING") as PlatformState["bookings"][number]["status"],
-          passengers: (r["passengers"] as PlatformState["bookings"][number]["passengers"]) ?? [],
-          price: num(r["price"]),
-          currency: str(r["currency"], "KZT") as PlatformTour["currency"],
-          paymentStatus: str(
-            r["payment_status"],
-            "pending",
-          ) as PlatformState["bookings"][number]["paymentStatus"],
-          createdAt: str(r["created_at"]),
-          updatedAt: str(r["updated_at"], str(r["created_at"])),
-        })),
-      };
-    }
+      if (auditRes?.data) {
+        const rows = auditRes.data as Row[];
+        next = {
+          ...next,
+          auditLogs: rows.map((r) => ({
+            id: str(r["id"]),
+            ...(r["actor_id"] ? { actorId: str(r["actor_id"]) } : {}),
+            action: str(r["action"]),
+            entityType: str(r["entity_type"]),
+            ...(r["entity_id"] ? { entityId: str(r["entity_id"]) } : {}),
+            meta: (r["meta"] as Record<string, unknown>) ?? {},
+            createdAt: str(r["created_at"]),
+          })),
+        };
+      }
 
-    if (aiRes.data) {
-      const rows = aiRes.data as Row[];
-      next = {
-        ...next,
-        aiSearches: rows.map((r) => ({
-          id: str(r["id"]),
-          userId: str(r["user_id"]),
-          originalQuery: str(r["original_query"]),
-          parsed: (r["parsed"] as Record<string, unknown>) ?? {},
-          searchParams: (r["search_params"] as PlatformState["aiSearches"][number]["searchParams"]) ?? {},
-          resultsCount: num(r["results_count"]),
-          createdAt: str(r["created_at"]),
-        })),
-      };
-    }
-
-    if (allProfilesRes?.data) {
-      const rows = allProfilesRes.data as Row[];
-      next = {
-        ...next,
-        users: rows.map((r) => ({
-          id: str(r["id"]),
-          email: str(r["email"]),
-          password: "",
-          name: str(r["name"]),
-          city: str(r["city"], "Алматы"),
-          role: str(r["role"], "TOURIST") as PlatformState["users"][number]["role"],
-          status: str(r["status"], "active") as PlatformState["users"][number]["status"],
-          ...(r["organization_id"] ? { organizationId: str(r["organization_id"]) } : {}),
-          createdAt: str(r["created_at"]),
-        })),
-      };
-    }
-
-    if (auditRes?.data) {
-      const rows = auditRes.data as Row[];
-      next = {
-        ...next,
-        auditLogs: rows.map((r) => ({
-          id: str(r["id"]),
-          ...(r["actor_id"] ? { actorId: str(r["actor_id"]) } : {}),
-          action: str(r["action"]),
-          entityType: str(r["entity_type"]),
-          ...(r["entity_id"] ? { entityId: str(r["entity_id"]) } : {}),
-          meta: (r["meta"] as Record<string, unknown>) ?? {},
-          createdAt: str(r["created_at"]),
-        })),
-      };
-    }
-
-    return next;
-  }, { silent: true });
+      return next;
+    },
+    { silent: true },
+  );
 
   return {
     ok: true as const,

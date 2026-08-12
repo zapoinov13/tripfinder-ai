@@ -13,7 +13,8 @@ export const Route = createFileRoute("/notifications")({
       { title: "Уведомления — TourGo" },
       {
         name: "description",
-        content: "Центр уведомлений: бронирования, снижение цены, Premium deals и важные обновления.",
+        content:
+          "Центр уведомлений: бронирования, снижение цены, Premium deals и важные обновления.",
       },
     ],
   }),
@@ -23,9 +24,10 @@ export const Route = createFileRoute("/notifications")({
 function NotificationsPage() {
   const { user, isAuthenticated } = useAuth();
   const state = usePlatformStore();
-  const items = isAuthenticated && user
-    ? state.notifications.filter((n) => n.userId === user.id)
-    : state.notifications.slice(0, 0);
+  const items =
+    isAuthenticated && user
+      ? state.notifications.filter((n) => n.userId === user.id)
+      : state.notifications.slice(0, 0);
 
   return (
     <SiteLayout>

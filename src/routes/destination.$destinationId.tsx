@@ -4,12 +4,7 @@ import { ArrowRight, MapPin } from "lucide-react";
 import { SiteLayout } from "@/components/site/site-layout";
 import { TourCard } from "@/components/tours/tour-card";
 import { Button } from "@/components/ui/button";
-import {
-  formatNumber,
-  getDestination,
-  getResorts,
-  getToursByDestination,
-} from "@/data/demo";
+import { formatNumber, getDestination, getResorts, getToursByDestination } from "@/data/demo";
 
 export const Route = createFileRoute("/destination/$destinationId")({
   loader: ({ params }) => {
@@ -19,10 +14,17 @@ export const Route = createFileRoute("/destination/$destinationId")({
   },
   head: ({ loaderData }) => {
     if (!loaderData) {
-      return { meta: [{ title: "Направление не найдено — TourGo" }, { name: "robots", content: "noindex" }] };
+      return {
+        meta: [
+          { title: "Направление не найдено — TourGo" },
+          { name: "robots", content: "noindex" },
+        ],
+      };
     }
     const title = `Туры в ${loaderData.dest.country} — курорты и цены | TourGo`;
-    const description = `Все курорты направления ${loaderData.dest.country}: ${getResorts(loaderData.dest.id)
+    const description = `Все курорты направления ${loaderData.dest.country}: ${getResorts(
+      loaderData.dest.id,
+    )
       .slice(0, 4)
       .map((r) => r.name)
       .join(", ")} и другие. Сравните туры от проверенных операторов.`;
@@ -61,7 +63,10 @@ function DestinationPage() {
         <img src={dest.image} alt={dest.country} className="h-72 w-full object-cover md:h-96" />
         <div className="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/40 to-transparent" />
         <div className="container-page absolute inset-x-0 bottom-0 pb-8">
-          <Link to="/destinations" className="text-sm font-medium text-primary-foreground/80 hover:text-primary-foreground">
+          <Link
+            to="/destinations"
+            className="text-sm font-medium text-primary-foreground/80 hover:text-primary-foreground"
+          >
             ← Все направления
           </Link>
           <h1 className="mt-3 font-display text-3xl font-semibold text-primary-foreground md:text-5xl">
@@ -75,8 +80,12 @@ function DestinationPage() {
       </section>
 
       <section className="container-page mt-12">
-        <h2 className="font-display text-2xl font-semibold md:text-3xl">Курорты — {dest.country}</h2>
-        <p className="mt-2 text-muted-foreground">Выберите курорт, чтобы посмотреть подходящие туры</p>
+        <h2 className="font-display text-2xl font-semibold md:text-3xl">
+          Курорты — {dest.country}
+        </h2>
+        <p className="mt-2 text-muted-foreground">
+          Выберите курорт, чтобы посмотреть подходящие туры
+        </p>
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {resorts.map((resort) => (
             <Link
@@ -105,9 +114,7 @@ function DestinationPage() {
 
       {destTours.length > 0 ? (
         <section className="container-page mt-16 mb-20">
-          <h2 className="font-display text-2xl font-semibold md:text-3xl">
-            Туры — {dest.country}
-          </h2>
+          <h2 className="font-display text-2xl font-semibold md:text-3xl">Туры — {dest.country}</h2>
           <div className="mt-8 space-y-5">
             {destTours.slice(0, 6).map((tour) => (
               <TourCard key={tour.id} tour={tour} />

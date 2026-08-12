@@ -28,7 +28,12 @@ function OperatorCompanyPage() {
   const members = state.members.filter((m) => m.organizationId === organization.id);
 
   return (
-    <DashShell brand={organization.name} items={operatorNav} title="Компания" subtitle="Профиль и команда">
+    <DashShell
+      brand={organization.name}
+      items={operatorNav}
+      title="Компания"
+      subtitle="Профиль и команда"
+    >
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="surface-card space-y-3 p-6">
           {(
@@ -72,7 +77,10 @@ function OperatorCompanyPage() {
             {members.map((m) => {
               const u = state.users.find((x) => x.id === m.userId);
               return (
-                <li key={m.id} className="flex items-center justify-between rounded-xl bg-secondary px-3 py-2">
+                <li
+                  key={m.id}
+                  className="flex items-center justify-between rounded-xl bg-secondary px-3 py-2"
+                >
                   <span>
                     {u?.name} · {m.role}
                   </span>

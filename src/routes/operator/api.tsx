@@ -32,8 +32,8 @@ function OperatorApiPage() {
   const logs = state.syncLogs.filter((l) => l.organizationId === organization.id).slice(0, 10);
 
   const saveConnection = () => {
-    const maskedKey = apiKey ? `****${apiKey.slice(-4)}` : conn?.apiKeyMasked ?? "****";
-    const maskedSecret = secret ? `****${secret.slice(-4)}` : conn?.secretMasked ?? "****";
+    const maskedKey = apiKey ? `****${apiKey.slice(-4)}` : (conn?.apiKeyMasked ?? "****");
+    const maskedSecret = secret ? `****${secret.slice(-4)}` : (conn?.secretMasked ?? "****");
     setState((s) => {
       const existing = s.apiConnections.find((c) => c.organizationId === organization.id);
       const next = {

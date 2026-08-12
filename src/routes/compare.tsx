@@ -57,7 +57,10 @@ function ComparePage() {
     ["До моря", (t) => `${getHotel(t.hotelId).distanceToSea} м`],
     [
       "Удобства",
-      (t) => getHotel(t.hotelId).amenities.map((a: string) => amenityLabels[a] ?? a).join(", "),
+      (t) =>
+        getHotel(t.hotelId)
+          .amenities.map((a: string) => amenityLabels[a] ?? a)
+          .join(", "),
     ],
     ["Premium", (t) => (t.tags.includes("premium") ? "Да" : "—")],
     ["Hot Deal", (t) => (t.tags.includes("hot") ? "Да" : "—")],
@@ -166,9 +169,7 @@ function ComparePage() {
           </h2>
           <ul className="mt-4 space-y-2 text-sm text-primary-foreground/90">
             {aiRecommendationService
-              .summarizeCompare(
-                selected.map((tour) => ({ tour, hotel: getHotel(tour.hotelId) })),
-              )
+              .summarizeCompare(selected.map((tour) => ({ tour, hotel: getHotel(tour.hotelId) })))
               .map((row) => (
                 <li key={row.label}>
                   <span className="font-semibold">{row.label}:</span> {row.hotel}

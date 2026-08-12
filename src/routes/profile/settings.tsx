@@ -38,7 +38,9 @@ function SettingsPage() {
             setState((s) => ({
               ...s,
               users: s.users.map((u) =>
-                u.id === user.id ? { ...u, name: name.trim() || u.name, city: city.trim() || u.city } : u,
+                u.id === user.id
+                  ? { ...u, name: name.trim() || u.name, city: city.trim() || u.city }
+                  : u,
               ),
             }));
             toast.success("Сохранено");

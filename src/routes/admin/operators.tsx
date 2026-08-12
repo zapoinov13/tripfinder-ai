@@ -46,7 +46,6 @@ function AdminOperatorsPage() {
   const nav = useAdminNav();
   const state = usePlatformStore();
   const [tab, setTab] = useState("all");
-  if (!allowed || !user) return null;
 
   const counts = useMemo(() => {
     const all = state.organizations.length;
@@ -81,7 +80,7 @@ function AdminOperatorsPage() {
       ),
     );
     appendAudit({
-      actorId: user.id,
+      actorId: user!.id,
       action: "operator_status",
       entityType: "organization",
       entityId: orgId,
@@ -90,6 +89,7 @@ function AdminOperatorsPage() {
     toast.success(orgStatusLabel[status]);
   };
 
+  if (!allowed || !user) return null;
   return (
     <DashShell
       brand="TourGo Админ"
@@ -156,7 +156,7 @@ function AdminOperatorsPage() {
                             ),
                           }));
                           appendAudit({
-                            actorId: user.id,
+                            actorId: user!.id,
                             action: "operator_plan_admin",
                             entityType: "organization",
                             entityId: o.id,
@@ -209,7 +209,11 @@ function AdminOperatorsPage() {
                           onConfirm={() => setStatus(o.id, "SUSPENDED")}
                         />
                       ) : (
-                        <Button size="sm" variant="outline" onClick={() => setStatus(o.id, "APPROVED")}>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setStatus(o.id, "APPROVED")}
+                        >
                           Возобновить
                         </Button>
                       )}

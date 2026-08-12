@@ -53,7 +53,11 @@ function indexById<T extends { id: string }>(rows: T[]) {
 
 type Diff<T> = { added: T[]; updated: T[]; removed: T[] };
 
-function diff<T extends { id: string }>(prev: T[], next: T[], equal: (a: T, b: T) => boolean): Diff<T> {
+function diff<T extends { id: string }>(
+  prev: T[],
+  next: T[],
+  equal: (a: T, b: T) => boolean,
+): Diff<T> {
   const before = indexById(prev);
   const after = indexById(next);
   const added: T[] = [];

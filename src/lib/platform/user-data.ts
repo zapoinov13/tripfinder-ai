@@ -29,10 +29,7 @@ export function toggleFavorite(tourId: string, userId = userKey()) {
   }
   setState((s) => ({
     ...s,
-    favorites: [
-      ...s.favorites,
-      { id: uid(), userId, tourId, createdAt: nowIso() },
-    ],
+    favorites: [...s.favorites, { id: uid(), userId, tourId, createdAt: nowIso() }],
   }));
   trackEvent("TOUR_FAVORITED", userId === ANON ? undefined : userId, { tourId });
   toast.success("Добавлено в избранное");
@@ -109,7 +106,8 @@ export function upsertPriceAlert(
         targetPrice: alert.targetPrice,
         currentPrice: alert.currentPrice,
         currency: "KZT" as const,
-        status: alert.currentPrice <= alert.targetPrice ? ("triggered" as const) : ("active" as const),
+        status:
+          alert.currentPrice <= alert.targetPrice ? ("triggered" as const) : ("active" as const),
         createdAt: nowIso(),
       },
     ],
@@ -154,5 +152,10 @@ export function migrateAnonymousToUser(userId: string) {
       ],
     };
   });
-  appendAudit({ actorId: userId, action: "migrate_anonymous_state", entityType: "user", entityId: userId });
+  appendAudit({
+    actorId: userId,
+    action: "migrate_anonymous_state",
+    entityType: "user",
+    entityId: userId,
+  });
 }

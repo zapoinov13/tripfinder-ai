@@ -29,10 +29,9 @@ function OperatorToursPage() {
   const { organization } = useAuth();
   const state = usePlatformStore();
   const [filter, setFilter] = useState("active");
-  if (!allowed || !organization) return null;
 
-  const plan = state.config.operatorPlans.find((p) => p.code === organization.planCode)!;
-  const orgTours = state.tours.filter((t) => t.operatorOrgId === organization.id);
+  const plan = state.config.operatorPlans.find((p) => p.code === organization!.planCode)!;
+  const orgTours = state.tours.filter((t) => t.operatorOrgId === organization!.id);
   const activeCount = orgTours.filter((t) => t.status === "active").length;
 
   const filtered = useMemo(() => {
@@ -46,6 +45,7 @@ function OperatorToursPage() {
     });
   }, [orgTours, filter]);
 
+  if (!allowed || !organization) return null;
   return (
     <DashShell
       brand={organization.name}
@@ -57,11 +57,15 @@ function OperatorToursPage() {
           size="sm"
           onClick={() => {
             if (
-              !canCreateTour(activeCount, {
-                code: plan.code,
-                activeTourLimit: plan.tourLimit,
-                features: plan.features,
-              }, organization.additionalTourLimit)
+              !canCreateTour(
+                activeCount,
+                {
+                  code: plan.code,
+                  activeTourLimit: plan.tourLimit,
+                  features: plan.features,
+                },
+                organization.additionalTourLimit,
+              )
             ) {
               toast.error("Лимит активных предложений достигнут.");
               return;

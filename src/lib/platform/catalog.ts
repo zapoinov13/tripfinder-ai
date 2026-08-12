@@ -1,10 +1,5 @@
 import { getState, nowIso, setState, uid } from "./store";
-import type {
-  AnalyticsEvent,
-  AuditLog,
-  PlatformNotification,
-  PlatformTour,
-} from "./types";
+import type { AnalyticsEvent, AuditLog, PlatformNotification, PlatformTour } from "./types";
 
 export function getTour(id: string): PlatformTour | undefined {
   return getState().tours.find((t) => t.id === id);
@@ -29,10 +24,7 @@ export function getActiveTours() {
 export function appendAudit(input: Omit<AuditLog, "id" | "createdAt">) {
   setState((s) => ({
     ...s,
-    auditLogs: [
-      { ...input, id: uid(), createdAt: nowIso() },
-      ...s.auditLogs,
-    ].slice(0, 500),
+    auditLogs: [{ ...input, id: uid(), createdAt: nowIso() }, ...s.auditLogs].slice(0, 500),
   }));
 }
 

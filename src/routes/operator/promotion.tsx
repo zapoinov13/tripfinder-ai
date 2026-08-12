@@ -115,7 +115,12 @@ function OperatorPromotionPage() {
   };
 
   return (
-    <DashShell brand={organization.name} items={operatorNav} title="Продвижение" subtitle="Boost / Featured / Sponsored">
+    <DashShell
+      brand={organization.name}
+      items={operatorNav}
+      title="Продвижение"
+      subtitle="Boost / Featured / Sponsored"
+    >
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="surface-card space-y-4 p-6">
           <div className="space-y-2">
@@ -174,7 +179,8 @@ function OperatorPromotionPage() {
               .filter((p) => p.organizationId === organization.id && p.status === "ACTIVE")
               .map((p) => (
                 <li key={p.id} className="rounded-xl bg-secondary p-3">
-                  {p.type} · {p.tourOfferId} · до {new Date(p.expiresAt).toLocaleDateString("ru-RU")}
+                  {p.type} · {p.tourOfferId} · до{" "}
+                  {new Date(p.expiresAt).toLocaleDateString("ru-RU")}
                 </li>
               ))}
           </ul>

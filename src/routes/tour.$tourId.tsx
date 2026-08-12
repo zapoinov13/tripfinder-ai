@@ -145,7 +145,11 @@ function TourPage() {
   const shareTour = async () => {
     const url = typeof window !== "undefined" ? window.location.href : "";
     if (navigator.share) {
-      await navigator.share({ title: hotel.name, text: `${hotel.name} — ${formatPrice(displayPrice)}`, url });
+      await navigator.share({
+        title: hotel.name,
+        text: `${hotel.name} — ${formatPrice(displayPrice)}`,
+        url,
+      });
       return;
     }
     await navigator.clipboard?.writeText(url);

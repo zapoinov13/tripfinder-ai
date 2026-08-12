@@ -31,11 +31,7 @@ export type PaymentType =
   | "booking";
 
 export type PromotionType =
-  | "BOOST"
-  | "FEATURED"
-  | "SPONSORED"
-  | "PREMIUM_PLACEMENT"
-  | "HOME_FEATURE";
+  "BOOST" | "FEATURED" | "SPONSORED" | "PREMIUM_PLACEMENT" | "HOME_FEATURE";
 
 export type OperatorPlanCode = "START" | "BUSINESS" | "PRO";
 
