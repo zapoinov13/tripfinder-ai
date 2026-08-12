@@ -69,9 +69,7 @@ export function ChatDemo() {
               <span
                 className={cn(
                   "mt-1 block text-[10px]",
-                  msg.from === "user"
-                    ? "text-primary-foreground/70"
-                    : "text-muted-foreground",
+                  msg.from === "user" ? "text-primary-foreground/70" : "text-muted-foreground",
                 )}
               >
                 {msg.time}

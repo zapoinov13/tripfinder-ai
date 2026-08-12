@@ -57,11 +57,15 @@ function OperatorToursPage() {
           size="sm"
           onClick={() => {
             if (
-              !canCreateTour(activeCount, {
-                code: plan.code,
-                activeTourLimit: plan.tourLimit,
-                features: plan.features,
-              }, organization.additionalTourLimit)
+              !canCreateTour(
+                activeCount,
+                {
+                  code: plan.code,
+                  activeTourLimit: plan.tourLimit,
+                  features: plan.features,
+                },
+                organization.additionalTourLimit,
+              )
             ) {
               toast.error("Лимит активных предложений достигнут.");
               return;

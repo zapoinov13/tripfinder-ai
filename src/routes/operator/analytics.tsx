@@ -22,15 +22,18 @@ function OperatorAnalyticsPage() {
   const bookings = state.bookings.filter((b) => b.organizationId === organization.id);
   const views = tours.reduce((s, t) => s + t.views, 0);
   const clicks = Math.round(views * 0.18);
-  const favorites = state.favorites.filter((f) =>
-    tours.some((t) => t.id === f.tourId),
-  ).length;
+  const favorites = state.favorites.filter((f) => tours.some((t) => t.id === f.tourId)).length;
   const revenue = bookings
     .filter((b) => ["PAID", "CONFIRMED", "COMPLETED"].includes(b.status))
     .reduce((s, b) => s + b.price, 0);
 
   return (
-    <DashShell brand={organization.name} items={operatorNav} title="Аналитика" subtitle="Org metrics">
+    <DashShell
+      brand={organization.name}
+      items={operatorNav}
+      title="Аналитика"
+      subtitle="Org metrics"
+    >
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <KpiCard label="Impressions / Views" value={formatNumber(views)} />
         <KpiCard label="Clicks" value={formatNumber(clicks)} />

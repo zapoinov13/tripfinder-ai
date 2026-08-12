@@ -58,9 +58,7 @@ function AdminPromotionsPage() {
               <span className="w-44 text-sm">{promoTypeLabel[key]}</span>
               <Input
                 value={draft[key]}
-                onChange={(e) =>
-                  setDraft({ ...draft, [key]: Number(e.target.value) || 0 })
-                }
+                onChange={(e) => setDraft({ ...draft, [key]: Number(e.target.value) || 0 })}
               />
             </div>
           ))}

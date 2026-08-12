@@ -71,10 +71,7 @@ function AdminApiMonitoringPage() {
       subtitle="Статус интеграций операторов"
     >
       {state.apiConnections.length === 0 ? (
-        <EmptyState
-          title="Нет подключений"
-          description="Операторы ещё не настроили API"
-        />
+        <EmptyState title="Нет подключений" description="Операторы ещё не настроили API" />
       ) : (
         <div className="surface-card overflow-x-auto">
           <Table>
@@ -141,7 +138,9 @@ function AdminApiMonitoringPage() {
               >
                 <StatusBadge
                   label={syncStatusLabel[l.status] ?? l.status}
-                  tone={l.status === "error" ? "danger" : l.status === "success" ? "success" : "warning"}
+                  tone={
+                    l.status === "error" ? "danger" : l.status === "success" ? "success" : "warning"
+                  }
                   className="mr-2"
                 />
                 {orgName(l.organizationId)} · {l.message} ·{" "}

@@ -30,7 +30,12 @@ function OperatorBookingsPage() {
   const bookings = state.bookings.filter((b) => b.organizationId === organization.id);
 
   return (
-    <DashShell brand={organization.name} items={operatorNav} title="Бронирования" subtitle="Заявки клиентов">
+    <DashShell
+      brand={organization.name}
+      items={operatorNav}
+      title="Бронирования"
+      subtitle="Заявки клиентов"
+    >
       <div className="surface-card overflow-x-auto">
         <Table>
           <TableHeader>

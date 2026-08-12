@@ -16,7 +16,12 @@ function OperatorSettingsPage() {
   if (!allowed || !user || !organization) return null;
 
   return (
-    <DashShell brand={organization.name} items={operatorNav} title="Настройки" subtitle={user.email}>
+    <DashShell
+      brand={organization.name}
+      items={operatorNav}
+      title="Настройки"
+      subtitle={user.email}
+    >
       <div className="surface-card max-w-lg space-y-3 p-6 text-sm">
         <p>Роль: {user.role}</p>
         <p>Организация: {organization.name}</p>

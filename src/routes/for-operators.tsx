@@ -37,11 +37,7 @@ function OperatorsLanding() {
     <SiteLayout>
       <section className="container-page pt-6">
         <div className="relative overflow-hidden rounded-4xl">
-          <img
-            src={heroImage}
-            alt="Морское побережье"
-            className="h-[420px] w-full object-cover"
-          />
+          <img src={heroImage} alt="Морское побережье" className="h-[420px] w-full object-cover" />
           <div className="absolute inset-0 bg-ink/70" />
           <div className="absolute inset-0 flex flex-col justify-center px-6 md:px-14">
             <span className="w-fit rounded-full bg-card/15 px-3 py-1 text-xs font-semibold text-primary-foreground">

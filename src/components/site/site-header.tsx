@@ -94,7 +94,7 @@ export function SiteHeader() {
                   ...nav,
                   { label: "Для туроператоров", to: "/for-operators" },
                   {
-                    label: isAuthenticated ? user?.name ?? "Профиль" : "Войти",
+                    label: isAuthenticated ? (user?.name ?? "Профиль") : "Войти",
                     to: accountTo,
                   },
                 ].map((item) => (

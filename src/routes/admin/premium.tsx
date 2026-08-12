@@ -48,10 +48,7 @@ function AdminPremiumPage() {
       subtitle="Цена подписки и активные подписчики"
     >
       <div className="mb-6 grid gap-4 sm:grid-cols-3">
-        <KpiLinkCard
-          label="Цена / месяц"
-          value={formatPrice(state.config.premiumMonthlyPrice)}
-        />
+        <KpiLinkCard label="Цена / месяц" value={formatPrice(state.config.premiumMonthlyPrice)} />
         <KpiLinkCard label="Активные подписки" value={formatNumber(subs.length)} />
         <KpiLinkCard label="MRR" value={formatPrice(mrr)} hint="Месячный доход" />
       </div>

@@ -1,13 +1,5 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
-import {
-  ArrowRight,
-  Building2,
-  Flame,
-  Gem,
-  Layers,
-  Sparkles,
-  Tag,
-} from "lucide-react";
+import { ArrowRight, Building2, Flame, Gem, Layers, Sparkles, Tag } from "lucide-react";
 
 import { ChatDemo, ChatDemoFeatures } from "@/components/site/chat-demo";
 import { CompareTable } from "@/components/site/compare-table";
@@ -36,7 +28,10 @@ export const Route = createFileRoute("/")({
         content:
           "Маркетплейс туров: сравниваем предложения туроператоров, горящие туры и Premium-цены. Подбор тура с AI.",
       },
-      { property: "og:title", content: "TourGo — найдите путешествие, которое подходит именно вам" },
+      {
+        property: "og:title",
+        content: "TourGo — найдите путешествие, которое подходит именно вам",
+      },
       {
         property: "og:description",
         content:
@@ -137,10 +132,7 @@ function Index() {
             <SearchPanel />
           </div>
 
-          <QuickPrompts
-            variant="onImage"
-            className="animate-fade-up animation-delay-300 mt-5"
-          />
+          <QuickPrompts variant="onImage" className="animate-fade-up animation-delay-300 mt-5" />
 
           <div className="animate-fade-up animation-delay-300 mt-3 flex gap-2 overflow-x-auto pb-1 no-scrollbar">
             {destinations.slice(0, 6).map((dest) => (

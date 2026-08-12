@@ -231,42 +231,295 @@ export const amenityLabels: Record<string, string> = {
 const hotelSeed: Array<
   [string, string, string, number, number, string, 1 | 2 | 3, number, Amenity[]]
 > = [
-  ["Rixos Premium Dubai", "uae", "Дубай", 5, 9.4, "Jumeirah Beach", 1, 50, ["Beach", "Pool", "Spa", "Wi-Fi", "Transfer"]],
-  ["Atlantis The Palm", "uae", "Дубай", 5, 9.6, "Palm Jumeirah", 1, 80, ["Beach", "Pool", "Kids Club", "Spa", "Wi-Fi", "Transfer"]],
-  ["Address Beach Resort", "uae", "Дубай", 5, 9.2, "JBR", 1, 120, ["Beach", "Pool", "Spa", "Wi-Fi"]],
+  [
+    "Rixos Premium Dubai",
+    "uae",
+    "Дубай",
+    5,
+    9.4,
+    "Jumeirah Beach",
+    1,
+    50,
+    ["Beach", "Pool", "Spa", "Wi-Fi", "Transfer"],
+  ],
+  [
+    "Atlantis The Palm",
+    "uae",
+    "Дубай",
+    5,
+    9.6,
+    "Palm Jumeirah",
+    1,
+    80,
+    ["Beach", "Pool", "Kids Club", "Spa", "Wi-Fi", "Transfer"],
+  ],
+  [
+    "Address Beach Resort",
+    "uae",
+    "Дубай",
+    5,
+    9.2,
+    "JBR",
+    1,
+    120,
+    ["Beach", "Pool", "Spa", "Wi-Fi"],
+  ],
   ["Centro Barsha", "uae", "Дубай", 3, 7.9, "Al Barsha", 3, 4200, ["Pool", "Wi-Fi"]],
-  ["Bab Al Qasr", "uae", "Абу-Даби", 5, 9.1, "Corniche", 1, 60, ["Beach", "Pool", "Kids Club", "Spa", "Wi-Fi"]],
-  ["Maxx Royal Belek", "turkey", "Белек", 5, 9.5, "Белек", 1, 60, ["Beach", "Pool", "Kids Club", "Spa", "Wi-Fi", "Transfer"]],
-  ["Titanic Deluxe Lara", "turkey", "Анталия", 5, 9.1, "Лара", 1, 100, ["Beach", "Pool", "Kids Club", "Spa", "Wi-Fi", "Transfer"]],
-  ["Delphin Imperial", "turkey", "Анталия", 5, 8.9, "Лара", 1, 150, ["Beach", "Pool", "Kids Club", "Wi-Fi", "Transfer"]],
-  ["Sherwood Exclusive", "turkey", "Кемер", 4, 8.4, "Кемер", 2, 300, ["Beach", "Pool", "Wi-Fi", "Transfer"]],
+  [
+    "Bab Al Qasr",
+    "uae",
+    "Абу-Даби",
+    5,
+    9.1,
+    "Corniche",
+    1,
+    60,
+    ["Beach", "Pool", "Kids Club", "Spa", "Wi-Fi"],
+  ],
+  [
+    "Maxx Royal Belek",
+    "turkey",
+    "Белек",
+    5,
+    9.5,
+    "Белек",
+    1,
+    60,
+    ["Beach", "Pool", "Kids Club", "Spa", "Wi-Fi", "Transfer"],
+  ],
+  [
+    "Titanic Deluxe Lara",
+    "turkey",
+    "Анталия",
+    5,
+    9.1,
+    "Лара",
+    1,
+    100,
+    ["Beach", "Pool", "Kids Club", "Spa", "Wi-Fi", "Transfer"],
+  ],
+  [
+    "Delphin Imperial",
+    "turkey",
+    "Анталия",
+    5,
+    8.9,
+    "Лара",
+    1,
+    150,
+    ["Beach", "Pool", "Kids Club", "Wi-Fi", "Transfer"],
+  ],
+  [
+    "Sherwood Exclusive",
+    "turkey",
+    "Кемер",
+    4,
+    8.4,
+    "Кемер",
+    2,
+    300,
+    ["Beach", "Pool", "Wi-Fi", "Transfer"],
+  ],
   ["Grand Alanya Hotel", "turkey", "Алания", 3, 7.6, "Махмутлар", 2, 450, ["Pool", "Wi-Fi"]],
-  ["Katathani Phuket Beach", "thailand", "Пхукет", 5, 9.3, "Ката Ной", 1, 40, ["Beach", "Pool", "Kids Club", "Spa", "Wi-Fi"]],
-  ["Amari Phuket", "thailand", "Пхукет", 4, 8.7, "Патонг", 2, 250, ["Beach", "Pool", "Spa", "Wi-Fi"]],
-  ["Banyan Tree Krabi", "thailand", "Краби", 5, 9.5, "Краби", 1, 70, ["Beach", "Pool", "Spa", "Wi-Fi", "Transfer"]],
-  ["Steigenberger Aldau", "egypt", "Хургада", 5, 9.0, "Хургада", 1, 90, ["Beach", "Pool", "Kids Club", "Spa", "Wi-Fi", "Transfer"]],
-  ["Rixos Sharm El Sheikh", "egypt", "Шарм-эль-Шейх", 5, 9.2, "Набк Бей", 1, 110, ["Beach", "Pool", "Spa", "Wi-Fi", "Transfer"]],
-  ["Albatros Palace", "egypt", "Хургада", 4, 8.6, "Хургада", 2, 320, ["Beach", "Pool", "Kids Club", "Wi-Fi"]],
-  ["Vinpearl Nha Trang", "vietnam", "Нячанг", 5, 9.0, "Хон Че", 1, 60, ["Beach", "Pool", "Kids Club", "Spa", "Wi-Fi", "Transfer"]],
-  ["Amiana Resort", "vietnam", "Нячанг", 4, 8.8, "Нячанг", 1, 80, ["Beach", "Pool", "Spa", "Wi-Fi"]],
-  ["Soneva Fushi", "maldives", "Баа Атолл", 5, 9.8, "Баа Атолл", 1, 10, ["Beach", "Pool", "Spa", "Wi-Fi", "Transfer"]],
-  ["Kuramathi Island", "maldives", "Ари Атолл", 5, 9.4, "Расду Атолл", 1, 20, ["Beach", "Pool", "Kids Club", "Spa", "Wi-Fi"]],
-  ["Radisson Blu Batumi", "georgia", "Батуми", 5, 8.9, "Батуми", 1, 150, ["Beach", "Pool", "Spa", "Wi-Fi"]],
+  [
+    "Katathani Phuket Beach",
+    "thailand",
+    "Пхукет",
+    5,
+    9.3,
+    "Ката Ной",
+    1,
+    40,
+    ["Beach", "Pool", "Kids Club", "Spa", "Wi-Fi"],
+  ],
+  [
+    "Amari Phuket",
+    "thailand",
+    "Пхукет",
+    4,
+    8.7,
+    "Патонг",
+    2,
+    250,
+    ["Beach", "Pool", "Spa", "Wi-Fi"],
+  ],
+  [
+    "Banyan Tree Krabi",
+    "thailand",
+    "Краби",
+    5,
+    9.5,
+    "Краби",
+    1,
+    70,
+    ["Beach", "Pool", "Spa", "Wi-Fi", "Transfer"],
+  ],
+  [
+    "Steigenberger Aldau",
+    "egypt",
+    "Хургада",
+    5,
+    9.0,
+    "Хургада",
+    1,
+    90,
+    ["Beach", "Pool", "Kids Club", "Spa", "Wi-Fi", "Transfer"],
+  ],
+  [
+    "Rixos Sharm El Sheikh",
+    "egypt",
+    "Шарм-эль-Шейх",
+    5,
+    9.2,
+    "Набк Бей",
+    1,
+    110,
+    ["Beach", "Pool", "Spa", "Wi-Fi", "Transfer"],
+  ],
+  [
+    "Albatros Palace",
+    "egypt",
+    "Хургада",
+    4,
+    8.6,
+    "Хургада",
+    2,
+    320,
+    ["Beach", "Pool", "Kids Club", "Wi-Fi"],
+  ],
+  [
+    "Vinpearl Nha Trang",
+    "vietnam",
+    "Нячанг",
+    5,
+    9.0,
+    "Хон Че",
+    1,
+    60,
+    ["Beach", "Pool", "Kids Club", "Spa", "Wi-Fi", "Transfer"],
+  ],
+  [
+    "Amiana Resort",
+    "vietnam",
+    "Нячанг",
+    4,
+    8.8,
+    "Нячанг",
+    1,
+    80,
+    ["Beach", "Pool", "Spa", "Wi-Fi"],
+  ],
+  [
+    "Soneva Fushi",
+    "maldives",
+    "Баа Атолл",
+    5,
+    9.8,
+    "Баа Атолл",
+    1,
+    10,
+    ["Beach", "Pool", "Spa", "Wi-Fi", "Transfer"],
+  ],
+  [
+    "Kuramathi Island",
+    "maldives",
+    "Ари Атолл",
+    5,
+    9.4,
+    "Расду Атолл",
+    1,
+    20,
+    ["Beach", "Pool", "Kids Club", "Spa", "Wi-Fi"],
+  ],
+  [
+    "Radisson Blu Batumi",
+    "georgia",
+    "Батуми",
+    5,
+    8.9,
+    "Батуми",
+    1,
+    150,
+    ["Beach", "Pool", "Spa", "Wi-Fi"],
+  ],
   ["Hotel Old Batumi", "georgia", "Батуми", 3, 7.8, "Старый город", 3, 900, ["Wi-Fi"]],
-  ["Heritance Ahungalla", "srilanka", "Ахунгалла", 5, 9.1, "Ахунгалла", 1, 40, ["Beach", "Pool", "Spa", "Wi-Fi", "Transfer"]],
-  ["Padma Resort Legian", "indonesia", "Кута", 5, 9.3, "Легиан", 1, 70, ["Beach", "Pool", "Kids Club", "Spa", "Wi-Fi"]],
+  [
+    "Heritance Ahungalla",
+    "srilanka",
+    "Ахунгалла",
+    5,
+    9.1,
+    "Ахунгалла",
+    1,
+    40,
+    ["Beach", "Pool", "Spa", "Wi-Fi", "Transfer"],
+  ],
+  [
+    "Padma Resort Legian",
+    "indonesia",
+    "Кута",
+    5,
+    9.3,
+    "Легиан",
+    1,
+    70,
+    ["Beach", "Pool", "Kids Club", "Spa", "Wi-Fi"],
+  ],
   ["Alaya Resort Ubud", "indonesia", "Убуд", 4, 8.9, "Убуд", 3, 25000, ["Pool", "Spa", "Wi-Fi"]],
-  ["Marsa Alam Oasis", "egypt", "Марса-Алам", 4, 8.2, "Марса-Алам", 1, 200, ["Beach", "Pool", "Wi-Fi"]],
+  [
+    "Marsa Alam Oasis",
+    "egypt",
+    "Марса-Алам",
+    4,
+    8.2,
+    "Марса-Алам",
+    1,
+    200,
+    ["Beach", "Pool", "Wi-Fi"],
+  ],
   ["Souq Waqif Boutique", "qatar", "Доха", 5, 9.0, "Souq Waqif", 3, 3500, ["Pool", "Spa", "Wi-Fi"]],
-  ["Hilton Salwa Beach", "qatar", "Доха", 5, 9.2, "Salwa", 1, 50, ["Beach", "Pool", "Kids Club", "Spa", "Wi-Fi", "Transfer"]],
-  ["Bentota Beach Hotel", "srilanka", "Бентота", 4, 8.5, "Бентота", 1, 60, ["Beach", "Pool", "Spa", "Wi-Fi"]],
-  ["Fusion Resort Phu Quoc", "vietnam", "Фукуок", 5, 9.4, "Фукуок", 1, 30, ["Beach", "Pool", "Kids Club", "Spa", "Wi-Fi", "Transfer"]],
+  [
+    "Hilton Salwa Beach",
+    "qatar",
+    "Доха",
+    5,
+    9.2,
+    "Salwa",
+    1,
+    50,
+    ["Beach", "Pool", "Kids Club", "Spa", "Wi-Fi", "Transfer"],
+  ],
+  [
+    "Bentota Beach Hotel",
+    "srilanka",
+    "Бентота",
+    4,
+    8.5,
+    "Бентота",
+    1,
+    60,
+    ["Beach", "Pool", "Spa", "Wi-Fi"],
+  ],
+  [
+    "Fusion Resort Phu Quoc",
+    "vietnam",
+    "Фукуок",
+    5,
+    9.4,
+    "Фукуок",
+    1,
+    30,
+    ["Beach", "Pool", "Kids Club", "Spa", "Wi-Fi", "Transfer"],
+  ],
 ];
 
 const hotelImages = [hotel1, hotel2, hotel3, hotel4];
 
 export const hotels: Hotel[] = hotelSeed.map(
-  ([name, destinationId, city, stars, rating, district, beachLine, distanceToSea, amenities], i) => {
+  (
+    [name, destinationId, city, stars, rating, district, beachLine, distanceToSea, amenities],
+    i,
+  ) => {
     const dest = destinations.find((d) => d.id === destinationId)!;
     return {
       id: `hotel-${i + 1}`,
@@ -329,8 +582,18 @@ export type Tour = {
 
 const cities = ["Алматы", "Астана", "Шымкент"];
 const monthNames = [
-  "января", "февраля", "марта", "апреля", "мая", "июня",
-  "июля", "августа", "сентября", "октября", "ноября", "декабря",
+  "января",
+  "февраля",
+  "марта",
+  "апреля",
+  "мая",
+  "июня",
+  "июля",
+  "августа",
+  "сентября",
+  "октября",
+  "ноября",
+  "декабря",
 ];
 const mealCycle: MealCode[] = ["AI", "UAI", "BB", "HB", "FB", "AI", "UAI", "RO", "BB", "AI"];
 
@@ -343,9 +606,9 @@ export const tours: Tour[] = Array.from({ length: 200 }, (_, i) => {
   const start = new Date(2026, 7, 3 + ((i * 5) % 55));
   const end = new Date(start.getTime() + nights * 86400000);
   const mealCode = mealCycle[i % mealCycle.length]!;
-  const mealBonus = mealCode === "UAI" ? 180000 : mealCode === "AI" ? 120000 : mealCode === "FB" ? 70000 : 0;
-  const base =
-    360000 + ((i * 137) % 17) * 62000 + hotel.stars * 95000 + nights * 21000 + mealBonus;
+  const mealBonus =
+    mealCode === "UAI" ? 180000 : mealCode === "AI" ? 120000 : mealCode === "FB" ? 70000 : 0;
+  const base = 360000 + ((i * 137) % 17) * 62000 + hotel.stars * 95000 + nights * 21000 + mealBonus;
   const price = Math.round(base / 1000) * 1000;
   const isHot = i % 5 === 0;
   const isPremium = i % 7 === 3;
@@ -406,8 +669,7 @@ export const getTour = (id: string) => {
 export const hotTours = tours.filter((t) => t.tags.includes("hot")).slice(0, 4);
 export const premiumTours = tours.filter((t) => t.tags.includes("premium")).slice(0, 3);
 
-export const formatPrice = (value: number) =>
-  `${new Intl.NumberFormat("ru-RU").format(value)} ₸`;
+export const formatPrice = (value: number) => `${new Intl.NumberFormat("ru-RU").format(value)} ₸`;
 
 export const formatNumber = (value: number) => new Intl.NumberFormat("ru-RU").format(value);
 
@@ -420,4 +682,6 @@ export const nightsLabel = (n: number) => {
 };
 
 export const guestsLabel = (adults: number, children: number) =>
-  children > 0 ? `${adults} взрослых + ${children} ${children === 1 ? "ребёнок" : "детей"}` : `${adults} взрослых`;
+  children > 0
+    ? `${adults} взрослых + ${children} ${children === 1 ? "ребёнок" : "детей"}`
+    : `${adults} взрослых`;

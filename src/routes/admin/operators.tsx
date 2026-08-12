@@ -209,7 +209,11 @@ function AdminOperatorsPage() {
                           onConfirm={() => setStatus(o.id, "SUSPENDED")}
                         />
                       ) : (
-                        <Button size="sm" variant="outline" onClick={() => setStatus(o.id, "APPROVED")}>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setStatus(o.id, "APPROVED")}
+                        >
                           Возобновить
                         </Button>
                       )}

@@ -44,7 +44,9 @@ function AdminAuditLogsPage() {
       if (!query) return true;
       const action = (auditActionLabel[log.action] ?? log.action).toLowerCase();
       const actor = log.actorId ? userName(log.actorId).toLowerCase() : "система";
-      return action.includes(query) || actor.includes(query) || (log.entityId ?? "").includes(query);
+      return (
+        action.includes(query) || actor.includes(query) || (log.entityId ?? "").includes(query)
+      );
     });
   }, [state.auditLogs, q, entity]);
 
@@ -72,7 +74,10 @@ function AdminAuditLogsPage() {
       />
 
       {logs.length === 0 ? (
-        <EmptyState title="Записей нет" description="Измените фильтр или выполните действие в админке" />
+        <EmptyState
+          title="Записей нет"
+          description="Измените фильтр или выполните действие в админке"
+        />
       ) : (
         <div className="space-y-3">
           {logs.map((log) => (

@@ -60,7 +60,11 @@ function OperatorDashboard() {
       ) : null}
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
-        <KpiCard label="Активные туры" value={formatNumber(active.length)} hint={`лимит ${plan?.tourLimit ?? "—"}`} />
+        <KpiCard
+          label="Активные туры"
+          value={formatNumber(active.length)}
+          hint={`лимит ${plan?.tourLimit ?? "—"}`}
+        />
         <KpiCard label="Просмотры" value={formatNumber(views)} />
         <KpiCard label="Заявки / брони" value={formatNumber(bookings.length)} />
         <KpiCard label="Revenue" value={formatPrice(revenue)} />
@@ -82,7 +86,10 @@ function OperatorDashboard() {
           <ul className="mt-6 space-y-3 text-sm">
             <li>Тариф: {organization.planCode}</li>
             <li>API: {api?.status ?? "нет"}</li>
-            <li>Последний sync: {api?.lastSyncAt ? new Date(api.lastSyncAt).toLocaleString("ru-RU") : "—"}</li>
+            <li>
+              Последний sync:{" "}
+              {api?.lastSyncAt ? new Date(api.lastSyncAt).toLocaleString("ru-RU") : "—"}
+            </li>
             <li>Promo balance: {formatPrice(organization.promotionBalance)}</li>
           </ul>
         </div>

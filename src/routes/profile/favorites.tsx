@@ -32,7 +32,9 @@ function FavoritesProfilePage() {
         </div>
       ) : (
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {tours.map((tour) => (tour ? <TourCard key={tour.id} tour={tour} layout="grid" /> : null))}
+          {tours.map((tour) =>
+            tour ? <TourCard key={tour.id} tour={tour} layout="grid" /> : null,
+          )}
         </div>
       )}
     </DashShell>

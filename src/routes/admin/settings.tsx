@@ -24,12 +24,7 @@ function AdminSettingsPage() {
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;
 
   return (
-    <DashShell
-      brand="TourGo Админ"
-      items={nav}
-      title="Настройки"
-      subtitle="Система и доступ"
-    >
+    <DashShell brand="TourGo Админ" items={nav} title="Настройки" subtitle="Система и доступ">
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="surface-card space-y-3 p-6">
           <h2 className="font-display text-lg font-semibold">Окружение</h2>
@@ -42,9 +37,7 @@ function AdminSettingsPage() {
             </div>
             <div className="flex justify-between gap-4">
               <dt className="text-muted-foreground">URL</dt>
-              <dd className="truncate text-right font-mono text-xs">
-                {supabaseUrl ?? "—"}
-              </dd>
+              <dd className="truncate text-right font-mono text-xs">{supabaseUrl ?? "—"}</dd>
             </div>
             <div className="flex justify-between gap-4">
               <dt className="text-muted-foreground">Хранилище</dt>

@@ -76,8 +76,18 @@ function AdminDashboard() {
       subtitle="Ключевые показатели и задачи"
     >
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <KpiLinkCard label="Туристы" value={formatNumber(tourists)} to="/admin/users" hint="Все роли туристов" />
-        <KpiLinkCard label="Premium" value={formatNumber(premium)} to="/admin/premium" hint="Активные Premium" />
+        <KpiLinkCard
+          label="Туристы"
+          value={formatNumber(tourists)}
+          to="/admin/users"
+          hint="Все роли туристов"
+        />
+        <KpiLinkCard
+          label="Premium"
+          value={formatNumber(premium)}
+          to="/admin/premium"
+          hint="Активные Premium"
+        />
         <KpiLinkCard
           label="Операторы"
           value={formatNumber(operators)}
@@ -106,7 +116,9 @@ function AdminDashboard() {
             <h2 className="font-display text-lg font-semibold">Требует внимания</h2>
           </div>
           {attention.length === 0 ? (
-            <p className="mt-4 text-sm text-muted-foreground">Сейчас всё спокойно — срочных задач нет.</p>
+            <p className="mt-4 text-sm text-muted-foreground">
+              Сейчас всё спокойно — срочных задач нет.
+            </p>
           ) : (
             <ul className="mt-4 space-y-2">
               {attention.slice(0, 8).map((item, i) => (

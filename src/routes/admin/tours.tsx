@@ -65,12 +65,7 @@ function AdminToursPage() {
 
   if (!allowed || !user) return null;
   return (
-    <DashShell
-      brand="TourGo Админ"
-      items={nav}
-      title="Туры"
-      subtitle="Модерация каталога"
-    >
+    <DashShell brand="TourGo Админ" items={nav} title="Туры" subtitle="Модерация каталога">
       <FilterBar
         search={q}
         onSearchChange={setQ}

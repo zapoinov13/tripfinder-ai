@@ -62,12 +62,7 @@ function AdminPaymentsPage() {
 
   if (!allowed) return null;
   return (
-    <DashShell
-      brand="TourGo Админ"
-      items={nav}
-      title="Платежи"
-      subtitle="Транзакции платформы"
-    >
+    <DashShell brand="TourGo Админ" items={nav} title="Платежи" subtitle="Транзакции платформы">
       <div className="mb-6 grid gap-4 sm:grid-cols-3">
         <KpiLinkCard label="Оплачено" value={formatPrice(paidSum)} hint="Успешные платежи" />
         <KpiLinkCard

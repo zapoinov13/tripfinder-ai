@@ -23,7 +23,12 @@ function OperatorBillingPage() {
   const state = usePlatformStore();
   if (!allowed || !organization || !user) {
     return (
-      <DashShell brand="Operator" items={operatorNav} title="Тариф" subtitle="Только OPERATOR_ADMIN">
+      <DashShell
+        brand="Operator"
+        items={operatorNav}
+        title="Тариф"
+        subtitle="Только OPERATOR_ADMIN"
+      >
         <p className="text-sm text-muted-foreground">Недостаточно прав или нет организации.</p>
       </DashShell>
     );
@@ -79,12 +84,22 @@ function OperatorBillingPage() {
       entityId: organization.id,
       meta: { plan: code },
     });
-    pushNotification(user.id, "subscription_expiry", `Тариф ${code}`, `Активирован план ${plan.name}`);
+    pushNotification(
+      user.id,
+      "subscription_expiry",
+      `Тариф ${code}`,
+      `Активирован план ${plan.name}`,
+    );
     toast.success(`Тариф ${code} активен`);
   };
 
   return (
-    <DashShell brand={organization.name} items={operatorNav} title="Тариф" subtitle={`Текущий: ${organization.planCode}`}>
+    <DashShell
+      brand={organization.name}
+      items={operatorNav}
+      title="Тариф"
+      subtitle={`Текущий: ${organization.planCode}`}
+    >
       <div className="grid gap-5 md:grid-cols-3">
         {state.config.operatorPlans.map((plan) => (
           <div key={plan.code} className="surface-card p-6">

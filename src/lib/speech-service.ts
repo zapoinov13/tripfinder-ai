@@ -31,7 +31,11 @@ export class MockSpeechService implements SpeechService {
 type RecogCtor = new () => {
   lang: string;
   interimResults: boolean;
-  onresult: ((event: { results: ArrayLike<ArrayLike<{ transcript: string; confidence: number }>> }) => void) | null;
+  onresult:
+    | ((event: {
+        results: ArrayLike<ArrayLike<{ transcript: string; confidence: number }>>;
+      }) => void)
+    | null;
   onerror: (() => void) | null;
   start: () => void;
   stop: () => void;
@@ -42,7 +46,10 @@ export class WebSpeechService implements SpeechService {
 
   isSupported() {
     if (typeof window === "undefined") return false;
-    const w = window as unknown as { SpeechRecognition?: RecogCtor; webkitSpeechRecognition?: RecogCtor };
+    const w = window as unknown as {
+      SpeechRecognition?: RecogCtor;
+      webkitSpeechRecognition?: RecogCtor;
+    };
     return Boolean(w.SpeechRecognition || w.webkitSpeechRecognition);
   }
 
@@ -50,7 +57,10 @@ export class WebSpeechService implements SpeechService {
     if (!this.isSupported()) {
       return new MockSpeechService().start();
     }
-    const w = window as unknown as { SpeechRecognition?: RecogCtor; webkitSpeechRecognition?: RecogCtor };
+    const w = window as unknown as {
+      SpeechRecognition?: RecogCtor;
+      webkitSpeechRecognition?: RecogCtor;
+    };
     const Ctor = w.SpeechRecognition || w.webkitSpeechRecognition;
     return new Promise((resolve) => {
       const recognition = new Ctor!();

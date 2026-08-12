@@ -181,9 +181,7 @@ function AdminUsersPage() {
                         const next = u.status === "active" ? "suspended" : "active";
                         setState((s) => ({
                           ...s,
-                          users: s.users.map((x) =>
-                            x.id === u.id ? { ...x, status: next } : x,
-                          ),
+                          users: s.users.map((x) => (x.id === u.id ? { ...x, status: next } : x)),
                         }));
                         appendAudit({
                           actorId: user.id,
