@@ -30,8 +30,8 @@ function OperatorToursPage() {
   const state = usePlatformStore();
   const [filter, setFilter] = useState("active");
 
-  const plan = state.config.operatorPlans.find((p) => p.code === organization.planCode)!;
-  const orgTours = state.tours.filter((t) => t.operatorOrgId === organization.id);
+  const plan = state.config.operatorPlans.find((p) => p.code === organization!.planCode)!;
+  const orgTours = state.tours.filter((t) => t.operatorOrgId === organization!.id);
   const activeCount = orgTours.filter((t) => t.status === "active").length;
 
   const filtered = useMemo(() => {

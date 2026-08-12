@@ -80,7 +80,7 @@ function AdminOperatorsPage() {
       ),
     );
     appendAudit({
-      actorId: user.id,
+      actorId: user!.id,
       action: "operator_status",
       entityType: "organization",
       entityId: orgId,
@@ -156,7 +156,7 @@ function AdminOperatorsPage() {
                             ),
                           }));
                           appendAudit({
-                            actorId: user.id,
+                            actorId: user!.id,
                             action: "operator_plan_admin",
                             entityType: "organization",
                             entityId: o.id,

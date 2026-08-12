@@ -64,7 +64,7 @@ function AdminBookingsPage() {
       ),
     }));
     appendAudit({
-      actorId: user.id,
+      actorId: user!.id,
       action,
       entityType: "booking",
       entityId: id,
