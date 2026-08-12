@@ -37,7 +37,6 @@ function AdminPaymentsPage() {
   const [q, setQ] = useState("");
   const [type, setType] = useState("all");
   const [status, setStatus] = useState("all");
-  if (!allowed) return null;
 
   const paidSum = state.payments
     .filter((p) => p.status === "paid")
@@ -61,6 +60,7 @@ function AdminPaymentsPage() {
     });
   }, [state.payments, q, type, status]);
 
+  if (!allowed) return null;
   return (
     <DashShell
       brand="TourGo Админ"

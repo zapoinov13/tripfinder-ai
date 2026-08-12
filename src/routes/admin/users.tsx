@@ -49,7 +49,6 @@ function AdminUsersPage() {
   const [q, setQ] = useState("");
   const [role, setRole] = useState("all");
   const [status, setStatus] = useState("all");
-  if (!allowed || !user) return null;
 
   const users = useMemo(() => {
     const query = q.trim().toLowerCase();
@@ -66,6 +65,7 @@ function AdminUsersPage() {
     });
   }, [state.users, q, role, status]);
 
+  if (!allowed || !user) return null;
   return (
     <DashShell
       brand="TourGo Админ"

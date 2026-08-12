@@ -25,7 +25,6 @@ function AdminAuditLogsPage() {
   const state = usePlatformStore();
   const [q, setQ] = useState("");
   const [entity, setEntity] = useState("all");
-  if (!allowed) return null;
 
   const entityOptions = useMemo(() => {
     const set = new Set(state.auditLogs.map((l) => l.entityType));
@@ -49,6 +48,7 @@ function AdminAuditLogsPage() {
     });
   }, [state.auditLogs, q, entity]);
 
+  if (!allowed) return null;
   return (
     <DashShell
       brand="TourGo Админ"

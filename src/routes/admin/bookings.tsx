@@ -42,7 +42,6 @@ function AdminBookingsPage() {
   const state = usePlatformStore();
   const [q, setQ] = useState("");
   const [status, setStatus] = useState("all");
-  if (!allowed || !user) return null;
 
   const bookings = useMemo(() => {
     const query = q.trim().toLowerCase();
@@ -74,6 +73,7 @@ function AdminBookingsPage() {
     toast.success(bookingStatusLabel[next] ?? next);
   };
 
+  if (!allowed || !user) return null;
   return (
     <DashShell
       brand="TourGo Админ"

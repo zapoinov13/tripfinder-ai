@@ -29,7 +29,6 @@ function OperatorToursPage() {
   const { organization } = useAuth();
   const state = usePlatformStore();
   const [filter, setFilter] = useState("active");
-  if (!allowed || !organization) return null;
 
   const plan = state.config.operatorPlans.find((p) => p.code === organization.planCode)!;
   const orgTours = state.tours.filter((t) => t.operatorOrgId === organization.id);
@@ -46,6 +45,7 @@ function OperatorToursPage() {
     });
   }, [orgTours, filter]);
 
+  if (!allowed || !organization) return null;
   return (
     <DashShell
       brand={organization.name}

@@ -44,7 +44,6 @@ function AdminToursPage() {
   const [status, setStatus] = useState("all");
   const [org, setOrg] = useState("all");
   const [limit, setLimit] = useState(PAGE);
-  if (!allowed || !user) return null;
 
   const filtered = useMemo(() => {
     const query = q.trim().toLowerCase();
@@ -64,6 +63,7 @@ function AdminToursPage() {
 
   const visible = filtered.slice(0, limit);
 
+  if (!allowed || !user) return null;
   return (
     <DashShell
       brand="TourGo Админ"

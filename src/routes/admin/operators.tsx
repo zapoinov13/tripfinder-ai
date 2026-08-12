@@ -46,7 +46,6 @@ function AdminOperatorsPage() {
   const nav = useAdminNav();
   const state = usePlatformStore();
   const [tab, setTab] = useState("all");
-  if (!allowed || !user) return null;
 
   const counts = useMemo(() => {
     const all = state.organizations.length;
@@ -90,6 +89,7 @@ function AdminOperatorsPage() {
     toast.success(orgStatusLabel[status]);
   };
 
+  if (!allowed || !user) return null;
   return (
     <DashShell
       brand="TourGo Админ"

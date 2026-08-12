@@ -18,7 +18,6 @@ function AdminAnalyticsPage() {
   const nav = useAdminNav();
   const state = usePlatformStore();
   const [period, setPeriod] = useState("all");
-  if (!allowed) return null;
 
   const startOfToday = useMemo(() => {
     const d = new Date();
@@ -41,6 +40,7 @@ function AdminAnalyticsPage() {
   const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
   const max = sorted[0]?.[1] ?? 1;
 
+  if (!allowed) return null;
   return (
     <DashShell
       brand="TourGo Админ"
