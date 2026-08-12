@@ -1013,28 +1013,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      current_profile: {
-        Args: never
-        Returns: {
-          city: string
-          created_at: string
-          email: string
-          id: string
-          name: string
-          organization_id: string | null
-          role: string
-          status: string
-          updated_at: string
-        }
-        SetofOptions: {
-          from: "*"
-          to: "profiles"
-          isOneToOne: true
-          isSetofReturn: false
-        }
-      }
-      is_platform_admin: { Args: never; Returns: boolean }
-      my_org_id: { Args: never; Returns: string }
+      [_ in never]: never
     }
     Enums: {
       [_ in never]: never
