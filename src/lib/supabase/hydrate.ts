@@ -31,7 +31,8 @@ export async function hydrateCatalogFromSupabase() {
           config: {
             ...next.config,
             premiumMonthlyPrice: Number(c["premium_monthly_price"]),
-            premiumCurrency: String(c["premium_currency"] ?? next.config.premiumCurrency),
+            premiumCurrency: (c["premium_currency"] ??
+              next.config.premiumCurrency) as PlatformConfig["premiumCurrency"],
             operatorPlans:
               (c["operator_plans"] as PlatformConfig["operatorPlans"]) ?? next.config.operatorPlans,
             promotionPrices: next.config.promotionPrices,
