@@ -10,9 +10,9 @@ export async function hydrateCatalogFromSupabase() {
   if (!sb) return { ok: false as const, reason: "not_configured" };
 
   const [configRes, toursRes, orgsRes] = await Promise.all([
-    sb.from("platform_config").select("*").eq("id", 1).maybeSingle(),
+    sb.from("platform_config_public").select("*").eq("id", 1).maybeSingle(),
     sb.from("tour_offers").select("*").eq("status", "active").limit(500),
-    sb.from("organizations").select("*"),
+    sb.from("organizations_public").select("*"),
   ]);
 
   if (configRes.error && toursRes.error) {
@@ -25,20 +25,17 @@ export async function hydrateCatalogFromSupabase() {
       let next = { ...s };
 
       if (configRes.data) {
-        const c = configRes.data;
+        const c = configRes.data as Record<string, unknown>;
         next = {
           ...next,
           config: {
             ...next.config,
-            premiumMonthlyPrice: Number(c.premium_monthly_price),
-            premiumCurrency: c.premium_currency,
+            premiumMonthlyPrice: Number(c["premium_monthly_price"]),
+            premiumCurrency: String(c["premium_currency"] ?? next.config.premiumCurrency),
             operatorPlans:
-              (c.operator_plans as PlatformConfig["operatorPlans"]) ?? next.config.operatorPlans,
-            promotionPrices:
-              (c.promotion_prices as PlatformConfig["promotionPrices"]) ??
-              next.config.promotionPrices,
-            rankingWeights:
-              (c.ranking_weights as PlatformConfig["rankingWeights"]) ?? next.config.rankingWeights,
+              (c["operator_plans"] as PlatformConfig["operatorPlans"]) ?? next.config.operatorPlans,
+            promotionPrices: next.config.promotionPrices,
+            rankingWeights: next.config.rankingWeights,
           },
         };
       }
@@ -46,25 +43,29 @@ export async function hydrateCatalogFromSupabase() {
       if (orgsRes.data?.length) {
         next = {
           ...next,
-          organizations: orgsRes.data.map((o) => ({
-            id: o.id,
-            name: o.name,
-            legalName: o.legal_name,
-            registrationNumber: o.registration_number,
-            country: o.country,
-            city: o.city,
-            address: o.address,
-            phone: o.phone,
-            email: o.email,
-            website: o.website,
-            contactPerson: o.contact_person,
-            status: o.status,
-            planCode: o.plan_code,
-            additionalTourLimit: o.additional_tour_limit,
-            advertisingBalance: Number(o.advertising_balance),
-            promotionBalance: Number(o.promotion_balance),
-            createdAt: o.created_at,
-          })),
+          organizations: (orgsRes.data as Record<string, unknown>[]).map((o) => {
+            const prev = s.organizations.find((x) => x.id === String(o["id"]));
+            return {
+              ...(prev ?? ({} as (typeof s.organizations)[number])),
+              id: String(o["id"]),
+              name: String(o["name"] ?? ""),
+              legalName: prev?.legalName ?? "",
+              registrationNumber: prev?.registrationNumber ?? "",
+              country: String(o["country"] ?? ""),
+              city: String(o["city"] ?? ""),
+              address: prev?.address ?? "",
+              phone: prev?.phone ?? "",
+              email: prev?.email ?? "",
+              website: String(o["website"] ?? ""),
+              contactPerson: prev?.contactPerson ?? "",
+              status: String(o["status"] ?? "") as (typeof s.organizations)[number]["status"],
+              planCode: String(o["plan_code"] ?? "") as (typeof s.organizations)[number]["planCode"],
+              additionalTourLimit: prev?.additionalTourLimit ?? 0,
+              advertisingBalance: prev?.advertisingBalance ?? 0,
+              promotionBalance: prev?.promotionBalance ?? 0,
+              createdAt: String(o["created_at"] ?? ""),
+            };
+          }),
         };
       }
 
