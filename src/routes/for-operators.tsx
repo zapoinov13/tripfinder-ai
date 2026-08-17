@@ -8,16 +8,16 @@ import { heroImage } from "@/data/demo";
 export const Route = createFileRoute("/for-operators")({
   head: () => ({
     meta: [
-      { title: "Для туроператоров — продавайте больше туров | TourGo" },
+      { title: "Для поставщиков — подключите предложения | TourGo" },
       {
         name: "description",
         content:
-          "Подключите свои туры к маркетплейсу TourGo через API и получайте новых клиентов из нашей аудитории.",
+          "Подключите отели, туры, экскурсии, яхты и трансферы к TourGo и получайте русскоязычных туристов из СНГ. Первое направление запуска — Дубай.",
       },
-      { property: "og:title", content: "Для туроператоров — TourGo" },
+      { property: "og:title", content: "Для поставщиков — TourGo" },
       {
         property: "og:description",
-        content: "Продавайте больше туров через единый marketplace.",
+        content: "Продавайте предложения через единый marketplace. На старте подключаем Дубай.",
       },
     ],
   }),
@@ -25,11 +25,11 @@ export const Route = createFileRoute("/for-operators")({
 });
 
 const flow = [
-  { label: "Operator", icon: Building2 },
-  { label: "API", icon: Cable },
-  { label: "Marketplace", icon: Store },
-  { label: "Tourists", icon: Users },
-  { label: "Bookings", icon: Ticket },
+  { label: "Поставщик", icon: Building2 },
+  { label: "Цены/API", icon: Cable },
+  { label: "TourGo", icon: Store },
+  { label: "Туристы СНГ", icon: Users },
+  { label: "Заявки", icon: Ticket },
 ];
 
 function OperatorsLanding() {
@@ -41,20 +41,22 @@ function OperatorsLanding() {
           <div className="absolute inset-0 bg-ink/70" />
           <div className="absolute inset-0 flex flex-col justify-center px-6 md:px-14">
             <span className="w-fit rounded-full bg-card/15 px-3 py-1 text-xs font-semibold text-primary-foreground">
-              Для туроператоров
+              Для поставщиков
             </span>
             <h1 className="mt-5 max-w-3xl font-display text-3xl font-semibold text-primary-foreground md:text-5xl">
-              Продавайте больше туров через единый marketplace
+              Получайте туристов из СНГ на туры, отели, экскурсии и трансферы
             </h1>
             <p className="mt-4 max-w-xl text-primary-foreground/85">
-              Подключите свои предложения и получайте новых клиентов из нашей аудитории.
+              Подключите каталог через кабинет, CSV или API. Мы проверяем цены перед бронью и
+              приводим русскоязычных клиентов, которые уже готовы выбрать поездку. Первый фокус
+              подключения — Дубай.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Button size="lg" asChild>
-                <Link to="/operator">Подключить компанию</Link>
+                <Link to="/operator">Подключить поставщика</Link>
               </Button>
               <Button size="lg" variant="secondary" asChild>
-                <Link to="/operator">Демо кабинета</Link>
+                <Link to="/operator">Посмотреть кабинет</Link>
               </Button>
             </div>
           </div>
@@ -83,9 +85,12 @@ function OperatorsLanding() {
       <section className="container-page mt-20">
         <div className="grid gap-5 md:grid-cols-3">
           {[
-            { title: "Единый API", text: "Загружайте туры автоматически и обновляйте цены." },
-            { title: "Продвижение", text: "Boost, Featured и Sponsored размещения." },
-            { title: "Аналитика", text: "Просмотры, заявки и брони в реальном времени." },
+            { title: "Каталог и price check", text: "Загружайте цены вручную, CSV или через API." },
+            { title: "Продвижение", text: "Boost, Featured и Sponsored места в выдаче." },
+            {
+              title: "Заявки и аналитика",
+              text: "Просмотры, price checks, заявки и брони в кабинете.",
+            },
           ].map((item) => (
             <div key={item.title} className="surface-card p-6">
               <h3 className="font-display text-lg font-semibold">{item.title}</h3>

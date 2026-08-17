@@ -44,8 +44,9 @@ function LoginPage() {
         <div className="surface-card w-full max-w-md p-6 md:p-8">
           <h1 className="font-display text-2xl font-semibold">Войти в TourGo</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Демо: tourist / premium / operator / admin @tourgo.demo · пароль {DEMO_PASSWORD}
-            {supabaseEnabled ? " · Supabase Auth" : " · local store"}
+            Тестовые аккаунты: tourist / premium / operator / admin @tourgo.demo · пароль{" "}
+            {DEMO_PASSWORD}
+            {supabaseEnabled ? " · Supabase Auth" : " · локальный режим"}
           </p>
           <form
             className="mt-6 space-y-4"

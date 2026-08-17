@@ -29,7 +29,7 @@ import { usePlatformStore } from "@/lib/platform/hooks";
 import { setState } from "@/lib/platform/store";
 
 export const Route = createFileRoute("/admin/tours")({
-  head: () => ({ meta: [{ title: "Туры — Админ TourGo" }] }),
+  head: () => ({ meta: [{ title: "Предложения — Админ TourGo" }] }),
   component: AdminToursPage,
 });
 
@@ -65,11 +65,11 @@ function AdminToursPage() {
 
   if (!allowed || !user) return null;
   return (
-    <DashShell brand="TourGo Админ" items={nav} title="Туры" subtitle="Модерация каталога">
+    <DashShell brand="TourGo Админ" items={nav} title="Предложения" subtitle="Модерация каталога">
       <FilterBar
         search={q}
         onSearchChange={setQ}
-        searchPlaceholder="Отель, оператор, тег…"
+        searchPlaceholder="Отель, поставщик, тег…"
         filters={[
           {
             key: "status",
@@ -87,10 +87,10 @@ function AdminToursPage() {
           {
             key: "org",
             value: org,
-            placeholder: "Оператор",
+            placeholder: "Поставщик",
             onChange: setOrg,
             options: [
-              { value: "all", label: "Все операторы" },
+              { value: "all", label: "Все поставщики" },
               ...state.organizations.map((o) => ({ value: o.id, label: o.name })),
             ],
           },
@@ -98,7 +98,7 @@ function AdminToursPage() {
       />
 
       {visible.length === 0 ? (
-        <EmptyState title="Туры не найдены" description="Попробуйте другой фильтр" />
+        <EmptyState title="Предложения не найдены" description="Попробуйте другой фильтр" />
       ) : (
         <>
           <div className="surface-card overflow-x-auto">
@@ -106,7 +106,7 @@ function AdminToursPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Тур</TableHead>
-                  <TableHead>Оператор</TableHead>
+                  <TableHead>Поставщик</TableHead>
                   <TableHead>Цена</TableHead>
                   <TableHead>Статус</TableHead>
                   <TableHead></TableHead>
@@ -222,7 +222,7 @@ function AdminToursPage() {
                             </Button>
                             <ConfirmAction
                               triggerLabel="Блок"
-                              title="Заблокировать тур?"
+                              title="Заблокировать предложение?"
                               description={hotel.name}
                               confirmLabel="Заблокировать"
                               destructive

@@ -20,7 +20,7 @@ import { nowIso, setState } from "@/lib/platform/store";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/operator/tours")({
-  head: () => ({ meta: [{ title: "Туры оператора — TourGo" }] }),
+  head: () => ({ meta: [{ title: "Предложения поставщика — TourGo" }] }),
   component: OperatorToursPage,
 });
 
@@ -50,7 +50,7 @@ function OperatorToursPage() {
     <DashShell
       brand={organization.name}
       items={operatorNav}
-      title="Мои туры"
+      title="Мои предложения"
       subtitle={`${activeCount} / ${plan.tourLimit + organization.additionalTourLimit} активных`}
       actions={
         <Button
@@ -70,10 +70,12 @@ function OperatorToursPage() {
               toast.error("Лимит активных предложений достигнут.");
               return;
             }
-            toast.message("Добавление тура: используйте API sync или админ-импорт (MVP).");
+            toast.message(
+              "Добавление предложения: используйте API-синхронизацию, CSV или админ-импорт.",
+            );
           }}
         >
-          + Добавить тур
+          + Добавить
         </Button>
       }
     >

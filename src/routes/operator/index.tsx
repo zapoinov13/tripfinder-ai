@@ -18,7 +18,7 @@ import { usePlatformStore } from "@/lib/platform/hooks";
 
 export const Route = createFileRoute("/operator/")({
   head: () => ({
-    meta: [{ title: "Кабинет туроператора — TourGo" }],
+    meta: [{ title: "Кабинет поставщика — TourGo" }],
   }),
   component: OperatorDashboard,
 });
@@ -49,7 +49,7 @@ function OperatorDashboard() {
       subtitle={`План ${organization.planCode} · API: ${api?.status ?? "disconnected"} · ${organization.status}`}
       actions={
         <Button size="sm" asChild>
-          <Link to="/operator/tours">Мои туры</Link>
+          <Link to="/operator/tours">Мои предложения</Link>
         </Button>
       }
     >
@@ -61,7 +61,7 @@ function OperatorDashboard() {
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
         <KpiCard
-          label="Активные туры"
+          label="Активные предложения"
           value={formatNumber(active.length)}
           hint={`лимит ${plan?.tourLimit ?? "—"}`}
         />
@@ -97,7 +97,7 @@ function OperatorDashboard() {
 
       <div className="surface-card mt-6 overflow-hidden">
         <div className="p-6">
-          <h2 className="font-display text-lg font-semibold">Лучшие туры</h2>
+          <h2 className="font-display text-lg font-semibold">Лучшие предложения</h2>
         </div>
         <div className="overflow-x-auto">
           <Table>

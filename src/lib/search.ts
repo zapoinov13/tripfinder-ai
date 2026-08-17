@@ -1,6 +1,15 @@
 import { destinations, getHotel, tours, type Tour } from "@/data/demo";
 
-export const originCities = ["Алматы", "Астана", "Шымкент", "Актау", "Атырау", "Караганда"];
+export const originCities = [
+  "Алматы",
+  "Астана",
+  "Ташкент",
+  "Бишкек",
+  "Москва",
+  "Санкт-Петербург",
+  "Шымкент",
+  "Актау",
+];
 
 export type SortKey =
   | "recommended"

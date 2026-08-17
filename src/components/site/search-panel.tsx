@@ -171,7 +171,7 @@ export function SearchPanel({
 }) {
   const [tab, setTab] = useState<"classic" | "ai">(defaultTab);
   const [from, setFrom] = useState("Алматы");
-  const [to, setTo] = useState("uae|Дубай");
+  const [to, setTo] = useState("dubai-beach|JBR");
   const [range, setRange] = useState<DateRange | undefined>({
     from: new Date(2026, 7, 10),
     to: new Date(2026, 7, 17),
@@ -224,7 +224,7 @@ export function SearchPanel({
   const parseAi = (query = aiQuery) => {
     const parsed = parseTravelQuery(
       query ||
-        "Хочу из Алматы в Дубай на 7 дней. Нас двое взрослых и ребёнок 5 лет. Бюджет до 1 200 000 ₸. Хотим хороший семейный отель рядом с морем и всё включено.",
+        "Хочу из Алматы в Дубай на 7 дней. Нас двое взрослых и ребёнок 5 лет. Бюджет до 1 200 000 ₸. Хотим семейный отель в JBR или Marina, море рядом, трансфер и русскоязычная поддержка.",
     );
     setAiQuery(parsed.originalQuery);
     setParsedAi(parsed);
@@ -420,7 +420,7 @@ export function SearchPanel({
         <div className="p-3 md:p-4">
           <div className="relative rounded-2xl border border-ai/25 bg-ai/[0.04] p-3">
             <Textarea
-              placeholder="Например: хочу из Алматы в Дубай на неделю с женой и двумя детьми. Бюджет до 1,5 млн ₸, всё включено, рядом с морем..."
+              placeholder="Например: хочу из Ташкента в Дубай на неделю с женой и двумя детьми. Бюджет до 1,5 млн ₸, JBR или Marina, море рядом, сафари и трансфер..."
               value={aiQuery}
               onChange={(e) => {
                 setAiQuery(e.target.value);
@@ -488,7 +488,7 @@ export function SearchPanel({
             onClick={parsedAi ? goAiSearch : () => parseAi()}
           >
             <Sparkles className="size-4" />
-            {parsedAi ? "Показать варианты" : "Найти подходящие туры"}
+            {parsedAi ? "Показать доступные варианты" : "Найти подходящие варианты"}
           </Button>
         </div>
       )}

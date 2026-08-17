@@ -47,7 +47,7 @@ function AdminDashboard() {
 
   const attention: Array<{ title: string; detail: string; to: string }> = [
     ...pendingOps.map((o) => ({
-      title: "Оператор ждёт одобрения",
+      title: "Поставщик ждёт одобрения",
       detail: o.name,
       to: "/admin/operators",
     })),
@@ -89,7 +89,7 @@ function AdminDashboard() {
           hint="Активные Premium"
         />
         <KpiLinkCard
-          label="Операторы"
+          label="Поставщики"
           value={formatNumber(operators)}
           to="/admin/operators"
           hint={pendingOps.length ? `${pendingOps.length} на проверке` : "Одобренные"}
@@ -139,7 +139,7 @@ function AdminDashboard() {
           )}
           <div className="mt-4 flex flex-wrap gap-2">
             <Button size="sm" variant="outline" asChild>
-              <Link to="/admin/operators">Операторы</Link>
+              <Link to="/admin/operators">Поставщики</Link>
             </Button>
             <Button size="sm" variant="outline" asChild>
               <Link to="/admin/api-monitoring">API</Link>

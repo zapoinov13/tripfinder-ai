@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth, useRequireAuth } from "@/lib/platform/auth";
 
 export const Route = createFileRoute("/operator/settings")({
-  head: () => ({ meta: [{ title: "Настройки оператора — TourGo" }] }),
+  head: () => ({ meta: [{ title: "Настройки поставщика — TourGo" }] }),
   component: OperatorSettingsPage,
 });
 

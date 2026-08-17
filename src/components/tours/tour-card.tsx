@@ -9,6 +9,7 @@ import {
   getOperator,
   guestsLabel,
   nightsLabel,
+  offerCategoryLabels,
   type Tour,
 } from "@/data/demo";
 import { useAuth } from "@/lib/platform/auth";
@@ -98,6 +99,9 @@ export function TourCard({
       <div className="pointer-events-none relative z-20 flex flex-col gap-4 p-5">
         <div className="min-w-0">
           <div className="flex items-center gap-2 text-[13px] text-muted-foreground">
+            <span className="rounded-full bg-secondary px-2 py-0.5 text-[11px] font-semibold text-foreground">
+              {offerCategoryLabels[tour.offerCategory ?? "tour"]}
+            </span>
             <span>
               {hotel.flag} {hotel.city}, {hotel.country}
             </span>

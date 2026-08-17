@@ -36,7 +36,7 @@ import { setState } from "@/lib/platform/store";
 import type { OperatorPlanCode, OrganizationStatus } from "@/lib/platform/types";
 
 export const Route = createFileRoute("/admin/operators")({
-  head: () => ({ meta: [{ title: "Операторы — Админ TourGo" }] }),
+  head: () => ({ meta: [{ title: "Поставщики — Админ TourGo" }] }),
   component: AdminOperatorsPage,
 });
 
@@ -94,8 +94,8 @@ function AdminOperatorsPage() {
     <DashShell
       brand="TourGo Админ"
       items={nav}
-      title="Операторы"
-      subtitle="Одобрение компаний и тарифы"
+      title="Поставщики"
+      subtitle="Одобрение DMC, турфирм, экскурсий, отелей и трансферов"
     >
       <TabPills
         value={tab}
@@ -110,7 +110,7 @@ function AdminOperatorsPage() {
       />
 
       {orgs.length === 0 ? (
-        <EmptyState title="Нет операторов в этой вкладке" />
+        <EmptyState title="Нет поставщиков в этой вкладке" />
       ) : (
         <div className="surface-card overflow-x-auto">
           <Table>
@@ -119,7 +119,7 @@ function AdminOperatorsPage() {
                 <TableHead>Компания</TableHead>
                 <TableHead>Статус</TableHead>
                 <TableHead>Тариф</TableHead>
-                <TableHead>Туры / брони</TableHead>
+                <TableHead>Предложения / брони</TableHead>
                 <TableHead>Действия</TableHead>
               </TableRow>
             </TableHeader>
@@ -177,7 +177,7 @@ function AdminOperatorsPage() {
                         </SelectContent>
                       </Select>
                       <div className="mt-1 text-xs text-muted-foreground">
-                        лимит {formatNumber(plan?.tourLimit ?? 0)} туров
+                        лимит {formatNumber(plan?.tourLimit ?? 0)} предложений
                       </div>
                     </TableCell>
                     <TableCell className="text-sm">
@@ -192,7 +192,7 @@ function AdminOperatorsPage() {
                       {o.status !== "REJECTED" ? (
                         <ConfirmAction
                           triggerLabel="Отклонить"
-                          title="Отклонить оператора?"
+                          title="Отклонить поставщика?"
                           description={o.name}
                           confirmLabel="Отклонить"
                           destructive
@@ -202,8 +202,8 @@ function AdminOperatorsPage() {
                       {o.status !== "SUSPENDED" ? (
                         <ConfirmAction
                           triggerLabel="Приостановить"
-                          title="Приостановить оператора?"
-                          description="Туры компании могут быть скрыты из выдачи."
+                          title="Приостановить поставщика?"
+                          description="Предложения компании могут быть скрыты из выдачи."
                           confirmLabel="Приостановить"
                           variant="ghost"
                           onConfirm={() => setStatus(o.id, "SUSPENDED")}

@@ -14,7 +14,10 @@ export const Route = createFileRoute("/registration")({
   head: () => ({
     meta: [
       { title: "Регистрация — TourGo" },
-      { name: "description", content: "Создайте аккаунт туриста или подайте заявку туроператора." },
+      {
+        name: "description",
+        content: "Создайте аккаунт туриста или подайте заявку поставщика путешествий.",
+      },
     ],
   }),
   component: RegistrationPage,

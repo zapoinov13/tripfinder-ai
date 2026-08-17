@@ -8,7 +8,7 @@ import { useAuth, useRequireAuth } from "@/lib/platform/auth";
 import { usePlatformStore } from "@/lib/platform/hooks";
 
 export const Route = createFileRoute("/operator/analytics")({
-  head: () => ({ meta: [{ title: "Аналитика оператора — TourGo" }] }),
+  head: () => ({ meta: [{ title: "Аналитика поставщика — TourGo" }] }),
   component: OperatorAnalyticsPage,
 });
 
@@ -32,13 +32,13 @@ function OperatorAnalyticsPage() {
       brand={organization.name}
       items={operatorNav}
       title="Аналитика"
-      subtitle="Org metrics"
+      subtitle="Показы, клики, избранное и подтверждённая выручка"
     >
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <KpiCard label="Impressions / Views" value={formatNumber(views)} />
-        <KpiCard label="Clicks" value={formatNumber(clicks)} />
-        <KpiCard label="Favorites" value={formatNumber(favorites)} />
-        <KpiCard label="Revenue" value={formatPrice(revenue)} />
+        <KpiCard label="Показы" value={formatNumber(views)} />
+        <KpiCard label="Клики" value={formatNumber(clicks)} />
+        <KpiCard label="В избранном" value={formatNumber(favorites)} />
+        <KpiCard label="Выручка" value={formatPrice(revenue)} />
       </div>
       <div className="surface-card mt-6 p-6">
         <h2 className="font-display text-lg font-semibold">Динамика</h2>

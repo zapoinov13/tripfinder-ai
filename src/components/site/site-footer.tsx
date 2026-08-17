@@ -5,9 +5,9 @@ const columns = [
   {
     title: "Marketplace",
     links: [
-      { label: "Все туры", to: "/search" },
+      { label: "Все предложения", to: "/search" },
       { label: "Направления", to: "/destinations" },
-      { label: "Горящие туры", to: "/hot" },
+      { label: "Hot Deals", to: "/hot" },
       { label: "Premium", to: "/premium" },
     ],
   },
@@ -15,7 +15,7 @@ const columns = [
     title: "Компания",
     links: [
       { label: "О платформе", to: "/about" },
-      { label: "Для туроператоров", to: "/for-operators" },
+      { label: "Для поставщиков", to: "/for-operators" },
       { label: "Партнёрам", to: "/for-operators" },
       { label: "Контакты", to: "/about" },
     ],
@@ -43,7 +43,8 @@ export function SiteFooter() {
             <span className="font-display text-lg font-semibold">TourGo</span>
           </div>
           <p className="mt-4 max-w-xs text-sm text-muted-foreground">
-            Маркетплейс туров: сравниваем предложения операторов и помогаем найти лучшее.
+            Маркетплейс путешествий: сравниваем туры, отели, экскурсии и трансферы от проверенных
+            поставщиков.
           </p>
         </div>
         {columns.map((col) => (

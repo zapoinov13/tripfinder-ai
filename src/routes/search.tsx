@@ -36,14 +36,18 @@ export const Route = createFileRoute("/search")({
   validateSearch: validateSearchParams,
   head: () => ({
     meta: [
-      { title: "Поиск туров — сравните предложения операторов | TourGo" },
+      { title: "Поиск предложений | TourGo" },
       {
         name: "description",
         content:
-          "Туры от проверенных операторов: фильтры по цене, питанию, отелю, рейтингу и удобствам.",
+          "Поиск туров, отелей, экскурсий и трансферов от проверенных поставщиков. Первый доступный каталог — Дубай.",
       },
-      { property: "og:title", content: "Поиск туров — TourGo" },
-      { property: "og:description", content: "Сравните туры от разных операторов в одном месте." },
+      { property: "og:title", content: "Поиск предложений — TourGo" },
+      {
+        property: "og:description",
+        content:
+          "Сравните предложения поставщиков в одном месте. Сейчас доступны варианты по Дубаю.",
+      },
     ],
   }),
   component: SearchPage,
@@ -257,7 +261,7 @@ function SearchPage() {
   const routeLabel = `${params.from || "Любой город"} → ${
     params.city ||
     (params.destination ? destinations.find((d) => d.id === params.destination)?.country : "") ||
-    "Все направления"
+    "Все доступные предложения"
   }`;
 
   const chips = [
@@ -360,7 +364,7 @@ function SearchPage() {
                   <Textarea
                     value={refinement}
                     onChange={(e) => setRefinement(e.target.value)}
-                    placeholder="Например: покажи дешевле, только 5 звёзд, ближе к центру или с лучшими отзывами"
+                    placeholder="Например: покажи дешевле, только 5 звёзд, JBR или Marina, с сафари, ближе к Dubai Mall или с лучшими отзывами"
                     className="mt-3 min-h-20 border-primary-foreground/20 bg-primary-foreground/10 text-primary-foreground placeholder:text-primary-foreground/65"
                   />
                 </div>
@@ -372,7 +376,7 @@ function SearchPage() {
 
             <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4">
               <p className="truncate text-sm font-medium text-muted-foreground">
-                Найдено {results.length} туров
+                Найдено {results.length} предложений
               </p>
               <Select value={params.sort} onValueChange={(v) => update({ sort: v as SortKey })}>
                 <SelectTrigger className="w-48">
@@ -407,7 +411,7 @@ function SearchPage() {
                 <ul className="mt-4 space-y-1.5 text-sm text-muted-foreground">
                   <li>Попробуйте увеличить бюджет</li>
                   <li>Измените даты</li>
-                  <li>Выберите другое направление</li>
+                  <li>Выберите другой район Дубая</li>
                 </ul>
                 <Button className="mt-6" onClick={reset}>
                   Сбросить фильтры

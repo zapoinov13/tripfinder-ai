@@ -42,6 +42,10 @@ const preferenceMap: Array<{ key: string; label: string; matches: string[] }> = 
   { key: "pool", label: "Бассейн", matches: ["бассейн"] },
   { key: "spa", label: "SPA", matches: ["spa", "спа"] },
   { key: "quiet_area", label: "Тихий район", matches: ["тихий", "спокой"] },
+  { key: "yacht", label: "Яхта", matches: ["яхт", "marina", "марина"] },
+  { key: "desert_safari", label: "Сафари", matches: ["сафари", "пустын"] },
+  { key: "tickets", label: "Билеты", matches: ["burj", "бурдж", "билеты", "аквапарк"] },
+  { key: "russian_support", label: "Русскоязычная поддержка", matches: ["русск", "снг"] },
 ];
 
 const mealAliases = [
@@ -76,7 +80,7 @@ const parseAges = (query: string) =>
 const findDestination = (query: string) => {
   const normalized = query.toLowerCase();
   const hit = destinationAliases.find((d) => d.aliases.some((alias) => normalized.includes(alias)));
-  if (!hit) return { destination: "uae", city: "Дубай" };
+  if (!hit) return { destination: "dubai-beach", city: "JBR" };
 
   const destination = destinations.find((d) => d.id === hit.id)!;
   const resort = (resortsByDestination[hit.id] ?? []).find((r) =>
@@ -108,11 +112,19 @@ export function parseTravelQuery(query: string): ParsedTravelQuery {
 
   return {
     originalQuery: query,
-    origin: normalized.includes("астан")
-      ? "Астана"
-      : normalized.includes("шымкент")
-        ? "Шымкент"
-        : "Алматы",
+    origin: normalized.includes("ташкент")
+      ? "Ташкент"
+      : normalized.includes("бишкек")
+        ? "Бишкек"
+        : normalized.includes("моск")
+          ? "Москва"
+          : normalized.includes("петербург") || normalized.includes("спб")
+            ? "Санкт-Петербург"
+            : normalized.includes("астан")
+              ? "Астана"
+              : normalized.includes("шымкент")
+                ? "Шымкент"
+                : "Алматы",
     destination,
     city,
     adults,

@@ -22,7 +22,7 @@ function OperatorApiPage() {
   const { allowed } = useRequireAuth(["OPERATOR_ADMIN", "OPERATOR_MANAGER"]);
   const { user, organization } = useAuth();
   const state = usePlatformStore();
-  const [endpoint, setEndpoint] = useState("https://mock.tourgo.local/api");
+  const [endpoint, setEndpoint] = useState("https://api.tourgo.travel/supplier-feed");
   const [apiKey, setApiKey] = useState("");
   const [secret, setSecret] = useState("");
   const [busy, setBusy] = useState(false);
@@ -39,7 +39,7 @@ function OperatorApiPage() {
       const next = {
         id: existing?.id ?? uid(),
         organizationId: organization.id,
-        provider: "MockOperator",
+        provider: "SupplierFeed",
         endpoint,
         apiKeyMasked: maskedKey,
         secretMasked: maskedSecret,
@@ -90,7 +90,7 @@ function OperatorApiPage() {
       brand={organization.name}
       items={operatorNav}
       title="API интеграции"
-      subtitle="MockOperatorAdapter"
+      subtitle="Синхронизация цен, наличия и статусов бронирований"
     >
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="surface-card space-y-4 p-6">
@@ -119,21 +119,21 @@ function OperatorApiPage() {
           <div className="flex flex-wrap gap-2">
             <Button onClick={saveConnection}>Сохранить</Button>
             <Button variant="secondary" disabled={busy} onClick={() => runSync(false)}>
-              Test + Sync
+              Проверить и синхронизировать
             </Button>
             <Button variant="outline" disabled={busy} onClick={() => runSync(true)}>
-              Simulate fail
+              Проверить ошибку
             </Button>
           </div>
           <p className="text-xs text-muted-foreground">
-            Status: {conn?.status ?? "disconnected"} · last:{" "}
+            Статус: {conn?.status ?? "disconnected"} · последняя синхронизация:{" "}
             {conn?.lastSyncAt ? new Date(conn.lastSyncAt).toLocaleString("ru-RU") : "—"}
             {conn?.lastError ? ` · ${conn.lastError}` : ""}
           </p>
         </div>
 
         <div className="surface-card p-6">
-          <h2 className="font-display text-lg font-semibold">Sync logs</h2>
+          <h2 className="font-display text-lg font-semibold">Журнал синхронизаций</h2>
           <ul className="mt-4 space-y-3 text-sm">
             {logs.map((log) => (
               <li key={log.id} className="rounded-xl bg-secondary p-3">

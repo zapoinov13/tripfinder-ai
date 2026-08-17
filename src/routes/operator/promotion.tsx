@@ -50,7 +50,7 @@ function OperatorPromotionPage() {
 
   const buy = async () => {
     if (!tourId) {
-      toast.error("Выберите тур");
+      toast.error("Выберите предложение");
       return;
     }
     const payment = await mockPaymentProvider.createPayment({
@@ -127,7 +127,7 @@ function OperatorPromotionPage() {
             <Label>Тур</Label>
             <Select value={tourId} onValueChange={setTourId}>
               <SelectTrigger>
-                <SelectValue placeholder="Выберите тур" />
+                <SelectValue placeholder="Выберите предложение" />
               </SelectTrigger>
               <SelectContent>
                 {tours.slice(0, 40).map((t) => (

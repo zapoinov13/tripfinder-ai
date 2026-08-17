@@ -48,7 +48,7 @@ function AdminPromotionsPage() {
       brand="TourGo Админ"
       items={nav}
       title="Продвижение"
-      subtitle="Цены пакетов и заказы операторов"
+      subtitle="Цены пакетов и заказы поставщиков"
     >
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="surface-card space-y-3 p-6">
@@ -90,7 +90,7 @@ function AdminPromotionsPage() {
                 <TableRow>
                   <TableHead>Тип</TableHead>
                   <TableHead>Тур</TableHead>
-                  <TableHead>Оператор</TableHead>
+                  <TableHead>Поставщик</TableHead>
                   <TableHead>Сумма</TableHead>
                   <TableHead>Статус</TableHead>
                   <TableHead></TableHead>

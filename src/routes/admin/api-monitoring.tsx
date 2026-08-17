@@ -68,16 +68,16 @@ function AdminApiMonitoringPage() {
       brand="TourGo Админ"
       items={nav}
       title="Мониторинг API"
-      subtitle="Статус интеграций операторов"
+      subtitle="Статус интеграций поставщиков"
     >
       {state.apiConnections.length === 0 ? (
-        <EmptyState title="Нет подключений" description="Операторы ещё не настроили API" />
+        <EmptyState title="Нет подключений" description="Поставщики ещё не настроили API" />
       ) : (
         <div className="surface-card overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Оператор</TableHead>
+                <TableHead>Поставщик</TableHead>
                 <TableHead>Статус</TableHead>
                 <TableHead>Синхронизация</TableHead>
                 <TableHead>Ошибка</TableHead>

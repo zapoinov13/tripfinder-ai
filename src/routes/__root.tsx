@@ -82,32 +82,32 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "TourGo — найдите путешествие, которое подходит именно вам" },
+      { title: "TourGo — маркетплейс путешествий" },
       {
         name: "description",
         content:
-          "Маркетплейс туров: сравниваем предложения туроператоров, горящие туры и Premium-цены. Подбор тура с AI.",
+          "Маркетплейс путешествий для русскоязычных туристов: туры, отели, экскурсии и трансферы от проверенных поставщиков. Первый доступный каталог — Дубай.",
       },
       {
         property: "og:title",
-        content: "TourGo — найдите путешествие, которое подходит именно вам",
+        content: "TourGo — маркетплейс путешествий",
       },
       {
         property: "og:description",
         content:
-          "Маркетплейс туров: сравниваем предложения туроператоров, горящие туры и Premium-цены. Подбор тура с AI.",
+          "Сравнивайте предложения поставщиков в одном месте. На старте доступны туры, отели, экскурсии и трансферы по Дубаю.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:site", content: "@Lovable" },
       {
         name: "twitter:title",
-        content: "TourGo — найдите путешествие, которое подходит именно вам",
+        content: "TourGo — маркетплейс путешествий",
       },
       {
         name: "twitter:description",
         content:
-          "Маркетплейс туров: сравниваем предложения туроператоров, горящие туры и Premium-цены. Подбор тура с AI.",
+          "Сравнивайте предложения поставщиков в одном месте. Первый доступный каталог — Дубай.",
       },
       {
         property: "og:image",
@@ -142,7 +142,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="ru">
       <head>
         <HeadContent />
       </head>

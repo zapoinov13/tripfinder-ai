@@ -3,6 +3,7 @@ import {
   hotels,
   mealLabel,
   operators,
+  type OfferCategory,
   type MealCode,
   type TourTag,
 } from "@/data/demo";
@@ -15,9 +16,9 @@ import type {
 } from "./types";
 
 export const DEMO_PASSWORD = "demo1234";
-export const STORE_KEY = "tourgo:platform-v1";
+export const STORE_KEY = "tourgo:dubai-platform-v1";
 
-const cities = ["Алматы", "Астана", "Шымкент", "Актау"];
+const cities = ["Алматы", "Астана", "Ташкент", "Бишкек", "Москва", "Санкт-Петербург"];
 const monthNames = [
   "января",
   "февраля",
@@ -33,6 +34,16 @@ const monthNames = [
   "декабря",
 ];
 const mealCycle: MealCode[] = ["AI", "UAI", "BB", "HB", "FB", "AI", "UAI", "RO", "BB", "AI"];
+const categoryCycle: OfferCategory[] = [
+  "tour",
+  "hotel",
+  "tour",
+  "excursion",
+  "tour",
+  "hotel",
+  "transfer",
+  "tour",
+];
 
 const fmtDay = (d: Date) => `${d.getDate()} ${monthNames[d.getMonth()]}`;
 const iso = (d: Date) => d.toISOString().slice(0, 10);
@@ -91,14 +102,29 @@ export const defaultConfig = (): PlatformConfig => ({
 function buildTours(count: number): PlatformTour[] {
   return Array.from({ length: count }, (_, i) => {
     const hotel = hotels[i % hotels.length]!;
-    const nights = [3, 5, 7, 9, 10, 12, 14, 16][i % 8]!;
+    const offerCategory = categoryCycle[(i + hotel.destinationId.length) % categoryCycle.length]!;
+    const nights =
+      offerCategory === "excursion" || offerCategory === "transfer"
+        ? 1
+        : [3, 4, 5, 7, 9, 10, 12][i % 7]!;
     const start = new Date(2026, 7, 3 + ((i * 5) % 55));
     const end = new Date(start.getTime() + nights * 86400000);
-    const mealCode = mealCycle[i % mealCycle.length]!;
+    const mealCode =
+      offerCategory === "excursion" || offerCategory === "transfer"
+        ? "RO"
+        : mealCycle[i % mealCycle.length]!;
     const mealBonus =
       mealCode === "UAI" ? 180000 : mealCode === "AI" ? 120000 : mealCode === "FB" ? 70000 : 0;
+    const categoryBase =
+      offerCategory === "excursion"
+        ? 65000
+        : offerCategory === "transfer"
+          ? 45000
+          : offerCategory === "hotel"
+            ? 280000
+            : 520000;
     const base =
-      360000 + ((i * 137) % 17) * 62000 + hotel.stars * 95000 + nights * 21000 + mealBonus;
+      categoryBase + ((i * 97) % 19) * 32000 + hotel.stars * 86000 + nights * 24000 + mealBonus;
     const price = Math.round(base / 1000) * 1000;
     const isHot = i % 5 === 0;
     const isPremium = i % 7 === 3;
@@ -115,6 +141,7 @@ function buildTours(count: number): PlatformTour[] {
       hotelId: hotel.id,
       operatorId: op.id,
       operatorOrgId: `org-${op.id}`,
+      offerCategory,
       from: cities[(i + Math.floor(i / hotels.length)) % cities.length]!,
       nights,
       dateStart: fmtDay(start),
@@ -128,7 +155,7 @@ function buildTours(count: number): PlatformTour[] {
       tags,
       adults: [2, 2, 1, 3, 2, 4][i % 6]!,
       children: [0, 2, 1, 0, 2, 1][i % 6]!,
-      transfer: hotel.amenities.includes("Transfer") || i % 3 !== 0,
+      transfer: hotel.amenities.includes("Transfer") || offerCategory !== "hotel",
       views: 1200 + ((i * 371) % 9000),
       bookings: 3 + ((i * 7) % 40),
       createdAt: iso(new Date(2026, 5, 1 + ((i * 11) % 60))),
@@ -147,12 +174,12 @@ function buildOrgs(): Organization[] {
   return operators.map((op, i) => ({
     id: `org-${op.id}`,
     name: op.name,
-    legalName: `${op.name} LLP`,
+    legalName: `${op.name} Tourism LLC`,
     registrationNumber: `BIN-${100000 + i}`,
-    country: "Казахстан",
-    city: i % 2 === 0 ? "Алматы" : "Астана",
-    address: `ул. Туристов ${i + 1}`,
-    phone: `+7 701 000 00${i}`,
+    country: "ОАЭ",
+    city: "Дубай",
+    address: `Dubai Business Bay, office ${120 + i}`,
+    phone: `+971 50 000 00${i}`,
     email: `ops@${op.id}.demo`,
     website: `https://${op.id}.demo`,
     contactPerson: `Manager ${i + 1}`,
@@ -192,7 +219,7 @@ function buildUsers(orgs: Organization[]): PlatformUser[] {
       id: "user-operator",
       email: "operator@tourgo.demo",
       password: DEMO_PASSWORD,
-      name: "Алишер Оператор",
+      name: "Алишер Поставщик",
       city: "Алматы",
       role: "OPERATOR_ADMIN",
       status: "active",
@@ -203,7 +230,7 @@ function buildUsers(orgs: Organization[]): PlatformUser[] {
       id: "user-pending",
       email: "pending@tourgo.demo",
       password: DEMO_PASSWORD,
-      name: "Новый Оператор",
+      name: "Новый Поставщик",
       city: "Шымкент",
       role: "OPERATOR_ADMIN",
       status: "active",
@@ -224,7 +251,7 @@ function buildUsers(orgs: Organization[]): PlatformUser[] {
       id: "user-manager",
       email: "manager@tourgo.demo",
       password: DEMO_PASSWORD,
-      name: "Менеджер Оператор",
+      name: "Менеджер Поставщика",
       city: "Алматы",
       role: "OPERATOR_MANAGER",
       status: "active",
@@ -312,7 +339,7 @@ export function createSeedState(): PlatformState {
         userId: "user-premium",
         type: "premium_deal",
         title: "Premium Deal доступен",
-        body: "Открыты закрытые цены на Дубай и Турцию.",
+        body: "Открыты закрытые цены на Palm Jumeirah, JBR и семейные туры в Дубай.",
         read: false,
         createdAt: ts,
       },
@@ -329,7 +356,7 @@ export function createSeedState(): PlatformState {
         id: "notif-4",
         userId: "user-admin",
         type: "operator_approval",
-        title: "Новая заявка оператора",
+        title: "Новая заявка поставщика",
         body: "Silk Road Voyage ожидает APPROVAL.",
         read: false,
         createdAt: ts,
@@ -342,7 +369,7 @@ export function createSeedState(): PlatformState {
         action: "seed",
         entityType: "platform",
         createdAt: ts,
-        meta: { note: "Initial local MVP seed" },
+        meta: { note: "Initial platform seed" },
       },
     ],
     analyticsEvents: [],
@@ -350,8 +377,8 @@ export function createSeedState(): PlatformState {
       {
         id: "api-1",
         organizationId: orgs[0]!.id,
-        provider: "MockOperator",
-        endpoint: "https://mock.tourgo.local/api",
+        provider: "SupplierFeed",
+        endpoint: "https://api.tourgo.travel/supplier-feed",
         apiKeyMasked: "****demo",
         secretMasked: "****cret",
         apiKey: "demo-api-key",

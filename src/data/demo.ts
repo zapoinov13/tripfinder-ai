@@ -1,17 +1,23 @@
-import heroImg from "@/assets/hero.jpg";
-import destTurkey from "@/assets/dest-turkey.jpg";
-import destUae from "@/assets/dest-uae.jpg";
-import destThailand from "@/assets/dest-thailand.jpg";
-import destEgypt from "@/assets/dest-egypt.jpg";
-import destVietnam from "@/assets/dest-vietnam.jpg";
-import destMaldives from "@/assets/dest-maldives.jpg";
-import hotel1 from "@/assets/hotel-1.jpg";
-import hotel2 from "@/assets/hotel-2.jpg";
-import hotel3 from "@/assets/hotel-3.jpg";
-import hotel4 from "@/assets/hotel-4.jpg";
+import dubaiDowntown from "@/assets/dubai-downtown.jpg";
+import dubaiFamily from "@/assets/dubai-family.jpg";
+import dubaiHero from "@/assets/dubai-hero.jpg";
+import dubaiHotelBeach from "@/assets/dubai-hotel-beach.jpg";
+import dubaiJumeirahBeach from "@/assets/dubai-jumeirah-beach.webp";
+import dubaiOldCity from "@/assets/dubai-old-city.jpg";
+import dubaiPalm from "@/assets/dubai-palm.jpg";
+import dubaiResortPool from "@/assets/dubai-resort-pool.jpg";
+import dubaiSafari from "@/assets/dubai-safari.jpg";
+import dubaiYacht from "@/assets/dubai-yacht.jpg";
 
-export const heroImage = heroImg;
-export const galleryImages = [hotel1, hotel2, hotel3, hotel4];
+export const heroImage = dubaiHero;
+export const galleryImages = [
+  dubaiHero,
+  dubaiHotelBeach,
+  dubaiPalm,
+  dubaiDowntown,
+  dubaiSafari,
+  dubaiYacht,
+];
 
 export type Destination = {
   id: string;
@@ -29,158 +35,101 @@ export type Resort = {
   tours: number;
 };
 
-export const resortsByDestination: Record<string, Resort[]> = {
-  turkey: [
-    { name: "Анталия", blurb: "Центр курортной жизни и старый город", tours: 412 },
-    { name: "Алания", blurb: "Доступные отели и длинные пляжи", tours: 268 },
-    { name: "Белек", blurb: "Люкс-отели, гольф и хвойные леса", tours: 194 },
-    { name: "Кемер", blurb: "Горы у моря и галечные бухты", tours: 157 },
-    { name: "Сиде", blurb: "Античные руины и песчаные пляжи", tours: 128 },
-    { name: "Мармарис", blurb: "Яхты, бухты и ночная жизнь", tours: 76 },
-    { name: "Бодрум", blurb: "Бутик-отели и эгейский стиль", tours: 49 },
-  ],
-  uae: [
-    { name: "Дубай", blurb: "Городской люкс и пляжные резорты", tours: 486 },
-    { name: "Абу-Даби", blurb: "Культура, парки и спокойные пляжи", tours: 178 },
-    { name: "Шарджа", blurb: "Бюджетные отели рядом с Дубаем", tours: 121 },
-    { name: "Рас-эль-Хайма", blurb: "Горы Джебель-Джайс и тихое море", tours: 97 },
-    { name: "Фуджейра", blurb: "Индийский океан и дайвинг", tours: 60 },
-  ],
-  thailand: [
-    { name: "Пхукет", blurb: "Главный островной курорт страны", tours: 342 },
-    { name: "Паттайя", blurb: "Развлечения и близость к Бангкоку", tours: 201 },
-    { name: "Краби", blurb: "Скалы, лагуны и спокойный отдых", tours: 118 },
-    { name: "Самуи", blurb: "Пальмы, спа и бутик-виллы", tours: 102 },
-  ],
-  egypt: [
-    { name: "Хургада", blurb: "Классика Красного моря", tours: 289 },
-    { name: "Шарм-эль-Шейх", blurb: "Лучшие рифы и дайвинг", tours: 214 },
-    { name: "Марса-Алам", blurb: "Тихие резорты и черепахи", tours: 88 },
-    { name: "Эль-Гуна", blurb: "Каналы, лагуны и сёрфинг", tours: 60 },
-  ],
-  vietnam: [
-    { name: "Нячанг", blurb: "Городской пляж и острова", tours: 186 },
-    { name: "Фукуок", blurb: "Белый песок и новые резорты", tours: 132 },
-    { name: "Дананг", blurb: "Мосты, горы и длинный пляж", tours: 100 },
-  ],
-  maldives: [
-    { name: "Северный Мале Атолл", blurb: "Быстрый трансфер на катере", tours: 124 },
-    { name: "Баа Атолл", blurb: "Биосферный заповедник и манты", tours: 87 },
-    { name: "Ари Атолл", blurb: "Дайвинг с китовыми акулами", tours: 76 },
-  ],
-  georgia: [
-    { name: "Батуми", blurb: "Море, набережная и казино", tours: 168 },
-    { name: "Тбилиси", blurb: "Гастрономия и серные бани", tours: 94 },
-    { name: "Гудаури", blurb: "Горы и активный отдых", tours: 50 },
-  ],
-  qatar: [
-    { name: "Доха", blurb: "Новые отели и музеи", tours: 112 },
-    { name: "Аль-Хор", blurb: "Тихие пляжи у залива", tours: 52 },
-  ],
-  srilanka: [
-    { name: "Бентота", blurb: "Пляжи и аюрведа", tours: 96 },
-    { name: "Хиккадува", blurb: "Кораллы и сёрфинг", tours: 62 },
-    { name: "Ахунгалла", blurb: "Тихие резорты у океана", tours: 50 },
-  ],
-  indonesia: [
-    { name: "Кута", blurb: "Сёрф-школы и ночная жизнь", tours: 142 },
-    { name: "Семиньяк", blurb: "Дизайнерские виллы и рестораны", tours: 116 },
-    { name: "Убуд", blurb: "Джунгли, рисовые террасы и йога", tours: 98 },
-  ],
-};
-
 export const destinations: Destination[] = [
   {
-    id: "turkey",
-    country: "Турция",
-    city: "Анталия",
-    flag: "🇹🇷",
-    blurb: "Пляжи, all inclusive и короткий перелёт",
-    tours: 1284,
-    image: destTurkey,
-  },
-  {
-    id: "uae",
-    country: "ОАЭ",
-    city: "Дубай",
+    id: "dubai-beach",
+    country: "Пляжный Дубай",
+    city: "JBR & Marina",
     flag: "🇦🇪",
-    blurb: "Городской люкс и пляжные резорты",
-    tours: 942,
-    image: destUae,
+    blurb: "Отели у моря, прогулки, рестораны и семейный отдых",
+    tours: 428,
+    image: dubaiHero,
   },
   {
-    id: "thailand",
-    country: "Таиланд",
-    city: "Пхукет",
-    flag: "🇹🇭",
-    blurb: "Тропики, острова и спа",
-    tours: 763,
-    image: destThailand,
+    id: "dubai-palm",
+    country: "Palm Jumeirah",
+    city: "The Palm",
+    flag: "🇦🇪",
+    blurb: "Премиальные резорты, Atlantis, пляжи и аквапарки",
+    tours: 286,
+    image: dubaiPalm,
   },
   {
-    id: "egypt",
-    country: "Египет",
-    city: "Хургада",
-    flag: "🇪🇬",
-    blurb: "Красное море и лучший дайвинг",
-    tours: 651,
-    image: destEgypt,
+    id: "dubai-downtown",
+    country: "Downtown Dubai",
+    city: "Burj Khalifa",
+    flag: "🇦🇪",
+    blurb: "Dubai Mall, фонтаны, рестораны и городские отели",
+    tours: 314,
+    image: dubaiDowntown,
   },
   {
-    id: "vietnam",
-    country: "Вьетнам",
-    city: "Нячанг",
-    flag: "🇻🇳",
-    blurb: "Океан, кухня и природа",
-    tours: 418,
-    image: destVietnam,
+    id: "dubai-family",
+    country: "Семейный Дубай",
+    city: "Parks & Resorts",
+    flag: "🇦🇪",
+    blurb: "Kids club, аквапарки, парки развлечений и трансферы",
+    tours: 245,
+    image: dubaiFamily,
   },
   {
-    id: "maldives",
-    country: "Мальдивы",
-    city: "Мале",
-    flag: "🇲🇻",
-    blurb: "Виллы над водой и приватность",
-    tours: 287,
-    image: destMaldives,
+    id: "dubai-budget",
+    country: "Доступный Дубай",
+    city: "Deira & Al Barsha",
+    flag: "🇦🇪",
+    blurb: "Практичные отели, метро рядом и честный бюджет",
+    tours: 372,
+    image: dubaiOldCity,
   },
   {
-    id: "georgia",
-    country: "Грузия",
-    city: "Батуми",
-    flag: "🇬🇪",
-    blurb: "Море, горы и гастрономия",
-    tours: 312,
-    image: destTurkey,
-  },
-  {
-    id: "qatar",
-    country: "Катар",
-    city: "Доха",
-    flag: "🇶🇦",
-    blurb: "Новые отели и короткие поездки",
-    tours: 164,
-    image: destUae,
-  },
-  {
-    id: "srilanka",
-    country: "Шри-Ланка",
-    city: "Бентота",
-    flag: "🇱🇰",
-    blurb: "Океан, чай и аюрведа",
-    tours: 208,
-    image: destThailand,
-  },
-  {
-    id: "indonesia",
-    country: "Индонезия",
-    city: "Бали",
-    flag: "🇮🇩",
-    blurb: "Серф, джунгли и виллы",
-    tours: 356,
-    image: destVietnam,
+    id: "dubai-experiences",
+    country: "Экскурсии в Дубае",
+    city: "Safari, Yacht, Tickets",
+    flag: "🇦🇪",
+    blurb: "Сафари, яхты, обзорные туры, билеты и трансферы",
+    tours: 198,
+    image: dubaiSafari,
   },
 ];
+
+export const resortsByDestination: Record<string, Resort[]> = {
+  "dubai-beach": [
+    { name: "JBR", blurb: "Пляж, The Walk, рестораны и семейная инфраструктура", tours: 142 },
+    { name: "Dubai Marina", blurb: "Набережная, яхты, nightlife и метро", tours: 118 },
+    { name: "Bluewaters", blurb: "Ain Dubai, новые отели и спокойная атмосфера", tours: 62 },
+    {
+      name: "Jumeirah Beach",
+      blurb: "Классический пляжный отдых и Burj Al Arab рядом",
+      tours: 106,
+    },
+  ],
+  "dubai-palm": [
+    { name: "Palm West Beach", blurb: "Пляжные клубы, sunset views и резорты", tours: 86 },
+    { name: "Crescent Palm", blurb: "Тихие премиальные отели и приватные пляжи", tours: 74 },
+    { name: "Atlantis Area", blurb: "Aquaventure, The Lost Chambers и семейный люкс", tours: 54 },
+  ],
+  "dubai-downtown": [
+    { name: "Downtown", blurb: "Dubai Mall, Burj Khalifa и фонтаны пешком", tours: 128 },
+    { name: "Business Bay", blurb: "Каналы, рестораны и быстрый доступ к центру", tours: 94 },
+    { name: "DIFC", blurb: "Рестораны, деловые поездки и премиальный city stay", tours: 46 },
+  ],
+  "dubai-family": [
+    { name: "Dubai Parks", blurb: "Legoland, Motiongate и пакетные семейные туры", tours: 74 },
+    { name: "Jumeirah", blurb: "Пляжи, Wild Wadi и семейные отели", tours: 88 },
+    { name: "Creek Harbour", blurb: "Спокойный район, promenade и новые отели", tours: 52 },
+  ],
+  "dubai-budget": [
+    { name: "Al Barsha", blurb: "Mall of the Emirates, метро и понятный бюджет", tours: 114 },
+    { name: "Deira", blurb: "Старый Дубай, рынки, creek и недорогие отели", tours: 132 },
+    { name: "Bur Dubai", blurb: "История, метро, музеи и удобная логистика", tours: 96 },
+  ],
+  "dubai-experiences": [
+    { name: "Desert Safari", blurb: "Сафари, ужин в лагере и трансфер из отеля", tours: 56 },
+    { name: "Yacht Marina", blurb: "Яхты из Marina на 2-4 часа для компаний", tours: 42 },
+    { name: "City Tickets", blurb: "Burj Khalifa, Museum of the Future, Aquaventure", tours: 64 },
+    { name: "Transfers", blurb: "DXB, DWC, Abu Dhabi, private car и минивэны", tours: 36 },
+  ],
+};
 
 export type Operator = {
   id: string;
@@ -190,11 +139,11 @@ export type Operator = {
 };
 
 export const operators: Operator[] = [
-  { id: "op-1", name: "Travel Company", rating: 4.8, tours: 1284 },
-  { id: "op-2", name: "Sunrise Tours", rating: 4.6, tours: 864 },
-  { id: "op-3", name: "Blue Horizon", rating: 4.7, tours: 612 },
-  { id: "op-4", name: "Nomad Travel", rating: 4.5, tours: 438 },
-  { id: "op-5", name: "Silk Road Voyage", rating: 4.4, tours: 297 },
+  { id: "op-1", name: "Dubai Select DMC", rating: 4.9, tours: 428 },
+  { id: "op-2", name: "Emirates Family Travel", rating: 4.8, tours: 316 },
+  { id: "op-3", name: "Marina Experience Co.", rating: 4.7, tours: 184 },
+  { id: "op-4", name: "CIS Dubai Holidays", rating: 4.8, tours: 272 },
+  { id: "op-5", name: "Desert Gate Partners", rating: 4.6, tours: 198 },
 ];
 
 export type Hotel = {
@@ -214,7 +163,6 @@ export type Hotel = {
   image: string;
 };
 
-/** Canonical amenity keys used by filters. */
 export const AMENITIES = ["Beach", "Pool", "Kids Club", "Spa", "Wi-Fi", "Transfer"] as const;
 export type Amenity = (typeof AMENITIES)[number];
 
@@ -227,293 +175,254 @@ export const amenityLabels: Record<string, string> = {
   Transfer: "Трансфер",
 };
 
-// name, destinationId, city (курорт), stars, rating, district, beachLine, metres to sea, amenities
 const hotelSeed: Array<
   [string, string, string, number, number, string, 1 | 2 | 3, number, Amenity[]]
 > = [
   [
-    "Rixos Premium Dubai",
-    "uae",
-    "Дубай",
+    "Rixos Premium Dubai JBR",
+    "dubai-beach",
+    "JBR",
     5,
     9.4,
-    "Jumeirah Beach",
+    "Jumeirah Beach Residence",
     1,
     50,
-    ["Beach", "Pool", "Spa", "Wi-Fi", "Transfer"],
-  ],
-  [
-    "Atlantis The Palm",
-    "uae",
-    "Дубай",
-    5,
-    9.6,
-    "Palm Jumeirah",
-    1,
-    80,
     ["Beach", "Pool", "Kids Club", "Spa", "Wi-Fi", "Transfer"],
   ],
   [
     "Address Beach Resort",
-    "uae",
-    "Дубай",
+    "dubai-beach",
+    "JBR",
     5,
-    9.2,
+    9.3,
     "JBR",
     1,
-    120,
-    ["Beach", "Pool", "Spa", "Wi-Fi"],
+    90,
+    ["Beach", "Pool", "Spa", "Wi-Fi", "Transfer"],
   ],
-  ["Centro Barsha", "uae", "Дубай", 3, 7.9, "Al Barsha", 3, 4200, ["Pool", "Wi-Fi"]],
   [
-    "Bab Al Qasr",
-    "uae",
-    "Абу-Даби",
+    "Grosvenor House Dubai",
+    "dubai-beach",
+    "Dubai Marina",
     5,
     9.1,
-    "Corniche",
-    1,
-    60,
-    ["Beach", "Pool", "Kids Club", "Spa", "Wi-Fi"],
+    "Dubai Marina",
+    2,
+    650,
+    ["Pool", "Spa", "Wi-Fi", "Transfer"],
   ],
   [
-    "Maxx Royal Belek",
-    "turkey",
-    "Белек",
-    5,
-    9.5,
-    "Белек",
-    1,
-    60,
-    ["Beach", "Pool", "Kids Club", "Spa", "Wi-Fi", "Transfer"],
-  ],
-  [
-    "Titanic Deluxe Lara",
-    "turkey",
-    "Анталия",
-    5,
-    9.1,
-    "Лара",
-    1,
-    100,
-    ["Beach", "Pool", "Kids Club", "Spa", "Wi-Fi", "Transfer"],
-  ],
-  [
-    "Delphin Imperial",
-    "turkey",
-    "Анталия",
+    "Sofitel Dubai Jumeirah Beach",
+    "dubai-beach",
+    "JBR",
     5,
     8.9,
-    "Лара",
+    "The Walk",
     1,
-    150,
+    120,
     ["Beach", "Pool", "Kids Club", "Wi-Fi", "Transfer"],
   ],
   [
-    "Sherwood Exclusive",
-    "turkey",
-    "Кемер",
-    4,
-    8.4,
-    "Кемер",
-    2,
-    300,
-    ["Beach", "Pool", "Wi-Fi", "Transfer"],
-  ],
-  ["Grand Alanya Hotel", "turkey", "Алания", 3, 7.6, "Махмутлар", 2, 450, ["Pool", "Wi-Fi"]],
-  [
-    "Katathani Phuket Beach",
-    "thailand",
-    "Пхукет",
+    "Atlantis The Palm",
+    "dubai-palm",
+    "Palm Jumeirah",
     5,
-    9.3,
-    "Ката Ной",
-    1,
-    40,
-    ["Beach", "Pool", "Kids Club", "Spa", "Wi-Fi"],
-  ],
-  [
-    "Amari Phuket",
-    "thailand",
-    "Пхукет",
-    4,
-    8.7,
-    "Патонг",
-    2,
-    250,
-    ["Beach", "Pool", "Spa", "Wi-Fi"],
-  ],
-  [
-    "Banyan Tree Krabi",
-    "thailand",
-    "Краби",
-    5,
-    9.5,
-    "Краби",
-    1,
-    70,
-    ["Beach", "Pool", "Spa", "Wi-Fi", "Transfer"],
-  ],
-  [
-    "Steigenberger Aldau",
-    "egypt",
-    "Хургада",
-    5,
-    9.0,
-    "Хургада",
-    1,
-    90,
-    ["Beach", "Pool", "Kids Club", "Spa", "Wi-Fi", "Transfer"],
-  ],
-  [
-    "Rixos Sharm El Sheikh",
-    "egypt",
-    "Шарм-эль-Шейх",
-    5,
-    9.2,
-    "Набк Бей",
-    1,
-    110,
-    ["Beach", "Pool", "Spa", "Wi-Fi", "Transfer"],
-  ],
-  [
-    "Albatros Palace",
-    "egypt",
-    "Хургада",
-    4,
-    8.6,
-    "Хургада",
-    2,
-    320,
-    ["Beach", "Pool", "Kids Club", "Wi-Fi"],
-  ],
-  [
-    "Vinpearl Nha Trang",
-    "vietnam",
-    "Нячанг",
-    5,
-    9.0,
-    "Хон Че",
-    1,
-    60,
-    ["Beach", "Pool", "Kids Club", "Spa", "Wi-Fi", "Transfer"],
-  ],
-  [
-    "Amiana Resort",
-    "vietnam",
-    "Нячанг",
-    4,
-    8.8,
-    "Нячанг",
+    9.6,
+    "Atlantis Area",
     1,
     80,
-    ["Beach", "Pool", "Spa", "Wi-Fi"],
+    ["Beach", "Pool", "Kids Club", "Spa", "Wi-Fi", "Transfer"],
   ],
   [
-    "Soneva Fushi",
-    "maldives",
-    "Баа Атолл",
-    5,
-    9.8,
-    "Баа Атолл",
-    1,
-    10,
-    ["Beach", "Pool", "Spa", "Wi-Fi", "Transfer"],
-  ],
-  [
-    "Kuramathi Island",
-    "maldives",
-    "Ари Атолл",
-    5,
-    9.4,
-    "Расду Атолл",
-    1,
-    20,
-    ["Beach", "Pool", "Kids Club", "Spa", "Wi-Fi"],
-  ],
-  [
-    "Radisson Blu Batumi",
-    "georgia",
-    "Батуми",
-    5,
-    8.9,
-    "Батуми",
-    1,
-    150,
-    ["Beach", "Pool", "Spa", "Wi-Fi"],
-  ],
-  ["Hotel Old Batumi", "georgia", "Батуми", 3, 7.8, "Старый город", 3, 900, ["Wi-Fi"]],
-  [
-    "Heritance Ahungalla",
-    "srilanka",
-    "Ахунгалла",
+    "W Dubai The Palm",
+    "dubai-palm",
+    "Palm Jumeirah",
     5,
     9.1,
-    "Ахунгалла",
+    "Crescent Palm",
     1,
-    40,
+    70,
     ["Beach", "Pool", "Spa", "Wi-Fi", "Transfer"],
   ],
   [
-    "Padma Resort Legian",
-    "indonesia",
-    "Кута",
+    "Dukes The Palm",
+    "dubai-palm",
+    "Palm Jumeirah",
     5,
-    9.3,
-    "Легиан",
+    8.8,
+    "Palm West Beach",
     1,
-    70,
-    ["Beach", "Pool", "Kids Club", "Spa", "Wi-Fi"],
-  ],
-  ["Alaya Resort Ubud", "indonesia", "Убуд", 4, 8.9, "Убуд", 3, 25000, ["Pool", "Spa", "Wi-Fi"]],
-  [
-    "Marsa Alam Oasis",
-    "egypt",
-    "Марса-Алам",
-    4,
-    8.2,
-    "Марса-Алам",
-    1,
-    200,
-    ["Beach", "Pool", "Wi-Fi"],
-  ],
-  ["Souq Waqif Boutique", "qatar", "Доха", 5, 9.0, "Souq Waqif", 3, 3500, ["Pool", "Spa", "Wi-Fi"]],
-  [
-    "Hilton Salwa Beach",
-    "qatar",
-    "Доха",
-    5,
-    9.2,
-    "Salwa",
-    1,
-    50,
-    ["Beach", "Pool", "Kids Club", "Spa", "Wi-Fi", "Transfer"],
+    100,
+    ["Beach", "Pool", "Kids Club", "Wi-Fi", "Transfer"],
   ],
   [
-    "Bentota Beach Hotel",
-    "srilanka",
-    "Бентота",
-    4,
-    8.5,
-    "Бентота",
-    1,
-    60,
-    ["Beach", "Pool", "Spa", "Wi-Fi"],
-  ],
-  [
-    "Fusion Resort Phu Quoc",
-    "vietnam",
-    "Фукуок",
+    "Address Downtown",
+    "dubai-downtown",
+    "Downtown",
     5,
     9.4,
-    "Фукуок",
+    "Burj Khalifa District",
+    3,
+    15000,
+    ["Pool", "Spa", "Wi-Fi", "Transfer"],
+  ],
+  [
+    "Palace Downtown",
+    "dubai-downtown",
+    "Downtown",
+    5,
+    9.2,
+    "Old Town",
+    3,
+    14500,
+    ["Pool", "Spa", "Wi-Fi", "Transfer"],
+  ],
+  [
+    "Pullman Dubai Downtown",
+    "dubai-downtown",
+    "Business Bay",
+    5,
+    8.6,
+    "Business Bay",
+    3,
+    13000,
+    ["Pool", "Spa", "Wi-Fi"],
+  ],
+  [
+    "Lapita Dubai Parks and Resorts",
+    "dubai-family",
+    "Dubai Parks",
+    4,
+    8.7,
+    "Dubai Parks",
+    3,
+    23000,
+    ["Pool", "Kids Club", "Spa", "Wi-Fi", "Transfer"],
+  ],
+  [
+    "Jumeirah Beach Hotel",
+    "dubai-family",
+    "Jumeirah",
+    5,
+    9.2,
+    "Umm Suqeim",
     1,
-    30,
+    40,
     ["Beach", "Pool", "Kids Club", "Spa", "Wi-Fi", "Transfer"],
+  ],
+  [
+    "Vida Creek Harbour",
+    "dubai-family",
+    "Creek Harbour",
+    4,
+    8.9,
+    "Dubai Creek Harbour",
+    3,
+    14000,
+    ["Pool", "Kids Club", "Wi-Fi", "Transfer"],
+  ],
+  [
+    "Centro Barsha",
+    "dubai-budget",
+    "Al Barsha",
+    3,
+    8.0,
+    "Al Barsha",
+    3,
+    4200,
+    ["Pool", "Wi-Fi", "Transfer"],
+  ],
+  [
+    "Rove Downtown",
+    "dubai-budget",
+    "Downtown",
+    3,
+    8.8,
+    "Zaabeel",
+    3,
+    13000,
+    ["Pool", "Wi-Fi", "Transfer"],
+  ],
+  [
+    "Hyatt Place Dubai Al Rigga",
+    "dubai-budget",
+    "Deira",
+    4,
+    8.3,
+    "Al Rigga",
+    3,
+    9000,
+    ["Pool", "Wi-Fi", "Transfer"],
+  ],
+  [
+    "Canopy by Hilton Dubai Al Seef",
+    "dubai-budget",
+    "Bur Dubai",
+    4,
+    8.6,
+    "Al Seef",
+    3,
+    8500,
+    ["Pool", "Spa", "Wi-Fi"],
+  ],
+  [
+    "Dubai Safari Camp Package",
+    "dubai-experiences",
+    "Desert Safari",
+    4,
+    9.0,
+    "Lahbab Desert",
+    3,
+    45000,
+    ["Transfer", "Wi-Fi"],
+  ],
+  [
+    "Private Yacht Marina Experience",
+    "dubai-experiences",
+    "Yacht Marina",
+    5,
+    9.5,
+    "Dubai Marina",
+    2,
+    300,
+    ["Transfer", "Wi-Fi"],
+  ],
+  [
+    "Burj Khalifa and Downtown Pass",
+    "dubai-experiences",
+    "City Tickets",
+    4,
+    9.1,
+    "Downtown",
+    3,
+    15000,
+    ["Transfer", "Wi-Fi"],
   ],
 ];
 
-const hotelImages = [hotel1, hotel2, hotel3, hotel4];
+function imageForHotel(destinationId: string, name: string, district: string) {
+  if (/Yacht/i.test(name)) return dubaiYacht;
+  if (/Safari/i.test(name)) return dubaiSafari;
+  if (
+    /Burj|Downtown|Address|Palace|Pullman/i.test(name) ||
+    /Downtown|Business Bay/i.test(district)
+  ) {
+    return dubaiDowntown;
+  }
+  if (/Atlantis|Palm|Dukes|W Dubai/i.test(name) || /Palm/i.test(district)) return dubaiPalm;
+  if (/Lapita|Parks|Jumeirah Beach Hotel/i.test(name) || destinationId === "dubai-family") {
+    return destinationId === "dubai-family" && /Lapita|Parks/i.test(name)
+      ? dubaiFamily
+      : dubaiJumeirahBeach;
+  }
+  if (/Deira|Bur Dubai|Al Seef|Al Rigga/i.test(name) || /Deira|Bur Dubai|Al Seef/i.test(district)) {
+    return dubaiOldCity;
+  }
+  if (/Rixos|Address Beach|Sofitel|JBR|Beach/i.test(name) || /JBR|Jumeirah/i.test(district)) {
+    return dubaiHotelBeach;
+  }
+  return dubaiResortPool;
+}
 
 export const hotels: Hotel[] = hotelSeed.map(
   (
@@ -526,16 +435,16 @@ export const hotels: Hotel[] = hotelSeed.map(
       name,
       destinationId,
       city,
-      country: dest.country,
+      country: "Дубай, ОАЭ",
       flag: dest.flag,
       stars,
       rating,
-      reviews: 180 + ((i * 137) % 2400),
+      reviews: 220 + ((i * 173) % 2800),
       district,
       beachLine,
       distanceToSea,
       amenities,
-      image: hotelImages[i % hotelImages.length]!,
+      image: imageForHotel(destinationId, name, district),
     };
   },
 );
@@ -543,6 +452,14 @@ export const hotels: Hotel[] = hotelSeed.map(
 export type MealCode = "RO" | "BB" | "HB" | "FB" | "AI" | "UAI";
 export type Meal = string;
 export type TourTag = "hot" | "premium" | "best" | "sponsored";
+export type OfferCategory = "tour" | "hotel" | "excursion" | "transfer";
+
+export const offerCategoryLabels: Record<OfferCategory, string> = {
+  tour: "Пакетный тур",
+  hotel: "Отель",
+  excursion: "Экскурсия",
+  transfer: "Трансфер",
+};
 
 export const mealOptions: Array<{ code: MealCode; label: string }> = [
   { code: "RO", label: "Без питания" },
@@ -560,11 +477,11 @@ export type Tour = {
   id: string;
   hotelId: string;
   operatorId: string;
+  offerCategory: OfferCategory;
   from: string;
   nights: number;
   dateStart: string;
   dateEnd: string;
-  /** ISO date of departure */
   departure: string;
   mealCode: MealCode;
   meal: Meal;
@@ -580,7 +497,7 @@ export type Tour = {
   createdAt: string;
 };
 
-const cities = ["Алматы", "Астана", "Шымкент"];
+const cities = ["Алматы", "Астана", "Ташкент", "Бишкек", "Москва", "Санкт-Петербург"];
 const monthNames = [
   "января",
   "февраля",
@@ -595,34 +512,61 @@ const monthNames = [
   "ноября",
   "декабря",
 ];
-const mealCycle: MealCode[] = ["AI", "UAI", "BB", "HB", "FB", "AI", "UAI", "RO", "BB", "AI"];
+const mealCycle: MealCode[] = ["BB", "HB", "AI", "RO", "BB", "FB", "AI", "UAI"];
+const categoryCycle: OfferCategory[] = [
+  "tour",
+  "hotel",
+  "tour",
+  "excursion",
+  "tour",
+  "hotel",
+  "transfer",
+  "tour",
+];
 
 const fmtDay = (d: Date) => `${d.getDate()} ${monthNames[d.getMonth()]}`;
 const iso = (d: Date) => d.toISOString().slice(0, 10);
 
-export const tours: Tour[] = Array.from({ length: 200 }, (_, i) => {
+export const tours: Tour[] = Array.from({ length: 180 }, (_, i) => {
   const hotel = hotels[i % hotels.length]!;
-  const nights = [3, 5, 7, 9, 10, 12, 14, 16][i % 8]!;
-  const start = new Date(2026, 7, 3 + ((i * 5) % 55));
+  const offerCategory = categoryCycle[(i + hotel.destinationId.length) % categoryCycle.length]!;
+  const nights =
+    offerCategory === "excursion" || offerCategory === "transfer"
+      ? 1
+      : [3, 4, 5, 7, 9, 10, 12][i % 7]!;
+  const start = new Date(2026, 7, 20 + ((i * 3) % 70));
   const end = new Date(start.getTime() + nights * 86400000);
-  const mealCode = mealCycle[i % mealCycle.length]!;
+  const mealCode =
+    offerCategory === "excursion" || offerCategory === "transfer"
+      ? "RO"
+      : mealCycle[i % mealCycle.length]!;
   const mealBonus =
-    mealCode === "UAI" ? 180000 : mealCode === "AI" ? 120000 : mealCode === "FB" ? 70000 : 0;
-  const base = 360000 + ((i * 137) % 17) * 62000 + hotel.stars * 95000 + nights * 21000 + mealBonus;
+    mealCode === "UAI" ? 170000 : mealCode === "AI" ? 115000 : mealCode === "FB" ? 70000 : 0;
+  const categoryBase =
+    offerCategory === "excursion"
+      ? 65000
+      : offerCategory === "transfer"
+        ? 45000
+        : offerCategory === "hotel"
+          ? 280000
+          : 520000;
+  const base =
+    categoryBase + ((i * 97) % 19) * 32000 + hotel.stars * 86000 + nights * 24000 + mealBonus;
   const price = Math.round(base / 1000) * 1000;
-  const isHot = i % 5 === 0;
-  const isPremium = i % 7 === 3;
-  const isSponsored = i % 9 === 2;
+  const isHot = i % 6 === 0;
+  const isPremium = i % 8 === 3 || hotel.destinationId === "dubai-palm";
+  const isSponsored = i % 10 === 2;
   const tags: TourTag[] = [];
   if (isHot) tags.push("hot");
   if (isPremium) tags.push("premium");
   if (isSponsored) tags.push("sponsored");
-  if (i % 11 === 1) tags.push("best");
+  if (i % 9 === 1) tags.push("best");
 
   return {
     id: `tour-${i + 1}`,
     hotelId: hotel.id,
     operatorId: operators[i % operators.length]!.id,
+    offerCategory,
     from: cities[(i + Math.floor(i / hotels.length)) % cities.length]!,
     nights,
     dateStart: fmtDay(start),
@@ -631,15 +575,15 @@ export const tours: Tour[] = Array.from({ length: 200 }, (_, i) => {
     mealCode,
     meal: mealLabel(mealCode),
     price,
-    ...(isHot ? { oldPrice: Math.round((price * 1.28) / 1000) * 1000 } : {}),
-    ...(isPremium ? { premiumPrice: Math.round((price * 0.82) / 1000) * 1000 } : {}),
+    ...(isHot ? { oldPrice: Math.round((price * 1.22) / 1000) * 1000 } : {}),
+    ...(isPremium ? { premiumPrice: Math.round((price * 0.86) / 1000) * 1000 } : {}),
     tags,
     adults: [2, 2, 1, 3, 2, 4][i % 6]!,
     children: [0, 2, 1, 0, 2, 1][i % 6]!,
-    transfer: hotel.amenities.includes("Transfer") || i % 3 !== 0,
-    views: 1200 + ((i * 371) % 9000),
-    bookings: 3 + ((i * 7) % 40),
-    createdAt: iso(new Date(2026, 5, 1 + ((i * 11) % 60))),
+    transfer: hotel.amenities.includes("Transfer") || offerCategory !== "hotel",
+    views: 1500 + ((i * 421) % 12000),
+    bookings: 5 + ((i * 11) % 64),
+    createdAt: iso(new Date(2026, 6, 1 + ((i * 7) % 45))),
   };
 });
 
@@ -649,11 +593,10 @@ export const getResorts = (id: string) => resortsByDestination[id] ?? [];
 export const getToursByDestination = (id: string) =>
   tours.filter((t) => getHotel(t.hotelId).destinationId === id);
 export const getOperator = (id: string) => operators.find((o) => o.id === id)!;
-/** Prefer platform store tour when available (client), else static seed */
 export const getTour = (id: string) => {
   if (typeof window !== "undefined") {
     try {
-      const raw = localStorage.getItem("tourgo:platform-v1");
+      const raw = localStorage.getItem("tourgo:dubai-platform-v1");
       if (raw) {
         const parsed = JSON.parse(raw) as { tours?: Tour[] };
         const live = parsed.tours?.find((t) => t.id === id);

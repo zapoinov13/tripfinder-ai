@@ -17,7 +17,7 @@ import { setBookingStatus } from "@/lib/platform/booking";
 import { usePlatformStore } from "@/lib/platform/hooks";
 
 export const Route = createFileRoute("/operator/bookings")({
-  head: () => ({ meta: [{ title: "Бронирования оператора — TourGo" }] }),
+  head: () => ({ meta: [{ title: "Бронирования поставщика — TourGo" }] }),
   component: OperatorBookingsPage,
 });
 
@@ -70,14 +70,14 @@ function OperatorBookingsPage() {
                         variant="outline"
                         onClick={() => setBookingStatus(b.id, "COMPLETED", user.id)}
                       >
-                        Complete
+                        Завершить
                       </Button>
                       <Button
                         size="sm"
                         variant="ghost"
                         onClick={() => setBookingStatus(b.id, "CANCELLED", user.id)}
                       >
-                        Cancel
+                        Отменить
                       </Button>
                     </TableCell>
                   </TableRow>

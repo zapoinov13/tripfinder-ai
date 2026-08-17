@@ -21,13 +21,13 @@ export const Route = createFileRoute("/destination/$destinationId")({
         ],
       };
     }
-    const title = `Туры в ${loaderData.dest.country} — курорты и цены | TourGo`;
+    const title = `${loaderData.dest.country} — предложения и цены | TourGo`;
     const description = `Все курорты направления ${loaderData.dest.country}: ${getResorts(
       loaderData.dest.id,
     )
       .slice(0, 4)
       .map((r) => r.name)
-      .join(", ")} и другие. Сравните туры от проверенных операторов.`;
+      .join(", ")} и другие. Сравните предложения проверенных поставщиков.`;
     return {
       meta: [
         { title },

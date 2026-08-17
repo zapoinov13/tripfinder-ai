@@ -26,7 +26,7 @@ import type { DashItem } from "./dash-shell";
 
 export const operatorNav: DashItem[] = [
   { label: "Обзор", to: "/operator", icon: LayoutDashboard },
-  { label: "Мои туры", to: "/operator/tours", icon: Luggage },
+  { label: "Мои предложения", to: "/operator/tours", icon: Luggage },
   { label: "Бронирования", to: "/operator/bookings", icon: Ticket },
   { label: "Продвижение", to: "/operator/promotion", icon: Megaphone },
   { label: "Аналитика", to: "/operator/analytics", icon: BarChart3 },
@@ -39,8 +39,8 @@ export const operatorNav: DashItem[] = [
 const adminNavBase: DashItem[] = [
   { label: "Обзор", to: "/admin", icon: Gauge },
   { label: "Пользователи", to: "/admin/users", icon: Users },
-  { label: "Операторы", to: "/admin/operators", icon: Building },
-  { label: "Туры", to: "/admin/tours", icon: Luggage },
+  { label: "Поставщики", to: "/admin/operators", icon: Building },
+  { label: "Предложения", to: "/admin/tours", icon: Luggage },
   { label: "Бронирования", to: "/admin/bookings", icon: Ticket },
   { label: "Платежи", to: "/admin/payments", icon: Receipt },
   { label: "Premium", to: "/admin/premium", icon: Gem },

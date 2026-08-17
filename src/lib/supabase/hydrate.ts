@@ -60,7 +60,9 @@ export async function hydrateCatalogFromSupabase() {
               website: String(o["website"] ?? ""),
               contactPerson: prev?.contactPerson ?? "",
               status: String(o["status"] ?? "") as (typeof s.organizations)[number]["status"],
-              planCode: String(o["plan_code"] ?? "") as (typeof s.organizations)[number]["planCode"],
+              planCode: String(
+                o["plan_code"] ?? "",
+              ) as (typeof s.organizations)[number]["planCode"],
               additionalTourLimit: prev?.additionalTourLimit ?? 0,
               advertisingBalance: prev?.advertisingBalance ?? 0,
               promotionBalance: prev?.promotionBalance ?? 0,
@@ -71,42 +73,45 @@ export async function hydrateCatalogFromSupabase() {
       }
 
       if (toursRes.data?.length) {
-        const mapped: PlatformTour[] = toursRes.data.map((t) => {
-          // ensure hotel exists locally for images
+        const mapped: PlatformTour[] = toursRes.data.flatMap((t) => {
+          // Skip stale seed rows if Supabase still has an older multi-country catalog.
           try {
             getHotel(t.hotel_id);
           } catch {
-            /* ignore */
+            return [];
           }
-          return {
-            id: t.id,
-            hotelId: t.hotel_id,
-            operatorId: t.operator_id,
-            operatorOrgId: t.operator_org_id ?? `org-${t.operator_id}`,
-            from: t.from_city,
-            nights: t.nights,
-            dateStart: t.date_start,
-            dateEnd: t.date_end,
-            departure: t.departure,
-            mealCode: t.meal_code,
-            meal: t.meal,
-            price: Number(t.price),
-            ...(t.old_price != null ? { oldPrice: Number(t.old_price) } : {}),
-            ...(t.premium_price != null ? { premiumPrice: Number(t.premium_price) } : {}),
-            tags: (t.tags ?? []) as TourTag[],
-            adults: t.adults,
-            children: t.children,
-            transfer: t.transfer,
-            views: t.views,
-            bookings: t.bookings,
-            createdAt: t.created_at?.slice?.(0, 10) ?? t.created_at,
-            externalId: t.external_id,
-            roomType: t.room_type,
-            currency: t.currency,
-            availability: t.availability,
-            status: t.status,
-            lastSyncedAt: t.last_synced_at,
-          };
+          return [
+            {
+              id: t.id,
+              hotelId: t.hotel_id,
+              operatorId: t.operator_id,
+              operatorOrgId: t.operator_org_id ?? `org-${t.operator_id}`,
+              offerCategory: "tour",
+              from: t.from_city,
+              nights: t.nights,
+              dateStart: t.date_start,
+              dateEnd: t.date_end,
+              departure: t.departure,
+              mealCode: t.meal_code,
+              meal: t.meal,
+              price: Number(t.price),
+              ...(t.old_price != null ? { oldPrice: Number(t.old_price) } : {}),
+              ...(t.premium_price != null ? { premiumPrice: Number(t.premium_price) } : {}),
+              tags: (t.tags ?? []) as TourTag[],
+              adults: t.adults,
+              children: t.children,
+              transfer: t.transfer,
+              views: t.views,
+              bookings: t.bookings,
+              createdAt: t.created_at?.slice?.(0, 10) ?? t.created_at,
+              externalId: t.external_id,
+              roomType: t.room_type,
+              currency: t.currency,
+              availability: t.availability,
+              status: t.status,
+              lastSyncedAt: t.last_synced_at,
+            },
+          ];
         });
         next = { ...next, tours: mapped };
       }

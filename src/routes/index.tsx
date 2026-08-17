@@ -22,20 +22,20 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "TourGo — найдите путешествие, которое подходит именно вам" },
+      { title: "TourGo — туры, отели и экскурсии" },
       {
         name: "description",
         content:
-          "Маркетплейс туров: сравниваем предложения туроператоров, горящие туры и Premium-цены. Подбор тура с AI.",
+          "Маркетплейс путешествий для русскоязычных туристов: туры, отели, экскурсии и трансферы от проверенных поставщиков. Первый доступный каталог — Дубай.",
       },
       {
         property: "og:title",
-        content: "TourGo — найдите путешествие, которое подходит именно вам",
+        content: "TourGo — маркетплейс путешествий",
       },
       {
         property: "og:description",
         content:
-          "Маркетплейс туров: сравниваем предложения туроператоров, горящие туры и Premium-цены. Подбор тура с AI.",
+          "Сравнивайте предложения поставщиков в одном месте. На старте доступны туры, отели, экскурсии и трансферы по Дубаю.",
       },
     ],
   }),
@@ -45,38 +45,46 @@ export const Route = createFileRoute("/")({
 const benefits = [
   {
     icon: Layers,
-    title: "Все операторы в одном месте",
-    text: "Сравнивайте предложения разных туристических компаний без переключений.",
+    title: "Проверенные поставщики",
+    text: "Турфирмы, DMC, отели, экскурсионные компании и трансферы в одной витрине.",
   },
   {
     icon: Sparkles,
     title: "AI-подбор",
-    text: "Опишите отдых своими словами — AI найдёт подходящие варианты.",
+    text: "Опишите поездку своими словами — AI подберёт направление, отель, впечатления и бюджет.",
   },
   {
     icon: Tag,
-    title: "Честные цены",
-    text: "Одинаковые условия рядом: легче выбрать лучшее предложение.",
+    title: "Price check перед бронью",
+    text: "Цена и наличие проверяются перед оплатой или заявкой поставщику.",
   },
   {
     icon: Gem,
     title: "Premium-доступ",
-    text: "Закрытые цены и ранний доступ к горящим турам.",
+    text: "Закрытые цены, ранний доступ к hot deals и приоритетная поддержка.",
   },
 ];
 
 const trustStats = [
-  { value: "12", label: "подключённых туроператоров" },
-  { value: "~30 сек", label: "до первой подборки туров" },
-  { value: "0 ₸", label: "наценки к цене оператора" },
-  { value: "24/7", label: "AI-подбор без выходных" },
+  { value: "Dubai", label: "первое доступное направление" },
+  { value: "4 типа", label: "туры, отели, экскурсии, трансферы" },
+  { value: "~30 сек", label: "до первой AI-подборки" },
+  { value: "СНГ", label: "фокус на русскоязычных туристах" },
 ];
 
 const steps = [
-  { n: "01", title: "Куда хотите", text: "Город, даты и бюджет — или просто расскажите AI." },
-  { n: "02", title: "Смотрим варианты", text: "Туры от разных операторов в одной выдаче." },
-  { n: "03", title: "Сравниваете", text: "Цена, питание, море и рейтинг — рядом." },
-  { n: "04", title: "Бронируете", text: "Выбираете лучший тур и оформляете спокойно." },
+  {
+    n: "01",
+    title: "Опишите поездку",
+    text: "Город вылета, даты, пожелания, бюджет и состав семьи.",
+  },
+  {
+    n: "02",
+    title: "Собираем варианты",
+    text: "Отели, пакетные туры, экскурсии, яхты и трансферы в одной выдаче.",
+  },
+  { n: "03", title: "Сравниваете", text: "Район, цена, питание, пляж, рейтинг и условия рядом." },
+  { n: "04", title: "Бронируете", text: "Перед оплатой проверяем цену и наличие у поставщика." },
 ];
 
 function Index() {
@@ -102,10 +110,11 @@ function Index() {
               TourGo
             </p>
             <h1 className="mt-4 font-display text-4xl font-semibold tracking-tight text-primary-foreground md:text-6xl md:leading-[1.05]">
-              Найдите путешествие, которое подходит именно вам
+              Найдите тур, отель или экскурсию без хаоса в чатах
             </h1>
             <p className="mt-4 max-w-xl text-base text-primary-foreground/80 md:text-lg">
-              Сравниваем туры от разных операторов и помогаем найти лучшее предложение.
+              Маркетплейс путешествий для туристов из Казахстана, Узбекистана, России и других стран
+              СНГ. Сейчас первый живой каталог — предложения по Дубаю.
             </p>
             <div className="mt-7 flex flex-wrap gap-3">
               <Button size="lg" asChild>
@@ -119,7 +128,7 @@ function Index() {
               >
                 <Link to="/ai-search">
                   <Sparkles className="size-4" />
-                  Найти с AI
+                  Подобрать с AI
                 </Link>
               </Button>
             </div>
@@ -162,8 +171,8 @@ function Index() {
 
       <section className="container-page mt-16 md:mt-24">
         <SectionHead
-          title="Популярные направления"
-          subtitle="Выберите страну — покажем актуальные туры"
+          title="Доступно сейчас"
+          subtitle="Первое направление — Дубай: пляж, Palm, Downtown, семейный отдых, бюджет и экскурсии"
         />
         <div className="mt-8 flex gap-4 overflow-x-auto pb-2 no-scrollbar md:grid md:grid-cols-3 md:overflow-visible md:pb-0">
           {destinations.slice(0, 6).map((dest, i) => (
@@ -192,7 +201,7 @@ function Index() {
                 </h3>
                 <p className="mt-1 text-sm text-primary-foreground/80">{dest.blurb}</p>
                 <p className="mt-3 text-xs font-medium tracking-wide text-primary-foreground/65">
-                  от {dest.tours.toLocaleString("ru-RU")} туров
+                  от {dest.tours.toLocaleString("ru-RU")} предложений
                 </p>
               </div>
             </Link>
@@ -202,8 +211,8 @@ function Index() {
 
       <section className="container-page mt-16 md:mt-24">
         <SectionHead
-          title="Горящие туры"
-          subtitle="Лучшие цены на ближайшие даты"
+          title="Горящие предложения"
+          subtitle="Лучшие цены на ближайшие даты. Сейчас доступны предложения по Дубаю"
           action={
             <Button variant="outline" asChild>
               <Link to="/hot">
@@ -334,8 +343,8 @@ function Index() {
               Диалог вместо десятка фильтров
             </h2>
             <p className="mt-3 max-w-xl text-muted-foreground">
-              Не знаете, куда поехать? Опишите отдых своими словами — AI уточнит детали и соберёт
-              подборку туров от разных операторов под ваш бюджет.
+              Опишите отдых своими словами — AI уточнит детали и соберёт подборку предложений от
+              разных поставщиков под ваш бюджет.
             </p>
             <div className="mt-7">
               <ChatDemoFeatures />
@@ -385,7 +394,7 @@ function Index() {
               <Building2 className="size-5" />
             </span>
             <div className="min-w-0">
-              <h3 className="font-display text-lg font-semibold">Вы туроператор?</h3>
+              <h3 className="font-display text-lg font-semibold">Вы поставщик?</h3>
               <p className="mt-1 text-sm text-muted-foreground">
                 Подключите каталог и получайте бронирования из TourGo.
               </p>

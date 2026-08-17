@@ -6,10 +6,10 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { useAuth } from "@/lib/platform/auth";
 
 const nav = [
-  { label: "Туры", to: "/search" },
-  { label: "Найти с AI", to: "/ai-search" },
+  { label: "Поиск", to: "/search" },
+  { label: "AI-подбор", to: "/ai-search" },
   { label: "Направления", to: "/destinations" },
-  { label: "Горящие туры", to: "/hot" },
+  { label: "Hot Deals", to: "/hot" },
   { label: "Premium", to: "/premium" },
   { label: "Сравнение", to: "/compare" },
 ];
@@ -92,7 +92,7 @@ export function SiteHeader() {
               <nav className="mt-2 flex flex-col gap-1 px-4">
                 {[
                   ...nav,
-                  { label: "Для туроператоров", to: "/for-operators" },
+                  { label: "Для поставщиков", to: "/for-operators" },
                   {
                     label: isAuthenticated ? (user?.name ?? "Профиль") : "Войти",
                     to: accountTo,

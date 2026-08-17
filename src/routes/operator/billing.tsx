@@ -13,7 +13,7 @@ import { nowIso, setState, uid } from "@/lib/platform/store";
 import type { OperatorPlanCode } from "@/lib/platform/types";
 
 export const Route = createFileRoute("/operator/billing")({
-  head: () => ({ meta: [{ title: "Тариф оператора — TourGo" }] }),
+  head: () => ({ meta: [{ title: "Тариф поставщика — TourGo" }] }),
   component: OperatorBillingPage,
 });
 
@@ -24,10 +24,10 @@ function OperatorBillingPage() {
   if (!allowed || !organization || !user) {
     return (
       <DashShell
-        brand="Operator"
+        brand="Поставщик"
         items={operatorNav}
         title="Тариф"
-        subtitle="Только OPERATOR_ADMIN"
+        subtitle="Доступно администратору поставщика"
       >
         <p className="text-sm text-muted-foreground">Недостаточно прав или нет организации.</p>
       </DashShell>
@@ -105,7 +105,7 @@ function OperatorBillingPage() {
           <div key={plan.code} className="surface-card p-6">
             <h2 className="font-display text-xl font-semibold">{plan.name}</h2>
             <p className="mt-2 font-display text-2xl">{formatPrice(plan.price)}</p>
-            <p className="mt-1 text-sm text-muted-foreground">до {plan.tourLimit} туров</p>
+            <p className="mt-1 text-sm text-muted-foreground">до {plan.tourLimit} предложений</p>
             <ul className="mt-4 space-y-1 text-sm text-muted-foreground">
               {plan.features.map((f) => (
                 <li key={f}>· {f}</li>

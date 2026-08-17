@@ -57,6 +57,7 @@ type AuthCtx = {
 };
 
 const AuthContext = createContext<AuthCtx | null>(null);
+const SUPABASE_BOOTSTRAP_TIMEOUT_MS = 2500;
 
 function upsertLocalUser(profile: {
   id: string;
@@ -128,6 +129,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     startPlatformSync();
 
     let mounted = true;
+    let bootstrapped = false;
+    const finishBootstrap = () => {
+      if (!mounted || bootstrapped) return;
+      bootstrapped = true;
+      setBootstrapping(false);
+    };
+    const bootstrapTimeout = window.setTimeout(() => {
+      console.warn("[supabase] auth bootstrap timed out, continuing with local catalog");
+      finishBootstrap();
+    }, SUPABASE_BOOTSTRAP_TIMEOUT_MS);
+
     const syncSession = async (userId: string | undefined) => {
       if (!userId) {
         setState((s) => ({ ...s, session: null }), { silent: true });
@@ -147,7 +159,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           upsertLocalUser({
             id: data.user.id,
             email: data.user.email ?? "",
-            name: String(data.user.user_metadata?.["name"] ?? "User"),
+            name: String(data.user.user_metadata?.["name"] ?? "Пользователь"),
             city: String(data.user.user_metadata?.["city"] ?? "Алматы"),
             role: String(data.user.app_metadata?.["role"] ?? "TOURIST") as Role,
             organization_id: null,
@@ -158,7 +170,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     sb.auth.getSession().then(({ data }) => {
       void syncSession(data.session?.user.id).finally(() => {
-        if (mounted) setBootstrapping(false);
+        window.clearTimeout(bootstrapTimeout);
+        finishBootstrap();
       });
     });
 
@@ -168,6 +181,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     return () => {
       mounted = false;
+      window.clearTimeout(bootstrapTimeout);
       sub.subscription.unsubscribe();
     };
   }, []);
@@ -361,7 +375,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         await sb.from("profiles").upsert({
           id: data.user.id,
           email,
-          name: input.name.trim() || input.company.contactPerson || "Оператор",
+          name: input.name.trim() || input.company.contactPerson || "Поставщик",
           city: input.company.city || "Алматы",
           role: "OPERATOR_ADMIN",
           organization_id: org.id,
@@ -400,7 +414,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         upsertLocalUser({
           id: data.user.id,
           email,
-          name: input.name.trim() || input.company.contactPerson || "Оператор",
+          name: input.name.trim() || input.company.contactPerson || "Поставщик",
           city: input.company.city || "Алматы",
           role: "OPERATOR_ADMIN",
           organization_id: org.id,
@@ -430,7 +444,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         id: userId,
         email,
         password,
-        name: input.name.trim() || input.company.contactPerson || "Оператор",
+        name: input.name.trim() || input.company.contactPerson || "Поставщик",
         city: input.company.city || "Алматы",
         role: "OPERATOR_ADMIN",
         status: "active",
