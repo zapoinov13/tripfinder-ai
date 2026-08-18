@@ -11,6 +11,7 @@ import { TourCard } from "@/components/tours/tour-card";
 import { Button } from "@/components/ui/button";
 import {
   destinations,
+  experienceTours,
   formatPrice,
   getHotel,
   heroImage,
@@ -289,6 +290,56 @@ function Index() {
               })}
             </div>
           </div>
+        </div>
+      </section>
+
+      <section className="container-page mt-16 md:mt-24">
+        <SectionHead
+          title="Экскурсии и впечатления"
+          subtitle="Сафари, яхты, Burj Khalifa, city tickets и трансферы по Дубаю с price check"
+          action={
+            <Button variant="outline" asChild>
+              <Link to="/experiences">
+                Все экскурсии
+                <ArrowRight className="size-4" />
+              </Link>
+            </Button>
+          }
+        />
+        <div className="mt-8 grid gap-5 lg:grid-cols-3">
+          {experienceTours.slice(0, 3).map((tour) => {
+            const hotel = getHotel(tour.hotelId);
+            return (
+              <Link
+                key={tour.id}
+                to="/tour/$tourId"
+                params={{ tourId: tour.id }}
+                className="hover-lift group overflow-hidden rounded-3xl border border-border bg-card"
+              >
+                <img
+                  src={hotel.image}
+                  alt={hotel.name}
+                  loading="lazy"
+                  className="h-56 w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                />
+                <div className="p-5">
+                  <div className="text-xs font-semibold uppercase tracking-wide text-primary">
+                    {hotel.district}
+                  </div>
+                  <h3 className="mt-2 font-display text-xl font-semibold">{hotel.name}</h3>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Проверка цены, наличие мест и подтверждение поставщика перед оплатой.
+                  </p>
+                  <div className="mt-4 flex items-center justify-between gap-3">
+                    <span className="font-display text-xl font-semibold">
+                      {formatPrice(tour.price)}
+                    </span>
+                    <span className="text-sm font-medium text-primary">Проверить</span>
+                  </div>
+                </div>
+              </Link>
+            );
+          })}
         </div>
       </section>
 

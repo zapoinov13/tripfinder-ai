@@ -14,6 +14,7 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as AiSearchRouteImport } from './routes/ai-search'
 import { Route as CompareRouteImport } from './routes/compare'
 import { Route as DestinationsRouteImport } from './routes/destinations'
+import { Route as ExperiencesRouteImport } from './routes/experiences'
 import { Route as FavoritesRouteImport } from './routes/favorites'
 import { Route as ForOperatorsRouteImport } from './routes/for-operators'
 import { Route as HotRouteImport } from './routes/hot'
@@ -75,6 +76,11 @@ const CompareRoute = CompareRouteImport.update({
 const DestinationsRoute = DestinationsRouteImport.update({
   id: '/destinations',
   path: '/destinations',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExperiencesRoute = ExperiencesRouteImport.update({
+  id: '/experiences',
+  path: '/experiences',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FavoritesRoute = FavoritesRouteImport.update({
@@ -271,6 +277,7 @@ export interface FileRoutesByFullPath {
   '/ai-search': typeof AiSearchRoute
   '/compare': typeof CompareRoute
   '/destinations': typeof DestinationsRoute
+  '/experiences': typeof ExperiencesRoute
   '/favorites': typeof FavoritesRoute
   '/for-operators': typeof ForOperatorsRoute
   '/hot': typeof HotRoute
@@ -314,6 +321,7 @@ export interface FileRoutesByTo {
   '/ai-search': typeof AiSearchRoute
   '/compare': typeof CompareRoute
   '/destinations': typeof DestinationsRoute
+  '/experiences': typeof ExperiencesRoute
   '/favorites': typeof FavoritesRoute
   '/for-operators': typeof ForOperatorsRoute
   '/hot': typeof HotRoute
@@ -359,6 +367,7 @@ export interface FileRoutesById {
   '/ai-search': typeof AiSearchRoute
   '/compare': typeof CompareRoute
   '/destinations': typeof DestinationsRoute
+  '/experiences': typeof ExperiencesRoute
   '/favorites': typeof FavoritesRoute
   '/for-operators': typeof ForOperatorsRoute
   '/hot': typeof HotRoute
@@ -405,6 +414,7 @@ export interface FileRouteTypes {
     | '/ai-search'
     | '/compare'
     | '/destinations'
+    | '/experiences'
     | '/favorites'
     | '/for-operators'
     | '/hot'
@@ -448,6 +458,7 @@ export interface FileRouteTypes {
     | '/ai-search'
     | '/compare'
     | '/destinations'
+    | '/experiences'
     | '/favorites'
     | '/for-operators'
     | '/hot'
@@ -492,6 +503,7 @@ export interface FileRouteTypes {
     | '/ai-search'
     | '/compare'
     | '/destinations'
+    | '/experiences'
     | '/favorites'
     | '/for-operators'
     | '/hot'
@@ -537,6 +549,7 @@ export interface RootRouteChildren {
   AiSearchRoute: typeof AiSearchRoute
   CompareRoute: typeof CompareRoute
   DestinationsRoute: typeof DestinationsRoute
+  ExperiencesRoute: typeof ExperiencesRoute
   FavoritesRoute: typeof FavoritesRoute
   ForOperatorsRoute: typeof ForOperatorsRoute
   HotRoute: typeof HotRoute
@@ -605,6 +618,13 @@ declare module '@tanstack/react-router' {
       path: '/destinations'
       fullPath: '/destinations'
       preLoaderRoute: typeof DestinationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/experiences': {
+      id: '/experiences'
+      path: '/experiences'
+      fullPath: '/experiences'
+      preLoaderRoute: typeof ExperiencesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/favorites': {
@@ -896,6 +916,7 @@ const rootRouteChildren: RootRouteChildren = {
   AiSearchRoute: AiSearchRoute,
   CompareRoute: CompareRoute,
   DestinationsRoute: DestinationsRoute,
+  ExperiencesRoute: ExperiencesRoute,
   FavoritesRoute: FavoritesRoute,
   ForOperatorsRoute: ForOperatorsRoute,
   HotRoute: HotRoute,

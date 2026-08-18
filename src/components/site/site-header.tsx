@@ -9,6 +9,7 @@ const nav = [
   { label: "Поиск", to: "/search" },
   { label: "AI-подбор", to: "/ai-search" },
   { label: "Направления", to: "/destinations" },
+  { label: "Экскурсии", to: "/experiences" },
   { label: "Hot Deals", to: "/hot" },
   { label: "Premium", to: "/premium" },
   { label: "Сравнение", to: "/compare" },

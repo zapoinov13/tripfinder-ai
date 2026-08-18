@@ -7,6 +7,7 @@ const columns = [
     links: [
       { label: "Все предложения", to: "/search" },
       { label: "Направления", to: "/destinations" },
+      { label: "Экскурсии", to: "/experiences" },
       { label: "Hot Deals", to: "/hot" },
       { label: "Premium", to: "/premium" },
     ],

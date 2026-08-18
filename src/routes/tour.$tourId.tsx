@@ -4,14 +4,17 @@ import {
   Bell,
   Bus,
   CheckCircle2,
+  Clock3,
   Heart,
   MapPin,
   MessageSquare,
   Plane,
   Scale,
   Share2,
+  ShieldCheck,
   Sparkles,
   Star,
+  TicketCheck,
   UtensilsCrossed,
   Waves,
   Wifi,
@@ -38,6 +41,9 @@ import {
   guestsLabel,
   nightsLabel,
   offerCategoryLabels,
+  availabilityLabel,
+  priceFreshnessMinutes,
+  supplierTrustScore,
   type Hotel,
   type Tour,
 } from "@/data/demo";
@@ -141,6 +147,10 @@ function TourPage() {
   const isPremiumDeal = tour.tags.includes("premium") && Boolean(tour.premiumPrice);
   const displayPrice =
     isPremiumDeal && isPremium && tour.premiumPrice ? tour.premiumPrice : tour.price;
+  const trust = supplierTrustScore(operator.id);
+  const whatsappText = encodeURIComponent(
+    `Здравствуйте! Хочу уточнить предложение TourGo: ${hotel.name}, ${tour.dateStart}–${tour.dateEnd}, ${formatPrice(displayPrice)}. ID брони: ${confirmedId || tour.id}`,
+  );
 
   useEffect(() => {
     trackEvent("TOUR_VIEWED", user?.id, { tourId: tour.id });
@@ -245,6 +255,34 @@ function TourPage() {
                 TourGo открыт по Дубаю. Перед бронью мы проверяем актуальную цену и наличие у
                 поставщика.
               </p>
+            </section>
+
+            <section className="surface-card p-6 md:p-8">
+              <div className="flex flex-wrap items-start justify-between gap-4">
+                <div>
+                  <h2 className="font-display text-xl font-semibold">Поставщик и доверие</h2>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    {operator.name} подключён к TourGo как проверенный поставщик. Мы фиксируем
+                    заявку, проверку цены и историю статусов в кабинете.
+                  </p>
+                </div>
+                <span className="inline-flex items-center gap-2 rounded-full bg-success/10 px-3 py-1.5 text-sm font-semibold text-success">
+                  <ShieldCheck className="size-4" />
+                  Проверен
+                </span>
+              </div>
+              <div className="mt-5 grid gap-3 sm:grid-cols-3">
+                {[
+                  { label: "Рейтинг поставщика", value: `${trust.rating} / 5` },
+                  { label: "Средний ответ", value: `~${trust.responseMinutes} мин` },
+                  { label: "Брони через TourGo", value: formatNumber(trust.confirmedBookings) },
+                ].map((item) => (
+                  <div key={item.label} className="rounded-2xl bg-secondary p-4">
+                    <div className="font-display text-xl font-semibold">{item.value}</div>
+                    <div className="mt-1 text-xs text-muted-foreground">{item.label}</div>
+                  </div>
+                ))}
+              </div>
             </section>
 
             <section className="surface-card p-6 md:p-8">
@@ -409,6 +447,21 @@ function TourPage() {
                 <div className="mt-1 text-xs text-muted-foreground">от {operator.name}</div>
               </div>
 
+              <div className="mt-5 grid gap-2 text-xs text-muted-foreground">
+                <span className="inline-flex items-center gap-2 rounded-xl bg-secondary px-3 py-2">
+                  <Clock3 className="size-4 text-accent" />
+                  Цена проверялась {priceFreshnessMinutes(tour)} мин назад
+                </span>
+                <span className="inline-flex items-center gap-2 rounded-xl bg-secondary px-3 py-2">
+                  <TicketCheck className="size-4 text-primary" />
+                  {availabilityLabel(tour)}
+                </span>
+                <span className="inline-flex items-center gap-2 rounded-xl bg-secondary px-3 py-2">
+                  <ShieldCheck className="size-4 text-success" />
+                  Оплата после price check
+                </span>
+              </div>
+
               <Button
                 size="lg"
                 className="mt-6 w-full"
@@ -514,6 +567,18 @@ function TourPage() {
           </div>
           {bookingStep === "form" ? (
             <div className="space-y-3">
+              <div className="grid gap-2 rounded-2xl border border-border p-4 text-sm">
+                {[
+                  "Проверим цену и места у поставщика",
+                  "Зафиксируем заявку в TourGo",
+                  "После подтверждения покажем ID брони и отправим уведомление",
+                ].map((item) => (
+                  <div key={item} className="flex items-center gap-2">
+                    <CheckCircle2 className="size-4 text-success" />
+                    {item}
+                  </div>
+                ))}
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="passenger">Пассажир (ФИО)</Label>
                 <Input
@@ -530,11 +595,27 @@ function TourPage() {
             </div>
           ) : null}
           {bookingStep === "loading" ? (
-            <p className="text-sm text-muted-foreground">Проверяем цену и наличие у поставщика…</p>
+            <div className="space-y-3 text-sm">
+              {[
+                "Отправляем price check поставщику",
+                "Проверяем наличие мест",
+                "Готовим подтверждение заявки",
+              ].map((item) => (
+                <div key={item} className="flex items-center gap-2 text-muted-foreground">
+                  <Clock3 className="size-4 animate-pulse text-primary" />
+                  {item}
+                </div>
+              ))}
+            </div>
           ) : null}
           {bookingStep === "done" ? (
             <div className="space-y-3">
               <p className="text-sm text-success">Бронирование {confirmedId} подтверждено.</p>
+              <Button variant="outline" className="w-full" asChild>
+                <a href={`https://wa.me/?text=${whatsappText}`} target="_blank" rel="noreferrer">
+                  Написать в WhatsApp по заявке
+                </a>
+              </Button>
               <Button asChild className="w-full">
                 <Link to="/profile/trips">Мои поездки</Link>
               </Button>

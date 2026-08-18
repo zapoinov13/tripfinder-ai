@@ -1,5 +1,16 @@
 import { Link } from "@tanstack/react-router";
-import { Heart, MessageSquare, Plane, Scale, Star, UtensilsCrossed, Users } from "lucide-react";
+import {
+  Clock3,
+  Heart,
+  MessageSquare,
+  Plane,
+  Scale,
+  ShieldCheck,
+  Star,
+  TicketCheck,
+  UtensilsCrossed,
+  Users,
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -10,6 +21,8 @@ import {
   guestsLabel,
   nightsLabel,
   offerCategoryLabels,
+  availabilityLabel,
+  priceFreshnessMinutes,
   type Tour,
 } from "@/data/demo";
 import { useAuth } from "@/lib/platform/auth";
@@ -137,6 +150,21 @@ export function TourCard({
             <Users className="size-3.5" /> {guestsLabel(tour.adults, tour.children)}
           </li>
         </ul>
+
+        <div className="grid gap-2 text-[12px] text-muted-foreground sm:grid-cols-3">
+          <span className="inline-flex items-center gap-1.5 rounded-xl bg-secondary px-2.5 py-1.5">
+            <ShieldCheck className="size-3.5 text-success" />
+            Проверенный поставщик
+          </span>
+          <span className="inline-flex items-center gap-1.5 rounded-xl bg-secondary px-2.5 py-1.5">
+            <Clock3 className="size-3.5 text-accent" />
+            Цена {priceFreshnessMinutes(tour)} мин назад
+          </span>
+          <span className="inline-flex items-center gap-1.5 rounded-xl bg-secondary px-2.5 py-1.5">
+            <TicketCheck className="size-3.5 text-primary" />
+            {availabilityLabel(tour)}
+          </span>
+        </div>
 
         <div className="mt-auto flex flex-wrap items-end justify-between gap-4 border-t border-border pt-4">
           <div>

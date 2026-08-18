@@ -611,6 +611,25 @@ export const getTour = (id: string) => {
 
 export const hotTours = tours.filter((t) => t.tags.includes("hot")).slice(0, 4);
 export const premiumTours = tours.filter((t) => t.tags.includes("premium")).slice(0, 3);
+export const experienceTours = tours.filter((t) => t.offerCategory === "excursion").slice(0, 12);
+
+export const priceFreshnessMinutes = (tour: Tour) => 6 + (Number(tour.id.replace(/\D/g, "")) % 37);
+
+export const availabilityLabel = (tour: Tour) => {
+  const seats = 2 + (Number(tour.id.replace(/\D/g, "")) % 9);
+  if (tour.offerCategory === "excursion") return `${seats} мест на ближайший слот`;
+  if (tour.offerCategory === "transfer") return "Подтверждение времени до 15 минут";
+  return seats <= 4 ? `Осталось ${seats} места` : "Места есть";
+};
+
+export const supplierTrustScore = (operatorId: string) => {
+  const n = Number(operatorId.replace(/\D/g, "")) || 1;
+  return {
+    responseMinutes: 7 + ((n * 5) % 18),
+    confirmedBookings: 180 + n * 73,
+    rating: (4.6 + (n % 4) * 0.1).toFixed(1),
+  };
+};
 
 export const formatPrice = (value: number) => `${new Intl.NumberFormat("ru-RU").format(value)} ₸`;
 
