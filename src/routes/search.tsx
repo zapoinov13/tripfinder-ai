@@ -300,10 +300,10 @@ function SearchPage() {
 
   return (
     <SiteLayout>
-      <div className="container-page py-8">
-        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4">
+      <div className="container-page py-5 md:py-8">
+        <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
           <div className="min-w-0">
-            <h1 className="truncate font-display text-2xl font-semibold md:text-3xl">
+            <h1 className="line-clamp-2 font-display text-2xl font-semibold leading-tight md:text-3xl">
               {routeLabel}
             </h1>
             <div className="mt-2 flex flex-wrap gap-2">
@@ -319,12 +319,15 @@ function SearchPage() {
           </div>
           <Sheet>
             <SheetTrigger asChild>
-              <Button variant="outline" className="lg:hidden">
+              <Button variant="outline" className="min-h-11 w-full sm:w-auto lg:hidden">
                 <SlidersHorizontal className="size-4" />
                 Фильтры
               </Button>
             </SheetTrigger>
-            <SheetContent side="bottom" className="max-h-[85vh] overflow-y-auto rounded-t-3xl">
+            <SheetContent
+              side="bottom"
+              className="max-h-[88svh] overflow-y-auto rounded-t-3xl pb-[env(safe-area-inset-bottom)]"
+            >
               <SheetHeader>
                 <SheetTitle className="font-display">Фильтры</SheetTitle>
               </SheetHeader>
@@ -338,7 +341,7 @@ function SearchPage() {
           </Sheet>
         </div>
 
-        <div className="mt-8 grid gap-8 lg:grid-cols-[300px_minmax(0,1fr)]">
+        <div className="mt-6 grid gap-8 md:mt-8 lg:grid-cols-[300px_minmax(0,1fr)]">
           <aside className="hidden lg:block">
             <div className="surface-card sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto p-6">
               <div className="flex items-center justify-between gap-2">
@@ -354,7 +357,7 @@ function SearchPage() {
           </aside>
 
           <div>
-            <div className="gradient-ai mb-5 rounded-3xl p-5">
+            <div className="gradient-ai mb-5 rounded-3xl p-4 md:p-5">
               <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
                 <div>
                   <h2 className="flex items-center gap-2 font-display text-lg font-semibold text-primary-foreground">
@@ -368,18 +371,23 @@ function SearchPage() {
                     className="mt-3 min-h-20 border-primary-foreground/20 bg-primary-foreground/10 text-primary-foreground placeholder:text-primary-foreground/65"
                   />
                 </div>
-                <Button variant="secondary" onClick={applyRefinement} disabled={!refinement.trim()}>
+                <Button
+                  variant="secondary"
+                  className="w-full md:w-auto"
+                  onClick={applyRefinement}
+                  disabled={!refinement.trim()}
+                >
                   Применить
                 </Button>
               </div>
             </div>
 
-            <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4">
+            <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
               <p className="truncate text-sm font-medium text-muted-foreground">
                 Найдено {results.length} предложений
               </p>
               <Select value={params.sort} onValueChange={(v) => update({ sort: v as SortKey })}>
-                <SelectTrigger className="w-48">
+                <SelectTrigger className="w-full sm:w-48">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>

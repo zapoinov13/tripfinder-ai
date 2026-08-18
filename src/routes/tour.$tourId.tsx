@@ -203,12 +203,12 @@ function TourPage() {
 
   return (
     <SiteLayout>
-      <div className="container-page py-6 pb-28 lg:pb-6">
-        <div className="grid gap-2 overflow-hidden rounded-3xl md:grid-cols-[2fr_1fr] md:grid-rows-2">
+      <div className="container-page py-4 pb-[calc(10.5rem+env(safe-area-inset-bottom))] md:py-6 lg:pb-6">
+        <div className="grid gap-2 overflow-hidden rounded-2xl md:rounded-3xl md:grid-cols-[2fr_1fr] md:grid-rows-2">
           <img
             src={galleryImages[0]}
             alt={hotel.name}
-            className="h-64 w-full object-cover md:row-span-2 md:h-[420px]"
+            className="h-60 w-full object-cover sm:h-72 md:row-span-2 md:h-[420px]"
           />
           {galleryImages.slice(1, 3).map((img, i) => (
             <img
@@ -221,9 +221,11 @@ function TourPage() {
           ))}
         </div>
 
-        <div className="mt-8 grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4">
+        <div className="mt-6 grid gap-4 md:mt-8 md:grid-cols-[minmax(0,1fr)_auto] md:items-start">
           <div className="min-w-0">
-            <h1 className="font-display text-2xl font-semibold md:text-4xl">{hotel.name}</h1>
+            <h1 className="font-display text-2xl font-semibold leading-tight md:text-4xl">
+              {hotel.name}
+            </h1>
             <p className="mt-2 text-muted-foreground">
               {offerCategoryLabels[tour.offerCategory ?? "tour"]} · {hotel.city}, {hotel.country}
             </p>
@@ -246,7 +248,7 @@ function TourPage() {
 
         <div className="mt-10 grid gap-8 lg:grid-cols-[minmax(0,1fr)_380px]">
           <div className="space-y-8">
-            <section className="surface-card p-6 md:p-8">
+            <section className="surface-card p-5 md:p-8">
               <h2 className="font-display text-xl font-semibold">О предложении</h2>
               <p className="mt-3 text-muted-foreground">
                 {hotel.name} — {offerCategoryLabels[tour.offerCategory ?? "tour"].toLowerCase()} в
@@ -257,7 +259,7 @@ function TourPage() {
               </p>
             </section>
 
-            <section className="surface-card p-6 md:p-8">
+            <section className="surface-card p-5 md:p-8">
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
                   <h2 className="font-display text-xl font-semibold">Поставщик и доверие</h2>
@@ -285,7 +287,7 @@ function TourPage() {
               </div>
             </section>
 
-            <section className="surface-card p-6 md:p-8">
+            <section className="surface-card p-5 md:p-8">
               <h2 className="font-display text-xl font-semibold">Что входит</h2>
               <ul className="mt-4 grid gap-3 sm:grid-cols-2">
                 {[
@@ -323,7 +325,7 @@ function TourPage() {
               </ul>
             </section>
 
-            <section className="surface-card p-6 md:p-8">
+            <section className="surface-card p-5 md:p-8">
               <h2 className="font-display text-xl font-semibold">Удобства</h2>
               <div className="mt-4 flex flex-wrap gap-2">
                 {hotel.amenities.map((key: string) => {
@@ -342,7 +344,7 @@ function TourPage() {
             </section>
 
             <section className="surface-card overflow-hidden">
-              <div className="p-6 md:p-8">
+              <div className="p-5 md:p-8">
                 <h2 className="font-display text-xl font-semibold">Расположение</h2>
                 <p className="mt-2 text-sm text-muted-foreground">
                   {hotel.district} · {hotel.distanceToSea} м до моря
@@ -356,7 +358,7 @@ function TourPage() {
               </div>
             </section>
 
-            <section className="gradient-ai overflow-hidden rounded-3xl p-6 md:p-8">
+            <section className="gradient-ai overflow-hidden rounded-3xl p-5 md:p-8">
               <h2 className="font-display text-xl font-semibold text-primary-foreground">
                 ✨ Почему это предложение подходит вам
               </h2>
@@ -377,7 +379,7 @@ function TourPage() {
               </Button>
             </section>
 
-            <section className="surface-card p-6 md:p-8">
+            <section className="surface-card p-5 md:p-8">
               <h2 className="font-display text-xl font-semibold">Price breakdown</h2>
               <div className="mt-4 space-y-3">
                 {priceBreakdown.map(([label, value]) => (
@@ -398,7 +400,7 @@ function TourPage() {
           </div>
 
           <aside>
-            <div className="surface-card sticky top-24 p-6">
+            <div className="surface-card sticky top-24 p-5 md:p-6">
               <ul className="space-y-2.5 text-sm">
                 <li className="flex justify-between gap-4">
                   <span className="text-muted-foreground">Даты</span>
@@ -513,7 +515,7 @@ function TourPage() {
         </div>
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur-xl md:hidden">
+      <div className="fixed inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] z-30 border-t border-border bg-background/95 p-3 shadow-[0_-10px_30px_oklch(0.2_0.02_250/0.08)] backdrop-blur-xl md:hidden">
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
@@ -531,8 +533,8 @@ function TourPage() {
           >
             <Scale className="size-4" />
           </Button>
-          <Button className="flex-1" onClick={() => setBookingOpen(true)}>
-            Забронировать — {formatPrice(tour.price)}
+          <Button className="min-w-0 flex-1 px-3" onClick={() => setBookingOpen(true)}>
+            <span className="truncate">Забронировать — {formatPrice(displayPrice)}</span>
           </Button>
         </div>
       </div>
@@ -547,7 +549,7 @@ function TourPage() {
           }
         }}
       >
-        <DialogContent>
+        <DialogContent className="max-h-[92svh] overflow-y-auto sm:max-w-lg">
           <DialogHeader>
             <DialogTitle className="font-display">Бронирование</DialogTitle>
             <DialogDescription>
@@ -625,7 +627,7 @@ function TourPage() {
       </Dialog>
 
       <Dialog open={alertOpen} onOpenChange={setAlertOpen}>
-        <DialogContent>
+        <DialogContent className="max-h-[92svh] overflow-y-auto sm:max-w-lg">
           <DialogHeader>
             <DialogTitle className="font-display">Price alert</DialogTitle>
             <DialogDescription>

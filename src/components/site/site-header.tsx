@@ -26,8 +26,8 @@ export function SiteHeader() {
         : "/profile";
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border/70 bg-background/85 backdrop-blur-xl">
-      <div className="container-page grid h-16 grid-cols-[minmax(0,1fr)_auto] items-center gap-4 md:h-[72px] md:grid-cols-[auto_1fr_auto]">
+    <header className="sticky top-0 z-40 border-b border-border/70 bg-background/90 backdrop-blur-xl">
+      <div className="container-page grid h-14 grid-cols-[minmax(0,1fr)_auto] items-center gap-4 md:h-[72px] md:grid-cols-[auto_1fr_auto]">
         <Link to="/" className="flex min-w-0 items-center gap-2">
           <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground">
             <Plane className="size-4" />
@@ -86,7 +86,10 @@ export function SiteHeader() {
                 <Menu className="size-5" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-[82vw] max-w-sm">
+            <SheetContent
+              side="right"
+              className="w-[88vw] max-w-sm pb-[env(safe-area-inset-bottom)]"
+            >
               <SheetHeader>
                 <SheetTitle className="font-display">Меню</SheetTitle>
               </SheetHeader>
@@ -102,7 +105,7 @@ export function SiteHeader() {
                   <Link
                     key={item.to + item.label}
                     to={item.to}
-                    className="rounded-xl px-3 py-3 text-base font-medium text-foreground hover:bg-secondary"
+                    className="min-h-12 rounded-xl px-3 py-3 text-base font-medium text-foreground hover:bg-secondary"
                   >
                     {item.label}
                   </Link>

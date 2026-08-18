@@ -167,9 +167,23 @@
 }
 
 @layer base {
+  html {
+    overflow-x: hidden;
+    text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  html,
+  body,
+  #root {
+    min-width: 0;
+  }
+
   body {
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+    overscroll-behavior-y: none;
   }
 
   h1,
@@ -177,7 +191,15 @@
   h3,
   h4 {
     font-family: var(--font-display);
-    letter-spacing: -0.02em;
+    letter-spacing: 0;
+  }
+
+  button,
+  a,
+  input,
+  textarea,
+  select {
+    touch-action: manipulation;
   }
 }
 
@@ -190,6 +212,10 @@
   @media (min-width: 768px) {
     padding-inline: 2rem;
   }
+}
+
+@utility mobile-safe-bottom {
+  padding-bottom: calc(1rem + env(safe-area-inset-bottom));
 }
 
 @utility surface-card {

@@ -86,7 +86,7 @@ export function TourCard({
       <div
         className={cn(
           "relative",
-          layout === "row" ? "aspect-[4/3] sm:aspect-auto" : "aspect-[4/3]",
+          layout === "row" ? "aspect-[16/11] sm:aspect-auto" : "aspect-[4/3]",
         )}
       >
         <img src={hotel.image} alt={hotel.name} loading="lazy" className="size-full object-cover" />
@@ -109,13 +109,13 @@ export function TourCard({
         </button>
       </div>
 
-      <div className="pointer-events-none relative z-20 flex flex-col gap-4 p-5">
+      <div className="pointer-events-none relative z-20 flex flex-col gap-4 p-4 sm:p-5">
         <div className="min-w-0">
-          <div className="flex items-center gap-2 text-[13px] text-muted-foreground">
+          <div className="flex min-w-0 flex-wrap items-center gap-2 text-[13px] text-muted-foreground">
             <span className="rounded-full bg-secondary px-2 py-0.5 text-[11px] font-semibold text-foreground">
               {offerCategoryLabels[tour.offerCategory ?? "tour"]}
             </span>
-            <span>
+            <span className="min-w-0 truncate">
               {hotel.flag} {hotel.city}, {hotel.country}
             </span>
             <span className="flex items-center gap-0.5 text-premium">
@@ -124,7 +124,9 @@ export function TourCard({
               ))}
             </span>
           </div>
-          <h3 className="mt-1.5 truncate font-display text-lg font-semibold">{hotel.name}</h3>
+          <h3 className="mt-1.5 line-clamp-2 font-display text-lg font-semibold leading-snug">
+            {hotel.name}
+          </h3>
           <div className="mt-2 flex items-center gap-2 text-sm">
             <span className="rounded-lg bg-accent/10 px-2 py-0.5 font-semibold text-accent">
               {hotel.rating.toFixed(1)}
@@ -153,20 +155,20 @@ export function TourCard({
 
         <div className="grid gap-2 text-[12px] text-muted-foreground sm:grid-cols-3">
           <span className="inline-flex items-center gap-1.5 rounded-xl bg-secondary px-2.5 py-1.5">
-            <ShieldCheck className="size-3.5 text-success" />
+            <ShieldCheck className="size-3.5 shrink-0 text-success" />
             Проверенный поставщик
           </span>
           <span className="inline-flex items-center gap-1.5 rounded-xl bg-secondary px-2.5 py-1.5">
-            <Clock3 className="size-3.5 text-accent" />
+            <Clock3 className="size-3.5 shrink-0 text-accent" />
             Цена {priceFreshnessMinutes(tour)} мин назад
           </span>
           <span className="inline-flex items-center gap-1.5 rounded-xl bg-secondary px-2.5 py-1.5">
-            <TicketCheck className="size-3.5 text-primary" />
-            {availabilityLabel(tour)}
+            <TicketCheck className="size-3.5 shrink-0 text-primary" />
+            <span className="min-w-0">{availabilityLabel(tour)}</span>
           </span>
         </div>
 
-        <div className="mt-auto flex flex-wrap items-end justify-between gap-4 border-t border-border pt-4">
+        <div className="mt-auto grid gap-4 border-t border-border pt-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
           <div>
             {tour.oldPrice ? (
               <div className="text-sm text-muted-foreground line-through">
@@ -185,17 +187,17 @@ export function TourCard({
             )}
             <div className="text-xs text-muted-foreground">от {operator.name}</div>
           </div>
-          <div className="pointer-events-auto flex flex-wrap items-center gap-2">
+          <div className="pointer-events-auto grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">
             <Button
               variant={compared ? "secondary" : "ghost"}
               size="sm"
-              className={compared ? "" : "text-muted-foreground"}
+              className={cn("w-full", compared ? "" : "text-muted-foreground")}
               onClick={() => toggleCompare(tour.id)}
             >
               <Scale className="size-4" />
               {compared ? "В сравнении" : "Сравнить"}
             </Button>
-            <Button size="sm" asChild>
+            <Button size="sm" className="w-full" asChild>
               <Link to="/tour/$tourId" params={{ tourId: tour.id }}>
                 Подробнее
               </Link>

@@ -34,8 +34,8 @@ const columns = [
 
 export function SiteFooter() {
   return (
-    <footer className="mt-24 border-t border-border bg-secondary/40">
-      <div className="container-page grid gap-10 py-14 md:grid-cols-[1.4fr_repeat(3,1fr)]">
+    <footer className="mt-16 border-t border-border bg-secondary/40 md:mt-24">
+      <div className="container-page grid gap-8 py-10 md:grid-cols-[1.4fr_repeat(3,1fr)] md:py-14">
         <div>
           <div className="flex items-center gap-2">
             <span className="grid size-9 place-items-center rounded-xl bg-primary text-primary-foreground">
@@ -51,12 +51,12 @@ export function SiteFooter() {
         {columns.map((col) => (
           <div key={col.title}>
             <h3 className="text-sm font-semibold">{col.title}</h3>
-            <ul className="mt-4 space-y-3">
+            <ul className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 md:block md:space-y-3">
               {col.links.map((link, i) => (
                 <li key={`${link.label}-${i}`}>
                   <Link
                     to={link.to}
-                    className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                    className="inline-flex min-h-9 items-center text-sm text-muted-foreground transition-colors hover:text-foreground"
                   >
                     {link.label}
                   </Link>

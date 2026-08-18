@@ -14,10 +14,18 @@ import type { PlatformTour } from "./types";
 
 export type SearchResult = PlatformTour & { finalScore: number };
 
+type SearchOptions = {
+  track?: boolean;
+};
+
 export class SearchService {
-  search(raw: Partial<SearchParams> | Record<string, unknown>, userId?: string): SearchResult[] {
+  search(
+    raw: Partial<SearchParams> | Record<string, unknown>,
+    userId?: string,
+    options: SearchOptions = {},
+  ): SearchResult[] {
     const params = validateSearchParams(raw as Record<string, unknown>);
-    trackEvent("SEARCH_STARTED", userId, { params });
+    if (options.track) trackEvent("SEARCH_STARTED", userId, { params });
 
     const weights = getState().config.rankingWeights;
     const source = getActiveTours().filter((t) => {
@@ -59,7 +67,7 @@ export class SearchService {
       finalScore: rankingScore(t as Tour) * averageWeight(weights),
     }));
 
-    trackEvent("SEARCH_COMPLETED", userId, { count: results.length });
+    if (options.track) trackEvent("SEARCH_COMPLETED", userId, { count: results.length });
     return results;
   }
 

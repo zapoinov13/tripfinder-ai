@@ -55,21 +55,25 @@ function ExperiencesPage() {
   return (
     <SiteLayout>
       <section className="relative isolate overflow-hidden">
-        <img src={hero.image} alt={hero.country} className="h-[460px] w-full object-cover" />
+        <img
+          src={hero.image}
+          alt={hero.country}
+          className="h-[520px] w-full object-cover sm:h-[500px] md:h-[460px]"
+        />
         <div className="absolute inset-0 bg-ink/65" />
-        <div className="container-page absolute inset-x-0 top-0 flex h-full flex-col justify-end pb-10 pt-24">
+        <div className="container-page absolute inset-x-0 top-0 flex h-full flex-col justify-end pb-8 pt-24 md:pb-10">
           <p className="font-display text-sm font-semibold tracking-[0.2em] text-primary-foreground/80 uppercase">
             Dubai experiences
           </p>
-          <h1 className="mt-4 max-w-4xl font-display text-4xl font-semibold text-primary-foreground md:text-6xl">
+          <h1 className="mt-4 max-w-4xl font-display text-3xl font-semibold leading-tight text-primary-foreground sm:text-4xl md:text-6xl">
             Экскурсии, яхты и впечатления в Дубае
           </h1>
           <p className="mt-4 max-w-2xl text-primary-foreground/82">
             Отдельная витрина для туристов из СНГ: сафари, яхты, Burj Khalifa, обзорные туры,
             билеты, трансферы и семейные активности с проверкой цены перед бронью.
           </p>
-          <div className="mt-7 flex flex-wrap gap-3">
-            <Button size="lg" asChild>
+          <div className="mt-7 grid gap-3 sm:flex sm:flex-wrap">
+            <Button size="lg" className="w-full sm:w-auto" asChild>
               <Link to="/search" search={{ category: "excursion" } as never}>
                 Смотреть предложения
               </Link>
@@ -77,7 +81,7 @@ function ExperiencesPage() {
             <Button
               size="lg"
               variant="secondary"
-              className="bg-primary-foreground/12 text-primary-foreground backdrop-blur-md hover:bg-primary-foreground/20"
+              className="w-full bg-primary-foreground/12 text-primary-foreground backdrop-blur-md hover:bg-primary-foreground/20 sm:w-auto"
               asChild
             >
               <Link to="/ai-search">
@@ -100,9 +104,12 @@ function ExperiencesPage() {
           { icon: Clock3, label: "Ответ поставщика", value: `~${topTrust.responseMinutes} мин` },
           { icon: MessageCircle, label: "Средний чек", value: formatPrice(avgPrice) },
         ].map((item) => (
-          <div key={item.label} className="rounded-2xl border border-border bg-card px-5 py-4">
+          <div
+            key={item.label}
+            className="rounded-2xl border border-border bg-card px-4 py-4 md:px-5"
+          >
             <item.icon className="size-5 text-primary" />
-            <div className="mt-3 font-display text-2xl font-semibold">{item.value}</div>
+            <div className="mt-3 font-display text-xl font-semibold md:text-2xl">{item.value}</div>
             <div className="mt-1 text-sm text-muted-foreground">{item.label}</div>
           </div>
         ))}
@@ -132,16 +139,16 @@ function ExperiencesPage() {
       </section>
 
       <section className="container-page mt-14">
-        <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
+        <div className="mb-6 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
           <div>
-            <h2 className="font-display text-2xl font-semibold md:text-3xl">
+            <h2 className="font-display text-2xl font-semibold leading-tight md:text-3xl">
               Все впечатления Дубая
             </h2>
             <p className="mt-2 text-sm text-muted-foreground">
               Price check, наличие мест и подтверждение поставщика фиксируются в заявке.
             </p>
           </div>
-          <Button variant="outline" asChild>
+          <Button variant="outline" className="w-full sm:w-auto" asChild>
             <Link to="/destination/$destinationId" params={{ destinationId: "dubai-experiences" }}>
               Раздел направления
             </Link>
@@ -158,7 +165,7 @@ function ExperiencesPage() {
                   <p className="mt-2 text-muted-foreground">
                     Русскоязычная поддержка, pickup details и ваучер после подтверждения.
                   </p>
-                  <Button className="mt-4" asChild>
+                  <Button className="mt-4 w-full" asChild>
                     <Link to="/tour/$tourId" params={{ tourId: tour.id }}>
                       Проверить цену
                     </Link>

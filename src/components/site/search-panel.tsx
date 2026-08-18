@@ -94,7 +94,7 @@ function SelectField({
           <FieldShell label={label} value={current?.label ?? "Выберите"} icon={MapPin} />
         </button>
       </PopoverTrigger>
-      <PopoverContent align="start" className="w-64 p-1.5">
+      <PopoverContent align="start" className="w-[calc(100vw-2rem)] p-1.5 sm:w-72">
         <div className="max-h-72 overflow-y-auto">
           {options.map((option) => (
             <button
@@ -233,7 +233,7 @@ export function SearchPanel({
   const goAiSearch = () => {
     const parsed = parsedAi ?? parseTravelQuery(aiQuery);
     const userId = getState().session?.userId;
-    const results = searchService.search(parsedQueryToSearch(parsed));
+    const results = searchService.search(parsedQueryToSearch(parsed), userId, { track: true });
     if (userId) saveAiSearch(userId, parsed.originalQuery, parsed, results.length);
     navigate({ to: "/search", search: parsedQueryToSearch(parsed) as never });
   };
@@ -282,7 +282,7 @@ export function SearchPanel({
 
       {tab === "classic" ? (
         <div className="p-3 md:p-4">
-          <div className="grid gap-2 lg:grid-cols-[repeat(3,minmax(0,1fr))] xl:grid-cols-[repeat(6,minmax(0,1fr))_auto]">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-[repeat(3,minmax(0,1fr))] xl:grid-cols-[repeat(6,minmax(0,1fr))_auto]">
             <SelectField
               label="Откуда"
               value={from}
@@ -297,7 +297,7 @@ export function SearchPanel({
                   <FieldShell label="Дата" value={dateLabel} icon={CalendarDays} />
                 </button>
               </PopoverTrigger>
-              <PopoverContent align="start" className="w-auto p-2">
+              <PopoverContent align="start" className="w-[calc(100vw-2rem)] p-2 sm:w-auto">
                 <Calendar mode="range" selected={range} onSelect={setRange} numberOfMonths={1} />
               </PopoverContent>
             </Popover>
@@ -308,7 +308,7 @@ export function SearchPanel({
                   <FieldShell label="Туристы" value={guestsLabelText} icon={Users} />
                 </button>
               </PopoverTrigger>
-              <PopoverContent align="start" className="w-72 space-y-4 p-4">
+              <PopoverContent align="start" className="w-[calc(100vw-2rem)] space-y-4 p-4 sm:w-72">
                 <Counter label="Взрослые" value={adults} min={1} onChange={setAdults} />
                 <Counter label="Дети" value={children} min={0} onChange={setChildren} />
                 {children > 0 ? (
@@ -351,7 +351,7 @@ export function SearchPanel({
                   />
                 </button>
               </PopoverTrigger>
-              <PopoverContent align="start" className="w-72 p-4">
+              <PopoverContent align="start" className="w-[calc(100vw-2rem)] p-4 sm:w-72">
                 <p className="text-sm font-medium">
                   {formatPrice(budget[0])} – {formatPrice(budget[1])}
                 </p>
@@ -376,7 +376,7 @@ export function SearchPanel({
                   <FieldShell label="Питание" value={mealLabelText} icon={UtensilsCrossed} />
                 </button>
               </PopoverTrigger>
-              <PopoverContent align="start" className="w-64 p-1.5">
+              <PopoverContent align="start" className="w-[calc(100vw-2rem)] p-1.5 sm:w-72">
                 {mealOptions.map((m) => (
                   <button
                     key={m.code}
@@ -402,7 +402,11 @@ export function SearchPanel({
               </PopoverContent>
             </Popover>
 
-            <Button size="lg" className="h-full min-h-13 rounded-2xl px-7" onClick={goSearch}>
+            <Button
+              size="lg"
+              className="h-full min-h-13 w-full rounded-2xl px-7 sm:col-span-2 lg:col-span-1"
+              onClick={goSearch}
+            >
               <Search className="size-4" />
               Найти туры
             </Button>
@@ -410,7 +414,7 @@ export function SearchPanel({
           <button
             type="button"
             onClick={goSearch}
-            className="mt-3 inline-flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+            className="mt-3 inline-flex min-h-11 items-center gap-2 rounded-xl px-1 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
           >
             <SlidersHorizontal className="size-4" />
             Расширенные фильтры
@@ -426,7 +430,7 @@ export function SearchPanel({
                 setAiQuery(e.target.value);
                 setParsedAi(null);
               }}
-              className="min-h-32 resize-none border-0 bg-transparent pr-12 text-base shadow-none focus-visible:ring-0"
+              className="min-h-36 resize-none border-0 bg-transparent pr-12 text-base shadow-none focus-visible:ring-0 md:min-h-32"
             />
             <button
               type="button"
@@ -442,11 +446,16 @@ export function SearchPanel({
           </div>
           {parsedAi ? (
             <div className="mt-3 rounded-2xl border border-ai/20 bg-card p-4">
-              <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
                 <div>
                   <p className="text-sm font-semibold">Я правильно понял ваш запрос?</p>
                 </div>
-                <Button size="sm" variant="outline" onClick={() => parseAi(aiQuery)}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="w-full sm:w-auto"
+                  onClick={() => parseAi(aiQuery)}
+                >
                   Обновить parsing
                 </Button>
               </div>

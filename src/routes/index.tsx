@@ -110,21 +110,21 @@ function Index() {
             <p className="font-display text-sm font-semibold tracking-[0.22em] text-primary-foreground/90 uppercase md:text-base">
               TourGo
             </p>
-            <h1 className="mt-4 font-display text-4xl font-semibold tracking-tight text-primary-foreground md:text-6xl md:leading-[1.05]">
+            <h1 className="mt-4 font-display text-3xl font-semibold leading-tight text-primary-foreground sm:text-4xl md:text-6xl md:leading-[1.05]">
               Найдите тур, отель или экскурсию без хаоса в чатах
             </h1>
             <p className="mt-4 max-w-xl text-base text-primary-foreground/80 md:text-lg">
               Маркетплейс путешествий для туристов из Казахстана, Узбекистана, России и других стран
               СНГ. Сейчас первый живой каталог — предложения по Дубаю.
             </p>
-            <div className="mt-7 flex flex-wrap gap-3">
-              <Button size="lg" asChild>
+            <div className="mt-7 grid gap-3 sm:flex sm:flex-wrap">
+              <Button size="lg" className="w-full sm:w-auto" asChild>
                 <a href="#search">Найти тур</a>
               </Button>
               <Button
                 size="lg"
                 variant="secondary"
-                className="bg-primary-foreground/12 text-primary-foreground backdrop-blur-md hover:bg-primary-foreground/20"
+                className="w-full bg-primary-foreground/12 text-primary-foreground backdrop-blur-md hover:bg-primary-foreground/20 sm:w-auto"
                 asChild
               >
                 <Link to="/ai-search">
@@ -162,15 +162,18 @@ function Index() {
       <section className="container-page mt-10 md:mt-12">
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
           {trustStats.map((stat) => (
-            <div key={stat.label} className="rounded-2xl border border-border bg-card/70 px-5 py-4">
-              <p className="font-display text-2xl font-semibold md:text-3xl">{stat.value}</p>
+            <div
+              key={stat.label}
+              className="rounded-2xl border border-border bg-card/70 px-4 py-4 md:px-5"
+            >
+              <p className="font-display text-xl font-semibold md:text-3xl">{stat.value}</p>
               <p className="mt-1 text-xs text-muted-foreground md:text-sm">{stat.label}</p>
             </div>
           ))}
         </div>
       </section>
 
-      <section className="container-page mt-16 md:mt-24">
+      <section className="container-page mt-14 md:mt-24">
         <SectionHead
           title="Доступно сейчас"
           subtitle="Первое направление — Дубай: пляж, Palm, Downtown, семейный отдых, бюджет и экскурсии"
@@ -240,20 +243,20 @@ function Index() {
       </section>
 
       <section className="container-page mt-16 md:mt-24">
-        <div className="gradient-premium relative overflow-hidden rounded-[2rem] px-6 py-12 md:px-12 md:py-16">
+        <div className="gradient-premium relative overflow-hidden rounded-[1.5rem] px-5 py-10 md:rounded-[2rem] md:px-12 md:py-16">
           <div className="pointer-events-none absolute -right-20 top-0 size-72 rounded-full bg-premium/15 blur-3xl" />
           <div className="relative grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)] lg:items-end">
             <div className="max-w-lg">
               <p className="text-xs font-semibold tracking-[0.18em] text-premium uppercase">
                 Premium
               </p>
-              <h2 className="mt-3 font-display text-3xl font-semibold text-primary-foreground md:text-4xl">
+              <h2 className="mt-3 font-display text-2xl font-semibold text-primary-foreground md:text-4xl">
                 Больше путешествий. Меньше цены.
               </h2>
               <p className="mt-3 text-primary-foreground/75">
                 Эксклюзивные предложения и закрытые цены для подписчиков TourGo Premium.
               </p>
-              <Button size="lg" variant="secondary" className="mt-8" asChild>
+              <Button size="lg" variant="secondary" className="mt-8 w-full sm:w-auto" asChild>
                 <Link to="/premium">Открыть Premium</Link>
               </Button>
             </div>
@@ -326,11 +329,13 @@ function Index() {
                   <div className="text-xs font-semibold uppercase tracking-wide text-primary">
                     {hotel.district}
                   </div>
-                  <h3 className="mt-2 font-display text-xl font-semibold">{hotel.name}</h3>
+                  <h3 className="mt-2 line-clamp-2 font-display text-xl font-semibold">
+                    {hotel.name}
+                  </h3>
                   <p className="mt-2 text-sm text-muted-foreground">
                     Проверка цены, наличие мест и подтверждение поставщика перед оплатой.
                   </p>
-                  <div className="mt-4 flex items-center justify-between gap-3">
+                  <div className="mt-4 grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
                     <span className="font-display text-xl font-semibold">
                       {formatPrice(tour.price)}
                     </span>
@@ -352,7 +357,7 @@ function Index() {
           {benefits.map((item) => (
             <div
               key={item.title}
-              className="rounded-3xl border border-border/80 bg-card/60 p-6 transition-colors hover:border-primary/25 hover:bg-card"
+              className="rounded-3xl border border-border/80 bg-card/60 p-5 transition-colors hover:border-primary/25 hover:bg-card md:p-6"
             >
               <span className="grid size-11 place-items-center rounded-2xl bg-primary-soft text-primary">
                 <item.icon className="size-5" />
@@ -371,7 +376,7 @@ function Index() {
         />
         <div className="mt-8 grid gap-4 md:grid-cols-4">
           {steps.map((step, index) => (
-            <div key={step.n} className="relative rounded-3xl bg-secondary/50 p-6">
+            <div key={step.n} className="relative rounded-3xl bg-secondary/50 p-5 md:p-6">
               {index < steps.length - 1 ? (
                 <span className="absolute top-10 right-0 hidden h-px w-4 translate-x-1/2 bg-border md:block" />
               ) : null}
@@ -400,14 +405,14 @@ function Index() {
             <div className="mt-7">
               <ChatDemoFeatures />
             </div>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Button size="lg" asChild>
+            <div className="mt-8 grid gap-3 sm:flex sm:flex-wrap">
+              <Button size="lg" className="w-full sm:w-auto" asChild>
                 <Link to="/ai-search">
                   <Sparkles className="size-4" />
                   Попробовать AI-подбор
                 </Link>
               </Button>
-              <Button size="lg" variant="outline" asChild>
+              <Button size="lg" variant="outline" className="w-full sm:w-auto" asChild>
                 <a href="#search">Обычный поиск</a>
               </Button>
             </div>
@@ -430,7 +435,7 @@ function Index() {
         <div className="grid gap-8 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:gap-12">
           <div>
             <SectionHead title="Частые вопросы" subtitle="Коротко о том, как всё устроено" />
-            <Button variant="outline" className="mt-6" asChild>
+            <Button variant="outline" className="mt-6 w-full sm:w-auto" asChild>
               <Link to="/about">Подробнее о TourGo</Link>
             </Button>
           </div>
@@ -439,7 +444,7 @@ function Index() {
       </section>
 
       <section className="container-page mt-12 mb-8 md:mt-16">
-        <div className="flex flex-col gap-5 rounded-[2rem] border border-border bg-card px-6 py-6 sm:flex-row sm:items-center sm:justify-between md:px-8">
+        <div className="flex flex-col gap-5 rounded-[1.5rem] border border-border bg-card px-5 py-6 sm:flex-row sm:items-center sm:justify-between md:rounded-[2rem] md:px-8">
           <div className="flex min-w-0 items-start gap-4 sm:items-center">
             <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-secondary">
               <Building2 className="size-5" />
@@ -451,7 +456,7 @@ function Index() {
               </p>
             </div>
           </div>
-          <Button variant="outline" asChild>
+          <Button variant="outline" className="w-full sm:w-auto" asChild>
             <Link to="/for-operators">
               Подключить компанию
               <ArrowRight className="size-4" />
@@ -473,9 +478,9 @@ function SectionHead({
   action?: React.ReactNode;
 }) {
   return (
-    <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-4">
+    <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
       <div className="min-w-0">
-        <h2 className="font-display text-2xl font-semibold tracking-tight md:text-3xl">{title}</h2>
+        <h2 className="font-display text-2xl font-semibold leading-tight md:text-3xl">{title}</h2>
         {subtitle ? <p className="mt-2 max-w-2xl text-muted-foreground">{subtitle}</p> : null}
       </div>
       {action ? <div className="hidden md:block">{action}</div> : null}
