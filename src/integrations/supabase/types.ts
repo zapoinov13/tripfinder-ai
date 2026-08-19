@@ -52,6 +52,42 @@ export type Database = {
           },
         ]
       }
+      ai_settings: {
+        Row: {
+          api_key: string
+          base_url: string
+          created_at: string
+          enabled: boolean
+          id: number
+          model: string
+          provider: string
+          system_prompt: string
+          updated_at: string
+        }
+        Insert: {
+          api_key?: string
+          base_url?: string
+          created_at?: string
+          enabled?: boolean
+          id?: number
+          model?: string
+          provider?: string
+          system_prompt?: string
+          updated_at?: string
+        }
+        Update: {
+          api_key?: string
+          base_url?: string
+          created_at?: string
+          enabled?: boolean
+          id?: number
+          model?: string
+          provider?: string
+          system_prompt?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       analytics_events: {
         Row: {
           created_at: string
