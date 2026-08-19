@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/lib/platform/auth";
-import { DEMO_PASSWORD } from "@/lib/platform/seed";
 import { getState } from "@/lib/platform/store";
 import { migrateAnonymousToUser } from "@/lib/platform/user-data";
 
