@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Sparkles } from "lucide-react";
 
+import { AiChat } from "@/components/site/ai-chat";
 import { QuickPrompts } from "@/components/site/quick-prompts";
 import { SearchPanel } from "@/components/site/search-panel";
 import { SiteLayout } from "@/components/site/site-layout";
@@ -35,10 +36,13 @@ function AiSearchPage() {
             TourGo превратит свободный запрос в параметры поиска и покажет подходящие туры.
           </p>
         </div>
-        <div className="mt-8">
-          <SearchPanel defaultTab="ai" initialAiQuery={q ?? ""} />
+        <div className="mt-8 grid gap-6 lg:grid-cols-2">
+          <div>
+            <SearchPanel defaultTab="ai" initialAiQuery={q ?? ""} />
+            <QuickPrompts className="mt-6" />
+          </div>
+          <AiChat initialQuery={q ?? ""} />
         </div>
-        <QuickPrompts className="mt-6" />
       </div>
     </SiteLayout>
   );

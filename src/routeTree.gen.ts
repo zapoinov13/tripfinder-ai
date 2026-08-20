@@ -25,6 +25,7 @@ import { Route as ProfileRouteRouteImport } from './routes/profile/route'
 import { Route as RegistrationRouteImport } from './routes/registration'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
+import { Route as AdminAiKeysRouteImport } from './routes/admin/ai-keys'
 import { Route as AdminAnalyticsRouteImport } from './routes/admin/analytics'
 import { Route as AdminApiMonitoringRouteImport } from './routes/admin/api-monitoring'
 import { Route as AdminAuditLogsRouteImport } from './routes/admin/audit-logs'
@@ -131,6 +132,11 @@ const SearchRoute = SearchRouteImport.update({
 const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/admin/',
   path: '/admin/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminAiKeysRoute = AdminAiKeysRouteImport.update({
+  id: '/admin/ai-keys',
+  path: '/admin/ai-keys',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminAnalyticsRoute = AdminAnalyticsRouteImport.update({
@@ -286,6 +292,7 @@ export interface FileRoutesByFullPath {
   '/premium': typeof PremiumRoute
   '/registration': typeof RegistrationRoute
   '/search': typeof SearchRoute
+  '/admin/ai-keys': typeof AdminAiKeysRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/api-monitoring': typeof AdminApiMonitoringRoute
   '/admin/audit-logs': typeof AdminAuditLogsRoute
@@ -330,6 +337,7 @@ export interface FileRoutesByTo {
   '/premium': typeof PremiumRoute
   '/registration': typeof RegistrationRoute
   '/search': typeof SearchRoute
+  '/admin/ai-keys': typeof AdminAiKeysRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/api-monitoring': typeof AdminApiMonitoringRoute
   '/admin/audit-logs': typeof AdminAuditLogsRoute
@@ -376,6 +384,7 @@ export interface FileRoutesById {
   '/premium': typeof PremiumRoute
   '/registration': typeof RegistrationRoute
   '/search': typeof SearchRoute
+  '/admin/ai-keys': typeof AdminAiKeysRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/api-monitoring': typeof AdminApiMonitoringRoute
   '/admin/audit-logs': typeof AdminAuditLogsRoute
@@ -423,6 +432,7 @@ export interface FileRouteTypes {
     | '/premium'
     | '/registration'
     | '/search'
+    | '/admin/ai-keys'
     | '/admin/analytics'
     | '/admin/api-monitoring'
     | '/admin/audit-logs'
@@ -467,6 +477,7 @@ export interface FileRouteTypes {
     | '/premium'
     | '/registration'
     | '/search'
+    | '/admin/ai-keys'
     | '/admin/analytics'
     | '/admin/api-monitoring'
     | '/admin/audit-logs'
@@ -512,6 +523,7 @@ export interface FileRouteTypes {
     | '/premium'
     | '/registration'
     | '/search'
+    | '/admin/ai-keys'
     | '/admin/analytics'
     | '/admin/api-monitoring'
     | '/admin/audit-logs'
@@ -558,6 +570,7 @@ export interface RootRouteChildren {
   PremiumRoute: typeof PremiumRoute
   RegistrationRoute: typeof RegistrationRoute
   SearchRoute: typeof SearchRoute
+  AdminAiKeysRoute: typeof AdminAiKeysRoute
   AdminAnalyticsRoute: typeof AdminAnalyticsRoute
   AdminApiMonitoringRoute: typeof AdminApiMonitoringRoute
   AdminAuditLogsRoute: typeof AdminAuditLogsRoute
@@ -695,6 +708,13 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin/'
       preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/ai-keys': {
+      id: '/admin/ai-keys'
+      path: '/admin/ai-keys'
+      fullPath: '/admin/ai-keys'
+      preLoaderRoute: typeof AdminAiKeysRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/analytics': {
@@ -925,6 +945,7 @@ const rootRouteChildren: RootRouteChildren = {
   PremiumRoute: PremiumRoute,
   RegistrationRoute: RegistrationRoute,
   SearchRoute: SearchRoute,
+  AdminAiKeysRoute: AdminAiKeysRoute,
   AdminAnalyticsRoute: AdminAnalyticsRoute,
   AdminApiMonitoringRoute: AdminApiMonitoringRoute,
   AdminAuditLogsRoute: AdminAuditLogsRoute,
