@@ -3,20 +3,20 @@ import { Plane } from "lucide-react";
 
 const columns = [
   {
-    title: "Marketplace",
+    title: "Путешествия",
     links: [
       { label: "Все туры", to: "/search" },
-      { label: "Направления", to: "/destinations" },
+      { label: "Экскурсии", to: "/excursions" },
+      { label: "Помощь в поездке", to: "/assistance" },
       { label: "Горящие туры", to: "/hot" },
-      { label: "Premium", to: "/premium" },
     ],
   },
   {
     title: "Компания",
     links: [
-      { label: "О платформе", to: "/about" },
-      { label: "Для туроператоров", to: "/for-operators" },
-      { label: "Партнёрам", to: "/for-operators" },
+      { label: "О TourGo", to: "/about" },
+      { label: "Для турфирм", to: "/for-companies" },
+      { label: "Добавить свою турфирму", to: "/company-signup" },
       { label: "Контакты", to: "/about" },
     ],
   },
@@ -43,7 +43,8 @@ export function SiteFooter() {
             <span className="font-display text-lg font-semibold">TourGo</span>
           </div>
           <p className="mt-4 max-w-xs text-sm text-muted-foreground">
-            Маркетплейс туров: сравниваем предложения операторов и помогаем найти лучшее.
+            Найдите тур сами или оставьте одну заявку и получите предложения от нескольких
+            проверенных турфирм.
           </p>
         </div>
         {columns.map((col) => (
@@ -65,9 +66,7 @@ export function SiteFooter() {
         ))}
       </div>
       <div className="border-t border-border/70">
-        <div className="container-page py-6 text-xs text-muted-foreground">
-          © 2026 Travel Marketplace
-        </div>
+        <div className="container-page py-6 text-xs text-muted-foreground">© 2026 TourGo</div>
       </div>
     </footer>
   );

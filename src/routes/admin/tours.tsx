@@ -44,8 +44,6 @@ function AdminToursPage() {
   const [status, setStatus] = useState("all");
   const [org, setOrg] = useState("all");
   const [limit, setLimit] = useState(PAGE);
-  if (!allowed || !user) return null;
-
   const filtered = useMemo(() => {
     const query = q.trim().toLowerCase();
     return state.tours.filter((t) => {
@@ -62,15 +60,12 @@ function AdminToursPage() {
     });
   }, [state.tours, q, status, org]);
 
+  if (!allowed || !user) return null;
+
   const visible = filtered.slice(0, limit);
 
   return (
-    <DashShell
-      brand="TourGo Админ"
-      items={nav}
-      title="Туры"
-      subtitle="Модерация каталога"
-    >
+    <DashShell brand="TourGo Админ" items={nav} title="Туры" subtitle="Модерация каталога">
       <FilterBar
         search={q}
         onSearchChange={setQ}

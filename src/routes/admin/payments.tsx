@@ -37,16 +37,6 @@ function AdminPaymentsPage() {
   const [q, setQ] = useState("");
   const [type, setType] = useState("all");
   const [status, setStatus] = useState("all");
-  if (!allowed) return null;
-
-  const paidSum = state.payments
-    .filter((p) => p.status === "paid")
-    .reduce((s, p) => s + p.amount, 0);
-  const pendingSum = state.payments
-    .filter((p) => p.status === "pending")
-    .reduce((s, p) => s + p.amount, 0);
-  const failedCount = state.payments.filter((p) => p.status === "failed").length;
-
   const payments = useMemo(() => {
     const query = q.trim().toLowerCase();
     return state.payments.filter((p) => {
@@ -61,13 +51,18 @@ function AdminPaymentsPage() {
     });
   }, [state.payments, q, type, status]);
 
+  if (!allowed) return null;
+
+  const paidSum = state.payments
+    .filter((p) => p.status === "paid")
+    .reduce((s, p) => s + p.amount, 0);
+  const pendingSum = state.payments
+    .filter((p) => p.status === "pending")
+    .reduce((s, p) => s + p.amount, 0);
+  const failedCount = state.payments.filter((p) => p.status === "failed").length;
+
   return (
-    <DashShell
-      brand="TourGo Админ"
-      items={nav}
-      title="Платежи"
-      subtitle="Транзакции платформы"
-    >
+    <DashShell brand="TourGo Админ" items={nav} title="Платежи" subtitle="Транзакции платформы">
       <div className="mb-6 grid gap-4 sm:grid-cols-3">
         <KpiLinkCard label="Оплачено" value={formatPrice(paidSum)} hint="Успешные платежи" />
         <KpiLinkCard

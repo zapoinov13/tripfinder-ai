@@ -36,7 +36,14 @@ const mealCycle: MealCode[] = ["AI", "UAI", "BB", "HB", "FB", "AI", "UAI", "RO",
 
 const fmtDay = (d: Date) => `${d.getDate()} ${monthNames[d.getMonth()]}`;
 const iso = (d: Date) => d.toISOString().slice(0, 10);
-const nowIso = () => new Date().toISOString();
+
+/**
+ * Сид считается одинаковым на сервере и в браузере: этим же снимком React
+ * гидрирует разметку, поэтому в нём не должно быть ни текущего времени, ни random.
+ */
+const SEED_NOW = "2026-08-01T09:00:00.000Z";
+const SEED_TIME = Date.parse(SEED_NOW);
+const nowIso = () => SEED_NOW;
 
 export const defaultConfig = (): PlatformConfig => ({
   premiumMonthlyPrice: 4990,
@@ -279,7 +286,7 @@ export function createSeedState(): PlatformState {
         planId: "premium-monthly",
         status: "active",
         startedAt: ts,
-        expiresAt: new Date(Date.now() + 30 * 86400000).toISOString(),
+        expiresAt: new Date(SEED_TIME + 30 * 86400000).toISOString(),
         autoRenew: true,
         providerSubscriptionId: "mock-sub-premium",
       },
@@ -289,7 +296,7 @@ export function createSeedState(): PlatformState {
         planId: "BUSINESS",
         status: "active",
         startedAt: ts,
-        expiresAt: new Date(Date.now() + 30 * 86400000).toISOString(),
+        expiresAt: new Date(SEED_TIME + 30 * 86400000).toISOString(),
         autoRenew: true,
       },
     ],
@@ -376,6 +383,73 @@ export function createSeedState(): PlatformState {
       },
     ],
     promotions: [],
+    tripRequests: [
+      {
+        id: "req-demo-1",
+        userId: "user-tourist",
+        kind: "tour",
+        fromCity: "Алматы",
+        destinationId: "uae",
+        destinationLabel: "Дубай",
+        dateStart: iso(new Date(SEED_TIME + 20 * 86400000)),
+        dateEnd: iso(new Date(SEED_TIME + 27 * 86400000)),
+        adults: 2,
+        children: 2,
+        budget: 1800000,
+        currency: "KZT",
+        wishes: "Семейный отель рядом с морем. Желательно всё включено.",
+        contactName: "Айгерим",
+        contactPhone: "+7 701 000 00 01",
+        status: "IN_REVIEW",
+        declinedByOrgIds: [],
+        createdAt: ts,
+        updatedAt: ts,
+      },
+      {
+        id: "req-demo-2",
+        userId: "user-premium",
+        kind: "assistance",
+        fromCity: "Дубай",
+        destinationId: "uae",
+        destinationLabel: "Абу-Даби",
+        dateStart: iso(new Date(SEED_TIME + 86400000)),
+        dateEnd: iso(new Date(SEED_TIME + 86400000)),
+        adults: 5,
+        children: 0,
+        budget: 2000,
+        currency: "USD",
+        wishes:
+          "Мы сейчас в Дубае, нас пять человек. Завтра хотим мечеть в Абу-Даби и Ferrari World. Нужна машина с русскоговорящим водителем.",
+        contactName: "Данияр",
+        contactPhone: "+7 701 000 00 02",
+        status: "NEW",
+        declinedByOrgIds: [],
+        createdAt: ts,
+        updatedAt: ts,
+      },
+    ],
+    requestOffers: [],
+    requestMessages: [],
+    companyReviews: [
+      {
+        id: "review-1",
+        organizationId: orgs[0]!.id,
+        userId: "user-premium",
+        authorName: "Данияр",
+        rating: 5,
+        text: "Быстро ответили на заявку и подобрали отель у моря в бюджет. Трансфер встретил в аэропорту.",
+        createdAt: ts,
+      },
+      {
+        id: "review-2",
+        organizationId: orgs[0]!.id,
+        userId: "user-tourist",
+        authorName: "Айгерим",
+        rating: 4,
+        text: "Хорошая компания, но пришлось несколько раз уточнять, что входит в цену.",
+        createdAt: ts,
+      },
+    ],
     session: null,
   };
 }

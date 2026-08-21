@@ -1,7 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 
-import { EmptyState, KpiLinkCard, TabPills, eventLabel, formatRelativeRu, userName } from "@/components/admin";
+import {
+  EmptyState,
+  KpiLinkCard,
+  TabPills,
+  eventLabel,
+  formatRelativeRu,
+  userName,
+} from "@/components/admin";
 import { DashShell } from "@/components/dash/dash-shell";
 import { useAdminNav } from "@/components/dash/nav-items";
 import { formatNumber } from "@/data/demo";
@@ -18,8 +25,6 @@ function AdminAnalyticsPage() {
   const nav = useAdminNav();
   const state = usePlatformStore();
   const [period, setPeriod] = useState("all");
-  if (!allowed) return null;
-
   const startOfToday = useMemo(() => {
     const d = new Date();
     d.setHours(0, 0, 0, 0);
@@ -33,6 +38,8 @@ function AdminAnalyticsPage() {
     return state.analyticsEvents;
   }, [state.analyticsEvents, period, startOfToday]);
 
+  if (!allowed) return null;
+
   const counts = events.reduce<Record<string, number>>((acc, e) => {
     acc[e.type] = (acc[e.type] ?? 0) + 1;
     return acc;
@@ -42,12 +49,7 @@ function AdminAnalyticsPage() {
   const max = sorted[0]?.[1] ?? 1;
 
   return (
-    <DashShell
-      brand="TourGo Админ"
-      items={nav}
-      title="Аналитика"
-      subtitle="События и трекинг"
-    >
+    <DashShell brand="TourGo Админ" items={nav} title="Аналитика" subtitle="События и трекинг">
       <TabPills
         value={period}
         onChange={setPeriod}

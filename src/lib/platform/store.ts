@@ -38,7 +38,14 @@ function loadFromStorage(): PlatformState | null {
     if (!parsed?.version || !Array.isArray(parsed.tours) || !Array.isArray(parsed.users)) {
       return null;
     }
-    return parsed;
+    // Коллекции, появившиеся позже сохранённого состояния.
+    return {
+      ...parsed,
+      tripRequests: parsed.tripRequests ?? [],
+      requestOffers: parsed.requestOffers ?? [],
+      requestMessages: parsed.requestMessages ?? [],
+      companyReviews: parsed.companyReviews ?? [],
+    };
   } catch {
     return null;
   }
@@ -50,6 +57,18 @@ export function getState(): PlatformState {
     persist(state);
   }
   return state;
+}
+
+let serverSnapshot: PlatformState | null = null;
+
+/**
+ * Снимок для SSR и первого рендера в браузере: сид без localStorage и без сессии.
+ * Разметка сервера и клиента совпадает, а реальное состояние React подставляет
+ * сразу после гидрации.
+ */
+export function getServerSnapshot(): PlatformState {
+  if (!serverSnapshot) serverSnapshot = createSeedState();
+  return serverSnapshot;
 }
 
 export function setState(

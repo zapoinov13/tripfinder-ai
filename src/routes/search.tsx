@@ -235,10 +235,7 @@ function SearchPage() {
     navigate({ search: ((prev: SearchParams) => ({ ...prev, ...patch })) as never });
   };
 
-  const results = useMemo(
-    () => searchService.search(params as Record<string, unknown>, user?.id),
-    [params, user?.id],
-  );
+  const results = useMemo(() => searchService.search(params as Record<string, unknown>), [params]);
   const cheapest = useMemo(
     () =>
       results.reduce<number | null>(
@@ -253,6 +250,10 @@ function SearchPage() {
     const timer = setTimeout(() => setLoading(false), 350);
     return () => clearTimeout(timer);
   }, [params]);
+
+  useEffect(() => {
+    searchService.trackSearch(params as Record<string, unknown>, results.length, user?.id);
+  }, [params, results.length, user?.id]);
 
   const routeLabel = `${params.from || "Любой город"} → ${
     params.city ||
@@ -280,12 +281,15 @@ function SearchPage() {
   const applyRefinement = () => {
     const text = refinement.toLowerCase();
     const patch: Partial<SearchParams> = {};
-    if (/дешев/.test(text)) patch.priceMax = Math.max(PRICE_MIN, Math.round(params.priceMax * 0.85));
+    if (/дешев/.test(text))
+      patch.priceMax = Math.max(PRICE_MIN, Math.round(params.priceMax * 0.85));
     if (/5\s*зв|пять зв/.test(text)) patch.stars = [5];
     if (/рейтинг|отзыв/.test(text)) patch.sort = "rating";
-    if (/премиум|premium/.test(text)) patch.offers = Array.from(new Set([...params.offers, "premium"]));
+    if (/премиум|premium/.test(text))
+      patch.offers = Array.from(new Set([...params.offers, "premium"]));
     if (/горящ/.test(text)) patch.offers = Array.from(new Set([...params.offers, "hot"]));
-    if (/центр|инфраструкт/.test(text)) patch.amenities = Array.from(new Set([...params.amenities, "Wi-Fi"]));
+    if (/центр|инфраструкт/.test(text))
+      patch.amenities = Array.from(new Set([...params.amenities, "Wi-Fi"]));
     if (/2\s*(?:дня|дней|ночи|ночей)\s*(?:дольше|больше)/.test(text)) patch.nights = ["8-14"];
     if (Object.keys(patch).length > 0) update(patch);
     setRefinement("");

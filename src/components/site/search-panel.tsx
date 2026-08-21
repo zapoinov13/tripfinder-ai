@@ -9,25 +9,20 @@ import {
   Search,
   SlidersHorizontal,
   Sparkles,
-  UtensilsCrossed,
   Users,
-  Wallet,
 } from "lucide-react";
 import type { DateRange } from "react-day-picker";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
 import { destinations, formatPrice, mealOptions, resortsByDestination } from "@/data/demo";
-import {
-  buildAiChips,
-  parseTravelQuery,
-  parsedQueryToSearch,
-  type ParsedTravelQuery,
-} from "@/lib/ai-search";
+import { parseTravelQuery, parsedQueryToSearch, type ParsedTravelQuery } from "@/lib/ai-search";
 import { saveAiSearch } from "@/lib/platform/ai-services";
 import { searchService } from "@/lib/platform/search-service";
 import { getState } from "@/lib/platform/store";
@@ -51,6 +46,14 @@ const dateFormatter = new Intl.DateTimeFormat("ru-RU", { day: "numeric", month: 
 
 const toIso = (d: Date) =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+
+/** Понятные пользователю удобства вместо кодов из каталога. */
+const extraOptions = [
+  { key: "Beach", label: "Отель у моря" },
+  { key: "Transfer", label: "Трансфер включён" },
+  { key: "Kids Club", label: "Отдых с детьми" },
+  { key: "Pool", label: "Бассейн" },
+];
 
 function FieldShell({
   label,
@@ -173,14 +176,17 @@ export function SearchPanel({
   const [from, setFrom] = useState("Алматы");
   const [to, setTo] = useState("uae|Дубай");
   const [range, setRange] = useState<DateRange | undefined>({
-    from: new Date(2026, 7, 10),
-    to: new Date(2026, 7, 17),
+    from: new Date(2026, 9, 10),
+    to: new Date(2026, 9, 17),
   });
   const [adults, setAdults] = useState(2);
-  const [children, setChildren] = useState(2);
-  const [childAges, setChildAges] = useState<number[]>([7, 10]);
+  const [children, setChildren] = useState(1);
+  const [childAges, setChildAges] = useState<number[]>([7]);
   const [budget, setBudget] = useState<[number, number]>([PRICE_MIN, 2500000]);
   const [meals, setMeals] = useState<string[]>([]);
+  const [stars, setStars] = useState<number[]>([]);
+  const [amenities, setAmenities] = useState<string[]>([]);
+  const [showMore, setShowMore] = useState(false);
   const [aiQuery, setAiQuery] = useState(initialAiQuery);
   const [parsedAi, setParsedAi] = useState<ParsedTravelQuery | null>(null);
   const [recording, setRecording] = useState(false);
@@ -206,6 +212,8 @@ export function SearchPanel({
         priceMin: budget[0],
         priceMax: budget[1],
         meals,
+        stars,
+        amenities,
       }) as never,
     });
   };
@@ -217,14 +225,13 @@ export function SearchPanel({
     : "Выберите даты";
   const guestsLabelText =
     children > 0
-      ? `${adults} взрослых + ${children} ${children === 1 ? "ребёнок" : "детей"}`
+      ? `${adults} взрослых · ${children} ${children === 1 ? "ребёнок" : "детей"}`
       : `${adults} взрослых`;
-  const mealLabelText = meals.length ? meals.join(", ") : "Любое";
 
   const parseAi = (query = aiQuery) => {
     const parsed = parseTravelQuery(
       query ||
-        "Хочу из Алматы в Дубай на 7 дней. Нас двое взрослых и ребёнок 5 лет. Бюджет до 1 200 000 ₸. Хотим хороший семейный отель рядом с морем и всё включено.",
+        "Хотим в Дубай на неделю, двое взрослых и ребёнок, хороший отель у моря, бюджет до 1 500 000 ₸.",
     );
     setAiQuery(parsed.originalQuery);
     setParsedAi(parsed);
@@ -233,9 +240,14 @@ export function SearchPanel({
   const goAiSearch = () => {
     const parsed = parsedAi ?? parseTravelQuery(aiQuery);
     const userId = getState().session?.userId;
-    const results = searchService.search(parsedQueryToSearch(parsed));
+    const params = {
+      ...parsedQueryToSearch(parsed),
+      dateStart: range?.from ? toIso(range.from) : "",
+      dateEnd: range?.to ? toIso(range.to) : "",
+    };
+    const results = searchService.search(params);
     if (userId) saveAiSearch(userId, parsed.originalQuery, parsed, results.length);
-    navigate({ to: "/search", search: parsedQueryToSearch(parsed) as never });
+    navigate({ to: "/search", search: params as never });
   };
 
   const runVoiceSearch = async () => {
@@ -264,7 +276,7 @@ export function SearchPanel({
             tab === "classic" ? "bg-card text-foreground shadow-card" : "text-muted-foreground",
           )}
         >
-          Найти тур
+          Найти туры
         </button>
         <button
           type="button"
@@ -276,13 +288,13 @@ export function SearchPanel({
               : "text-muted-foreground",
           )}
         >
-          ✨ Найти с AI
+          ✨ Умный поиск
         </button>
       </div>
 
       {tab === "classic" ? (
         <div className="p-3 md:p-4">
-          <div className="grid gap-2 lg:grid-cols-[repeat(3,minmax(0,1fr))] xl:grid-cols-[repeat(6,minmax(0,1fr))_auto]">
+          <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-[repeat(4,minmax(0,1fr))_auto]">
             <SelectField
               label="Откуда"
               value={from}
@@ -294,7 +306,7 @@ export function SearchPanel({
             <Popover>
               <PopoverTrigger asChild>
                 <button type="button" className="min-w-0">
-                  <FieldShell label="Дата" value={dateLabel} icon={CalendarDays} />
+                  <FieldShell label="Даты" value={dateLabel} icon={CalendarDays} />
                 </button>
               </PopoverTrigger>
               <PopoverContent align="start" className="w-auto p-2">
@@ -341,157 +353,307 @@ export function SearchPanel({
               </PopoverContent>
             </Popover>
 
-            <Popover>
-              <PopoverTrigger asChild>
-                <button type="button" className="min-w-0">
-                  <FieldShell
-                    label="Бюджет"
-                    value={`${formatPrice(budget[0])} – ${formatPrice(budget[1])}`}
-                    icon={Wallet}
-                  />
-                </button>
-              </PopoverTrigger>
-              <PopoverContent align="start" className="w-72 p-4">
-                <p className="text-sm font-medium">
+            <Button size="lg" className="h-full min-h-13 rounded-2xl px-7" onClick={goSearch}>
+              <Search className="size-4" />
+              Найти туры
+            </Button>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setShowMore((v) => !v)}
+            className="mt-3 inline-flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <SlidersHorizontal className="size-4" />
+            {showMore ? "Скрыть фильтры" : "Ещё фильтры"}
+          </button>
+
+          {showMore ? (
+            <div className="mt-3 grid gap-5 rounded-2xl border border-border bg-secondary/30 p-4 md:grid-cols-2">
+              <div>
+                <Label className="text-xs uppercase tracking-wide text-muted-foreground">
+                  Бюджет
+                </Label>
+                <p className="mt-2 text-sm font-medium">
                   {formatPrice(budget[0])} – {formatPrice(budget[1])}
                 </p>
                 <Slider
-                  className="mt-4"
+                  className="mt-3"
                   value={budget}
                   min={PRICE_MIN}
                   max={PRICE_MAX}
                   step={50000}
                   onValueChange={(v) => setBudget([v[0] ?? PRICE_MIN, v[1] ?? PRICE_MAX])}
                 />
-                <div className="mt-3 flex justify-between text-xs text-muted-foreground">
-                  <span>300 000 ₸</span>
-                  <span>5 000 000 ₸</span>
+              </div>
+
+              <div>
+                <Label className="text-xs uppercase tracking-wide text-muted-foreground">
+                  Количество звёзд
+                </Label>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {[3, 4, 5].map((s) => (
+                    <Chip
+                      key={s}
+                      active={stars.includes(s)}
+                      onClick={() =>
+                        setStars((prev) =>
+                          prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s],
+                        )
+                      }
+                    >
+                      {s} звезды
+                    </Chip>
+                  ))}
                 </div>
-              </PopoverContent>
-            </Popover>
+              </div>
 
-            <Popover>
-              <PopoverTrigger asChild>
-                <button type="button" className="min-w-0">
-                  <FieldShell label="Питание" value={mealLabelText} icon={UtensilsCrossed} />
-                </button>
-              </PopoverTrigger>
-              <PopoverContent align="start" className="w-64 p-1.5">
-                {mealOptions.map((m) => (
-                  <button
-                    key={m.code}
-                    type="button"
-                    onClick={() =>
-                      setMeals((prev) =>
-                        prev.includes(m.code)
-                          ? prev.filter((x) => x !== m.code)
-                          : [...prev, m.code],
-                      )
-                    }
-                    className={cn(
-                      "flex w-full items-center justify-between gap-2 rounded-xl px-3 py-2 text-left text-sm transition-colors hover:bg-secondary",
-                      meals.includes(m.code) && "font-semibold text-primary",
-                    )}
-                  >
-                    <span className="truncate">
-                      {m.code} · {m.label}
-                    </span>
-                    {meals.includes(m.code) ? <Check className="size-4 shrink-0" /> : null}
-                  </button>
-                ))}
-              </PopoverContent>
-            </Popover>
+              <div>
+                <Label className="text-xs uppercase tracking-wide text-muted-foreground">
+                  Питание
+                </Label>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {mealOptions.map((m) => (
+                    <Chip
+                      key={m.code}
+                      active={meals.includes(m.code)}
+                      onClick={() =>
+                        setMeals((prev) =>
+                          prev.includes(m.code)
+                            ? prev.filter((x) => x !== m.code)
+                            : [...prev, m.code],
+                        )
+                      }
+                    >
+                      {m.label}
+                    </Chip>
+                  ))}
+                </div>
+              </div>
 
-            <Button size="lg" className="h-full min-h-13 rounded-2xl px-7" onClick={goSearch}>
-              <Search className="size-4" />
-              Найти туры
-            </Button>
-          </div>
-          <button
-            type="button"
-            onClick={goSearch}
-            className="mt-3 inline-flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-          >
-            <SlidersHorizontal className="size-4" />
-            Расширенные фильтры
-          </button>
+              <div>
+                <Label className="text-xs uppercase tracking-wide text-muted-foreground">
+                  Что важно
+                </Label>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {extraOptions.map((o) => (
+                    <Chip
+                      key={o.key}
+                      active={amenities.includes(o.key)}
+                      onClick={() =>
+                        setAmenities((prev) =>
+                          prev.includes(o.key) ? prev.filter((x) => x !== o.key) : [...prev, o.key],
+                        )
+                      }
+                    >
+                      {o.label}
+                    </Chip>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ) : null}
         </div>
       ) : (
         <div className="p-3 md:p-4">
-          <div className="relative rounded-2xl border border-ai/25 bg-ai/[0.04] p-3">
+          <p className="text-sm font-semibold">✨ Не хотите заполнять всё вручную?</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Просто расскажите, куда и как хотите поехать.
+          </p>
+
+          <div className="relative mt-3 rounded-2xl border border-ai/25 bg-ai/[0.04] p-3">
             <Textarea
-              placeholder="Например: хочу из Алматы в Дубай на неделю с женой и двумя детьми. Бюджет до 1,5 млн ₸, всё включено, рядом с морем..."
+              placeholder="Например: хотим в Дубай на неделю, двое взрослых и ребёнок, хороший отель у моря, бюджет до 1 500 000 ₸."
               value={aiQuery}
               onChange={(e) => {
                 setAiQuery(e.target.value);
                 setParsedAi(null);
               }}
-              className="min-h-32 resize-none border-0 bg-transparent pr-12 text-base shadow-none focus-visible:ring-0"
+              className="min-h-28 resize-none border-0 bg-transparent text-base shadow-none focus-visible:ring-0"
             />
-            <button
-              type="button"
-              aria-label={recording ? "Идёт запись" : "Голосовой ввод"}
+          </div>
+
+          <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+            <Button
+              variant="outline"
+              size="lg"
+              className={cn("rounded-2xl", recording && "border-ai text-ai")}
               onClick={runVoiceSearch}
-              className={cn(
-                "absolute right-4 top-4 grid size-10 place-items-center rounded-full bg-card text-ai shadow-card transition-colors",
-                recording && "bg-ai text-primary-foreground",
-              )}
             >
               <Mic className="size-4" />
-            </button>
+              {recording ? "Слушаем…" : "Сказать голосом"}
+            </Button>
+            <Button
+              size="lg"
+              className="gradient-ai flex-1 rounded-2xl text-primary-foreground hover:opacity-90"
+              onClick={() => parseAi()}
+            >
+              <Sparkles className="size-4" />
+              Найти для меня
+            </Button>
           </div>
+
           {parsedAi ? (
-            <div className="mt-3 rounded-2xl border border-ai/20 bg-card p-4">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <p className="text-sm font-semibold">Я правильно понял ваш запрос?</p>
-                </div>
-                <Button size="sm" variant="outline" onClick={() => parseAi(aiQuery)}>
-                  Обновить parsing
-                </Button>
-              </div>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {buildAiChips(parsedAi).map((chip) => (
-                  <button
-                    key={`${chip.label}-${chip.value}`}
-                    type="button"
-                    className="rounded-full bg-secondary px-3 py-1.5 text-xs font-medium transition-colors hover:bg-primary-soft hover:text-primary"
-                    onClick={() => {
-                      if (chip.key === "adults") {
-                        patchParsedAi({ adults: Math.min(9, parsedAi.adults + 1) });
-                      } else if (chip.key === "children") {
-                        const childrenNext = Math.min(6, parsedAi.children + 1);
-                        patchParsedAi({
-                          children: childrenNext,
-                          childAges: [...parsedAi.childAges, 7].slice(0, childrenNext),
-                        });
-                      } else if (chip.key === "budgetMax") {
-                        patchParsedAi({
-                          budgetMax: Math.max(PRICE_MIN, parsedAi.budgetMax - 100000),
-                        });
-                      } else if (chip.key === "duration") {
-                        patchParsedAi({ duration: parsedAi.duration + 1 });
-                      } else if (chip.key === "meals") {
-                        patchParsedAi({ meals: parsedAi.meals.includes("AI") ? ["UAI"] : ["AI"] });
-                      }
-                    }}
+            <div className="mt-4 rounded-2xl border border-ai/25 bg-card p-4">
+              <p className="font-display text-base font-semibold">Мы правильно поняли?</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Проверьте детали — их можно изменить.
+              </p>
+
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-muted-foreground">Откуда</Label>
+                  <select
+                    value={parsedAi.origin}
+                    onChange={(e) => patchParsedAi({ origin: e.target.value })}
+                    className="h-10 w-full rounded-xl border border-input bg-background px-3 text-sm"
                   >
-                    <span className="text-muted-foreground">{chip.label}:</span> {chip.value}
-                  </button>
-                ))}
+                    {originCities.map((c) => (
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-muted-foreground">Куда</Label>
+                  <select
+                    value={parsedAi.destination}
+                    onChange={(e) => patchParsedAi({ destination: e.target.value, city: "" })}
+                    className="h-10 w-full rounded-xl border border-input bg-background px-3 text-sm"
+                  >
+                    {destinations.map((d) => (
+                      <option key={d.id} value={d.id}>
+                        {d.flag} {d.city}, {d.country}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-muted-foreground">Даты</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        className="h-10 w-full rounded-xl border border-input bg-background px-3 text-left text-sm"
+                      >
+                        {dateLabel}
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent align="start" className="w-auto p-2">
+                      <Calendar
+                        mode="range"
+                        selected={range}
+                        onSelect={setRange}
+                        numberOfMonths={1}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-muted-foreground">Срок, ночей</Label>
+                  <Input
+                    type="number"
+                    min={1}
+                    max={30}
+                    value={parsedAi.duration}
+                    onChange={(e) =>
+                      patchParsedAi({ duration: Math.max(1, Number(e.target.value) || 1) })
+                    }
+                    className="h-10"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-muted-foreground">Взрослых</Label>
+                  <Input
+                    type="number"
+                    min={1}
+                    max={9}
+                    value={parsedAi.adults}
+                    onChange={(e) =>
+                      patchParsedAi({ adults: Math.max(1, Number(e.target.value) || 1) })
+                    }
+                    className="h-10"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-muted-foreground">Детей</Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    max={6}
+                    value={parsedAi.children}
+                    onChange={(e) => {
+                      const next = Math.max(0, Number(e.target.value) || 0);
+                      patchParsedAi({
+                        children: next,
+                        childAges: Array.from(
+                          { length: next },
+                          (_, i) => parsedAi.childAges[i] ?? 7,
+                        ),
+                      });
+                    }}
+                    className="h-10"
+                  />
+                </div>
+
+                <div className="space-y-1.5 sm:col-span-2">
+                  <Label className="text-xs text-muted-foreground">Бюджет, ₸ (до)</Label>
+                  <Input
+                    type="number"
+                    step={50000}
+                    value={parsedAi.budgetMax}
+                    onChange={(e) =>
+                      patchParsedAi({ budgetMax: Math.max(PRICE_MIN, Number(e.target.value) || 0) })
+                    }
+                    className="h-10"
+                  />
+                </div>
               </div>
+
+              <p className="mt-4 text-xs text-muted-foreground">
+                Умный поиск не придумывает предложения — он ищет только реальные туры, которые есть
+                в TourGo.
+              </p>
+
+              <Button size="lg" className="mt-4 w-full rounded-2xl" onClick={goAiSearch}>
+                <Search className="size-4" />
+                Найти туры
+              </Button>
             </div>
           ) : null}
-          <Button
-            size="lg"
-            className="gradient-ai mt-3 w-full rounded-2xl text-primary-foreground hover:opacity-90"
-            onClick={parsedAi ? goAiSearch : () => parseAi()}
-          >
-            <Sparkles className="size-4" />
-            {parsedAi ? "Показать варианты" : "Найти подходящие туры"}
-          </Button>
         </div>
       )}
     </div>
+  );
+}
+
+function Chip({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "rounded-full border px-3.5 py-2 text-sm font-medium transition-colors",
+        active
+          ? "border-primary bg-primary text-primary-foreground"
+          : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground",
+      )}
+    >
+      {children}
+    </button>
   );
 }

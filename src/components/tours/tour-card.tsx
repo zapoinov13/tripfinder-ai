@@ -2,7 +2,15 @@ import { Link } from "@tanstack/react-router";
 import { Heart, MessageSquare, Plane, Scale, Star, UtensilsCrossed, Users } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { formatPrice, formatNumber, getHotel, getOperator, guestsLabel, nightsLabel, type Tour } from "@/data/demo";
+import {
+  formatPrice,
+  formatNumber,
+  getHotel,
+  getOperator,
+  guestsLabel,
+  nightsLabel,
+  type Tour,
+} from "@/data/demo";
 import { useAuth } from "@/lib/platform/auth";
 import { useTourState } from "@/lib/tour-state";
 import { cn } from "@/lib/utils";
@@ -61,13 +69,13 @@ export function TourCard({
         aria-label={hotel.name}
         className="absolute inset-0 z-10"
       />
-      <div className={cn("relative", layout === "row" ? "aspect-[4/3] sm:aspect-auto" : "aspect-[4/3]")}>
-        <img
-          src={hotel.image}
-          alt={hotel.name}
-          loading="lazy"
-          className="size-full object-cover"
-        />
+      <div
+        className={cn(
+          "relative",
+          layout === "row" ? "aspect-[4/3] sm:aspect-auto" : "aspect-[4/3]",
+        )}
+      >
+        <img src={hotel.image} alt={hotel.name} loading="lazy" className="size-full object-cover" />
         <div className="absolute left-3 top-3 z-20 flex flex-wrap gap-2">
           {bestPrice ? <TagBadge tag="price" /> : null}
           {tour.tags.map((tag) => (

@@ -31,11 +31,7 @@ export type PaymentType =
   | "booking";
 
 export type PromotionType =
-  | "BOOST"
-  | "FEATURED"
-  | "SPONSORED"
-  | "PREMIUM_PLACEMENT"
-  | "HOME_FEATURE";
+  "BOOST" | "FEATURED" | "SPONSORED" | "PREMIUM_PLACEMENT" | "HOME_FEATURE";
 
 export type OperatorPlanCode = "START" | "BUSINESS" | "PRO";
 
@@ -69,6 +65,25 @@ export type Organization = {
   advertisingBalance: number;
   promotionBalance: number;
   createdAt: string;
+  /** Чем занимается компания: туры, отели, экскурсии, трансферы и т. д. */
+  services?: string[];
+  /** Страны, в которых компания работает. */
+  countries?: string[];
+  /** Страны, из которых принимает клиентов. */
+  clientCountries?: string[];
+  languages?: string[];
+  about?: string;
+  logoUrl?: string;
+  coverUrl?: string;
+  /** Ссылки на фотографии компании и туров, которые видит турист. */
+  photos?: string[];
+  videos?: string[];
+  whatsapp?: string;
+  instagram?: string;
+  telegram?: string;
+  /** Названия загруженных документов для проверки компании. */
+  documents?: string[];
+  verificationSubmittedAt?: string;
 };
 
 export type OrganizationMember = {
@@ -240,6 +255,80 @@ export type PromotionOrder = {
   expiresAt: string;
 };
 
+/** «Заявка туриста»: подбор тура или помощь во время поездки. */
+export type TripRequestKind = "tour" | "assistance";
+
+export type TripRequestStatus = "NEW" | "IN_REVIEW" | "OFFERS_RECEIVED" | "CHOSEN" | "CLOSED";
+
+export type TripRequest = {
+  id: string;
+  userId: string;
+  kind: TripRequestKind;
+  fromCity: string;
+  destinationId: string;
+  destinationLabel: string;
+  dateStart: string;
+  dateEnd: string;
+  adults: number;
+  children: number;
+  budget: number;
+  currency: Currency;
+  wishes: string;
+  contactName: string;
+  contactPhone: string;
+  status: TripRequestStatus;
+  chosenOfferId?: string;
+  declinedByOrgIds: string[];
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type RequestOfferStatus = "SENT" | "CHOSEN" | "DECLINED";
+
+export type RequestOffer = {
+  id: string;
+  requestId: string;
+  organizationId: string;
+  tourId?: string;
+  hotelName: string;
+  nights: number;
+  meal: string;
+  flightIncluded: boolean;
+  transferIncluded: boolean;
+  insuranceIncluded: boolean;
+  price: number;
+  currency: Currency;
+  includes: string;
+  comment: string;
+  status: RequestOfferStatus;
+  createdAt: string;
+};
+
+/** Переписка туриста и турфирмы по конкретной заявке. */
+export type RequestMessage = {
+  id: string;
+  requestId: string;
+  organizationId: string;
+  userId: string;
+  authorSide: "TOURIST" | "COMPANY";
+  authorName: string;
+  text: string;
+  readByTourist: boolean;
+  readByCompany: boolean;
+  createdAt: string;
+};
+
+export type CompanyReview = {
+  id: string;
+  organizationId: string;
+  userId: string;
+  authorName: string;
+  requestId?: string;
+  rating: number;
+  text: string;
+  createdAt: string;
+};
+
 export type PlatformConfig = {
   premiumMonthlyPrice: number;
   premiumCurrency: Currency;
@@ -295,6 +384,10 @@ export type PlatformState = {
   apiConnections: OperatorApiConnection[];
   syncLogs: SyncLog[];
   promotions: PromotionOrder[];
+  tripRequests: TripRequest[];
+  requestOffers: RequestOffer[];
+  requestMessages: RequestMessage[];
+  companyReviews: CompanyReview[];
   session: Session | null;
 };
 

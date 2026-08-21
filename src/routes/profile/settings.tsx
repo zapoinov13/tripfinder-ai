@@ -18,8 +18,13 @@ export const Route = createFileRoute("/profile/settings")({
 function SettingsPage() {
   const { allowed } = useRequireAuth(["TOURIST", "PREMIUM_TOURIST"]);
   const { user } = useAuth();
-  const [name, setName] = useState(user?.name ?? "");
-  const [city, setCity] = useState(user?.city ?? "");
+  /** Профиль появляется только после гидрации, поэтому поля читаем из стора, пока их не правили. */
+  const [nameEdit, setNameEdit] = useState<string | null>(null);
+  const [cityEdit, setCityEdit] = useState<string | null>(null);
+  const name = nameEdit ?? user?.name ?? "";
+  const city = cityEdit ?? user?.city ?? "";
+  const setName = setNameEdit;
+  const setCity = setCityEdit;
   if (!allowed || !user) return null;
 
   return (
@@ -38,7 +43,9 @@ function SettingsPage() {
             setState((s) => ({
               ...s,
               users: s.users.map((u) =>
-                u.id === user.id ? { ...u, name: name.trim() || u.name, city: city.trim() || u.city } : u,
+                u.id === user.id
+                  ? { ...u, name: name.trim() || u.name, city: city.trim() || u.city }
+                  : u,
               ),
             }));
             toast.success("Сохранено");

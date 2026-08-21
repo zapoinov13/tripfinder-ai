@@ -46,8 +46,6 @@ function AdminOperatorsPage() {
   const nav = useAdminNav();
   const state = usePlatformStore();
   const [tab, setTab] = useState("all");
-  if (!allowed || !user) return null;
-
   const counts = useMemo(() => {
     const all = state.organizations.length;
     const pending = state.organizations.filter((o) => o.status === "PENDING_APPROVAL").length;
@@ -56,6 +54,8 @@ function AdminOperatorsPage() {
     const suspended = state.organizations.filter((o) => o.status === "SUSPENDED").length;
     return { all, pending, approved, rejected, suspended };
   }, [state.organizations]);
+
+  if (!allowed || !user) return null;
 
   const orgs = state.organizations.filter((o) => {
     if (tab === "all") return true;
@@ -209,7 +209,11 @@ function AdminOperatorsPage() {
                           onConfirm={() => setStatus(o.id, "SUSPENDED")}
                         />
                       ) : (
-                        <Button size="sm" variant="outline" onClick={() => setStatus(o.id, "APPROVED")}>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setStatus(o.id, "APPROVED")}
+                        >
                           Возобновить
                         </Button>
                       )}

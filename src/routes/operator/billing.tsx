@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { toast } from "sonner";
 
 import { DashShell } from "@/components/dash/dash-shell";
-import { operatorNav } from "@/components/dash/nav-items";
+import { useOperatorNav } from "@/components/dash/nav-items";
 import { Button } from "@/components/ui/button";
 import { formatPrice } from "@/data/demo";
 import { mockPaymentProvider } from "@/lib/platform/adapters";
@@ -20,11 +20,12 @@ export const Route = createFileRoute("/operator/billing")({
 function OperatorBillingPage() {
   const { allowed } = useRequireAuth(["OPERATOR_ADMIN"]);
   const { user, organization } = useAuth();
+  const nav = useOperatorNav(organization?.id);
   const state = usePlatformStore();
   if (!allowed || !organization || !user) {
     return (
-      <DashShell brand="Operator" items={operatorNav} title="Тариф" subtitle="Только OPERATOR_ADMIN">
-        <p className="text-sm text-muted-foreground">Недостаточно прав или нет организации.</p>
+      <DashShell brand="TourGo" items={nav} title="Тариф" subtitle="Доступно владельцу компании">
+        <p className="text-sm text-muted-foreground">Недостаточно прав или компания не создана.</p>
       </DashShell>
     );
   }
@@ -79,12 +80,22 @@ function OperatorBillingPage() {
       entityId: organization.id,
       meta: { plan: code },
     });
-    pushNotification(user.id, "subscription_expiry", `Тариф ${code}`, `Активирован план ${plan.name}`);
+    pushNotification(
+      user.id,
+      "subscription_expiry",
+      `Тариф ${code}`,
+      `Активирован план ${plan.name}`,
+    );
     toast.success(`Тариф ${code} активен`);
   };
 
   return (
-    <DashShell brand={organization.name} items={operatorNav} title="Тариф" subtitle={`Текущий: ${organization.planCode}`}>
+    <DashShell
+      brand={organization.name}
+      items={nav}
+      title="Тариф"
+      subtitle={`Текущий: ${organization.planCode}`}
+    >
       <div className="grid gap-5 md:grid-cols-3">
         {state.config.operatorPlans.map((plan) => (
           <div key={plan.code} className="surface-card p-6">

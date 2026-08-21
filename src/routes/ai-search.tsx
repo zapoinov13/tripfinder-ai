@@ -10,8 +10,8 @@ export const Route = createFileRoute("/ai-search")({
     typeof search["q"] === "string" && search["q"].length > 0 ? { q: search["q"] } : {},
   head: () => ({
     meta: [
-      { title: "AI Search — TourGo" },
-      { name: "description", content: "Опишите путешествие обычным текстом или голосом." },
+      { title: "Умный поиск — TourGo" },
+      { name: "description", content: "Опишите поездку обычным текстом или голосом." },
     ],
   }),
   component: AiSearchPage,
@@ -26,13 +26,14 @@ function AiSearchPage() {
         <div className="max-w-3xl">
           <span className="inline-flex items-center gap-2 rounded-full bg-ai/10 px-3 py-1 text-xs font-semibold text-ai">
             <Sparkles className="size-3.5" />
-            AI Travel Concierge
+            Умный поиск
           </span>
           <h1 className="mt-4 font-display text-3xl font-semibold md:text-4xl">
             Расскажите, куда хотите поехать
           </h1>
           <p className="mt-3 text-muted-foreground">
-            TourGo превратит свободный запрос в параметры поиска и покажет подходящие туры.
+            Напишите или скажите голосом — TourGo превратит запрос в параметры поиска и покажет
+            реальные туры. Придуманных предложений в выдаче нет.
           </p>
         </div>
         <div className="mt-8">

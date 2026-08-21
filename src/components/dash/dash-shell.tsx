@@ -98,15 +98,7 @@ export function DashShell({
   );
 }
 
-export function KpiCard({
-  label,
-  value,
-  hint,
-}: {
-  label: string;
-  value: string;
-  hint?: string;
-}) {
+export function KpiCard({ label, value, hint }: { label: string; value: string; hint?: string }) {
   return (
     <div className="surface-card p-5">
       <p className="text-sm text-muted-foreground">{label}</p>

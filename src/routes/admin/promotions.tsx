@@ -40,7 +40,10 @@ function AdminPromotionsPage() {
   const { user } = useAuth();
   const nav = useAdminNav();
   const state = usePlatformStore();
-  const [draft, setDraft] = useState(state.config.promotionPrices);
+  /** Цены из стора приходят после гидрации: пока их не правили, показываем актуальные. */
+  const [edited, setEdited] = useState<typeof state.config.promotionPrices | null>(null);
+  const draft = edited ?? state.config.promotionPrices;
+  const setDraft = setEdited;
   if (!allowed || !user) return null;
 
   return (
@@ -58,9 +61,7 @@ function AdminPromotionsPage() {
               <span className="w-44 text-sm">{promoTypeLabel[key]}</span>
               <Input
                 value={draft[key]}
-                onChange={(e) =>
-                  setDraft({ ...draft, [key]: Number(e.target.value) || 0 })
-                }
+                onChange={(e) => setDraft({ ...draft, [key]: Number(e.target.value) || 0 })}
               />
             </div>
           ))}

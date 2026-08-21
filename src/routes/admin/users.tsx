@@ -49,8 +49,6 @@ function AdminUsersPage() {
   const [q, setQ] = useState("");
   const [role, setRole] = useState("all");
   const [status, setStatus] = useState("all");
-  if (!allowed || !user) return null;
-
   const users = useMemo(() => {
     const query = q.trim().toLowerCase();
     return state.users.filter((u) => {
@@ -65,6 +63,8 @@ function AdminUsersPage() {
       );
     });
   }, [state.users, q, role, status]);
+
+  if (!allowed || !user) return null;
 
   return (
     <DashShell
@@ -181,9 +181,7 @@ function AdminUsersPage() {
                         const next = u.status === "active" ? "suspended" : "active";
                         setState((s) => ({
                           ...s,
-                          users: s.users.map((x) =>
-                            x.id === u.id ? { ...x, status: next } : x,
-                          ),
+                          users: s.users.map((x) => (x.id === u.id ? { ...x, status: next } : x)),
                         }));
                         appendAudit({
                           actorId: user.id,

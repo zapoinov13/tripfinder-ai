@@ -154,7 +154,11 @@ export function buildAiChips(parsed: ParsedTravelQuery): AiChip[] {
 
   return [
     { key: "origin" as const, label: "Откуда", value: parsed.origin },
-    { key: "destination" as const, label: "Куда", value: parsed.city || destination?.country || "" },
+    {
+      key: "destination" as const,
+      label: "Куда",
+      value: parsed.city || destination?.country || "",
+    },
     { key: "adults" as const, label: "Взрослые", value: `${parsed.adults}` },
     { key: "children" as const, label: "Дети", value: `${parsed.children}` },
     ...parsed.childAges.slice(0, parsed.children).map((age, i) => ({

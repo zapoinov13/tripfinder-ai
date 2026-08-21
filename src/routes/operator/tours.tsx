@@ -2,7 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 
 import { DashShell } from "@/components/dash/dash-shell";
-import { operatorNav } from "@/components/dash/nav-items";
+import { useOperatorNav } from "@/components/dash/nav-items";
+import { AddTourDialog } from "@/components/operator/add-tour-dialog";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -28,12 +29,14 @@ function OperatorToursPage() {
   const { allowed } = useRequireAuth(["OPERATOR_ADMIN", "OPERATOR_MANAGER"]);
   const { organization } = useAuth();
   const state = usePlatformStore();
+  const nav = useOperatorNav(organization?.id);
   const [filter, setFilter] = useState("active");
-  if (!allowed || !organization) return null;
+  const [adding, setAdding] = useState(false);
 
-  const plan = state.config.operatorPlans.find((p) => p.code === organization.planCode)!;
-  const orgTours = state.tours.filter((t) => t.operatorOrgId === organization.id);
-  const activeCount = orgTours.filter((t) => t.status === "active").length;
+  const orgTours = useMemo(
+    () => (organization ? state.tours.filter((t) => t.operatorOrgId === organization.id) : []),
+    [state.tours, organization],
+  );
 
   const filtered = useMemo(() => {
     return orgTours.filter((t) => {
@@ -46,10 +49,15 @@ function OperatorToursPage() {
     });
   }, [orgTours, filter]);
 
+  if (!allowed || !organization) return null;
+
+  const plan = state.config.operatorPlans.find((p) => p.code === organization.planCode)!;
+  const activeCount = orgTours.filter((t) => t.status === "active").length;
+
   return (
     <DashShell
       brand={organization.name}
-      items={operatorNav}
+      items={nav}
       title="Мои туры"
       subtitle={`${activeCount} / ${plan.tourLimit + organization.additionalTourLimit} активных`}
       actions={
@@ -57,16 +65,20 @@ function OperatorToursPage() {
           size="sm"
           onClick={() => {
             if (
-              !canCreateTour(activeCount, {
-                code: plan.code,
-                activeTourLimit: plan.tourLimit,
-                features: plan.features,
-              }, organization.additionalTourLimit)
+              !canCreateTour(
+                activeCount,
+                {
+                  code: plan.code,
+                  activeTourLimit: plan.tourLimit,
+                  features: plan.features,
+                },
+                organization.additionalTourLimit,
+              )
             ) {
-              toast.error("Лимит активных предложений достигнут.");
+              toast.error("Достигнут лимит активных туров по вашему тарифу.");
               return;
             }
-            toast.message("Добавление тура: используйте API sync или админ-импорт (MVP).");
+            setAdding(true);
           }}
         >
           + Добавить тур
@@ -74,14 +86,22 @@ function OperatorToursPage() {
       }
     >
       <div className="mb-4 flex flex-wrap gap-2">
-        {["active", "inactive", "hot", "premium", "sponsored"].map((f) => (
+        {(
+          [
+            ["active", "Активные"],
+            ["inactive", "Скрытые"],
+            ["hot", "Горящие"],
+            ["premium", "Premium"],
+            ["sponsored", "Продвигаемые"],
+          ] as const
+        ).map(([value, label]) => (
           <Button
-            key={f}
+            key={value}
             size="sm"
-            variant={filter === f ? "default" : "outline"}
-            onClick={() => setFilter(f)}
+            variant={filter === value ? "default" : "outline"}
+            onClick={() => setFilter(value)}
           >
-            {f}
+            {label}
           </Button>
         ))}
       </div>
@@ -93,8 +113,8 @@ function OperatorToursPage() {
               <TableHead>Тур</TableHead>
               <TableHead>Дата</TableHead>
               <TableHead>Цена</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Views</TableHead>
+              <TableHead>Статус</TableHead>
+              <TableHead>Просмотры</TableHead>
               <TableHead></TableHead>
             </TableRow>
           </TableHeader>
@@ -116,7 +136,7 @@ function OperatorToursPage() {
                   </TableCell>
                   <TableCell className="text-sm">{tour.departure}</TableCell>
                   <TableCell>{formatPrice(tour.price)}</TableCell>
-                  <TableCell>{tour.status}</TableCell>
+                  <TableCell>{tour.status === "active" ? "Активен" : "Скрыт"}</TableCell>
                   <TableCell>{formatNumber(tour.views)}</TableCell>
                   <TableCell>
                     <Button
@@ -137,7 +157,7 @@ function OperatorToursPage() {
                         }));
                       }}
                     >
-                      Toggle
+                      {tour.status === "active" ? "Скрыть" : "Показать"}
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -146,6 +166,8 @@ function OperatorToursPage() {
           </TableBody>
         </Table>
       </div>
+
+      {adding ? <AddTourDialog orgId={organization.id} onClose={() => setAdding(false)} /> : null}
     </DashShell>
   );
 }

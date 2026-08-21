@@ -42,8 +42,6 @@ function AdminBookingsPage() {
   const state = usePlatformStore();
   const [q, setQ] = useState("");
   const [status, setStatus] = useState("all");
-  if (!allowed || !user) return null;
-
   const bookings = useMemo(() => {
     const query = q.trim().toLowerCase();
     return state.bookings.filter((b) => {
@@ -56,6 +54,8 @@ function AdminBookingsPage() {
       );
     });
   }, [state.bookings, q, status]);
+
+  if (!allowed || !user) return null;
 
   const setBookingStatus = (id: string, next: BookingStatus, action: string) => {
     setState((s) => ({

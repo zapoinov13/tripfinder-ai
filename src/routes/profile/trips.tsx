@@ -23,7 +23,12 @@ function TripsPage() {
   const bookings = state.bookings.filter((b) => b.userId === user.id);
 
   return (
-    <DashShell brand="TourGo" items={profileNav} title="Мои поездки" subtitle="Статусы бронирований">
+    <DashShell
+      brand="TourGo"
+      items={profileNav}
+      title="Мои поездки"
+      subtitle="Статусы бронирований"
+    >
       {bookings.length === 0 ? (
         <div className="surface-card p-8 text-center">
           <p className="text-muted-foreground">Пока нет поездок</p>

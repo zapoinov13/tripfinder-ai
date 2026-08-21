@@ -3,6 +3,7 @@ import type {
   AnalyticsEvent,
   AuditLog,
   Booking,
+  CompanyReview,
   Favorite,
   Organization,
   Payment,
@@ -12,7 +13,10 @@ import type {
   PlatformUser,
   PriceAlert,
   PromotionOrder,
+  RequestMessage,
+  RequestOffer,
   Subscription,
+  TripRequest,
 } from "@/lib/platform/types";
 import { getSupabase } from "./client";
 
@@ -53,7 +57,11 @@ function indexById<T extends { id: string }>(rows: T[]) {
 
 type Diff<T> = { added: T[]; updated: T[]; removed: T[] };
 
-function diff<T extends { id: string }>(prev: T[], next: T[], equal: (a: T, b: T) => boolean): Diff<T> {
+function diff<T extends { id: string }>(
+  prev: T[],
+  next: T[],
+  equal: (a: T, b: T) => boolean,
+): Diff<T> {
   const before = indexById(prev);
   const after = indexById(next);
   const added: T[] = [];
@@ -162,6 +170,24 @@ const organizationRow = (o: Organization) => ({
   additional_tour_limit: o.additionalTourLimit,
   advertising_balance: o.advertisingBalance,
   promotion_balance: o.promotionBalance,
+  ...companyProfileRow(o),
+});
+
+const companyProfileRow = (o: Organization) => ({
+  services: o.services ?? [],
+  countries: o.countries ?? [],
+  client_countries: o.clientCountries ?? [],
+  languages: o.languages ?? [],
+  about: o.about ?? "",
+  logo_url: o.logoUrl ?? "",
+  cover_url: o.coverUrl ?? "",
+  photos: o.photos ?? [],
+  videos: o.videos ?? [],
+  whatsapp: o.whatsapp ?? "",
+  instagram: o.instagram ?? "",
+  telegram: o.telegram ?? "",
+  documents: o.documents ?? [],
+  verification_submitted_at: o.verificationSubmittedAt ?? null,
 });
 
 const sameBooking = (a: Booking, b: Booking) =>
@@ -178,7 +204,8 @@ const sameOrg = (a: Organization, b: Organization) =>
   a.planCode === b.planCode &&
   a.advertisingBalance === b.advertisingBalance &&
   a.promotionBalance === b.promotionBalance &&
-  a.additionalTourLimit === b.additionalTourLimit;
+  a.additionalTourLimit === b.additionalTourLimit &&
+  JSON.stringify(companyProfileRow(a)) === JSON.stringify(companyProfileRow(b));
 
 const sameTour = (a: PlatformTour, b: PlatformTour) =>
   a.status === b.status &&
@@ -193,6 +220,86 @@ const sameAlert = (a: PriceAlert, b: PriceAlert) =>
 
 const samePromotion = (a: PromotionOrder, b: PromotionOrder) =>
   a.status === b.status && a.expiresAt === b.expiresAt;
+
+const tripRequestRow = (r: TripRequest) => ({
+  id: r.id,
+  user_id: r.userId,
+  kind: r.kind,
+  from_city: r.fromCity,
+  destination_id: r.destinationId,
+  destination_label: r.destinationLabel,
+  date_start: r.dateStart,
+  date_end: r.dateEnd,
+  adults: r.adults,
+  children: r.children,
+  budget: r.budget,
+  currency: r.currency,
+  wishes: r.wishes,
+  contact_name: r.contactName,
+  contact_phone: r.contactPhone,
+  status: r.status,
+  chosen_offer_id: isUuid(r.chosenOfferId) ? r.chosenOfferId : null,
+  declined_by_org_ids: r.declinedByOrgIds.filter(isUuid),
+  created_at: r.createdAt,
+  updated_at: r.updatedAt,
+});
+
+const offerRow = (o: RequestOffer) => ({
+  id: o.id,
+  request_id: o.requestId,
+  organization_id: o.organizationId,
+  tour_id: o.tourId ?? null,
+  hotel_name: o.hotelName,
+  nights: o.nights,
+  meal: o.meal,
+  flight_included: o.flightIncluded,
+  transfer_included: o.transferIncluded,
+  insurance_included: o.insuranceIncluded,
+  price: o.price,
+  currency: o.currency,
+  includes: o.includes,
+  comment: o.comment,
+  status: o.status,
+  created_at: o.createdAt,
+});
+
+const sameTripRequest = (a: TripRequest, b: TripRequest) =>
+  a.status === b.status &&
+  a.chosenOfferId === b.chosenOfferId &&
+  a.declinedByOrgIds.join(",") === b.declinedByOrgIds.join(",");
+
+const sameOffer = (a: RequestOffer, b: RequestOffer) =>
+  a.status === b.status && a.price === b.price;
+
+const messageRow = (m: RequestMessage) => ({
+  id: m.id,
+  request_id: m.requestId,
+  organization_id: m.organizationId,
+  user_id: m.userId,
+  author_side: m.authorSide,
+  author_name: m.authorName,
+  text: m.text,
+  read_by_tourist: m.readByTourist,
+  read_by_company: m.readByCompany,
+  created_at: m.createdAt,
+});
+
+const sameMessage = (a: RequestMessage, b: RequestMessage) =>
+  a.readByTourist === b.readByTourist && a.readByCompany === b.readByCompany;
+
+const reviewRow = (r: CompanyReview) => ({
+  id: r.id,
+  organization_id: r.organizationId,
+  user_id: r.userId,
+  author_name: r.authorName,
+  request_id: isUuid(r.requestId) ? r.requestId : null,
+  rating: r.rating,
+  text: r.text,
+  created_at: r.createdAt,
+});
+
+const sameReview = (a: CompanyReview, b: CompanyReview) =>
+  a.rating === b.rating && a.text === b.text;
 
 function collectOps(prev: PlatformState, next: PlatformState): Op[] {
   const sb = getSupabase();
@@ -401,6 +508,7 @@ function collectOps(prev: PlatformState, next: PlatformState): Op[] {
           additional_tour_limit: o.additionalTourLimit,
           advertising_balance: o.advertisingBalance,
           promotion_balance: o.promotionBalance,
+          ...companyProfileRow(o),
         })
         .eq("id", o.id);
       report("organizations.update", error);
@@ -430,6 +538,79 @@ function collectOps(prev: PlatformState, next: PlatformState): Op[] {
     ops.push(async () => {
       const { error } = await sb.from("promotions").upsert(promotionRow(p));
       report("promotions.upsert", error);
+    });
+  }
+
+  const requests = diff(prev.tripRequests, next.tripRequests, sameTripRequest);
+  for (const r of requests.added) {
+    if (!isUuid(r.id) || !isOwn(r.userId)) continue;
+    ops.push(async () => {
+      const { error } = await sb.from("trip_requests").insert(tripRequestRow(r));
+      report("trip_requests.insert", error);
+    });
+  }
+  for (const r of requests.updated) {
+    if (!isUuid(r.id)) continue;
+    ops.push(async () => {
+      const { error } = await sb
+        .from("trip_requests")
+        .update({
+          status: r.status,
+          chosen_offer_id: isUuid(r.chosenOfferId) ? r.chosenOfferId : null,
+          declined_by_org_ids: r.declinedByOrgIds.filter(isUuid),
+          updated_at: r.updatedAt,
+        })
+        .eq("id", r.id);
+      report("trip_requests.update", error);
+    });
+  }
+
+  const offers = diff(prev.requestOffers, next.requestOffers, sameOffer);
+  for (const o of offers.added) {
+    if (!isUuid(o.id) || !isUuid(o.requestId) || !isUuid(o.organizationId)) continue;
+    ops.push(async () => {
+      const { error } = await sb.from("request_offers").insert(offerRow(o));
+      report("request_offers.insert", error);
+    });
+  }
+  for (const o of offers.updated) {
+    if (!isUuid(o.id)) continue;
+    ops.push(async () => {
+      const { error } = await sb
+        .from("request_offers")
+        .update({ status: o.status, price: o.price })
+        .eq("id", o.id);
+      report("request_offers.update", error);
+    });
+  }
+
+  const messages = diff(prev.requestMessages, next.requestMessages, sameMessage);
+  for (const m of messages.added) {
+    if (!isUuid(m.id) || !isUuid(m.requestId) || !isUuid(m.organizationId) || !isUuid(m.userId)) {
+      continue;
+    }
+    ops.push(async () => {
+      const { error } = await sb.from("request_messages").insert(messageRow(m));
+      report("request_messages.insert", error);
+    });
+  }
+  for (const m of messages.updated) {
+    if (!isUuid(m.id)) continue;
+    ops.push(async () => {
+      const { error } = await sb
+        .from("request_messages")
+        .update({ read_by_tourist: m.readByTourist, read_by_company: m.readByCompany })
+        .eq("id", m.id);
+      report("request_messages.update", error);
+    });
+  }
+
+  const reviews = diff(prev.companyReviews, next.companyReviews, sameReview);
+  for (const r of reviews.added) {
+    if (!isUuid(r.id) || !isUuid(r.organizationId) || !isOwn(r.userId)) continue;
+    ops.push(async () => {
+      const { error } = await sb.from("company_reviews").insert(reviewRow(r));
+      report("company_reviews.insert", error);
     });
   }
 

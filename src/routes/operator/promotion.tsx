@@ -3,7 +3,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { DashShell } from "@/components/dash/dash-shell";
-import { operatorNav } from "@/components/dash/nav-items";
+import { useOperatorNav } from "@/components/dash/nav-items";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
@@ -37,6 +37,7 @@ const types: PromotionType[] = [
 function OperatorPromotionPage() {
   const { allowed } = useRequireAuth(["OPERATOR_ADMIN", "OPERATOR_MANAGER"]);
   const { user, organization } = useAuth();
+  const nav = useOperatorNav(organization?.id);
   const state = usePlatformStore();
   const [tourId, setTourId] = useState("");
   const [type, setType] = useState<PromotionType>("BOOST");
@@ -115,7 +116,12 @@ function OperatorPromotionPage() {
   };
 
   return (
-    <DashShell brand={organization.name} items={operatorNav} title="Продвижение" subtitle="Boost / Featured / Sponsored">
+    <DashShell
+      brand={organization.name}
+      items={nav}
+      title="Продвижение"
+      subtitle="Boost / Featured / Sponsored"
+    >
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="surface-card space-y-4 p-6">
           <div className="space-y-2">
@@ -174,7 +180,8 @@ function OperatorPromotionPage() {
               .filter((p) => p.organizationId === organization.id && p.status === "ACTIVE")
               .map((p) => (
                 <li key={p.id} className="rounded-xl bg-secondary p-3">
-                  {p.type} · {p.tourOfferId} · до {new Date(p.expiresAt).toLocaleDateString("ru-RU")}
+                  {p.type} · {p.tourOfferId} · до{" "}
+                  {new Date(p.expiresAt).toLocaleDateString("ru-RU")}
                 </li>
               ))}
           </ul>

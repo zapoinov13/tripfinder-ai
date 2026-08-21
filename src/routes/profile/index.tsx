@@ -37,7 +37,10 @@ function ProfilePage() {
     );
   }
 
-  const favTours = favorites.map((id) => getTour(id)).filter(Boolean).slice(0, 3);
+  const favTours = favorites
+    .map((id) => getTour(id))
+    .filter(Boolean)
+    .slice(0, 3);
   const bookings = state.bookings.filter((b) => b.userId === user.id);
   const nextTrip = bookings.find((b) =>
     ["CONFIRMED", "PAID", "AWAITING_PAYMENT", "PENDING"].includes(b.status),

@@ -5,13 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from "@/lib/platform/auth";
 
-const nav = [
+const nav: Array<{ label: string; to: string; exact?: boolean }> = [
+  { label: "Главная", to: "/", exact: true },
   { label: "Туры", to: "/search" },
-  { label: "Найти с AI", to: "/ai-search" },
-  { label: "Направления", to: "/destinations" },
-  { label: "Горящие туры", to: "/hot" },
-  { label: "Premium", to: "/premium" },
-  { label: "Сравнение", to: "/compare" },
+  { label: "Экскурсии", to: "/excursions" },
+  { label: "Помощь в поездке", to: "/assistance" },
 ];
 
 export function SiteHeader() {
@@ -34,13 +32,14 @@ export function SiteHeader() {
           <span className="truncate font-display text-lg font-semibold tracking-tight">TourGo</span>
         </Link>
 
-        <nav className="hidden items-center justify-center gap-1 md:flex">
+        <nav className="hidden items-center justify-center gap-0.5 md:flex">
           {nav.map((item) => (
             <Link
               key={item.to}
               to={item.to}
+              activeOptions={{ exact: item.exact ?? false }}
               activeProps={{ className: "text-foreground bg-secondary" }}
-              className="rounded-full px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+              className="whitespace-nowrap rounded-full px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
             >
               {item.label}
             </Link>
@@ -53,6 +52,9 @@ export function SiteHeader() {
               <Heart className="size-4" />
               Избранное
             </Link>
+          </Button>
+          <Button variant="outline" size="sm" asChild>
+            <Link to="/for-companies">Для турфирм</Link>
           </Button>
           {isAuthenticated ? (
             <>
@@ -92,9 +94,11 @@ export function SiteHeader() {
               <nav className="mt-2 flex flex-col gap-1 px-4">
                 {[
                   ...nav,
-                  { label: "Для туроператоров", to: "/for-operators" },
+                  { label: "Избранное", to: "/favorites" },
+                  { label: "Горящие туры", to: "/hot" },
+                  { label: "Для турфирм", to: "/for-companies" },
                   {
-                    label: isAuthenticated ? user?.name ?? "Профиль" : "Войти",
+                    label: isAuthenticated ? (user?.name ?? "Профиль") : "Войти",
                     to: accountTo,
                   },
                 ].map((item) => (

@@ -15,9 +15,9 @@ import type { PlatformTour } from "./types";
 export type SearchResult = PlatformTour & { finalScore: number };
 
 export class SearchService {
-  search(raw: Partial<SearchParams> | Record<string, unknown>, userId?: string): SearchResult[] {
+  /** Чистая функция: вызывается во время рендера, поэтому стор здесь не меняем. */
+  search(raw: Partial<SearchParams> | Record<string, unknown>): SearchResult[] {
     const params = validateSearchParams(raw as Record<string, unknown>);
-    trackEvent("SEARCH_STARTED", userId, { params });
 
     const weights = getState().config.rankingWeights;
     const source = getActiveTours().filter((t) => {
@@ -59,8 +59,19 @@ export class SearchService {
       finalScore: rankingScore(t as Tour) * averageWeight(weights),
     }));
 
-    trackEvent("SEARCH_COMPLETED", userId, { count: results.length });
     return results;
+  }
+
+  /** Аналитика поиска — отдельным вызовом из эффекта или обработчика. */
+  trackSearch(
+    raw: Partial<SearchParams> | Record<string, unknown>,
+    count: number,
+    userId?: string,
+  ) {
+    trackEvent("SEARCH_COMPLETED", userId, {
+      params: validateSearchParams(raw as Record<string, unknown>),
+      count,
+    });
   }
 
   getById(id: string) {

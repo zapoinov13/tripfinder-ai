@@ -53,7 +53,8 @@ export const validateSearchParams = (search: Record<string, unknown>): SearchPar
   city: typeof search["city"] === "string" ? search["city"] : "",
   dateStart: typeof search["dateStart"] === "string" ? search["dateStart"] : "",
   dateEnd: typeof search["dateEnd"] === "string" ? search["dateEnd"] : "",
-  flexibleDates: search["flexibleDates"] === false || search["flexibleDates"] === "false" ? false : true,
+  flexibleDates:
+    search["flexibleDates"] === false || search["flexibleDates"] === "false" ? false : true,
   adults: Math.max(1, Math.min(9, toNum(search["adults"], 2))),
   children: Math.max(0, Math.min(6, toNum(search["children"], 0))),
   childAges: toArray(search["childAges"]).map((a) => toNum(a, 7)),

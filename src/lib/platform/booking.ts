@@ -19,7 +19,13 @@ export class InAppNotificationService implements NotificationService {
 
   async sendInApp(userId: string, type: NotificationType, payload: unknown) {
     const p = (payload ?? {}) as { title?: string; body?: string };
-    pushNotification(userId, type, p.title ?? type, p.body ?? "", payload as Record<string, unknown>);
+    pushNotification(
+      userId,
+      type,
+      p.title ?? type,
+      p.body ?? "",
+      payload as Record<string, unknown>,
+    );
   }
 
   async sendSMS(phone: string, body: string) {

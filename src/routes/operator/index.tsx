@@ -1,7 +1,7 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 
 import { DashShell, KpiCard } from "@/components/dash/dash-shell";
-import { operatorNav } from "@/components/dash/nav-items";
+import { useOperatorNav } from "@/components/dash/nav-items";
 import { Button } from "@/components/ui/button";
 import { SalesChart } from "@/components/dash/sales-chart";
 import {
@@ -18,7 +18,7 @@ import { usePlatformStore } from "@/lib/platform/hooks";
 
 export const Route = createFileRoute("/operator/")({
   head: () => ({
-    meta: [{ title: "Кабинет туроператора — TourGo" }],
+    meta: [{ title: "Кабинет турфирмы — TourGo" }],
   }),
   component: OperatorDashboard,
 });
@@ -27,6 +27,7 @@ function OperatorDashboard() {
   const { allowed } = useRequireAuth(["OPERATOR_ADMIN", "OPERATOR_MANAGER"]);
   const { user, organization } = useAuth();
   const state = usePlatformStore();
+  const nav = useOperatorNav(organization?.id);
   if (!allowed || !user || !organization) {
     return <div className="grid min-h-screen place-items-center text-sm">Нет доступа…</div>;
   }
@@ -40,34 +41,53 @@ function OperatorDashboard() {
     .reduce((s, b) => s + b.price, 0);
   const api = state.apiConnections.find((c) => c.organizationId === organization.id);
   const plan = state.config.operatorPlans.find((p) => p.code === organization.planCode);
+  const myOffers = state.requestOffers.filter((o) => o.organizationId === organization.id);
+  const answered = new Set(myOffers.map((o) => o.requestId));
+  const openRequests = state.tripRequests.filter(
+    (r) =>
+      r.status !== "CHOSEN" &&
+      r.status !== "CLOSED" &&
+      !r.declinedByOrgIds.includes(organization.id) &&
+      !answered.has(r.id),
+  ).length;
 
   return (
     <DashShell
       brand={organization.name}
-      items={operatorNav}
+      items={nav}
       title={`Добрый день, ${organization.name}`}
-      subtitle={`План ${organization.planCode} · API: ${api?.status ?? "disconnected"} · ${organization.status}`}
+      subtitle={
+        organization.status === "APPROVED"
+          ? `Компания проверена TourGo · тариф ${organization.planCode}`
+          : "Компания проверяется"
+      }
       actions={
         <Button size="sm" asChild>
-          <Link to="/operator/tours">Мои туры</Link>
+          <Link to="/operator/requests">Заявки туристов</Link>
         </Button>
       }
     >
       {organization.status === "PENDING_APPROVAL" ? (
         <div className="mb-6 rounded-2xl bg-premium/15 p-4 text-sm">
-          Компания ожидает одобрения администратора (PENDING_APPROVAL).
+          Компания проверяется. Вы уже можете добавлять туры и отвечать на заявки — знак
+          «Проверенная компания» появится после проверки документов.
         </div>
       ) : null}
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
-        <KpiCard label="Активные туры" value={formatNumber(active.length)} hint={`лимит ${plan?.tourLimit ?? "—"}`} />
-        <KpiCard label="Просмотры" value={formatNumber(views)} />
-        <KpiCard label="Заявки / брони" value={formatNumber(bookings.length)} />
-        <KpiCard label="Revenue" value={formatPrice(revenue)} />
+        <KpiCard label="Новые заявки" value={formatNumber(openRequests)} hint="ждут ответа" />
         <KpiCard
-          label="Conversion"
-          value={`${views ? ((bookings.length / views) * 100).toFixed(2) : 0}%`}
+          label="Мои предложения"
+          value={formatNumber(myOffers.length)}
+          hint={`выбрали вас ${myOffers.filter((o) => o.status === "CHOSEN").length}`}
         />
+        <KpiCard
+          label="Активные туры"
+          value={formatNumber(active.length)}
+          hint={`лимит ${plan?.tourLimit ?? "—"}`}
+        />
+        <KpiCard label="Просмотры" value={formatNumber(views)} />
+        <KpiCard label="Продажи" value={formatPrice(revenue)} />
       </div>
 
       <div className="mt-6 grid gap-6 xl:grid-cols-[1.4fr_minmax(0,1fr)]">
@@ -78,13 +98,24 @@ function OperatorDashboard() {
           </div>
         </div>
         <div className="surface-card p-6">
-          <h2 className="font-display text-lg font-semibold">Статус</h2>
+          <h2 className="font-display text-lg font-semibold">Состояние компании</h2>
           <ul className="mt-6 space-y-3 text-sm">
             <li>Тариф: {organization.planCode}</li>
-            <li>API: {api?.status ?? "нет"}</li>
-            <li>Последний sync: {api?.lastSyncAt ? new Date(api.lastSyncAt).toLocaleString("ru-RU") : "—"}</li>
-            <li>Promo balance: {formatPrice(organization.promotionBalance)}</li>
+            <li>
+              Проверка:{" "}
+              {organization.status === "APPROVED" ? "✓ компания проверена" : "идёт проверка"}
+            </li>
+            <li>
+              Загрузка туров: {api?.status === "connected" ? "настроена" : "не настроена"}
+              {api?.lastSyncAt
+                ? ` · обновлено ${new Date(api.lastSyncAt).toLocaleString("ru-RU")}`
+                : ""}
+            </li>
+            <li>Баланс на продвижение: {formatPrice(organization.promotionBalance)}</li>
           </ul>
+          <Button variant="outline" size="sm" className="mt-5" asChild>
+            <Link to="/operator/requests">Смотреть заявки туристов</Link>
+          </Button>
         </div>
       </div>
 

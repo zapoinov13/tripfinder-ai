@@ -43,7 +43,7 @@ function FavoritesPage() {
             </p>
             <Button className="mt-6" asChild>
               <Link to="/search" search={{} as never}>
-Найти туры
+                Найти туры
               </Link>
             </Button>
           </div>

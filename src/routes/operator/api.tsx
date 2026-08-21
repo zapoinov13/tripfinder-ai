@@ -3,7 +3,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { DashShell } from "@/components/dash/dash-shell";
-import { operatorNav } from "@/components/dash/nav-items";
+import { useOperatorNav } from "@/components/dash/nav-items";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,6 +21,7 @@ export const Route = createFileRoute("/operator/api")({
 function OperatorApiPage() {
   const { allowed } = useRequireAuth(["OPERATOR_ADMIN", "OPERATOR_MANAGER"]);
   const { user, organization } = useAuth();
+  const nav = useOperatorNav(organization?.id);
   const state = usePlatformStore();
   const [endpoint, setEndpoint] = useState("https://mock.tourgo.local/api");
   const [apiKey, setApiKey] = useState("");
@@ -32,8 +33,8 @@ function OperatorApiPage() {
   const logs = state.syncLogs.filter((l) => l.organizationId === organization.id).slice(0, 10);
 
   const saveConnection = () => {
-    const maskedKey = apiKey ? `****${apiKey.slice(-4)}` : conn?.apiKeyMasked ?? "****";
-    const maskedSecret = secret ? `****${secret.slice(-4)}` : conn?.secretMasked ?? "****";
+    const maskedKey = apiKey ? `****${apiKey.slice(-4)}` : (conn?.apiKeyMasked ?? "****");
+    const maskedSecret = secret ? `****${secret.slice(-4)}` : (conn?.secretMasked ?? "****");
     setState((s) => {
       const existing = s.apiConnections.find((c) => c.organizationId === organization.id);
       const next = {
@@ -88,7 +89,7 @@ function OperatorApiPage() {
   return (
     <DashShell
       brand={organization.name}
-      items={operatorNav}
+      items={nav}
       title="API интеграции"
       subtitle="MockOperatorAdapter"
     >

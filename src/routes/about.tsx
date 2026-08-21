@@ -1,53 +1,63 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
 
+import { FaqSection } from "@/components/site/faq-section";
 import { SiteLayout } from "@/components/site/site-layout";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/about")({
   head: () => ({
     meta: [
-      { title: "О платформе и поддержка — TourGo" },
+      { title: "О TourGo и поддержка — TourGo" },
       {
         name: "description",
-        content: "Как работает маркетплейс туров TourGo, ответы на частые вопросы и контакты.",
+        content: "Как работает TourGo, ответы на частые вопросы и контакты поддержки.",
       },
-      { property: "og:title", content: "О платформе — TourGo" },
-      { property: "og:description", content: "Маркетплейс туров от разных операторов." },
+      { property: "og:title", content: "О TourGo" },
+      {
+        property: "og:description",
+        content:
+          "Найдите тур сами или оставьте одну заявку и получите предложения от нескольких проверенных турфирм.",
+      },
     ],
   }),
   component: AboutPage,
 });
 
-const faq = [
-  ["Как формируются цены?", "Цены загружают туроператоры, мы показываем их без наценки."],
-  ["Кто оформляет тур?", "Договор заключается напрямую с туроператором, мы помогаем с подбором."],
-  ["Что даёт Premium?", "Доступ к закрытым ценам, раннему доступу и AI-рекомендациям."],
-  ["Как связаться с поддержкой?", "Напишите на support@tourgo.demo — отвечаем в течение часа."],
-];
-
 function AboutPage() {
   return (
     <SiteLayout>
       <div className="container-page max-w-3xl py-12">
-        <h1 className="font-display text-3xl font-semibold md:text-4xl">О платформе</h1>
-        <p className="mt-4 text-muted-foreground">
-          TourGo — маркетплейс туров. Мы собираем предложения туроператоров в одном месте, чтобы
-          путешественник мог сравнить цены, условия и отели, а не обзванивать агентства.
+        <h1 className="font-display text-3xl font-semibold md:text-4xl">О TourGo</h1>
+        <p className="mt-4 text-lg text-muted-foreground">
+          Найдите тур сами или оставьте одну заявку и получите предложения от нескольких проверенных
+          турфирм.
         </p>
-        <h2 className="mt-12 font-display text-2xl font-semibold">FAQ</h2>
-        <Accordion type="single" collapsible className="mt-4">
-          {faq.map(([q, a]) => (
-            <AccordionItem key={q} value={q as string}>
-              <AccordionTrigger className="text-left">{q}</AccordionTrigger>
-              <AccordionContent className="text-muted-foreground">{a}</AccordionContent>
-            </AccordionItem>
-          ))}
-        </Accordion>
+        <p className="mt-4 text-muted-foreground">
+          А когда вы уже в другой стране — найдите экскурсию или оставьте заявку, если нужна помощь
+          во время поездки. TourGo не продаёт туры: их продают туристические компании, которые вы
+          выбираете сами.
+        </p>
+
+        <div className="mt-8 flex flex-wrap gap-3">
+          <Button asChild>
+            <Link to="/request" search={{}}>
+              Получить предложения от турфирм
+            </Link>
+          </Button>
+          <Button variant="outline" asChild>
+            <Link to="/for-companies">Я туристическая компания</Link>
+          </Button>
+        </div>
+
+        <h2 className="mt-12 font-display text-2xl font-semibold">Частые вопросы</h2>
+        <div className="mt-4">
+          <FaqSection />
+        </div>
+
+        <h2 className="mt-12 font-display text-2xl font-semibold">Поддержка</h2>
+        <p className="mt-3 text-muted-foreground">
+          Напишите на support@tourgo.demo — отвечаем в течение часа.
+        </p>
       </div>
     </SiteLayout>
   );

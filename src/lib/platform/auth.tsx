@@ -149,7 +149,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             email: data.user.email ?? "",
             name: String(data.user.user_metadata?.["name"] ?? "User"),
             city: String(data.user.user_metadata?.["city"] ?? "Алматы"),
-            role: (String(data.user.app_metadata?.["role"] ?? "TOURIST") as Role),
+            role: String(data.user.app_metadata?.["role"] ?? "TOURIST") as Role,
             organization_id: null,
           });
         }
@@ -513,7 +513,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
     }
 
-    pushNotification(current, "premium_deal", "Premium активирован", "Эксклюзивные предложения открыты.");
+    pushNotification(
+      current,
+      "premium_deal",
+      "Premium активирован",
+      "Эксклюзивные предложения открыты.",
+    );
     trackEvent("PREMIUM_PURCHASED", current);
     toast.success("Premium подписка активна");
     return { ok: true };
@@ -574,7 +579,11 @@ export function requireAuthRedirect(roles?: Role[]) {
 export function useRequireAuth(roles?: Role[]) {
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
-  if (typeof window === "undefined") return { allowed: false, user: null };
+  /** До гидрации стор отдаёт сид без сессии — редиректить по нему нельзя. */
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => setHydrated(true), []);
+
+  if (typeof window === "undefined" || !hydrated) return { allowed: false, user: null };
   if (!isAuthenticated || !user) {
     queueMicrotask(() => navigate({ to: "/login" }));
     return { allowed: false, user: null };

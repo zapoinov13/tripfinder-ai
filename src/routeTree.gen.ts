@@ -12,9 +12,13 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as AiSearchRouteImport } from './routes/ai-search'
+import { Route as AssistanceRouteImport } from './routes/assistance'
+import { Route as CompanySignupRouteImport } from './routes/company-signup'
 import { Route as CompareRouteImport } from './routes/compare'
 import { Route as DestinationsRouteImport } from './routes/destinations'
+import { Route as ExcursionsRouteImport } from './routes/excursions'
 import { Route as FavoritesRouteImport } from './routes/favorites'
+import { Route as ForCompaniesRouteImport } from './routes/for-companies'
 import { Route as ForOperatorsRouteImport } from './routes/for-operators'
 import { Route as HotRouteImport } from './routes/hot'
 import { Route as LoginRouteImport } from './routes/login'
@@ -35,6 +39,7 @@ import { Route as AdminPromotionsRouteImport } from './routes/admin/promotions'
 import { Route as AdminSettingsRouteImport } from './routes/admin/settings'
 import { Route as AdminToursRouteImport } from './routes/admin/tours'
 import { Route as AdminUsersRouteImport } from './routes/admin/users'
+import { Route as CompanyCompanyIdRouteImport } from './routes/company.$companyId'
 import { Route as DestinationDestinationIdRouteImport } from './routes/destination.$destinationId'
 import { Route as OperatorIndexRouteImport } from './routes/operator/index'
 import { Route as OperatorAnalyticsRouteImport } from './routes/operator/analytics'
@@ -42,14 +47,22 @@ import { Route as OperatorApiRouteImport } from './routes/operator/api'
 import { Route as OperatorBillingRouteImport } from './routes/operator/billing'
 import { Route as OperatorBookingsRouteImport } from './routes/operator/bookings'
 import { Route as OperatorCompanyRouteImport } from './routes/operator/company'
+import { Route as OperatorMessagesRouteImport } from './routes/operator/messages'
+import { Route as OperatorOffersRouteImport } from './routes/operator/offers'
 import { Route as OperatorPromotionRouteImport } from './routes/operator/promotion'
+import { Route as OperatorRequestsRouteImport } from './routes/operator/requests'
+import { Route as OperatorReviewsRouteImport } from './routes/operator/reviews'
 import { Route as OperatorSettingsRouteImport } from './routes/operator/settings'
 import { Route as OperatorToursRouteImport } from './routes/operator/tours'
 import { Route as ProfileIndexRouteImport } from './routes/profile/index'
 import { Route as ProfileAiRouteImport } from './routes/profile/ai'
 import { Route as ProfileFavoritesRouteImport } from './routes/profile/favorites'
+import { Route as ProfileMessagesRouteImport } from './routes/profile/messages'
+import { Route as ProfileRequestsRouteImport } from './routes/profile/requests'
 import { Route as ProfileSettingsRouteImport } from './routes/profile/settings'
 import { Route as ProfileTripsRouteImport } from './routes/profile/trips'
+import { Route as RequestIndexRouteImport } from './routes/request/index'
+import { Route as RequestRequestIdRouteImport } from './routes/request/$requestId'
 import { Route as TourTourIdRouteImport } from './routes/tour.$tourId'
 
 const IndexRoute = IndexRouteImport.update({
@@ -67,6 +80,16 @@ const AiSearchRoute = AiSearchRouteImport.update({
   path: '/ai-search',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AssistanceRoute = AssistanceRouteImport.update({
+  id: '/assistance',
+  path: '/assistance',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CompanySignupRoute = CompanySignupRouteImport.update({
+  id: '/company-signup',
+  path: '/company-signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CompareRoute = CompareRouteImport.update({
   id: '/compare',
   path: '/compare',
@@ -77,9 +100,19 @@ const DestinationsRoute = DestinationsRouteImport.update({
   path: '/destinations',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ExcursionsRoute = ExcursionsRouteImport.update({
+  id: '/excursions',
+  path: '/excursions',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const FavoritesRoute = FavoritesRouteImport.update({
   id: '/favorites',
   path: '/favorites',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForCompaniesRoute = ForCompaniesRouteImport.update({
+  id: '/for-companies',
+  path: '/for-companies',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ForOperatorsRoute = ForOperatorsRouteImport.update({
@@ -182,6 +215,11 @@ const AdminUsersRoute = AdminUsersRouteImport.update({
   path: '/admin/users',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CompanyCompanyIdRoute = CompanyCompanyIdRouteImport.update({
+  id: '/company/$companyId',
+  path: '/company/$companyId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DestinationDestinationIdRoute =
   DestinationDestinationIdRouteImport.update({
     id: '/destination/$destinationId',
@@ -218,9 +256,29 @@ const OperatorCompanyRoute = OperatorCompanyRouteImport.update({
   path: '/operator/company',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OperatorMessagesRoute = OperatorMessagesRouteImport.update({
+  id: '/operator/messages',
+  path: '/operator/messages',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OperatorOffersRoute = OperatorOffersRouteImport.update({
+  id: '/operator/offers',
+  path: '/operator/offers',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const OperatorPromotionRoute = OperatorPromotionRouteImport.update({
   id: '/operator/promotion',
   path: '/operator/promotion',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OperatorRequestsRoute = OperatorRequestsRouteImport.update({
+  id: '/operator/requests',
+  path: '/operator/requests',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OperatorReviewsRoute = OperatorReviewsRouteImport.update({
+  id: '/operator/reviews',
+  path: '/operator/reviews',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OperatorSettingsRoute = OperatorSettingsRouteImport.update({
@@ -248,6 +306,16 @@ const ProfileFavoritesRoute = ProfileFavoritesRouteImport.update({
   path: '/favorites',
   getParentRoute: () => ProfileRouteRoute,
 } as any)
+const ProfileMessagesRoute = ProfileMessagesRouteImport.update({
+  id: '/messages',
+  path: '/messages',
+  getParentRoute: () => ProfileRouteRoute,
+} as any)
+const ProfileRequestsRoute = ProfileRequestsRouteImport.update({
+  id: '/requests',
+  path: '/requests',
+  getParentRoute: () => ProfileRouteRoute,
+} as any)
 const ProfileSettingsRoute = ProfileSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -257,6 +325,16 @@ const ProfileTripsRoute = ProfileTripsRouteImport.update({
   id: '/trips',
   path: '/trips',
   getParentRoute: () => ProfileRouteRoute,
+} as any)
+const RequestIndexRoute = RequestIndexRouteImport.update({
+  id: '/request/',
+  path: '/request/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RequestRequestIdRoute = RequestRequestIdRouteImport.update({
+  id: '/request/$requestId',
+  path: '/request/$requestId',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const TourTourIdRoute = TourTourIdRouteImport.update({
   id: '/tour/$tourId',
@@ -269,9 +347,13 @@ export interface FileRoutesByFullPath {
   '/profile': typeof ProfileRouteRouteWithChildren
   '/about': typeof AboutRoute
   '/ai-search': typeof AiSearchRoute
+  '/assistance': typeof AssistanceRoute
+  '/company-signup': typeof CompanySignupRoute
   '/compare': typeof CompareRoute
   '/destinations': typeof DestinationsRoute
+  '/excursions': typeof ExcursionsRoute
   '/favorites': typeof FavoritesRoute
+  '/for-companies': typeof ForCompaniesRoute
   '/for-operators': typeof ForOperatorsRoute
   '/hot': typeof HotRoute
   '/login': typeof LoginRoute
@@ -290,31 +372,44 @@ export interface FileRoutesByFullPath {
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/tours': typeof AdminToursRoute
   '/admin/users': typeof AdminUsersRoute
+  '/company/$companyId': typeof CompanyCompanyIdRoute
   '/destination/$destinationId': typeof DestinationDestinationIdRoute
   '/operator/analytics': typeof OperatorAnalyticsRoute
   '/operator/api': typeof OperatorApiRoute
   '/operator/billing': typeof OperatorBillingRoute
   '/operator/bookings': typeof OperatorBookingsRoute
   '/operator/company': typeof OperatorCompanyRoute
+  '/operator/messages': typeof OperatorMessagesRoute
+  '/operator/offers': typeof OperatorOffersRoute
   '/operator/promotion': typeof OperatorPromotionRoute
+  '/operator/requests': typeof OperatorRequestsRoute
+  '/operator/reviews': typeof OperatorReviewsRoute
   '/operator/settings': typeof OperatorSettingsRoute
   '/operator/tours': typeof OperatorToursRoute
   '/profile/ai': typeof ProfileAiRoute
   '/profile/favorites': typeof ProfileFavoritesRoute
+  '/profile/messages': typeof ProfileMessagesRoute
+  '/profile/requests': typeof ProfileRequestsRoute
   '/profile/settings': typeof ProfileSettingsRoute
   '/profile/trips': typeof ProfileTripsRoute
+  '/request/$requestId': typeof RequestRequestIdRoute
   '/tour/$tourId': typeof TourTourIdRoute
   '/admin/': typeof AdminIndexRoute
   '/operator/': typeof OperatorIndexRoute
   '/profile/': typeof ProfileIndexRoute
+  '/request/': typeof RequestIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/ai-search': typeof AiSearchRoute
+  '/assistance': typeof AssistanceRoute
+  '/company-signup': typeof CompanySignupRoute
   '/compare': typeof CompareRoute
   '/destinations': typeof DestinationsRoute
+  '/excursions': typeof ExcursionsRoute
   '/favorites': typeof FavoritesRoute
+  '/for-companies': typeof ForCompaniesRoute
   '/for-operators': typeof ForOperatorsRoute
   '/hot': typeof HotRoute
   '/login': typeof LoginRoute
@@ -333,23 +428,32 @@ export interface FileRoutesByTo {
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/tours': typeof AdminToursRoute
   '/admin/users': typeof AdminUsersRoute
+  '/company/$companyId': typeof CompanyCompanyIdRoute
   '/destination/$destinationId': typeof DestinationDestinationIdRoute
   '/operator/analytics': typeof OperatorAnalyticsRoute
   '/operator/api': typeof OperatorApiRoute
   '/operator/billing': typeof OperatorBillingRoute
   '/operator/bookings': typeof OperatorBookingsRoute
   '/operator/company': typeof OperatorCompanyRoute
+  '/operator/messages': typeof OperatorMessagesRoute
+  '/operator/offers': typeof OperatorOffersRoute
   '/operator/promotion': typeof OperatorPromotionRoute
+  '/operator/requests': typeof OperatorRequestsRoute
+  '/operator/reviews': typeof OperatorReviewsRoute
   '/operator/settings': typeof OperatorSettingsRoute
   '/operator/tours': typeof OperatorToursRoute
   '/profile/ai': typeof ProfileAiRoute
   '/profile/favorites': typeof ProfileFavoritesRoute
+  '/profile/messages': typeof ProfileMessagesRoute
+  '/profile/requests': typeof ProfileRequestsRoute
   '/profile/settings': typeof ProfileSettingsRoute
   '/profile/trips': typeof ProfileTripsRoute
+  '/request/$requestId': typeof RequestRequestIdRoute
   '/tour/$tourId': typeof TourTourIdRoute
   '/admin': typeof AdminIndexRoute
   '/operator': typeof OperatorIndexRoute
   '/profile': typeof ProfileIndexRoute
+  '/request': typeof RequestIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -357,9 +461,13 @@ export interface FileRoutesById {
   '/profile': typeof ProfileRouteRouteWithChildren
   '/about': typeof AboutRoute
   '/ai-search': typeof AiSearchRoute
+  '/assistance': typeof AssistanceRoute
+  '/company-signup': typeof CompanySignupRoute
   '/compare': typeof CompareRoute
   '/destinations': typeof DestinationsRoute
+  '/excursions': typeof ExcursionsRoute
   '/favorites': typeof FavoritesRoute
+  '/for-companies': typeof ForCompaniesRoute
   '/for-operators': typeof ForOperatorsRoute
   '/hot': typeof HotRoute
   '/login': typeof LoginRoute
@@ -378,23 +486,32 @@ export interface FileRoutesById {
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/tours': typeof AdminToursRoute
   '/admin/users': typeof AdminUsersRoute
+  '/company/$companyId': typeof CompanyCompanyIdRoute
   '/destination/$destinationId': typeof DestinationDestinationIdRoute
   '/operator/analytics': typeof OperatorAnalyticsRoute
   '/operator/api': typeof OperatorApiRoute
   '/operator/billing': typeof OperatorBillingRoute
   '/operator/bookings': typeof OperatorBookingsRoute
   '/operator/company': typeof OperatorCompanyRoute
+  '/operator/messages': typeof OperatorMessagesRoute
+  '/operator/offers': typeof OperatorOffersRoute
   '/operator/promotion': typeof OperatorPromotionRoute
+  '/operator/requests': typeof OperatorRequestsRoute
+  '/operator/reviews': typeof OperatorReviewsRoute
   '/operator/settings': typeof OperatorSettingsRoute
   '/operator/tours': typeof OperatorToursRoute
   '/profile/ai': typeof ProfileAiRoute
   '/profile/favorites': typeof ProfileFavoritesRoute
+  '/profile/messages': typeof ProfileMessagesRoute
+  '/profile/requests': typeof ProfileRequestsRoute
   '/profile/settings': typeof ProfileSettingsRoute
   '/profile/trips': typeof ProfileTripsRoute
+  '/request/$requestId': typeof RequestRequestIdRoute
   '/tour/$tourId': typeof TourTourIdRoute
   '/admin/': typeof AdminIndexRoute
   '/operator/': typeof OperatorIndexRoute
   '/profile/': typeof ProfileIndexRoute
+  '/request/': typeof RequestIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -403,9 +520,13 @@ export interface FileRouteTypes {
     | '/profile'
     | '/about'
     | '/ai-search'
+    | '/assistance'
+    | '/company-signup'
     | '/compare'
     | '/destinations'
+    | '/excursions'
     | '/favorites'
+    | '/for-companies'
     | '/for-operators'
     | '/hot'
     | '/login'
@@ -424,31 +545,44 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/tours'
     | '/admin/users'
+    | '/company/$companyId'
     | '/destination/$destinationId'
     | '/operator/analytics'
     | '/operator/api'
     | '/operator/billing'
     | '/operator/bookings'
     | '/operator/company'
+    | '/operator/messages'
+    | '/operator/offers'
     | '/operator/promotion'
+    | '/operator/requests'
+    | '/operator/reviews'
     | '/operator/settings'
     | '/operator/tours'
     | '/profile/ai'
     | '/profile/favorites'
+    | '/profile/messages'
+    | '/profile/requests'
     | '/profile/settings'
     | '/profile/trips'
+    | '/request/$requestId'
     | '/tour/$tourId'
     | '/admin/'
     | '/operator/'
     | '/profile/'
+    | '/request/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/about'
     | '/ai-search'
+    | '/assistance'
+    | '/company-signup'
     | '/compare'
     | '/destinations'
+    | '/excursions'
     | '/favorites'
+    | '/for-companies'
     | '/for-operators'
     | '/hot'
     | '/login'
@@ -467,32 +601,45 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/tours'
     | '/admin/users'
+    | '/company/$companyId'
     | '/destination/$destinationId'
     | '/operator/analytics'
     | '/operator/api'
     | '/operator/billing'
     | '/operator/bookings'
     | '/operator/company'
+    | '/operator/messages'
+    | '/operator/offers'
     | '/operator/promotion'
+    | '/operator/requests'
+    | '/operator/reviews'
     | '/operator/settings'
     | '/operator/tours'
     | '/profile/ai'
     | '/profile/favorites'
+    | '/profile/messages'
+    | '/profile/requests'
     | '/profile/settings'
     | '/profile/trips'
+    | '/request/$requestId'
     | '/tour/$tourId'
     | '/admin'
     | '/operator'
     | '/profile'
+    | '/request'
   id:
     | '__root__'
     | '/'
     | '/profile'
     | '/about'
     | '/ai-search'
+    | '/assistance'
+    | '/company-signup'
     | '/compare'
     | '/destinations'
+    | '/excursions'
     | '/favorites'
+    | '/for-companies'
     | '/for-operators'
     | '/hot'
     | '/login'
@@ -511,23 +658,32 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/tours'
     | '/admin/users'
+    | '/company/$companyId'
     | '/destination/$destinationId'
     | '/operator/analytics'
     | '/operator/api'
     | '/operator/billing'
     | '/operator/bookings'
     | '/operator/company'
+    | '/operator/messages'
+    | '/operator/offers'
     | '/operator/promotion'
+    | '/operator/requests'
+    | '/operator/reviews'
     | '/operator/settings'
     | '/operator/tours'
     | '/profile/ai'
     | '/profile/favorites'
+    | '/profile/messages'
+    | '/profile/requests'
     | '/profile/settings'
     | '/profile/trips'
+    | '/request/$requestId'
     | '/tour/$tourId'
     | '/admin/'
     | '/operator/'
     | '/profile/'
+    | '/request/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -535,9 +691,13 @@ export interface RootRouteChildren {
   ProfileRouteRoute: typeof ProfileRouteRouteWithChildren
   AboutRoute: typeof AboutRoute
   AiSearchRoute: typeof AiSearchRoute
+  AssistanceRoute: typeof AssistanceRoute
+  CompanySignupRoute: typeof CompanySignupRoute
   CompareRoute: typeof CompareRoute
   DestinationsRoute: typeof DestinationsRoute
+  ExcursionsRoute: typeof ExcursionsRoute
   FavoritesRoute: typeof FavoritesRoute
+  ForCompaniesRoute: typeof ForCompaniesRoute
   ForOperatorsRoute: typeof ForOperatorsRoute
   HotRoute: typeof HotRoute
   LoginRoute: typeof LoginRoute
@@ -556,18 +716,25 @@ export interface RootRouteChildren {
   AdminSettingsRoute: typeof AdminSettingsRoute
   AdminToursRoute: typeof AdminToursRoute
   AdminUsersRoute: typeof AdminUsersRoute
+  CompanyCompanyIdRoute: typeof CompanyCompanyIdRoute
   DestinationDestinationIdRoute: typeof DestinationDestinationIdRoute
   OperatorAnalyticsRoute: typeof OperatorAnalyticsRoute
   OperatorApiRoute: typeof OperatorApiRoute
   OperatorBillingRoute: typeof OperatorBillingRoute
   OperatorBookingsRoute: typeof OperatorBookingsRoute
   OperatorCompanyRoute: typeof OperatorCompanyRoute
+  OperatorMessagesRoute: typeof OperatorMessagesRoute
+  OperatorOffersRoute: typeof OperatorOffersRoute
   OperatorPromotionRoute: typeof OperatorPromotionRoute
+  OperatorRequestsRoute: typeof OperatorRequestsRoute
+  OperatorReviewsRoute: typeof OperatorReviewsRoute
   OperatorSettingsRoute: typeof OperatorSettingsRoute
   OperatorToursRoute: typeof OperatorToursRoute
+  RequestRequestIdRoute: typeof RequestRequestIdRoute
   TourTourIdRoute: typeof TourTourIdRoute
   AdminIndexRoute: typeof AdminIndexRoute
   OperatorIndexRoute: typeof OperatorIndexRoute
+  RequestIndexRoute: typeof RequestIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -593,6 +760,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AiSearchRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/assistance': {
+      id: '/assistance'
+      path: '/assistance'
+      fullPath: '/assistance'
+      preLoaderRoute: typeof AssistanceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/company-signup': {
+      id: '/company-signup'
+      path: '/company-signup'
+      fullPath: '/company-signup'
+      preLoaderRoute: typeof CompanySignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/compare': {
       id: '/compare'
       path: '/compare'
@@ -607,11 +788,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DestinationsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/excursions': {
+      id: '/excursions'
+      path: '/excursions'
+      fullPath: '/excursions'
+      preLoaderRoute: typeof ExcursionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/favorites': {
       id: '/favorites'
       path: '/favorites'
       fullPath: '/favorites'
       preLoaderRoute: typeof FavoritesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/for-companies': {
+      id: '/for-companies'
+      path: '/for-companies'
+      fullPath: '/for-companies'
+      preLoaderRoute: typeof ForCompaniesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/for-operators': {
@@ -754,6 +949,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminUsersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/company/$companyId': {
+      id: '/company/$companyId'
+      path: '/company/$companyId'
+      fullPath: '/company/$companyId'
+      preLoaderRoute: typeof CompanyCompanyIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/destination/$destinationId': {
       id: '/destination/$destinationId'
       path: '/destination/$destinationId'
@@ -803,11 +1005,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OperatorCompanyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/operator/messages': {
+      id: '/operator/messages'
+      path: '/operator/messages'
+      fullPath: '/operator/messages'
+      preLoaderRoute: typeof OperatorMessagesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/operator/offers': {
+      id: '/operator/offers'
+      path: '/operator/offers'
+      fullPath: '/operator/offers'
+      preLoaderRoute: typeof OperatorOffersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/operator/promotion': {
       id: '/operator/promotion'
       path: '/operator/promotion'
       fullPath: '/operator/promotion'
       preLoaderRoute: typeof OperatorPromotionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/operator/requests': {
+      id: '/operator/requests'
+      path: '/operator/requests'
+      fullPath: '/operator/requests'
+      preLoaderRoute: typeof OperatorRequestsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/operator/reviews': {
+      id: '/operator/reviews'
+      path: '/operator/reviews'
+      fullPath: '/operator/reviews'
+      preLoaderRoute: typeof OperatorReviewsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/operator/settings': {
@@ -845,6 +1075,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProfileFavoritesRouteImport
       parentRoute: typeof ProfileRouteRoute
     }
+    '/profile/messages': {
+      id: '/profile/messages'
+      path: '/messages'
+      fullPath: '/profile/messages'
+      preLoaderRoute: typeof ProfileMessagesRouteImport
+      parentRoute: typeof ProfileRouteRoute
+    }
+    '/profile/requests': {
+      id: '/profile/requests'
+      path: '/requests'
+      fullPath: '/profile/requests'
+      preLoaderRoute: typeof ProfileRequestsRouteImport
+      parentRoute: typeof ProfileRouteRoute
+    }
     '/profile/settings': {
       id: '/profile/settings'
       path: '/settings'
@@ -859,6 +1103,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProfileTripsRouteImport
       parentRoute: typeof ProfileRouteRoute
     }
+    '/request/': {
+      id: '/request/'
+      path: '/request'
+      fullPath: '/request/'
+      preLoaderRoute: typeof RequestIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/request/$requestId': {
+      id: '/request/$requestId'
+      path: '/request/$requestId'
+      fullPath: '/request/$requestId'
+      preLoaderRoute: typeof RequestRequestIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/tour/$tourId': {
       id: '/tour/$tourId'
       path: '/tour/$tourId'
@@ -872,6 +1130,8 @@ declare module '@tanstack/react-router' {
 interface ProfileRouteRouteChildren {
   ProfileAiRoute: typeof ProfileAiRoute
   ProfileFavoritesRoute: typeof ProfileFavoritesRoute
+  ProfileMessagesRoute: typeof ProfileMessagesRoute
+  ProfileRequestsRoute: typeof ProfileRequestsRoute
   ProfileSettingsRoute: typeof ProfileSettingsRoute
   ProfileTripsRoute: typeof ProfileTripsRoute
   ProfileIndexRoute: typeof ProfileIndexRoute
@@ -880,6 +1140,8 @@ interface ProfileRouteRouteChildren {
 const ProfileRouteRouteChildren: ProfileRouteRouteChildren = {
   ProfileAiRoute: ProfileAiRoute,
   ProfileFavoritesRoute: ProfileFavoritesRoute,
+  ProfileMessagesRoute: ProfileMessagesRoute,
+  ProfileRequestsRoute: ProfileRequestsRoute,
   ProfileSettingsRoute: ProfileSettingsRoute,
   ProfileTripsRoute: ProfileTripsRoute,
   ProfileIndexRoute: ProfileIndexRoute,
@@ -894,9 +1156,13 @@ const rootRouteChildren: RootRouteChildren = {
   ProfileRouteRoute: ProfileRouteRouteWithChildren,
   AboutRoute: AboutRoute,
   AiSearchRoute: AiSearchRoute,
+  AssistanceRoute: AssistanceRoute,
+  CompanySignupRoute: CompanySignupRoute,
   CompareRoute: CompareRoute,
   DestinationsRoute: DestinationsRoute,
+  ExcursionsRoute: ExcursionsRoute,
   FavoritesRoute: FavoritesRoute,
+  ForCompaniesRoute: ForCompaniesRoute,
   ForOperatorsRoute: ForOperatorsRoute,
   HotRoute: HotRoute,
   LoginRoute: LoginRoute,
@@ -915,18 +1181,25 @@ const rootRouteChildren: RootRouteChildren = {
   AdminSettingsRoute: AdminSettingsRoute,
   AdminToursRoute: AdminToursRoute,
   AdminUsersRoute: AdminUsersRoute,
+  CompanyCompanyIdRoute: CompanyCompanyIdRoute,
   DestinationDestinationIdRoute: DestinationDestinationIdRoute,
   OperatorAnalyticsRoute: OperatorAnalyticsRoute,
   OperatorApiRoute: OperatorApiRoute,
   OperatorBillingRoute: OperatorBillingRoute,
   OperatorBookingsRoute: OperatorBookingsRoute,
   OperatorCompanyRoute: OperatorCompanyRoute,
+  OperatorMessagesRoute: OperatorMessagesRoute,
+  OperatorOffersRoute: OperatorOffersRoute,
   OperatorPromotionRoute: OperatorPromotionRoute,
+  OperatorRequestsRoute: OperatorRequestsRoute,
+  OperatorReviewsRoute: OperatorReviewsRoute,
   OperatorSettingsRoute: OperatorSettingsRoute,
   OperatorToursRoute: OperatorToursRoute,
+  RequestRequestIdRoute: RequestRequestIdRoute,
   TourTourIdRoute: TourTourIdRoute,
   AdminIndexRoute: AdminIndexRoute,
   OperatorIndexRoute: OperatorIndexRoute,
+  RequestIndexRoute: RequestIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

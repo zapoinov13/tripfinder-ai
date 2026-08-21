@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { DashShell } from "@/components/dash/dash-shell";
-import { operatorNav } from "@/components/dash/nav-items";
+import { useOperatorNav } from "@/components/dash/nav-items";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -24,13 +24,19 @@ export const Route = createFileRoute("/operator/bookings")({
 function OperatorBookingsPage() {
   const { allowed } = useRequireAuth(["OPERATOR_ADMIN", "OPERATOR_MANAGER"]);
   const { user, organization } = useAuth();
+  const nav = useOperatorNav(organization?.id);
   const state = usePlatformStore();
   if (!allowed || !organization || !user) return null;
 
   const bookings = state.bookings.filter((b) => b.organizationId === organization.id);
 
   return (
-    <DashShell brand={organization.name} items={operatorNav} title="Бронирования" subtitle="Заявки клиентов">
+    <DashShell
+      brand={organization.name}
+      items={nav}
+      title="Бронирования"
+      subtitle="Заявки клиентов"
+    >
       <div className="surface-card overflow-x-auto">
         <Table>
           <TableHeader>
