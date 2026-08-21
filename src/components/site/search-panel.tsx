@@ -166,9 +166,11 @@ function Counter({
 export function SearchPanel({
   defaultTab = "classic",
   initialAiQuery = "",
+  tone = "default",
 }: {
   defaultTab?: "classic" | "ai";
   initialAiQuery?: string;
+  tone?: "default" | "hero";
 }) {
   const [tab, setTab] = useState<"classic" | "ai">(defaultTab);
   const [from, setFrom] = useState("Алматы");
@@ -259,7 +261,14 @@ export function SearchPanel({
   };
 
   return (
-    <div className="surface-card overflow-hidden p-2 shadow-lift">
+    <div
+      className={cn(
+        "overflow-hidden p-2 shadow-lift",
+        tone === "hero"
+          ? "rounded-[1.75rem] border border-primary-foreground/20 bg-primary-foreground/90 backdrop-blur-xl"
+          : "surface-card",
+      )}
+    >
       <div className="flex gap-1 rounded-2xl bg-secondary/70 p-1">
         <button
           type="button"

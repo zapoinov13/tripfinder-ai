@@ -1,9 +1,11 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useRouterState } from "@tanstack/react-router";
 import { Heart, LogOut, Menu, Plane, User } from "lucide-react";
+import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from "@/lib/platform/auth";
+import { cn } from "@/lib/utils";
 
 const nav: Array<{ label: string; to: string; exact?: boolean }> = [
   { label: "Главная", to: "/", exact: true },
@@ -14,6 +16,22 @@ const nav: Array<{ label: string; to: string; exact?: boolean }> = [
 
 export function SiteHeader() {
   const { user, isAuthenticated, logout } = useAuth();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const isHome = pathname === "/";
+  const [scrolled, setScrolled] = useState(false);
+  const overlay = isHome && !scrolled;
+
+  useEffect(() => {
+    if (!isHome) {
+      setScrolled(false);
+      return;
+    }
+    const onScroll = () => setScrolled(window.scrollY > 16);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [isHome]);
+
   const accountTo = !isAuthenticated
     ? "/login"
     : user?.role.startsWith("PLATFORM")
@@ -23,13 +41,27 @@ export function SiteHeader() {
         : "/profile";
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border/70 bg-background/85 backdrop-blur-xl">
+    <header
+      className={cn(
+        "sticky top-0 z-40 transition-colors duration-300",
+        overlay
+          ? "border-b border-transparent bg-transparent"
+          : "border-b border-border/70 bg-background/85 backdrop-blur-xl",
+      )}
+    >
       <div className="container-page grid h-16 grid-cols-[minmax(0,1fr)_auto] items-center gap-4 md:h-[72px] md:grid-cols-[auto_1fr_auto]">
         <Link to="/" className="flex min-w-0 items-center gap-2">
           <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground">
             <Plane className="size-4" />
           </span>
-          <span className="truncate font-display text-lg font-semibold tracking-tight">TourGo</span>
+          <span
+            className={cn(
+              "truncate font-display text-lg font-semibold tracking-tight",
+              overlay && "text-primary-foreground",
+            )}
+          >
+            TourGo
+          </span>
         </Link>
 
         <nav className="hidden items-center justify-center gap-0.5 md:flex">
@@ -38,8 +70,17 @@ export function SiteHeader() {
               key={item.to}
               to={item.to}
               activeOptions={{ exact: item.exact ?? false }}
-              activeProps={{ className: "text-foreground bg-secondary" }}
-              className="whitespace-nowrap rounded-full px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+              activeProps={{
+                className: overlay
+                  ? "bg-primary-foreground/15 text-primary-foreground"
+                  : "bg-secondary text-foreground",
+              }}
+              className={cn(
+                "whitespace-nowrap rounded-full px-3 py-2 text-sm font-medium transition-colors",
+                overlay
+                  ? "text-primary-foreground/80 hover:bg-primary-foreground/12 hover:text-primary-foreground"
+                  : "text-muted-foreground hover:bg-secondary hover:text-foreground",
+              )}
             >
               {item.label}
             </Link>
@@ -47,24 +88,60 @@ export function SiteHeader() {
         </nav>
 
         <div className="hidden items-center gap-2 md:flex">
-          <Button variant="ghost" size="sm" asChild>
+          <Button
+            variant="ghost"
+            size="sm"
+            className={
+              overlay
+                ? "text-primary-foreground hover:bg-primary-foreground/12 hover:text-primary-foreground"
+                : undefined
+            }
+            asChild
+          >
             <Link to="/favorites">
               <Heart className="size-4" />
               Избранное
             </Link>
           </Button>
-          <Button variant="outline" size="sm" asChild>
+          <Button
+            variant="outline"
+            size="sm"
+            className={
+              overlay
+                ? "border-primary-foreground/35 bg-transparent text-primary-foreground hover:bg-primary-foreground/12 hover:text-primary-foreground"
+                : undefined
+            }
+            asChild
+          >
             <Link to="/for-companies">Для турфирм</Link>
           </Button>
           {isAuthenticated ? (
             <>
-              <Button variant="secondary" size="sm" asChild>
+              <Button
+                variant="secondary"
+                size="sm"
+                className={
+                  overlay
+                    ? "bg-primary-foreground/15 text-primary-foreground hover:bg-primary-foreground/25"
+                    : undefined
+                }
+                asChild
+              >
                 <Link to={accountTo}>
                   <User className="size-4" />
                   {user?.name.split(" ")[0]}
                 </Link>
               </Button>
-              <Button variant="ghost" size="sm" onClick={logout}>
+              <Button
+                variant="ghost"
+                size="sm"
+                className={
+                  overlay
+                    ? "text-primary-foreground hover:bg-primary-foreground/12 hover:text-primary-foreground"
+                    : undefined
+                }
+                onClick={logout}
+              >
                 <LogOut className="size-4" />
               </Button>
             </>
@@ -76,14 +153,32 @@ export function SiteHeader() {
         </div>
 
         <div className="flex items-center justify-end gap-1 md:hidden">
-          <Button variant="ghost" size="icon" asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            className={
+              overlay
+                ? "text-primary-foreground hover:bg-primary-foreground/12 hover:text-primary-foreground"
+                : undefined
+            }
+            asChild
+          >
             <Link to={accountTo} aria-label="Аккаунт">
               <User className="size-5" />
             </Link>
           </Button>
           <Sheet>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" aria-label="Меню">
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="Меню"
+                className={
+                  overlay
+                    ? "text-primary-foreground hover:bg-primary-foreground/12 hover:text-primary-foreground"
+                    : undefined
+                }
+              >
                 <Menu className="size-5" />
               </Button>
             </SheetTrigger>

@@ -17,7 +17,7 @@ import { CompareTable } from "@/components/site/compare-table";
 import { SiteLayout } from "@/components/site/site-layout";
 import { TourCard } from "@/components/tours/tour-card";
 import { Button } from "@/components/ui/button";
-import { destinations, heroImage, hotTours } from "@/data/demo";
+import { destinations, formatPrice, heroImage, hotTours } from "@/data/demo";
 import { usePlatformStore } from "@/lib/platform/hooks";
 import { cn } from "@/lib/utils";
 
@@ -79,88 +79,167 @@ function Index() {
             alt=""
             width={1920}
             height={1080}
-            className="animate-soft-zoom h-full min-h-[92vh] w-full object-cover md:min-h-[86vh]"
+            className="animate-soft-zoom h-full min-h-[92vh] w-full object-cover md:min-h-[90vh]"
           />
-          <div className="absolute inset-0 bg-[linear-gradient(180deg,oklch(0.16_0.02_250/0.45)_0%,oklch(0.16_0.02_250/0.55)_45%,oklch(0.16_0.02_250/0.82)_100%)]" />
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,oklch(0.16_0.02_250/0.28)_0%,oklch(0.16_0.02_250/0.22)_28%,oklch(0.16_0.02_250/0.78)_100%)]" />
         </div>
 
-        <div className="container-page relative flex min-h-[92vh] flex-col justify-end pb-8 pt-24 md:min-h-[86vh] md:pb-12 md:pt-28">
+        <div className="container-page relative flex min-h-[92vh] flex-col justify-end pb-8 pt-6 md:min-h-[90vh] md:pb-14 md:pt-8">
           <div className="animate-fade-up max-w-3xl">
-            <p className="font-display text-sm font-semibold tracking-[0.22em] text-primary-foreground/90 uppercase">
-              Маркетплейс туров
+            <p className="font-display text-sm font-semibold tracking-[0.22em] text-primary-foreground/80 uppercase">
+              TourGo
             </p>
-            <h1 className="mt-4 font-display text-4xl font-semibold tracking-tight text-primary-foreground md:text-6xl md:leading-[1.05]">
+            <h1 className="mt-3 font-display text-4xl font-semibold tracking-tight text-primary-foreground md:text-6xl md:leading-[1.05]">
               Куда хотите поехать?
             </h1>
-            <p className="mt-4 max-w-xl text-base text-primary-foreground/85 md:text-lg">
-              Не один чат и не одно агентство. Несколько компаний показывают цены рядом. Вы
-              выбираете.
+            <p className="mt-3 max-w-lg text-base text-primary-foreground/85 md:text-lg">
+              Несколько компаний. Цены рядом. Вы выбираете.
             </p>
+            <div className="mt-5 flex flex-wrap gap-2">
+              {["Проверенные компании", "Сравнение рядом", "Платите фирме"].map((item) => (
+                <span
+                  key={item}
+                  className="rounded-full border border-primary-foreground/20 bg-primary-foreground/10 px-3 py-1 text-xs font-medium text-primary-foreground/90 backdrop-blur-md"
+                >
+                  {item}
+                </span>
+              ))}
+            </div>
           </div>
 
-          <div
-            id="search"
-            className="animate-fade-up animation-delay-150 mt-8 scroll-mt-28 md:mt-10"
-          >
-            <SearchPanel />
-          </div>
-
-          <div className="animate-fade-up animation-delay-300 mt-4 flex gap-2 overflow-x-auto pb-1 no-scrollbar">
+          <div className="animate-fade-up animation-delay-150 mt-6 flex gap-2.5 overflow-x-auto pb-1 no-scrollbar md:mt-8">
             {destinations.map((dest) => (
               <Link
                 key={dest.id}
                 to="/destination/$destinationId"
                 params={{ destinationId: dest.id }}
-                className="flex shrink-0 items-center gap-2 rounded-full border border-primary-foreground/20 bg-primary-foreground/10 py-1 pr-3.5 pl-1 text-sm text-primary-foreground backdrop-blur-md transition-colors hover:bg-primary-foreground/20"
+                className="group relative h-24 w-[7.5rem] shrink-0 overflow-hidden rounded-2xl md:h-28 md:w-36"
               >
-                <img src={dest.image} alt="" className="size-8 rounded-full object-cover" />
-                {dest.flag} {dest.country}
+                <img
+                  src={dest.image}
+                  alt=""
+                  className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/15 to-transparent" />
+                <span className="absolute inset-x-2 bottom-2 font-display text-sm font-semibold text-primary-foreground">
+                  {dest.flag} {dest.country}
+                </span>
               </Link>
             ))}
+          </div>
+
+          <div
+            id="search"
+            className="animate-fade-up animation-delay-300 mt-5 scroll-mt-28 md:mt-7"
+          >
+            <SearchPanel tone="hero" />
+            <p className="mt-3 text-sm text-primary-foreground/75">
+              Не хотите заполнять форму?{" "}
+              <Link to="/request" search={{}} className="font-semibold text-primary-foreground underline-offset-4 hover:underline">
+                Получите предложения от компаний
+              </Link>
+            </p>
           </div>
         </div>
       </section>
 
-      {/* Ключевая функция: одна заявка, несколько предложений */}
       <section className="container-page mt-10 md:mt-14">
-        <div className="surface-card grid gap-6 p-6 md:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] md:items-center md:p-10">
-          <div>
-            <p className="text-sm font-semibold text-primary">Не хотите искать сами?</p>
-            <h2 className="mt-2 font-display text-2xl font-semibold tracking-tight md:text-3xl">
-              Оставьте одну заявку. Несколько проверенных турфирм предложат вам свои варианты
-            </h2>
-            <p className="mt-3 text-muted-foreground">
-              Расскажите, куда и когда хотите поехать. Компании сами пришлют предложения с ценой,
-              отелем и условиями. Вы сравните и выберете.
-            </p>
-            <div className="mt-6 flex flex-wrap gap-3">
-              <Button size="lg" asChild>
-                <Link to="/request" search={{}}>
-                  Получить предложения от турфирм
-                </Link>
-              </Button>
-              <Button size="lg" variant="outline" asChild>
-                <a href="#search">Искать самому</a>
-              </Button>
+        <div className="relative overflow-hidden rounded-[2rem]">
+          <img
+            src={destPhoto("thailand", 1)}
+            alt=""
+            className="absolute inset-0 size-full object-cover"
+          />
+          <div className="absolute inset-0 bg-[linear-gradient(100deg,oklch(0.16_0.02_250/0.92)_0%,oklch(0.16_0.02_250/0.72)_46%,oklch(0.16_0.02_250/0.42)_100%)]" />
+          <div className="relative grid min-h-[420px] gap-10 p-7 md:grid-cols-[minmax(0,1.15fr)_minmax(0,0.95fr)] md:items-center md:p-10 lg:min-h-[460px] lg:p-12">
+            <div>
+              <p className="inline-flex rounded-full bg-primary-foreground/14 px-3 py-1 text-xs font-semibold tracking-[0.16em] text-primary-foreground uppercase backdrop-blur-md">
+                Не хотите искать сами?
+              </p>
+              <h2 className="mt-4 max-w-xl font-display text-3xl font-semibold tracking-tight text-primary-foreground md:text-5xl md:leading-[1.08]">
+                Одна заявка. Несколько цен.
+              </h2>
+              <p className="mt-4 max-w-lg text-sm text-primary-foreground/80 md:text-base">
+                Расскажите, куда и когда едете. Компании сами пришлют отель, цену и условия. Вы
+                сравниваете и выбираете.
+              </p>
+              <div className="mt-7 flex flex-wrap gap-3">
+                <Button
+                  size="lg"
+                  variant="secondary"
+                  className="bg-primary-foreground text-ink hover:bg-primary-foreground/90"
+                  asChild
+                >
+                  <Link to="/request" search={{}}>
+                    Получить предложения
+                    <ArrowRight className="size-4" />
+                  </Link>
+                </Button>
+                <Button
+                  size="lg"
+                  variant="secondary"
+                  className="bg-primary-foreground/12 text-primary-foreground hover:bg-primary-foreground/20"
+                  asChild
+                >
+                  <a href="#search">Искать самому</a>
+                </Button>
+              </div>
+            </div>
+
+            <div className="relative">
+              <p className="mb-3 text-xs font-semibold tracking-[0.16em] text-primary-foreground/60 uppercase">
+                Ответы на заявку
+              </p>
+              <ul className="space-y-3">
+                {[
+                  {
+                    company: "Family Travel",
+                    hotel: "Rixos Premium Dubai",
+                    note: "7 ночей · всё включено",
+                    price: 1290000,
+                    highlight: true,
+                  },
+                  {
+                    company: "Dubai Travel",
+                    hotel: "Address Beach Resort",
+                    note: "7 ночей · завтраки",
+                    price: 1180000,
+                  },
+                  {
+                    company: "Sunway",
+                    hotel: "Jumeirah Beach Hotel",
+                    note: "7 ночей · полупансион",
+                    price: 1350000,
+                  },
+                ].map((offer) => (
+                  <li
+                    key={offer.company}
+                    className={cn(
+                      "rounded-2xl border p-4 backdrop-blur-md",
+                      offer.highlight
+                        ? "border-primary-foreground/35 bg-primary-foreground text-ink"
+                        : "border-primary-foreground/15 bg-primary-foreground/10 text-primary-foreground",
+                    )}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="text-xs font-semibold tracking-wide uppercase opacity-60">
+                          {offer.company}
+                        </p>
+                        <p className="mt-1 font-display text-sm font-semibold">{offer.hotel}</p>
+                        <p className={cn("mt-1 text-xs", offer.highlight ? "opacity-70" : "text-primary-foreground/70")}>
+                          {offer.note}
+                        </p>
+                      </div>
+                      <p className="shrink-0 font-display text-sm font-semibold">
+                        {formatPrice(offer.price)}
+                      </p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
-          <ol className="space-y-3">
-            {[
-              { icon: Users, text: "Одна заявка, несколько турфирм" },
-              { icon: Scale, text: "Сравнение предложений в одной таблице" },
-              { icon: ShieldCheck, text: "Только проверенные компании" },
-            ].map((item) => (
-              <li
-                key={item.text}
-                className="flex items-center gap-3 rounded-2xl bg-secondary/50 p-4"
-              >
-                <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-card text-primary">
-                  <item.icon className="size-4" />
-                </span>
-                <span className="text-sm font-medium">{item.text}</span>
-              </li>
-            ))}
-          </ol>
         </div>
       </section>
 
