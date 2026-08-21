@@ -13,7 +13,7 @@ import { migrateAnonymousToUser } from "@/lib/platform/user-data";
 export const Route = createFileRoute("/login")({
   head: () => ({
     meta: [
-      { title: "Вход — TourGo" },
+      { title: "Вход · TourGo" },
       { name: "description", content: "Войдите в личный кабинет TourGo." },
     ],
   }),

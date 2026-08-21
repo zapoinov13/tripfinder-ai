@@ -3,7 +3,7 @@
 **Проект:** [mgyufoyornzbwvgdfojb](https://supabase.com/dashboard/project/mgyufoyornzbwvgdfojb)  
 **URL:** `https://mgyufoyornzbwvgdfojb.supabase.co`
 
-## Куда открывать SQL (не в Cursor — в Dashboard)
+## Куда открывать SQL (не в Cursor, а в Dashboard)
 
 Файлы лежат в репозитории локально. Их нужно **скопировать и выполнить** в SQL Editor:
 

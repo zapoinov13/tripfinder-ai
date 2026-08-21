@@ -16,12 +16,12 @@ export const Route = createFileRoute("/destination/$destinationId")({
     if (!loaderData) {
       return {
         meta: [
-          { title: "Направление не найдено — TourGo" },
+          { title: "Направление не найдено · TourGo" },
           { name: "robots", content: "noindex" },
         ],
       };
     }
-    const title = `Туры в ${loaderData.dest.country} — курорты и цены | TourGo`;
+    const title = `Туры в ${loaderData.dest.country}: курорты и цены | TourGo`;
     const description = `Все курорты направления ${loaderData.dest.country}: ${getResorts(
       loaderData.dest.id,
     )
@@ -81,7 +81,7 @@ function DestinationPage() {
 
       <section className="container-page mt-12">
         <h2 className="font-display text-2xl font-semibold md:text-3xl">
-          Курорты — {dest.country}
+          Курорты: {dest.country}
         </h2>
         <p className="mt-2 text-muted-foreground">
           Выберите курорт, чтобы посмотреть подходящие туры
@@ -114,7 +114,7 @@ function DestinationPage() {
 
       {destTours.length > 0 ? (
         <section className="container-page mt-16 mb-20">
-          <h2 className="font-display text-2xl font-semibold md:text-3xl">Туры — {dest.country}</h2>
+          <h2 className="font-display text-2xl font-semibold md:text-3xl">Туры: {dest.country}</h2>
           <div className="mt-8 space-y-5">
             {destTours.slice(0, 6).map((tour) => (
               <TourCard key={tour.id} tour={tour} />

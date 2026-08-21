@@ -64,5 +64,7 @@ export const testAiSettings = createServerFn({ method: "POST" })
     const res = await callChatCompletion(settings, [
       { role: "user", content: "Ответь одним словом: ок" },
     ]);
-    return res.ok ? { ok: true as const, text: res.text } : { ok: false as const, error: res.error };
+    return res.ok
+      ? { ok: true as const, text: res.text }
+      : { ok: false as const, error: res.error };
   });

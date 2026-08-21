@@ -13,7 +13,7 @@ import { getTouristThreads } from "@/lib/platform/messages";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/profile/messages")({
-  head: () => ({ meta: [{ title: "Сообщения — TourGo" }] }),
+  head: () => ({ meta: [{ title: "Сообщения · TourGo" }] }),
   component: TouristMessagesPage,
 });
 

@@ -256,7 +256,7 @@ export function chooseOffer(requestId: string, offerId: string) {
     entityId: offerId,
     meta: { requestId },
   });
-  toast.success("Предложение выбрано — турфирма получила уведомление");
+  toast.success("Предложение выбрано, турфирма получила уведомление");
 }
 
 /**
@@ -306,7 +306,7 @@ export function collectOffersFromCatalog(requestId: string) {
   );
 
   // Оставляем хотя бы одну компанию без автоответа: ей турист достанется «вживую».
-  // Без автоответа остаётся компания с самым большим каталогом — у неё точно есть
+  // Без автоответа остаётся компания с самым большим каталогом: у неё точно есть
   // что предложить руками, и её кабинет не будет пустым.
   const catalogSize = (orgId: string) =>
     state.tours.filter((t) => t.status === "active" && t.operatorOrgId === orgId).length;

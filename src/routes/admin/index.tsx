@@ -16,7 +16,7 @@ import { useRequireAuth } from "@/lib/platform/auth";
 import { usePlatformStore } from "@/lib/platform/hooks";
 
 export const Route = createFileRoute("/admin/")({
-  head: () => ({ meta: [{ title: "Админ — TourGo" }] }),
+  head: () => ({ meta: [{ title: "Админ · TourGo" }] }),
   component: AdminDashboard,
 });
 
@@ -117,7 +117,7 @@ function AdminDashboard() {
           </div>
           {attention.length === 0 ? (
             <p className="mt-4 text-sm text-muted-foreground">
-              Сейчас всё спокойно — срочных задач нет.
+              Сейчас всё спокойно, срочных задач нет.
             </p>
           ) : (
             <ul className="mt-4 space-y-2">

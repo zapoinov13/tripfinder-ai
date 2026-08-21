@@ -18,7 +18,7 @@ import { usePlatformStore } from "@/lib/platform/hooks";
 import { peopleLabel } from "@/lib/platform/requests";
 
 export const Route = createFileRoute("/operator/offers")({
-  head: () => ({ meta: [{ title: "Мои предложения — TourGo" }] }),
+  head: () => ({ meta: [{ title: "Мои предложения · TourGo" }] }),
   component: OperatorOffersPage,
 });
 
@@ -85,7 +85,7 @@ function OperatorOffersPage() {
                           <p className="text-xs text-muted-foreground">{peopleLabel(request)}</p>
                         </>
                       ) : (
-                        "—"
+                        "нет"
                       )}
                     </TableCell>
                     <TableCell>{o.hotelName}</TableCell>

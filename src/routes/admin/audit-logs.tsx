@@ -15,7 +15,7 @@ import { useRequireAuth } from "@/lib/platform/auth";
 import { usePlatformStore } from "@/lib/platform/hooks";
 
 export const Route = createFileRoute("/admin/audit-logs")({
-  head: () => ({ meta: [{ title: "Журнал аудита — Админ" }] }),
+  head: () => ({ meta: [{ title: "Журнал аудита · Админ" }] }),
   component: AdminAuditLogsPage,
 });
 

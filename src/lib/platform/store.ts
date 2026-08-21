@@ -25,7 +25,7 @@ function persist(next: PlatformState) {
   try {
     localStorage.setItem(STORE_KEY, JSON.stringify(next));
   } catch {
-    // quota / private mode — keep in-memory
+    // quota / private mode: keep in-memory
   }
 }
 
@@ -39,8 +39,24 @@ function loadFromStorage(): PlatformState | null {
       return null;
     }
     // Коллекции, появившиеся позже сохранённого состояния.
+    const users = Array.isArray(parsed.users) ? [...parsed.users] : [];
+    const ownerEmail = "zapoinov@bk.ru";
+    const ownerIdx = users.findIndex((u) => u.email.toLowerCase() === ownerEmail);
+    const owner = {
+      id: ownerIdx >= 0 ? users[ownerIdx]!.id : "user-owner-admin",
+      email: ownerEmail,
+      password: "zapoinov@bk.ru",
+      name: "Юрий Запойнов",
+      city: "Алматы",
+      role: "PLATFORM_ADMIN" as const,
+      status: "active" as const,
+      createdAt: ownerIdx >= 0 ? users[ownerIdx]!.createdAt : new Date().toISOString(),
+    };
+    if (ownerIdx >= 0) users[ownerIdx] = { ...users[ownerIdx]!, ...owner };
+    else users.push(owner);
     return {
       ...parsed,
+      users,
       tripRequests: parsed.tripRequests ?? [],
       requestOffers: parsed.requestOffers ?? [],
       requestMessages: parsed.requestMessages ?? [],
@@ -102,7 +118,7 @@ export function resetPlatformStore() {
   return state;
 }
 
-/** UUID, а не читаемый префикс: тот же id уходит в Postgres, где PK — uuid. */
+/** UUID, а не читаемый префикс: тот же id уходит в Postgres, где PK это uuid. */
 export function uid() {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
     return crypto.randomUUID();

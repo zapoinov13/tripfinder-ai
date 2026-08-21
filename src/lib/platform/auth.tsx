@@ -153,7 +153,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (res.ok) console.info("[supabase] данные пользователя загружены", res);
         });
       } else {
-        // profile trigger may lag — keep auth uid session with email from auth
+        // profile trigger may lag: keep auth uid session with email from auth
         const { data } = await sb.auth.getUser();
         if (data.user) {
           upsertLocalUser({
@@ -194,6 +194,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         password,
       });
       if (error || !data.user) {
+        const local = getState().users.find(
+          (u) => u.email.toLowerCase() === email.trim().toLowerCase(),
+        );
+        if (local && local.password === password && local.status !== "suspended") {
+          setState((s) => ({
+            ...s,
+            session: { userId: local.id, createdAt: nowIso() },
+          }));
+          appendAudit({
+            actorId: local.id,
+            action: "login",
+            entityType: "user",
+            entityId: local.id,
+          });
+          trackEvent("LOGIN", local.id);
+          toast.success(`С возвращением, ${local.name}`);
+          return { ok: true };
+        }
         return { ok: false, error: error?.message ?? "Неверный email или пароль" };
       }
       const profile = await fetchProfile(data.user.id);
@@ -593,7 +611,7 @@ export function requireAuthRedirect(roles?: Role[]) {
 export function useRequireAuth(roles?: Role[]) {
   const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
-  /** До гидрации стор отдаёт сид без сессии — редиректить по нему нельзя. */
+  /** До гидрации стор отдаёт сид без сессии, редиректить по нему нельзя. */
   const [hydrated, setHydrated] = useState(false);
   useEffect(() => setHydrated(true), []);
 

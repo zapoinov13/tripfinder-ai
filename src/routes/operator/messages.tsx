@@ -12,7 +12,7 @@ import { getCompanyThreads } from "@/lib/platform/messages";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/operator/messages")({
-  head: () => ({ meta: [{ title: "Сообщения — TourGo" }] }),
+  head: () => ({ meta: [{ title: "Сообщения · TourGo" }] }),
   component: OperatorMessagesPage,
 });
 

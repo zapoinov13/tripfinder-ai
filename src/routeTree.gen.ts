@@ -17,6 +17,7 @@ import { Route as CompanySignupRouteImport } from './routes/company-signup'
 import { Route as CompareRouteImport } from './routes/compare'
 import { Route as DestinationsRouteImport } from './routes/destinations'
 import { Route as ExcursionsRouteImport } from './routes/excursions'
+import { Route as ExperiencesRouteImport } from './routes/experiences'
 import { Route as FavoritesRouteImport } from './routes/favorites'
 import { Route as ForCompaniesRouteImport } from './routes/for-companies'
 import { Route as ForOperatorsRouteImport } from './routes/for-operators'
@@ -28,6 +29,7 @@ import { Route as ProfileRouteRouteImport } from './routes/profile/route'
 import { Route as RegistrationRouteImport } from './routes/registration'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
+import { Route as AdminAiKeysRouteImport } from './routes/admin/ai-keys'
 import { Route as AdminAnalyticsRouteImport } from './routes/admin/analytics'
 import { Route as AdminApiMonitoringRouteImport } from './routes/admin/api-monitoring'
 import { Route as AdminAuditLogsRouteImport } from './routes/admin/audit-logs'
@@ -105,6 +107,11 @@ const ExcursionsRoute = ExcursionsRouteImport.update({
   path: '/excursions',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ExperiencesRoute = ExperiencesRouteImport.update({
+  id: '/experiences',
+  path: '/experiences',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const FavoritesRoute = FavoritesRouteImport.update({
   id: '/favorites',
   path: '/favorites',
@@ -158,6 +165,11 @@ const SearchRoute = SearchRouteImport.update({
 const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/admin/',
   path: '/admin/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminAiKeysRoute = AdminAiKeysRouteImport.update({
+  id: '/admin/ai-keys',
+  path: '/admin/ai-keys',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminAnalyticsRoute = AdminAnalyticsRouteImport.update({
@@ -352,6 +364,7 @@ export interface FileRoutesByFullPath {
   '/compare': typeof CompareRoute
   '/destinations': typeof DestinationsRoute
   '/excursions': typeof ExcursionsRoute
+  '/experiences': typeof ExperiencesRoute
   '/favorites': typeof FavoritesRoute
   '/for-companies': typeof ForCompaniesRoute
   '/for-operators': typeof ForOperatorsRoute
@@ -361,6 +374,7 @@ export interface FileRoutesByFullPath {
   '/premium': typeof PremiumRoute
   '/registration': typeof RegistrationRoute
   '/search': typeof SearchRoute
+  '/admin/ai-keys': typeof AdminAiKeysRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/api-monitoring': typeof AdminApiMonitoringRoute
   '/admin/audit-logs': typeof AdminAuditLogsRoute
@@ -408,6 +422,7 @@ export interface FileRoutesByTo {
   '/compare': typeof CompareRoute
   '/destinations': typeof DestinationsRoute
   '/excursions': typeof ExcursionsRoute
+  '/experiences': typeof ExperiencesRoute
   '/favorites': typeof FavoritesRoute
   '/for-companies': typeof ForCompaniesRoute
   '/for-operators': typeof ForOperatorsRoute
@@ -417,6 +432,7 @@ export interface FileRoutesByTo {
   '/premium': typeof PremiumRoute
   '/registration': typeof RegistrationRoute
   '/search': typeof SearchRoute
+  '/admin/ai-keys': typeof AdminAiKeysRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/api-monitoring': typeof AdminApiMonitoringRoute
   '/admin/audit-logs': typeof AdminAuditLogsRoute
@@ -466,6 +482,7 @@ export interface FileRoutesById {
   '/compare': typeof CompareRoute
   '/destinations': typeof DestinationsRoute
   '/excursions': typeof ExcursionsRoute
+  '/experiences': typeof ExperiencesRoute
   '/favorites': typeof FavoritesRoute
   '/for-companies': typeof ForCompaniesRoute
   '/for-operators': typeof ForOperatorsRoute
@@ -475,6 +492,7 @@ export interface FileRoutesById {
   '/premium': typeof PremiumRoute
   '/registration': typeof RegistrationRoute
   '/search': typeof SearchRoute
+  '/admin/ai-keys': typeof AdminAiKeysRoute
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/api-monitoring': typeof AdminApiMonitoringRoute
   '/admin/audit-logs': typeof AdminAuditLogsRoute
@@ -525,6 +543,7 @@ export interface FileRouteTypes {
     | '/compare'
     | '/destinations'
     | '/excursions'
+    | '/experiences'
     | '/favorites'
     | '/for-companies'
     | '/for-operators'
@@ -534,6 +553,7 @@ export interface FileRouteTypes {
     | '/premium'
     | '/registration'
     | '/search'
+    | '/admin/ai-keys'
     | '/admin/analytics'
     | '/admin/api-monitoring'
     | '/admin/audit-logs'
@@ -581,6 +601,7 @@ export interface FileRouteTypes {
     | '/compare'
     | '/destinations'
     | '/excursions'
+    | '/experiences'
     | '/favorites'
     | '/for-companies'
     | '/for-operators'
@@ -590,6 +611,7 @@ export interface FileRouteTypes {
     | '/premium'
     | '/registration'
     | '/search'
+    | '/admin/ai-keys'
     | '/admin/analytics'
     | '/admin/api-monitoring'
     | '/admin/audit-logs'
@@ -638,6 +660,7 @@ export interface FileRouteTypes {
     | '/compare'
     | '/destinations'
     | '/excursions'
+    | '/experiences'
     | '/favorites'
     | '/for-companies'
     | '/for-operators'
@@ -647,6 +670,7 @@ export interface FileRouteTypes {
     | '/premium'
     | '/registration'
     | '/search'
+    | '/admin/ai-keys'
     | '/admin/analytics'
     | '/admin/api-monitoring'
     | '/admin/audit-logs'
@@ -696,6 +720,7 @@ export interface RootRouteChildren {
   CompareRoute: typeof CompareRoute
   DestinationsRoute: typeof DestinationsRoute
   ExcursionsRoute: typeof ExcursionsRoute
+  ExperiencesRoute: typeof ExperiencesRoute
   FavoritesRoute: typeof FavoritesRoute
   ForCompaniesRoute: typeof ForCompaniesRoute
   ForOperatorsRoute: typeof ForOperatorsRoute
@@ -705,6 +730,7 @@ export interface RootRouteChildren {
   PremiumRoute: typeof PremiumRoute
   RegistrationRoute: typeof RegistrationRoute
   SearchRoute: typeof SearchRoute
+  AdminAiKeysRoute: typeof AdminAiKeysRoute
   AdminAnalyticsRoute: typeof AdminAnalyticsRoute
   AdminApiMonitoringRoute: typeof AdminApiMonitoringRoute
   AdminAuditLogsRoute: typeof AdminAuditLogsRoute
@@ -795,6 +821,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ExcursionsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/experiences': {
+      id: '/experiences'
+      path: '/experiences'
+      fullPath: '/experiences'
+      preLoaderRoute: typeof ExperiencesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/favorites': {
       id: '/favorites'
       path: '/favorites'
@@ -870,6 +903,13 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin/'
       preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/ai-keys': {
+      id: '/admin/ai-keys'
+      path: '/admin/ai-keys'
+      fullPath: '/admin/ai-keys'
+      preLoaderRoute: typeof AdminAiKeysRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/analytics': {
@@ -1161,6 +1201,7 @@ const rootRouteChildren: RootRouteChildren = {
   CompareRoute: CompareRoute,
   DestinationsRoute: DestinationsRoute,
   ExcursionsRoute: ExcursionsRoute,
+  ExperiencesRoute: ExperiencesRoute,
   FavoritesRoute: FavoritesRoute,
   ForCompaniesRoute: ForCompaniesRoute,
   ForOperatorsRoute: ForOperatorsRoute,
@@ -1170,6 +1211,7 @@ const rootRouteChildren: RootRouteChildren = {
   PremiumRoute: PremiumRoute,
   RegistrationRoute: RegistrationRoute,
   SearchRoute: SearchRoute,
+  AdminAiKeysRoute: AdminAiKeysRoute,
   AdminAnalyticsRoute: AdminAnalyticsRoute,
   AdminApiMonitoringRoute: AdminApiMonitoringRoute,
   AdminAuditLogsRoute: AdminAuditLogsRoute,

@@ -12,8 +12,8 @@ export const Route = createFileRoute("/destinations")({
         content:
           "Доступные направления TourGo. На старте каталог открыт по Дубаю: JBR, Marina, Palm Jumeirah, Downtown, семейный и бюджетный отдых.",
       },
-      { property: "og:title", content: "Направления — TourGo" },
-      { property: "og:description", content: "Первое доступное направление платформы — Дубай." },
+      { property: "og:title", content: "Направления · TourGo" },
+      { property: "og:description", content: "Первое доступное направление платформы: Дубай." },
     ],
   }),
   component: DestinationsPage,

@@ -7,16 +7,16 @@ import { tours } from "@/data/demo";
 export const Route = createFileRoute("/hot")({
   head: () => ({
     meta: [
-      { title: "Hot Deals — лучшие цены на ближайшие даты | TourGo" },
+      { title: "Hot Deals: лучшие цены на ближайшие даты | TourGo" },
       {
         name: "description",
         content:
           "Горящие предложения TourGo на ближайшие даты. Сейчас доступны отели, пакетные туры, экскурсии, яхты и трансферы по Дубаю.",
       },
-      { property: "og:title", content: "Hot Deals — TourGo" },
+      { property: "og:title", content: "Hot Deals · TourGo" },
       {
         property: "og:description",
-        content: "Лучшие предложения на ближайшие даты. Первый каталог — Дубай.",
+        content: "Лучшие предложения на ближайшие даты. Первый каталог: Дубай.",
       },
     ],
   }),

@@ -4,10 +4,16 @@ export type SpeechTranscript = {
   provider: "mock" | "web-speech";
 };
 
+export type SpeechListenHandle = {
+  stop: () => Promise<string>;
+};
+
 export interface SpeechService {
   start(): Promise<SpeechTranscript>;
   stop(): Promise<void>;
   isSupported(): boolean;
+  /** Живая диктовка: текст приходит по мере речи, stop() заканчивает фразу. */
+  listen(onPartial: (text: string) => void): SpeechListenHandle;
 }
 
 const mockText =
@@ -26,52 +32,83 @@ export class MockSpeechService implements SpeechService {
   async stop() {
     return Promise.resolve();
   }
+
+  listen(onPartial: (text: string) => void): SpeechListenHandle {
+    let stopped = false;
+    const words = mockText.split(" ");
+    let i = 0;
+    const timer = setInterval(() => {
+      if (stopped) return;
+      i = Math.min(words.length, i + 3);
+      onPartial(words.slice(0, i).join(" "));
+      if (i >= words.length) {
+        clearInterval(timer);
+      }
+    }, 180);
+    return {
+      stop: async () => {
+        stopped = true;
+        clearInterval(timer);
+        const text = words.slice(0, Math.max(i, 8)).join(" ");
+        onPartial(text);
+        return text;
+      },
+    };
+  }
 }
 
 type RecogCtor = new () => {
   lang: string;
+  continuous: boolean;
   interimResults: boolean;
   onresult:
     | ((event: {
-        results: ArrayLike<ArrayLike<{ transcript: string; confidence: number }>>;
+        resultIndex: number;
+        results: ArrayLike<{
+          isFinal?: boolean;
+          0: { transcript: string; confidence: number };
+        }>;
       }) => void)
     | null;
-  onerror: (() => void) | null;
+  onerror: ((event?: { error?: string }) => void) | null;
+  onend: (() => void) | null;
   start: () => void;
   stop: () => void;
 };
+
+function getRecogCtor(): RecogCtor | undefined {
+  if (typeof window === "undefined") return undefined;
+  const w = window as unknown as {
+    SpeechRecognition?: RecogCtor;
+    webkitSpeechRecognition?: RecogCtor;
+  };
+  return w.SpeechRecognition || w.webkitSpeechRecognition;
+}
 
 export class WebSpeechService implements SpeechService {
   private recognition: InstanceType<RecogCtor> | null = null;
 
   isSupported() {
-    if (typeof window === "undefined") return false;
-    const w = window as unknown as {
-      SpeechRecognition?: RecogCtor;
-      webkitSpeechRecognition?: RecogCtor;
-    };
-    return Boolean(w.SpeechRecognition || w.webkitSpeechRecognition);
+    return Boolean(getRecogCtor());
   }
 
   async start(): Promise<SpeechTranscript> {
     if (!this.isSupported()) {
       return new MockSpeechService().start();
     }
-    const w = window as unknown as {
-      SpeechRecognition?: RecogCtor;
-      webkitSpeechRecognition?: RecogCtor;
-    };
-    const Ctor = w.SpeechRecognition || w.webkitSpeechRecognition;
+    const Ctor = getRecogCtor();
     return new Promise((resolve) => {
       const recognition = new Ctor!();
       this.recognition = recognition;
       recognition.lang = "ru-RU";
+      recognition.continuous = false;
       recognition.interimResults = false;
       recognition.onresult = (event) => {
-        const text = event.results[0]?.[0]?.transcript ?? "";
+        const last = event.results[event.results.length - 1];
+        const text = last?.[0]?.transcript ?? "";
         resolve({
           text,
-          confidence: event.results[0]?.[0]?.confidence ?? 0.8,
+          confidence: last?.[0]?.confidence ?? 0.8,
           provider: "web-speech",
         });
       };
@@ -80,6 +117,63 @@ export class WebSpeechService implements SpeechService {
       };
       recognition.start();
     });
+  }
+
+  listen(onPartial: (text: string) => void): SpeechListenHandle {
+    if (!this.isSupported()) {
+      return new MockSpeechService().listen(onPartial);
+    }
+    const Ctor = getRecogCtor()!;
+    const recognition = new Ctor();
+    this.recognition = recognition;
+    recognition.lang = "ru-RU";
+    recognition.continuous = true;
+    recognition.interimResults = true;
+
+    let finalText = "";
+    let finish: (text: string) => void = () => undefined;
+    const done = new Promise<string>((resolve) => {
+      let resolved = false;
+      finish = (text: string) => {
+        if (resolved) return;
+        resolved = true;
+        resolve(text);
+      };
+    });
+
+    recognition.onresult = (event) => {
+      let interim = "";
+      for (let i = event.resultIndex; i < event.results.length; i += 1) {
+        const piece = event.results[i];
+        const chunk = piece?.[0]?.transcript ?? "";
+        if (piece?.isFinal) finalText = `${finalText} ${chunk}`.trim();
+        else interim += chunk;
+      }
+      onPartial(`${finalText} ${interim}`.trim());
+    };
+    recognition.onerror = () => finish(finalText);
+    recognition.onend = () => finish(finalText);
+    try {
+      recognition.start();
+    } catch {
+      finish("");
+    }
+
+    return {
+      stop: async () => {
+        try {
+          recognition.stop();
+        } catch {
+          /* already stopped */
+        }
+        const text = await Promise.race([
+          done,
+          new Promise<string>((resolve) => setTimeout(() => resolve(finalText), 1200)),
+        ]);
+        onPartial(text);
+        return text;
+      },
+    };
   }
 
   async stop() {

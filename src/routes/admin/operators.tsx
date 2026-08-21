@@ -36,7 +36,7 @@ import { setState } from "@/lib/platform/store";
 import type { OperatorPlanCode, OrganizationStatus } from "@/lib/platform/types";
 
 export const Route = createFileRoute("/admin/operators")({
-  head: () => ({ meta: [{ title: "Операторы — Админ TourGo" }] }),
+  head: () => ({ meta: [{ title: "Операторы · Админ TourGo" }] }),
   component: AdminOperatorsPage,
 });
 
@@ -136,7 +136,7 @@ function AdminOperatorsPage() {
                         {o.city} · {o.email}
                       </div>
                       <div className="mt-1 text-xs text-muted-foreground">
-                        БИН {o.registrationNumber || "—"} · {o.contactPerson || "контакт не указан"}
+                        БИН {o.registrationNumber || "нет"} · {o.contactPerson || "контакт не указан"}
                       </div>
                     </TableCell>
                     <TableCell>

@@ -31,7 +31,7 @@ import { setState } from "@/lib/platform/store";
 import type { PromotionType } from "@/lib/platform/types";
 
 export const Route = createFileRoute("/admin/promotions")({
-  head: () => ({ meta: [{ title: "Продвижение — Админ" }] }),
+  head: () => ({ meta: [{ title: "Продвижение · Админ" }] }),
   component: AdminPromotionsPage,
 });
 

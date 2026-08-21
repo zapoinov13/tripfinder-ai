@@ -9,7 +9,7 @@ import { usePlatformStore } from "@/lib/platform/hooks";
 
 export const Route = createFileRoute("/profile/trips")({
   head: () => ({
-    meta: [{ title: "Мои поездки — TourGo" }],
+    meta: [{ title: "Мои поездки · TourGo" }],
   }),
   component: TripsPage,
 });

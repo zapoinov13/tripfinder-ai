@@ -22,7 +22,7 @@ export const Route = createFileRoute("/experiences")({
         content:
           "Сафари, яхты, Burj Khalifa, обзорные туры, билеты и трансферы в Дубае от проверенных поставщиков TourGo.",
       },
-      { property: "og:title", content: "Экскурсии и впечатления в Дубае — TourGo" },
+      { property: "og:title", content: "Экскурсии и впечатления в Дубае · TourGo" },
       {
         property: "og:description",
         content:

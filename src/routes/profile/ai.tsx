@@ -7,7 +7,7 @@ import { useAuth, useRequireAuth } from "@/lib/platform/auth";
 import { usePlatformStore } from "@/lib/platform/hooks";
 
 export const Route = createFileRoute("/profile/ai")({
-  head: () => ({ meta: [{ title: "AI-поиски — TourGo" }] }),
+  head: () => ({ meta: [{ title: "AI-поиски · TourGo" }] }),
   component: AiHistoryPage,
 });
 

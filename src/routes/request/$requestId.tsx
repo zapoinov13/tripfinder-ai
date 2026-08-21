@@ -15,6 +15,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { formatPhone } from "@/components/ui/phone-input";
 import { formatPrice } from "@/data/demo";
 import { useAuth } from "@/lib/platform/auth";
 import { usePlatformStore } from "@/lib/platform/hooks";
@@ -30,7 +31,7 @@ import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/request/$requestId")({
   head: () => ({
-    meta: [{ title: "Ваша заявка — TourGo" }],
+    meta: [{ title: "Ваша заявка · TourGo" }],
   }),
   component: RequestStatusPage,
 });
@@ -99,7 +100,7 @@ function RequestStatusPage() {
             <div>
               <dt className="text-muted-foreground">Даты</dt>
               <dd className="mt-1 font-medium">
-                {fmtDate(request.dateStart)} — {fmtDate(request.dateEnd)}
+                {fmtDate(request.dateStart)} - {fmtDate(request.dateEnd)}
               </dd>
             </div>
             <div>
@@ -112,7 +113,7 @@ function RequestStatusPage() {
             </div>
             <div>
               <dt className="text-muted-foreground">Пожелания</dt>
-              <dd className="mt-1 font-medium">{request.wishes || "—"}</dd>
+              <dd className="mt-1 font-medium">{request.wishes || "нет"}</dd>
             </div>
           </dl>
         </div>
@@ -124,7 +125,7 @@ function RequestStatusPage() {
             <h2 className="font-display text-lg font-semibold">Вы выбрали предложение</h2>
             <p className="mt-1 text-sm text-muted-foreground">
               {orgName(state, chosen.organizationId)} получила уведомление и свяжется с вами по
-              телефону {request.contactPhone}.
+              телефону {formatPhone(request.contactPhone) || request.contactPhone}.
             </p>
             {user ? (
               <ReviewBox
@@ -144,7 +145,7 @@ function RequestStatusPage() {
             <p className="mt-1 text-sm text-muted-foreground">
               {offers.length > 0
                 ? `Получено предложений: ${offers.length}`
-                : "Пока предложений нет — обычно первые приходят в течение часа"}
+                : "Пока предложений нет. Обычно первые приходят в течение часа"}
             </p>
           </div>
           {offers.length > 1 ? (
@@ -294,7 +295,7 @@ function orgName(state: StoreState, orgId: string) {
   return state.organizations.find((o) => o.id === orgId)?.name ?? "Турфирма";
 }
 
-/** Рейтинг из отзывов; пока их нет — стабильное значение из id, чтобы карточка не пустовала. */
+/** Рейтинг из отзывов; пока их нет, стабильное значение из id, чтобы карточка не пустовала. */
 function orgRating(orgId: string) {
   const rating = getCompanyRating(orgId);
   if (rating) return rating.average.toFixed(1);

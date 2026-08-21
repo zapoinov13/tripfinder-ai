@@ -98,6 +98,7 @@ export async function hydrateCatalogFromSupabase() {
               hotelId: t.hotel_id,
               operatorId: t.operator_id,
               operatorOrgId: t.operator_org_id ?? `org-${t.operator_id}`,
+              offerCategory: "tour",
               from: t.from_city,
               nights: t.nights,
               dateStart: t.date_start,

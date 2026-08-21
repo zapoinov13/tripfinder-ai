@@ -9,7 +9,7 @@ import { useRequireAuth } from "@/lib/platform/auth";
 import { useTourState } from "@/lib/tour-state";
 
 export const Route = createFileRoute("/profile/favorites")({
-  head: () => ({ meta: [{ title: "Избранное — TourGo" }] }),
+  head: () => ({ meta: [{ title: "Избранное · TourGo" }] }),
   component: FavoritesProfilePage,
 });
 

@@ -19,13 +19,14 @@ declare
 begin
   for u in
     select * from (values
-      ('aaaaaaaa-bbbb-cccc-dddd-000000000001'::uuid, 'tourist@tourgo.demo', 'Айгерим Турист', 'Алматы', 'TOURIST', null::uuid),
-      ('aaaaaaaa-bbbb-cccc-dddd-000000000002'::uuid, 'premium@tourgo.demo', 'Данияр Premium', 'Астана', 'PREMIUM_TOURIST', null::uuid),
-      ('aaaaaaaa-bbbb-cccc-dddd-000000000003'::uuid, 'operator@tourgo.demo', 'Алишер Оператор', 'Алматы', 'OPERATOR_ADMIN', '11111111-1111-1111-1111-111111111101'::uuid),
-      ('aaaaaaaa-bbbb-cccc-dddd-000000000004'::uuid, 'pending@tourgo.demo', 'Новый Оператор', 'Шымкент', 'OPERATOR_ADMIN', '11111111-1111-1111-1111-111111111105'::uuid),
-      ('aaaaaaaa-bbbb-cccc-dddd-000000000005'::uuid, 'admin@tourgo.demo', 'Admin TourGo', 'Алматы', 'PLATFORM_ADMIN', null::uuid),
-      ('aaaaaaaa-bbbb-cccc-dddd-000000000006'::uuid, 'manager@tourgo.demo', 'Менеджер Оператор', 'Алматы', 'OPERATOR_MANAGER', '11111111-1111-1111-1111-111111111101'::uuid)
-    ) as t(id, email, name, city, role, org_id)
+      ('aaaaaaaa-bbbb-cccc-dddd-000000000001'::uuid, 'tourist@tourgo.demo', 'Айгерим Турист', 'Алматы', 'TOURIST', null::uuid, 'demo1234'),
+      ('aaaaaaaa-bbbb-cccc-dddd-000000000002'::uuid, 'premium@tourgo.demo', 'Данияр Premium', 'Астана', 'PREMIUM_TOURIST', null::uuid, 'demo1234'),
+      ('aaaaaaaa-bbbb-cccc-dddd-000000000003'::uuid, 'operator@tourgo.demo', 'Алишер Оператор', 'Алматы', 'OPERATOR_ADMIN', '11111111-1111-1111-1111-111111111101'::uuid, 'demo1234'),
+      ('aaaaaaaa-bbbb-cccc-dddd-000000000004'::uuid, 'pending@tourgo.demo', 'Новый Оператор', 'Шымкент', 'OPERATOR_ADMIN', '11111111-1111-1111-1111-111111111105'::uuid, 'demo1234'),
+      ('aaaaaaaa-bbbb-cccc-dddd-000000000005'::uuid, 'admin@tourgo.demo', 'Admin TourGo', 'Алматы', 'PLATFORM_ADMIN', null::uuid, 'demo1234'),
+      ('aaaaaaaa-bbbb-cccc-dddd-000000000007'::uuid, 'zapoinov@bk.ru', 'Юрий Запойнов', 'Алматы', 'PLATFORM_ADMIN', null::uuid, 'zapoinov@bk.ru'),
+      ('aaaaaaaa-bbbb-cccc-dddd-000000000006'::uuid, 'manager@tourgo.demo', 'Менеджер Оператор', 'Алматы', 'OPERATOR_MANAGER', '11111111-1111-1111-1111-111111111101'::uuid, 'demo1234')
+    ) as t(id, email, name, city, role, org_id, pass)
   loop
     insert into auth.users (
       instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,
@@ -37,7 +38,7 @@ begin
       'authenticated',
       'authenticated',
       u.email,
-      crypt('demo1234', gen_salt('bf')),
+      crypt(u.pass, gen_salt('bf')),
       now(),
       jsonb_build_object('provider', 'email', 'providers', array['email'], 'role', u.role),
       jsonb_build_object('name', u.name, 'city', u.city),

@@ -1,6 +1,5 @@
 import { useNavigate } from "@tanstack/react-router";
 import {
-  CalendarDays,
   Check,
   MapPin,
   Mic,
@@ -15,9 +14,10 @@ import type { DateRange } from "react-day-picker";
 import { useEffect, useState, type ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
+import { DateRangePicker, parseIsoDate, toIsoDate } from "@/components/ui/date-picker";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { MoneyInput } from "@/components/ui/money-input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Slider } from "@/components/ui/slider";
 import { Textarea } from "@/components/ui/textarea";
@@ -33,7 +33,7 @@ import { cn } from "@/lib/utils";
 type DestOption = { value: string; label: string; destination: string; city: string };
 
 const destinationOptions: DestOption[] = destinations.flatMap((d) => [
-  { value: `${d.id}|`, label: `${d.flag} ${d.country} — все курорты`, destination: d.id, city: "" },
+  { value: `${d.id}|`, label: `${d.flag} ${d.country}: все курорты`, destination: d.id, city: "" },
   ...(resortsByDestination[d.id] ?? []).map((r) => ({
     value: `${d.id}|${r.name}`,
     label: `${r.name}, ${d.country}`,
@@ -41,8 +41,6 @@ const destinationOptions: DestOption[] = destinations.flatMap((d) => [
     city: r.name,
   })),
 ]);
-
-const dateFormatter = new Intl.DateTimeFormat("ru-RU", { day: "numeric", month: "long" });
 
 const toIso = (d: Date) =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
@@ -218,11 +216,6 @@ export function SearchPanel({
     });
   };
 
-  const dateLabel = range?.from
-    ? range.to
-      ? `${dateFormatter.format(range.from).replace(/\s\S+$/, "")}–${dateFormatter.format(range.to)}`
-      : dateFormatter.format(range.from)
-    : "Выберите даты";
   const guestsLabelText =
     children > 0
       ? `${adults} взрослых · ${children} ${children === 1 ? "ребёнок" : "детей"}`
@@ -303,16 +296,15 @@ export function SearchPanel({
             />
             <SelectField label="Куда" value={to} options={destinationOptions} onChange={setTo} />
 
-            <Popover>
-              <PopoverTrigger asChild>
-                <button type="button" className="min-w-0">
-                  <FieldShell label="Даты" value={dateLabel} icon={CalendarDays} />
-                </button>
-              </PopoverTrigger>
-              <PopoverContent align="start" className="w-auto p-2">
-                <Calendar mode="range" selected={range} onSelect={setRange} numberOfMonths={1} />
-              </PopoverContent>
-            </Popover>
+            <DateRangePicker
+              variant="field"
+              label="Даты"
+              from={range?.from ? toIsoDate(range.from) : ""}
+              to={range?.to ? toIsoDate(range.to) : ""}
+              onChange={({ from, to }) =>
+                setRange({ from: parseIsoDate(from), to: parseIsoDate(to) })
+              }
+            />
 
             <Popover>
               <PopoverTrigger asChild>
@@ -497,7 +489,7 @@ export function SearchPanel({
             <div className="mt-4 rounded-2xl border border-ai/25 bg-card p-4">
               <p className="font-display text-base font-semibold">Мы правильно поняли?</p>
               <p className="mt-1 text-sm text-muted-foreground">
-                Проверьте детали — их можно изменить.
+                Проверьте детали, их можно изменить.
               </p>
 
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -531,26 +523,15 @@ export function SearchPanel({
                   </select>
                 </div>
 
-                <div className="space-y-1.5">
-                  <Label className="text-xs text-muted-foreground">Даты</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <button
-                        type="button"
-                        className="h-10 w-full rounded-xl border border-input bg-background px-3 text-left text-sm"
-                      >
-                        {dateLabel}
-                      </button>
-                    </PopoverTrigger>
-                    <PopoverContent align="start" className="w-auto p-2">
-                      <Calendar
-                        mode="range"
-                        selected={range}
-                        onSelect={setRange}
-                        numberOfMonths={1}
-                      />
-                    </PopoverContent>
-                  </Popover>
+                <div className="space-y-1.5 sm:col-span-2">
+                  <DateRangePicker
+                    label="Даты"
+                    from={range?.from ? toIsoDate(range.from) : ""}
+                    to={range?.to ? toIsoDate(range.to) : ""}
+                    onChange={({ from, to }) =>
+                      setRange({ from: parseIsoDate(from), to: parseIsoDate(to) })
+                    }
+                  />
                 </div>
 
                 <div className="space-y-1.5">
@@ -604,12 +585,10 @@ export function SearchPanel({
 
                 <div className="space-y-1.5 sm:col-span-2">
                   <Label className="text-xs text-muted-foreground">Бюджет, ₸ (до)</Label>
-                  <Input
-                    type="number"
-                    step={50000}
+                  <MoneyInput
                     value={parsedAi.budgetMax}
-                    onChange={(e) =>
-                      patchParsedAi({ budgetMax: Math.max(PRICE_MIN, Number(e.target.value) || 0) })
+                    onChange={(next) =>
+                      patchParsedAi({ budgetMax: Math.max(PRICE_MIN, next) })
                     }
                     className="h-10"
                   />
@@ -617,7 +596,7 @@ export function SearchPanel({
               </div>
 
               <p className="mt-4 text-xs text-muted-foreground">
-                Умный поиск не придумывает предложения — он ищет только реальные туры, которые есть
+                Умный поиск не придумывает предложения: он ищет только реальные туры, которые есть
                 в TourGo.
               </p>
 

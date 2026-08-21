@@ -2,10 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 import { DEFAULT_SYSTEM_PROMPT, type AiProvider, type AiSettings } from "@/lib/ai-provider.server";
 
-export async function assertPlatformAdmin(
-  supabase: SupabaseClient,
-  userId: string,
-): Promise<void> {
+export async function assertPlatformAdmin(supabase: SupabaseClient, userId: string): Promise<void> {
   const { data, error } = await supabase.from("profiles").select("role").eq("id", userId).single();
   if (error || !data) throw new Error("Forbidden");
   const role = String((data as { role?: string }).role ?? "");

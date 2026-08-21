@@ -12,7 +12,7 @@ import { peopleLabel, requestStatusLabel } from "@/lib/platform/requests";
 
 export const Route = createFileRoute("/profile/requests")({
   head: () => ({
-    meta: [{ title: "Мои заявки — TourGo" }],
+    meta: [{ title: "Мои заявки · TourGo" }],
   }),
   component: MyRequestsPage,
 });
@@ -66,7 +66,7 @@ function MyRequestsPage() {
                         : `${r.fromCity} → ${r.destinationLabel}`}
                     </p>
                     <p className="mt-1 text-sm text-muted-foreground">
-                      {fmtDate(r.dateStart)} — {fmtDate(r.dateEnd)} · {peopleLabel(r)} · до{" "}
+                      {fmtDate(r.dateStart)} - {fmtDate(r.dateEnd)} · {peopleLabel(r)} · до{" "}
                       {formatPrice(r.budget)}
                     </p>
                   </div>

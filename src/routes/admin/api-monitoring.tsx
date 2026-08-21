@@ -28,7 +28,7 @@ import { useAuth, useRequireAuth } from "@/lib/platform/auth";
 import { usePlatformStore } from "@/lib/platform/hooks";
 
 export const Route = createFileRoute("/admin/api-monitoring")({
-  head: () => ({ meta: [{ title: "Мониторинг API — Админ" }] }),
+  head: () => ({ meta: [{ title: "Мониторинг API · Админ" }] }),
   component: AdminApiMonitoringPage,
 });
 
@@ -102,7 +102,7 @@ function AdminApiMonitoringPage() {
                   </TableCell>
                   <TableCell>{formatRelativeRu(c.lastSyncAt)}</TableCell>
                   <TableCell className="max-w-xs text-sm text-muted-foreground">
-                    {c.lastError ?? "—"}
+                    {c.lastError ?? "нет"}
                   </TableCell>
                   <TableCell>
                     <Button

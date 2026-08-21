@@ -5,29 +5,34 @@ import { toast } from "sonner";
 
 import { SiteLayout } from "@/components/site/site-layout";
 import { Button } from "@/components/ui/button";
+import { DateRangePicker } from "@/components/ui/date-picker";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { MoneyInput, formatGrouped } from "@/components/ui/money-input";
+import { PhoneInput, parsePhoneDigits } from "@/components/ui/phone-input";
+import { VoiceTextarea } from "@/components/ui/voice-textarea";
 import { destinations } from "@/data/demo";
 import { useAuth } from "@/lib/platform/auth";
 import { collectOffersFromCatalog, createTripRequest } from "@/lib/platform/requests";
 import type { TripRequestKind } from "@/lib/platform/types";
 
-type Search = { kind?: TripRequestKind; destination?: string; from?: string };
+type Search = { kind?: TripRequestKind; destination?: string; from?: string; city?: string; wish?: string };
 
 export const Route = createFileRoute("/request/")({
   validateSearch: (search: Record<string, unknown>): Search => ({
     ...(search["kind"] === "assistance" ? { kind: "assistance" as const } : {}),
     ...(typeof search["destination"] === "string" ? { destination: search["destination"] } : {}),
     ...(typeof search["from"] === "string" ? { from: search["from"] } : {}),
+    ...(typeof search["city"] === "string" ? { city: search["city"] } : {}),
+    ...(typeof search["wish"] === "string" ? { wish: search["wish"] } : {}),
   }),
   head: () => ({
     meta: [
-      { title: "Получить предложения от турфирм — TourGo" },
+      { title: "Получить предложения от турфирм · TourGo" },
       {
         name: "description",
         content:
-          "Оставьте одну заявку — несколько проверенных турфирм предложат вам свои варианты поездки.",
+          "Оставьте одну заявку. Несколько проверенных турфирм предложат вам свои варианты поездки.",
       },
     ],
   }),
@@ -55,8 +60,8 @@ function RequestPage() {
   const [adults, setAdults] = useState(2);
   const [children, setChildren] = useState(kind === "assistance" ? 0 : 2);
   const [budget, setBudget] = useState(kind === "assistance" ? 300000 : 1800000);
-  const [wishes, setWishes] = useState("");
-  /** Имя из профиля доступно только после гидрации — подставляем его, пока поле не тронули. */
+  const [wishes, setWishes] = useState(search.wish ?? "");
+  /** Имя из профиля доступно только после гидрации, подставляем его, пока поле не тронули. */
   const [nameEdit, setNameEdit] = useState<string | null>(null);
   const name = nameEdit ?? user?.name ?? "";
   const setName = setNameEdit;
@@ -64,7 +69,7 @@ function RequestPage() {
   const [sending, setSending] = useState(false);
 
   const destination = destinations.find((d) => d.id === destinationId);
-  const destinationLabel = destination ? destination.city : "Дубай";
+  const destinationLabel = search.city?.trim() || destination?.city || "Дубай";
 
   const submit = () => {
     if (!isAuthenticated || !user) {
@@ -72,8 +77,8 @@ function RequestPage() {
       void navigate({ to: "/login" });
       return;
     }
-    if (!name.trim() || !phone.trim()) {
-      toast.error("Укажите имя и телефон — иначе турфирма не сможет ответить");
+    if (!name.trim() || parsePhoneDigits(phone).length < 11) {
+      toast.error("Укажите имя и телефон, иначе турфирма не сможет ответить");
       return;
     }
     setSending(true);
@@ -106,7 +111,7 @@ function RequestPage() {
           <h1 className="mt-2 font-display text-3xl font-semibold md:text-4xl">
             {kind === "assistance"
               ? "Расскажите, что вам нужно на месте"
-              : "Оставьте одну заявку — получите несколько предложений"}
+              : "Оставьте одну заявку и получите несколько предложений"}
           </h1>
           <p className="mt-3 text-muted-foreground">
             {kind === "assistance"
@@ -128,10 +133,13 @@ function RequestPage() {
                 >
                   {destinations.map((d) => (
                     <option key={d.id} value={d.id}>
-                      {d.city} · {d.country}
+                      {kind === "assistance" ? `${d.flag} ${d.country}` : `${d.city} · ${d.country}`}
                     </option>
                   ))}
                 </select>
+                {kind === "assistance" && search.city ? (
+                  <p className="text-xs text-muted-foreground">Город: {search.city}</p>
+                ) : null}
               </div>
 
               <div className="space-y-2">
@@ -152,27 +160,17 @@ function RequestPage() {
                 </select>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="req-start">
-                  {kind === "assistance" ? "Когда нужно?" : "Когда вылет?"}
-                </Label>
-                <Input
-                  id="req-start"
-                  type="date"
-                  value={dateStart}
-                  onChange={(e) => setDateStart(e.target.value)}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="req-end">
-                  {kind === "assistance" ? "До какого числа?" : "Когда обратно?"}
-                </Label>
-                <Input
-                  id="req-end"
-                  type="date"
-                  value={dateEnd}
-                  onChange={(e) => setDateEnd(e.target.value)}
+              <div className="space-y-2 md:col-span-2">
+                <DateRangePicker
+                  label={kind === "assistance" ? "Когда нужна помощь" : "Даты поездки"}
+                  from={dateStart}
+                  to={dateEnd}
+                  presets={kind === "assistance" ? "short" : "trip"}
+                  months={2}
+                  onChange={({ from, to }) => {
+                    setDateStart(from);
+                    setDateEnd(to);
+                  }}
                 />
               </div>
 
@@ -202,14 +200,26 @@ function RequestPage() {
 
               <div className="space-y-2 md:col-span-2">
                 <Label htmlFor="req-budget">Ваш бюджет, ₸ (до)</Label>
-                <Input
-                  id="req-budget"
-                  type="number"
-                  min={0}
-                  step={50000}
-                  value={budget}
-                  onChange={(e) => setBudget(Math.max(0, Number(e.target.value) || 0))}
-                />
+                <MoneyInput id="req-budget" value={budget} onChange={setBudget} />
+                <div className="flex flex-wrap gap-1.5">
+                  {(kind === "assistance"
+                    ? [150000, 300000, 500000, 1000000]
+                    : [800000, 1200000, 1800000, 2500000, 4000000]
+                  ).map((amount) => (
+                    <button
+                      key={amount}
+                      type="button"
+                      onClick={() => setBudget(amount)}
+                      className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
+                        budget === amount
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-secondary text-foreground hover:bg-secondary/70"
+                      }`}
+                    >
+                      {formatGrouped(amount)}
+                    </button>
+                  ))}
+                </div>
                 <p className="text-xs text-muted-foreground">
                   Турфирмы увидят бюджет и предложат варианты в этих рамках.
                 </p>
@@ -218,11 +228,10 @@ function RequestPage() {
 
             <div className="space-y-2">
               <Label htmlFor="req-wishes">Что для вас важно?</Label>
-              <Textarea
+              <VoiceTextarea
                 id="req-wishes"
-                rows={4}
                 value={wishes}
-                onChange={(e) => setWishes(e.target.value)}
+                onChange={setWishes}
                 placeholder={
                   kind === "assistance"
                     ? "Мы сейчас в Дубае, нас пять человек. Завтра хотим мечеть в Абу-Даби и Ferrari World. Нужна машина с русскоговорящим водителем."
@@ -243,11 +252,10 @@ function RequestPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="req-phone">Телефон или WhatsApp</Label>
-                <Input
+                <PhoneInput
                   id="req-phone"
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="+7 701 000 00 00"
+                  onChange={setPhone}
                 />
               </div>
             </div>
@@ -283,7 +291,7 @@ function RequestPage() {
               <Link to="/login" className="font-medium text-primary hover:underline">
                 Войдите
               </Link>{" "}
-              — так вы увидите статус заявки и все предложения.
+              Так вы увидите статус заявки и все предложения.
             </p>
           ) : null}
         </div>

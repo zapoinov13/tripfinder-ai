@@ -10,12 +10,12 @@ import { useTourState } from "@/lib/tour-state";
 export const Route = createFileRoute("/favorites")({
   head: () => ({
     meta: [
-      { title: "Избранные туры — TourGo" },
+      { title: "Избранные туры · TourGo" },
       {
         name: "description",
         content: "Сохранённые туры: вернитесь к понравившимся предложениям и сравните их.",
       },
-      { property: "og:title", content: "Избранные туры — TourGo" },
+      { property: "og:title", content: "Избранные туры · TourGo" },
       { property: "og:description", content: "Ваши сохранённые туры в одном месте." },
     ],
   }),

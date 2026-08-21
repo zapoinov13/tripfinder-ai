@@ -255,6 +255,16 @@ function buildUsers(orgs: Organization[]): PlatformUser[] {
       createdAt: ts,
     },
     {
+      id: "user-owner-admin",
+      email: "zapoinov@bk.ru",
+      password: "zapoinov@bk.ru",
+      name: "Юрий Запойнов",
+      city: "Алматы",
+      role: "PLATFORM_ADMIN",
+      status: "active",
+      createdAt: ts,
+    },
+    {
       id: "user-manager",
       email: "manager@tourgo.demo",
       password: DEMO_PASSWORD,

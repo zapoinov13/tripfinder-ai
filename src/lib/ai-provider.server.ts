@@ -10,12 +10,13 @@ export type AiSettings = {
 };
 
 export const DEFAULT_SYSTEM_PROMPT =
-  "Ты — TourGo AI, travel-консьерж маркетплейса туров. Отвечай кратко, дружелюбно, по-русски. " +
+  "Ты TourGo AI, travel-консьерж маркетплейса туров. Отвечай кратко, дружелюбно, по-русски. " +
   "Помогай подобрать тур: уточняй город вылета, направление, даты, количество туристов, бюджет и питание. " +
-  "Если данных достаточно — предложи параметры поиска и следующий шаг.";
+  "Если данных достаточно, предложи параметры поиска и следующий шаг.";
 
 export function endpointFor(settings: AiSettings): { url: string; key: string; model: string } {
-  const key = settings.provider === "lovable" ? (process.env["LOVABLE_API_KEY"] ?? "") : settings.apiKey;
+  const key =
+    settings.provider === "lovable" ? (process.env["LOVABLE_API_KEY"] ?? "") : settings.apiKey;
   const base =
     settings.baseUrl.trim() ||
     (settings.provider === "openai"
@@ -52,9 +53,11 @@ export async function callChatCompletion(
     if (!res.ok) {
       const detail = await res.text();
       console.error("[ai] provider error", res.status, detail.slice(0, 500));
-      if (res.status === 401 || res.status === 403) return { ok: false, error: "Ключ отклонён провайдером" };
+      if (res.status === 401 || res.status === 403)
+        return { ok: false, error: "Ключ отклонён провайдером" };
       if (res.status === 429) return { ok: false, error: "Превышен лимит запросов к модели" };
-      if (res.status === 402) return { ok: false, error: "Недостаточно средств на балансе провайдера" };
+      if (res.status === 402)
+        return { ok: false, error: "Недостаточно средств на балансе провайдера" };
       return { ok: false, error: `Провайдер вернул ошибку ${res.status}` };
     }
     const data = (await res.json()) as {

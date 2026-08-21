@@ -35,7 +35,6 @@ import {
   formatPrice,
   formatNumber,
   galleryImages,
-  getHotel,
   getOperator,
   getTour,
   guestsLabel,
@@ -44,13 +43,15 @@ import {
   availabilityLabel,
   priceFreshnessMinutes,
   supplierTrustScore,
+  tourCover,
   type Hotel,
   type Tour,
 } from "@/data/demo";
+import { youtubeEmbed } from "@/lib/image-file";
 import { useAuth } from "@/lib/platform/auth";
 import { aiExplanationService } from "@/lib/platform/ai-services";
 import { createBookingFlow } from "@/lib/platform/booking";
-import { trackEvent } from "@/lib/platform/catalog";
+import { getHotel, trackEvent } from "@/lib/platform/catalog";
 import { useTourState } from "@/lib/tour-state";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -67,13 +68,13 @@ export const Route = createFileRoute("/tour/$tourId")({
     if (!loaderData) {
       return {
         meta: [
-          { title: "Предложение не найдено — TourGo" },
+          { title: "Предложение не найдено · TourGo" },
           { name: "robots", content: "noindex" },
         ],
       };
     }
     const { hotel, tour } = loaderData;
-    const title = `${hotel.name}, ${hotel.city} — ${offerCategoryLabels[tour.offerCategory ?? "tour"]} за ${formatPrice(tour.price)}`;
+    const title = `${hotel.name}, ${hotel.city}: ${offerCategoryLabels[tour.offerCategory ?? "tour"]} за ${formatPrice(tour.price)}`;
     const description = `${hotel.name} ${hotel.stars}★ · ${tour.meal} · ${nightsLabel(tour.nights)} · рейтинг ${hotel.rating}. Проверяем цену и наличие перед бронью.`;
     return {
       meta: [
@@ -121,6 +122,9 @@ function buildPriceBreakdown(tour: Tour) {
 
 function TourPage() {
   const { tour, hotel, operator } = Route.useLoaderData();
+  const gallery = tour.photos?.length
+    ? tour.photos
+    : [tourCover(tour, hotel), ...galleryImages.filter((img) => img !== hotel.image)].slice(0, 3);
   const navigate = useNavigate();
   const { user, isAuthenticated, isPremium } = useAuth();
   const {
@@ -161,7 +165,7 @@ function TourPage() {
     if (navigator.share) {
       await navigator.share({
         title: hotel.name,
-        text: `${hotel.name} — ${formatPrice(displayPrice)}`,
+        text: `${hotel.name}, ${formatPrice(displayPrice)}`,
         url,
       });
       return;
@@ -188,7 +192,7 @@ function TourPage() {
         passengers: [
           {
             firstName,
-            lastName: rest.join(" ") || "—",
+            lastName: rest.join(" ") || "нет",
             type: "adult",
           },
         ],
@@ -206,15 +210,15 @@ function TourPage() {
       <div className="container-page py-4 pb-[calc(10.5rem+env(safe-area-inset-bottom))] md:py-6 lg:pb-6">
         <div className="grid gap-2 overflow-hidden rounded-2xl md:rounded-3xl md:grid-cols-[2fr_1fr] md:grid-rows-2">
           <img
-            src={galleryImages[0]}
-            alt={hotel.name}
+            src={gallery[0]}
+            alt={tour.title || hotel.name}
             className="h-60 w-full object-cover sm:h-72 md:row-span-2 md:h-[420px]"
           />
-          {galleryImages.slice(1, 3).map((img, i) => (
+          {gallery.slice(1, 3).map((img, i) => (
             <img
-              key={i}
+              key={`${img}-${i}`}
               src={img}
-              alt={`${hotel.name} фото ${i + 2}`}
+              alt={`${tour.title || hotel.name} фото ${i + 2}`}
               loading="lazy"
               className="hidden h-[206px] w-full object-cover md:block"
             />
@@ -224,7 +228,7 @@ function TourPage() {
         <div className="mt-6 grid gap-4 md:mt-8 md:grid-cols-[minmax(0,1fr)_auto] md:items-start">
           <div className="min-w-0">
             <h1 className="font-display text-2xl font-semibold leading-tight md:text-4xl">
-              {hotel.name}
+              {tour.title || hotel.name}
             </h1>
             <p className="mt-2 text-muted-foreground">
               {offerCategoryLabels[tour.offerCategory ?? "tour"]} · {hotel.city}, {hotel.country}
@@ -251,11 +255,9 @@ function TourPage() {
             <section className="surface-card p-5 md:p-8">
               <h2 className="font-display text-xl font-semibold">О предложении</h2>
               <p className="mt-3 text-muted-foreground">
-                {hotel.name} — {offerCategoryLabels[tour.offerCategory ?? "tour"].toLowerCase()} в
-                районе {hotel.district}. Предложение подходит туристам из СНГ, которые хотят собрать
-                поездку с понятной ценой, логистикой и поддержкой на русском языке. Сейчас каталог
-                TourGo открыт по Дубаю. Перед бронью мы проверяем актуальную цену и наличие у
-                поставщика.
+                {tour.description?.trim()
+                  ? tour.description
+                  : `${hotel.name}, ${offerCategoryLabels[tour.offerCategory ?? "tour"].toLowerCase()} в районе ${hotel.district}. Перед бронью компания подтверждает цену и наличие мест.`}
               </p>
             </section>
 
@@ -290,31 +292,34 @@ function TourPage() {
             <section className="surface-card p-5 md:p-8">
               <h2 className="font-display text-xl font-semibold">Что входит</h2>
               <ul className="mt-4 grid gap-3 sm:grid-cols-2">
-                {[
-                  {
-                    icon: Plane,
-                    text:
-                      tour.offerCategory === "hotel" || tour.offerCategory === "excursion"
-                        ? `Старт для туристов из ${tour.from}`
-                        : `Перелёт или пакет из ${tour.from} → Дубай`,
-                  },
-                  {
-                    icon: MapPin,
-                    text:
-                      tour.offerCategory === "excursion"
-                        ? `Впечатление в районе ${hotel.district}`
-                        : tour.offerCategory === "transfer"
-                          ? `Маршрут и время подтверждаются поставщиком`
-                          : `Проживание, ${nightsLabel(tour.nights)}`,
-                  },
-                  { icon: UtensilsCrossed, text: `${tour.mealCode} · ${tour.meal}` },
-                  {
-                    icon: Bus,
-                    text: tour.transfer
-                      ? "Трансфер или pickup включён/доступен"
-                      : "Трансфер уточняется у поставщика",
-                  },
-                ].map((item) => (
+                {(tour.includes?.length
+                  ? tour.includes.map((text) => ({ icon: CheckCircle2, text }))
+                  : [
+                      {
+                        icon: Plane,
+                        text:
+                          tour.offerCategory === "hotel" || tour.offerCategory === "excursion"
+                            ? `Старт для туристов из ${tour.from}`
+                            : `Перелёт или пакет из ${tour.from} → ${hotel.city}`,
+                      },
+                      {
+                        icon: MapPin,
+                        text:
+                          tour.offerCategory === "excursion"
+                            ? `Впечатление в районе ${hotel.district}`
+                            : tour.offerCategory === "transfer"
+                              ? `Маршрут и время подтверждаются компанией`
+                              : `Проживание, ${nightsLabel(tour.nights)}`,
+                      },
+                      { icon: UtensilsCrossed, text: tour.meal },
+                      {
+                        icon: Bus,
+                        text: tour.transfer
+                          ? "Трансфер включён"
+                          : "Трансфер уточняется у компании",
+                      },
+                    ]
+                ).map((item) => (
                   <li key={item.text} className="flex items-center gap-3 text-sm">
                     <span className="grid size-9 place-items-center rounded-xl bg-secondary">
                       <item.icon className="size-4" />
@@ -323,6 +328,12 @@ function TourPage() {
                   </li>
                 ))}
               </ul>
+              {tour.excludes?.length ? (
+                <div className="mt-5 rounded-2xl bg-secondary/60 p-4 text-sm text-muted-foreground">
+                  <p className="font-medium text-foreground">Не входит</p>
+                  <p className="mt-1">{tour.excludes.join(", ")}</p>
+                </div>
+              ) : null}
             </section>
 
             <section className="surface-card p-5 md:p-8">
@@ -342,6 +353,34 @@ function TourPage() {
                 })}
               </div>
             </section>
+
+            {tour.videos?.length ? (
+              <section className="surface-card space-y-4 p-5 md:p-8">
+                <h2 className="font-display text-xl font-semibold">Видео</h2>
+                {tour.videos.map((src) => {
+                  const embed = youtubeEmbed(src);
+                  return embed ? (
+                    <iframe
+                      key={src}
+                      title="Видео отеля"
+                      src={embed}
+                      className="aspect-video w-full rounded-2xl"
+                      allowFullScreen
+                    />
+                  ) : (
+                    <a
+                      key={src}
+                      href={src}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-sm font-medium text-primary hover:underline"
+                    >
+                      Смотреть видео
+                    </a>
+                  );
+                })}
+              </section>
+            ) : null}
 
             <section className="surface-card overflow-hidden">
               <div className="p-5 md:p-8">
@@ -534,7 +573,7 @@ function TourPage() {
             <Scale className="size-4" />
           </Button>
           <Button className="min-w-0 flex-1 px-3" onClick={() => setBookingOpen(true)}>
-            <span className="truncate">Забронировать — {formatPrice(displayPrice)}</span>
+            <span className="truncate">Забронировать, {formatPrice(displayPrice)}</span>
           </Button>
         </div>
       </div>

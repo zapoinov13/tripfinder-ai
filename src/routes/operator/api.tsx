@@ -14,7 +14,7 @@ import { usePlatformStore } from "@/lib/platform/hooks";
 import { nowIso, setState, uid } from "@/lib/platform/store";
 
 export const Route = createFileRoute("/operator/api")({
-  head: () => ({ meta: [{ title: "API интеграции — TourGo" }] }),
+  head: () => ({ meta: [{ title: "API интеграции · TourGo" }] }),
   component: OperatorApiPage,
 });
 
@@ -128,7 +128,7 @@ function OperatorApiPage() {
           </div>
           <p className="text-xs text-muted-foreground">
             Статус: {conn?.status ?? "disconnected"} · последняя синхронизация:{" "}
-            {conn?.lastSyncAt ? new Date(conn.lastSyncAt).toLocaleString("ru-RU") : "—"}
+            {conn?.lastSyncAt ? new Date(conn.lastSyncAt).toLocaleString("ru-RU") : "нет"}
             {conn?.lastError ? ` · ${conn.lastError}` : ""}
           </p>
         </div>

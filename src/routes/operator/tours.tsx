@@ -6,22 +6,22 @@ import { useOperatorNav } from "@/components/dash/nav-items";
 import { AddTourDialog } from "@/components/operator/add-tour-dialog";
 import { Button } from "@/components/ui/button";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { formatNumber, formatPrice, getHotel } from "@/data/demo";
+  formatNumber,
+  formatPrice,
+  guestsLabel,
+  nightsLabel,
+  tourCover,
+} from "@/data/demo";
 import { canCreateTour } from "@/lib/platform-contracts";
 import { useAuth, useRequireAuth } from "@/lib/platform/auth";
+import { getHotel } from "@/lib/platform/catalog";
 import { usePlatformStore } from "@/lib/platform/hooks";
 import { nowIso, setState } from "@/lib/platform/store";
+import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/operator/tours")({
-  head: () => ({ meta: [{ title: "Туры оператора — TourGo" }] }),
+  head: () => ({ meta: [{ title: "Мои туры · TourGo" }] }),
   component: OperatorToursPage,
 });
 
@@ -53,13 +53,14 @@ function OperatorToursPage() {
 
   const plan = state.config.operatorPlans.find((p) => p.code === organization.planCode)!;
   const activeCount = orgTours.filter((t) => t.status === "active").length;
+  const limit = plan.tourLimit + organization.additionalTourLimit;
 
   return (
     <DashShell
       brand={organization.name}
       items={nav}
       title="Мои туры"
-      subtitle={`${activeCount} / ${plan.tourLimit + organization.additionalTourLimit} активных`}
+      subtitle={`${activeCount} из ${limit} активных. Так турист видит карточку в поиске.`}
       actions={
         <Button
           size="sm"
@@ -106,42 +107,68 @@ function OperatorToursPage() {
         ))}
       </div>
 
-      <div className="surface-card overflow-x-auto">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Тур</TableHead>
-              <TableHead>Дата</TableHead>
-              <TableHead>Цена</TableHead>
-              <TableHead>Статус</TableHead>
-              <TableHead>Просмотры</TableHead>
-              <TableHead></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filtered.slice(0, 50).map((tour) => {
-              const hotel = getHotel(tour.hotelId);
-              return (
-                <TableRow key={tour.id}>
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <img src={hotel.image} alt="" className="size-12 rounded-xl object-cover" />
-                      <div>
-                        <div className="font-medium">{hotel.name}</div>
-                        <div className="text-xs text-muted-foreground">
-                          {hotel.city} · {tour.tags.join(", ") || "—"}
-                        </div>
-                      </div>
+      {filtered.length === 0 ? (
+        <div className="surface-card px-6 py-12 text-center">
+          <p className="font-display text-lg font-semibold">Пока нет туров в этом списке</p>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Добавьте карточку: фото отеля, питание, что входит в цену и описание.
+          </p>
+          <Button className="mt-5" onClick={() => setAdding(true)}>
+            Добавить тур
+          </Button>
+        </div>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {filtered.slice(0, 50).map((tour) => {
+            const hotel = getHotel(tour.hotelId);
+            const cover = tourCover(tour, hotel);
+            const active = tour.status === "active";
+            return (
+              <article key={tour.id} className="surface-card overflow-hidden">
+                <div className="relative aspect-[4/3]">
+                  <img src={cover} alt="" className="size-full object-cover" />
+                  <div className="absolute left-3 top-3 flex flex-wrap gap-1.5">
+                    <span
+                      className={cn(
+                        "rounded-full px-2.5 py-1 text-[11px] font-semibold",
+                        active ? "bg-success text-white" : "bg-card text-muted-foreground",
+                      )}
+                    >
+                      {active ? "В поиске" : "Скрыт"}
+                    </span>
+                    {tour.tags.includes("hot") ? (
+                      <span className="rounded-full bg-primary px-2.5 py-1 text-[11px] font-semibold text-primary-foreground">
+                        Горящий
+                      </span>
+                    ) : null}
+                  </div>
+                </div>
+                <div className="space-y-2 p-4">
+                  <p className="text-xs text-muted-foreground">
+                    {hotel.city}, {hotel.country} · {hotel.stars}★
+                  </p>
+                  <h2 className="font-display text-base font-semibold leading-snug">
+                    {tour.title || hotel.name}
+                  </h2>
+                  <p className="text-sm text-muted-foreground">
+                    {tour.from} → {hotel.city} · {nightsLabel(tour.nights)} · {tour.meal}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {tour.dateStart} - {tour.dateEnd} · {guestsLabel(tour.adults, tour.children)}
+                  </p>
+                  {tour.includes?.length ? (
+                    <p className="line-clamp-2 text-xs text-muted-foreground">
+                      {tour.includes.slice(0, 3).join(" · ")}
+                    </p>
+                  ) : null}
+                  <div className="flex items-end justify-between gap-3 pt-2">
+                    <div>
+                      <p className="font-display text-xl font-semibold">{formatPrice(tour.price)}</p>
+                      <p className="text-xs text-muted-foreground">{formatNumber(tour.views)} просмотров</p>
                     </div>
-                  </TableCell>
-                  <TableCell className="text-sm">{tour.departure}</TableCell>
-                  <TableCell>{formatPrice(tour.price)}</TableCell>
-                  <TableCell>{tour.status === "active" ? "Активен" : "Скрыт"}</TableCell>
-                  <TableCell>{formatNumber(tour.views)}</TableCell>
-                  <TableCell>
                     <Button
                       size="sm"
-                      variant="ghost"
+                      variant={active ? "outline" : "default"}
                       onClick={() => {
                         setState((s) => ({
                           ...s,
@@ -157,15 +184,15 @@ function OperatorToursPage() {
                         }));
                       }}
                     >
-                      {tour.status === "active" ? "Скрыть" : "Показать"}
+                      {active ? "Скрыть" : "Показать"}
                     </Button>
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-      </div>
+                  </div>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      )}
 
       {adding ? <AddTourDialog orgId={organization.id} onClose={() => setAdding(false)} /> : null}
     </DashShell>

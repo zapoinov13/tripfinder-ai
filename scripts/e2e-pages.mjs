@@ -32,7 +32,7 @@ ws.addEventListener("message", (e) => {
   if (m.method === "Runtime.exceptionThrown") {
     const d = m.params.exceptionDetails;
     const text = String(d.exception?.description ?? d.text);
-    // Гидрация SSR/клиент — известная особенность стора, её ловим отдельно.
+    // Гидрация SSR/клиент: известная особенность стора, её ловим отдельно.
     if (!text.includes("Hydration failed") && !text.includes("error while hydrating")) {
       errors.push(text.slice(0, 160));
     }
@@ -108,20 +108,21 @@ const login = async (email) => {
     await new Promise((r) => setTimeout(r, 3000));
     return { url: location.pathname, signedIn: document.body.innerText.includes(${JSON.stringify(email)}) };
   `);
-  console.log(`\n— вход ${email}:`, JSON.stringify(result));
+  console.log(`\nвход ${email}:`, JSON.stringify(result));
 };
 
 await send("Page.navigate", { url: `${BASE}/` });
 await new Promise((r) => setTimeout(r, 1500));
 await evaluate("localStorage.clear(); sessionStorage.clear(); return true;");
 
-console.log("\n— гость");
+console.log("\nгость");
 for (const p of [
   "/",
   "/search",
   "/hot",
   "/destinations",
   "/excursions",
+  "/experiences",
   "/assistance",
   "/for-companies",
   "/company-signup",
@@ -182,6 +183,7 @@ for (const p of [
   "/admin/api-monitoring",
   "/admin/audit-logs",
   "/admin/analytics",
+  "/admin/ai-keys",
   "/admin/settings",
 ]) {
   await visit(p);

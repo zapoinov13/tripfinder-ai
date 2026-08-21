@@ -6,7 +6,7 @@ export function getTour(id: string): PlatformTour | undefined {
 }
 
 export function getHotel(id: string) {
-  return getState().hotels.find((h) => h.id === id)!;
+  return getState().hotels.find((h) => h.id === id) ?? getState().hotels[0]!;
 }
 
 export function getOperator(id: string) {

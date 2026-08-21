@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { MoneyInput } from "@/components/ui/money-input";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { formatPrice, getHotel } from "@/data/demo";
@@ -26,7 +27,7 @@ import { mealPlainLabel, peopleLabel, declineRequest, sendOffer } from "@/lib/pl
 import type { TripRequest } from "@/lib/platform/types";
 
 export const Route = createFileRoute("/operator/requests")({
-  head: () => ({ meta: [{ title: "Заявки туристов — TourGo" }] }),
+  head: () => ({ meta: [{ title: "Заявки туристов · TourGo" }] }),
   component: OperatorRequestsPage,
 });
 
@@ -84,7 +85,7 @@ function OperatorRequestsPage() {
                     {r.fromCity} → {r.destinationLabel}
                   </h3>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    {fmtDate(r.dateStart)} — {fmtDate(r.dateEnd)} · {peopleLabel(r)}
+                    {fmtDate(r.dateStart)} - {fmtDate(r.dateEnd)} · {peopleLabel(r)}
                   </p>
                 </div>
                 <div className="text-right">
@@ -171,7 +172,7 @@ function OfferDialog({
 
   const submit = () => {
     if (!hotelName.trim()) {
-      toast.error("Укажите отель — турист сравнивает предложения по отелю и цене");
+      toast.error("Укажите отель: турист сравнивает предложения по отелю и цене");
       return;
     }
     sendOffer({
@@ -237,12 +238,7 @@ function OfferDialog({
             </div>
             <div className="space-y-2">
               <Label htmlFor="offer-price">Цена, ₸</Label>
-              <Input
-                id="offer-price"
-                type="number"
-                value={price}
-                onChange={(e) => setPrice(Number(e.target.value) || 0)}
-              />
+              <MoneyInput id="offer-price" value={price} onChange={setPrice} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="offer-nights">Ночей</Label>

@@ -11,7 +11,7 @@ import { isSupabaseConfigured } from "@/lib/supabase/client";
 import { resetPlatformStore } from "@/lib/platform/store";
 
 export const Route = createFileRoute("/admin/settings")({
-  head: () => ({ meta: [{ title: "Настройки — Админ" }] }),
+  head: () => ({ meta: [{ title: "Настройки · Админ" }] }),
   component: AdminSettingsPage,
 });
 
@@ -37,7 +37,7 @@ function AdminSettingsPage() {
             </div>
             <div className="flex justify-between gap-4">
               <dt className="text-muted-foreground">URL</dt>
-              <dd className="truncate text-right font-mono text-xs">{supabaseUrl ?? "—"}</dd>
+              <dd className="truncate text-right font-mono text-xs">{supabaseUrl ?? "нет"}</dd>
             </div>
             <div className="flex justify-between gap-4">
               <dt className="text-muted-foreground">Хранилище</dt>
@@ -46,7 +46,7 @@ function AdminSettingsPage() {
           </dl>
           <p className="text-xs text-muted-foreground">
             SQL и seed: папка <code className="rounded bg-secondary px-1">supabase/</code> в
-            репозитории. Инструкция —{" "}
+            репозитории. Инструкция:{" "}
             <code className="rounded bg-secondary px-1">supabase/SETUP.md</code>.
           </p>
         </div>

@@ -16,7 +16,7 @@ import { useRequireAuth } from "@/lib/platform/auth";
 import { usePlatformStore } from "@/lib/platform/hooks";
 
 export const Route = createFileRoute("/admin/analytics")({
-  head: () => ({ meta: [{ title: "Аналитика — Админ" }] }),
+  head: () => ({ meta: [{ title: "Аналитика · Админ" }] }),
   component: AdminAnalyticsPage,
 });
 

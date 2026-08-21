@@ -29,7 +29,7 @@ import { usePlatformStore } from "@/lib/platform/hooks";
 import { setState } from "@/lib/platform/store";
 
 export const Route = createFileRoute("/admin/tours")({
-  head: () => ({ meta: [{ title: "Туры — Админ TourGo" }] }),
+  head: () => ({ meta: [{ title: "Туры · Админ TourGo" }] }),
   component: AdminToursPage,
 });
 

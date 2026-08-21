@@ -31,7 +31,7 @@ import { nowIso, setState } from "@/lib/platform/store";
 import type { BookingStatus } from "@/lib/platform/types";
 
 export const Route = createFileRoute("/admin/bookings")({
-  head: () => ({ meta: [{ title: "Бронирования — Админ" }] }),
+  head: () => ({ meta: [{ title: "Бронирования · Админ" }] }),
   component: AdminBookingsPage,
 });
 

@@ -10,7 +10,7 @@ import { setState } from "@/lib/platform/store";
 export const Route = createFileRoute("/notifications")({
   head: () => ({
     meta: [
-      { title: "Уведомления — TourGo" },
+      { title: "Уведомления · TourGo" },
       {
         name: "description",
         content:
@@ -101,7 +101,7 @@ function NotificationsPage() {
               Каналы
             </h2>
             <ul className="mt-4 space-y-3 text-sm">
-              {["In-app включён", "Email abstraction готов", "Push/SMS — позже"].map((item) => (
+              {["In-app включён", "Email abstraction готов", "Push/SMS позже"].map((item) => (
                 <li key={item} className="flex items-center gap-2">
                   <CheckCircle2 className="size-4 text-success" />
                   {item}

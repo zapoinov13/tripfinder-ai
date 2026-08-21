@@ -11,7 +11,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/profile/settings")({
-  head: () => ({ meta: [{ title: "Настройки — TourGo" }] }),
+  head: () => ({ meta: [{ title: "Настройки · TourGo" }] }),
   component: SettingsPage,
 });
 

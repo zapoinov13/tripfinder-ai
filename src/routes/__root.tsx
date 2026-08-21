@@ -82,7 +82,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "TourGo — найдите тур сами или получите предложения от турфирм" },
+      { title: "TourGo: найдите тур сами или получите предложения от турфирм" },
       {
         name: "description",
         content:
@@ -90,7 +90,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       {
         property: "og:title",
-        content: "TourGo — найдите тур сами или получите предложения от турфирм",
+        content: "TourGo: найдите тур сами или получите предложения от турфирм",
       },
       {
         property: "og:description",
@@ -102,7 +102,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:site", content: "@Lovable" },
       {
         name: "twitter:title",
-        content: "TourGo — найдите тур сами или получите предложения от турфирм",
+        content: "TourGo: найдите тур сами или получите предложения от турфирм",
       },
       {
         name: "twitter:description",

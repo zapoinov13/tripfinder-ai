@@ -18,7 +18,7 @@ import { usePlatformStore } from "@/lib/platform/hooks";
 
 export const Route = createFileRoute("/operator/")({
   head: () => ({
-    meta: [{ title: "Кабинет турфирмы — TourGo" }],
+    meta: [{ title: "Кабинет турфирмы · TourGo" }],
   }),
   component: OperatorDashboard,
 });
@@ -69,7 +69,7 @@ function OperatorDashboard() {
     >
       {organization.status === "PENDING_APPROVAL" ? (
         <div className="mb-6 rounded-2xl bg-premium/15 p-4 text-sm">
-          Компания проверяется. Вы уже можете добавлять туры и отвечать на заявки — знак
+          Компания проверяется. Вы уже можете добавлять туры и отвечать на заявки. Знак
           «Проверенная компания» появится после проверки документов.
         </div>
       ) : null}
@@ -84,7 +84,7 @@ function OperatorDashboard() {
         <KpiCard
           label="Активные туры"
           value={formatNumber(active.length)}
-          hint={`лимит ${plan?.tourLimit ?? "—"}`}
+          hint={`лимит ${plan?.tourLimit ?? "нет"}`}
         />
         <KpiCard label="Просмотры" value={formatNumber(views)} />
         <KpiCard label="Продажи" value={formatPrice(revenue)} />

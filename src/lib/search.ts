@@ -1,4 +1,5 @@
-import { destinations, getHotel, tours, type Tour } from "@/data/demo";
+import { destinations, tours, type OfferCategory, type Tour } from "@/data/demo";
+import { getHotel } from "@/lib/platform/catalog";
 
 export const originCities = [
   "Алматы",
@@ -41,6 +42,8 @@ export type SearchParams = {
   rating: number; // 0 | 8 | 9
   offers: string[]; // hot | premium | sponsored
   sort: SortKey;
+  q: string;
+  category: "" | OfferCategory;
 };
 
 export const PRICE_MIN = 300000;
@@ -78,7 +81,13 @@ export const validateSearchParams = (search: Record<string, unknown>): SearchPar
   rating: toNum(search["rating"], 0),
   offers: toArray(search["offers"]),
   sort: (typeof search["sort"] === "string" ? search["sort"] : "recommended") as SortKey,
+  q: typeof search["q"] === "string" ? search["q"] : "",
+  category: isOfferCategory(search["category"]) ? search["category"] : "",
 });
+
+function isOfferCategory(v: unknown): v is OfferCategory {
+  return v === "tour" || v === "hotel" || v === "excursion" || v === "transfer";
+}
 
 const nightsInBucket = (n: number, bucket: string) => {
   if (bucket === "1-3") return n <= 3;
@@ -94,6 +103,13 @@ export function filterTours(params: SearchParams, source: Tour[] = tours): Tour[
     if (params.from && tour.from !== params.from) return false;
     if (params.destination && hotel.destinationId !== params.destination) return false;
     if (params.city && hotel.city !== params.city) return false;
+    if (params.category && tour.offerCategory !== params.category) return false;
+    if (params.q.trim()) {
+      const q = params.q.trim().toLowerCase();
+      const hay =
+        `${tour.title ?? ""} ${hotel.name} ${hotel.city} ${hotel.country} ${hotel.district} ${tour.meal} ${tour.description ?? ""}`.toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
     if (tour.price < params.priceMin || tour.price > params.priceMax) return false;
     if (params.meals.length && !params.meals.includes(tour.mealCode)) return false;
     if (params.nights.length && !params.nights.some((b) => nightsInBucket(tour.nights, b)))

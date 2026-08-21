@@ -9,7 +9,7 @@ import { getCompanyRating, getCompanyReviews } from "@/lib/platform/messages";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/operator/reviews")({
-  head: () => ({ meta: [{ title: "Отзывы — TourGo" }] }),
+  head: () => ({ meta: [{ title: "Отзывы · TourGo" }] }),
   component: OperatorReviewsPage,
 });
 
@@ -39,7 +39,7 @@ function OperatorReviewsPage() {
         <div>
           <p className="text-sm text-muted-foreground">Средняя оценка</p>
           <p className="font-display text-4xl font-semibold">
-            {rating ? rating.average.toFixed(1) : "—"}
+            {rating ? rating.average.toFixed(1) : "нет"}
           </p>
           <Stars value={rating?.average ?? 0} />
         </div>

@@ -19,12 +19,12 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/compare")({
   head: () => ({
     meta: [
-      { title: "Сравнение туров — TourGo" },
+      { title: "Сравнение туров · TourGo" },
       {
         name: "description",
         content: "Сравните выбранные туры по цене, отелю, питанию, перелёту и удобствам.",
       },
-      { property: "og:title", content: "Сравните туры — TourGo" },
+      { property: "og:title", content: "Сравните туры · TourGo" },
       { property: "og:description", content: "Все параметры выбранных туров рядом." },
     ],
   }),
@@ -62,8 +62,8 @@ function ComparePage() {
           .amenities.map((a: string) => amenityLabels[a] ?? a)
           .join(", "),
     ],
-    ["Premium", (t) => (t.tags.includes("premium") ? "Да" : "—")],
-    ["Hot Deal", (t) => (t.tags.includes("hot") ? "Да" : "—")],
+    ["Premium", (t) => (t.tags.includes("premium") ? "Да" : "нет")],
+    ["Hot Deal", (t) => (t.tags.includes("hot") ? "Да" : "нет")],
   ];
 
   if (selected.length === 0) {

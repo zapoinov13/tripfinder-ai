@@ -17,16 +17,16 @@ const columns = [
       { label: "О TourGo", to: "/about" },
       { label: "Для турфирм", to: "/for-companies" },
       { label: "Добавить свою турфирму", to: "/company-signup" },
-      { label: "Контакты", to: "/about" },
+      { label: "Контакты", to: "/about", hash: "contacts" },
     ],
   },
   {
     title: "Помощь",
     links: [
-      { label: "FAQ", to: "/about" },
-      { label: "Поддержка", to: "/about" },
-      { label: "Условия", to: "/about" },
-      { label: "Политика конфиденциальности", to: "/about" },
+      { label: "FAQ", to: "/about", hash: "faq" },
+      { label: "Поддержка", to: "/about", hash: "support" },
+      { label: "Условия", to: "/about", hash: "terms" },
+      { label: "Политика конфиденциальности", to: "/about", hash: "privacy" },
     ],
   },
 ];
@@ -55,6 +55,7 @@ export function SiteFooter() {
                 <li key={`${link.label}-${i}`}>
                   <Link
                     to={link.to}
+                    {...("hash" in link && link.hash ? { hash: link.hash } : {})}
                     className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                   >
                     {link.label}

@@ -7,7 +7,7 @@ export function userName(userId: string): string {
 }
 
 export function userEmail(userId: string): string {
-  return getState().users.find((u) => u.id === userId)?.email ?? "—";
+  return getState().users.find((u) => u.id === userId)?.email ?? "нет";
 }
 
 export function orgName(orgId: string): string {

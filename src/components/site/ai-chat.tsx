@@ -12,7 +12,7 @@ type Msg = { role: "user" | "assistant"; content: string };
 const GREETING: Msg = {
   role: "assistant",
   content:
-    "Привет! Я TourGo AI. Опишите поездку своими словами — город вылета, направление, даты, сколько туристов и бюджет.",
+    "Привет! Я TourGo AI. Опишите поездку своими словами: город вылета, направление, даты, сколько туристов и бюджет.",
 };
 
 export function AiChat({ initialQuery = "" }: { initialQuery?: string }) {

@@ -11,7 +11,7 @@ import { useEffect } from "react";
 export const Route = createFileRoute("/premium")({
   head: () => ({
     meta: [
-      { title: "Premium — закрытые цены и эксклюзивные туры | TourGo" },
+      { title: "Premium: закрытые цены и эксклюзивные туры | TourGo" },
       {
         name: "description",
         content:
@@ -53,7 +53,7 @@ function PremiumPage() {
             Получайте доступ к предложениям, которых нет в обычной выдаче
           </h1>
           <p className="mx-auto mt-4 max-w-xl text-primary-foreground/80">
-            MONTHLY · {formatPrice(price)} — цена из конфигурации платформы (editable в Admin).
+            MONTHLY · {formatPrice(price)}, цена из конфигурации платформы (можно менять в админке).
           </p>
           {isPremium ? (
             <Button size="lg" className="mt-8" variant="secondary" asChild>
@@ -73,7 +73,7 @@ function PremiumPage() {
                 purchasePremium();
               }}
             >
-              Подключить Premium — {formatPrice(price)}
+              Подключить Premium, {formatPrice(price)}
             </Button>
           )}
         </section>

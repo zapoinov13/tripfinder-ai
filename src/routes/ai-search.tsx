@@ -11,7 +11,7 @@ export const Route = createFileRoute("/ai-search")({
     typeof search["q"] === "string" && search["q"].length > 0 ? { q: search["q"] } : {},
   head: () => ({
     meta: [
-      { title: "Умный поиск — TourGo" },
+      { title: "Умный поиск · TourGo" },
       { name: "description", content: "Опишите поездку обычным текстом или голосом." },
     ],
   }),
@@ -33,7 +33,7 @@ function AiSearchPage() {
             Расскажите, куда хотите поехать
           </h1>
           <p className="mt-3 text-muted-foreground">
-            Напишите или скажите голосом — TourGo превратит запрос в параметры поиска и покажет
+            Напишите или скажите голосом. TourGo превратит запрос в параметры поиска и покажет
             реальные туры. Придуманных предложений в выдаче нет.
           </p>
         </div>

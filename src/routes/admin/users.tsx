@@ -35,7 +35,7 @@ import { usePlatformStore } from "@/lib/platform/hooks";
 import { setState } from "@/lib/platform/store";
 
 export const Route = createFileRoute("/admin/users")({
-  head: () => ({ meta: [{ title: "Пользователи — Админ TourGo" }] }),
+  head: () => ({ meta: [{ title: "Пользователи · Админ TourGo" }] }),
   component: AdminUsersPage,
 });
 

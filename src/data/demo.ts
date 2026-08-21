@@ -543,14 +543,22 @@ export const hotels: Hotel[] = hotelSeed.map(
 export type MealCode = "RO" | "BB" | "HB" | "FB" | "AI" | "UAI";
 export type Meal = string;
 export type TourTag = "hot" | "premium" | "best" | "sponsored";
+export type OfferCategory = "tour" | "hotel" | "excursion" | "transfer";
 
-export const mealOptions: Array<{ code: MealCode; label: string }> = [
-  { code: "RO", label: "Без питания" },
-  { code: "BB", label: "Завтрак" },
-  { code: "HB", label: "Полупансион" },
-  { code: "FB", label: "Полный пансион" },
-  { code: "AI", label: "All Inclusive" },
-  { code: "UAI", label: "Ultra All Inclusive" },
+export const offerCategoryLabels: Record<OfferCategory, string> = {
+  tour: "Пакетный тур",
+  hotel: "Отель",
+  excursion: "Экскурсия",
+  transfer: "Трансфер",
+};
+
+export const mealOptions: Array<{ code: MealCode; label: string; hint: string }> = [
+  { code: "RO", label: "Без питания", hint: "Завтрак не включён" },
+  { code: "BB", label: "Завтрак", hint: "Завтрак включён" },
+  { code: "HB", label: "Полупансион", hint: "Завтрак и ужин" },
+  { code: "FB", label: "Полный пансион", hint: "Завтрак, обед и ужин" },
+  { code: "AI", label: "All Inclusive", hint: "Еда и напитки в отеле" },
+  { code: "UAI", label: "Ultra All Inclusive", hint: "Расширенное всё включено" },
 ];
 
 export const mealLabel = (code: MealCode) =>
@@ -560,6 +568,7 @@ export type Tour = {
   id: string;
   hotelId: string;
   operatorId: string;
+  offerCategory: OfferCategory;
   from: string;
   nights: number;
   dateStart: string;
@@ -578,6 +587,16 @@ export type Tour = {
   views: number;
   bookings: number;
   createdAt: string;
+  /** Свой заголовок карточки. Если нет, показываем название отеля. */
+  title?: string;
+  description?: string;
+  photos?: string[];
+  videos?: string[];
+  includes?: string[];
+  excludes?: string[];
+  flightIncluded?: boolean;
+  insuranceIncluded?: boolean;
+  visaIncluded?: boolean;
 };
 
 const cities = ["Алматы", "Астана", "Шымкент"];
@@ -596,6 +615,16 @@ const monthNames = [
   "декабря",
 ];
 const mealCycle: MealCode[] = ["AI", "UAI", "BB", "HB", "FB", "AI", "UAI", "RO", "BB", "AI"];
+const categoryCycle: OfferCategory[] = [
+  "tour",
+  "hotel",
+  "tour",
+  "excursion",
+  "tour",
+  "hotel",
+  "transfer",
+  "tour",
+];
 
 const fmtDay = (d: Date) => `${d.getDate()} ${monthNames[d.getMonth()]}`;
 const iso = (d: Date) => d.toISOString().slice(0, 10);
@@ -623,6 +652,7 @@ export const tours: Tour[] = Array.from({ length: 200 }, (_, i) => {
     id: `tour-${i + 1}`,
     hotelId: hotel.id,
     operatorId: operators[i % operators.length]!.id,
+    offerCategory: categoryCycle[i % categoryCycle.length]!,
     from: cities[(i + Math.floor(i / hotels.length)) % cities.length]!,
     nights,
     dateStart: fmtDay(start),
@@ -643,7 +673,27 @@ export const tours: Tour[] = Array.from({ length: 200 }, (_, i) => {
   };
 });
 
-export const getHotel = (id: string) => hotels.find((h) => h.id === id)!;
+const PLATFORM_STORE_KEYS = ["tourgo:dubai-platform-v1", "tourgo:platform-v1"];
+
+function readPlatformStore() {
+  if (typeof window === "undefined") return null;
+  for (const key of PLATFORM_STORE_KEYS) {
+    try {
+      const raw = localStorage.getItem(key);
+      if (!raw) continue;
+      return JSON.parse(raw) as { tours?: Tour[]; hotels?: Hotel[] };
+    } catch {
+      /* ignore */
+    }
+  }
+  return null;
+}
+
+export const getHotel = (id: string) => {
+  const live = readPlatformStore()?.hotels?.find((h) => h.id === id);
+  if (live) return live;
+  return hotels.find((h) => h.id === id) ?? hotels[0]!;
+};
 export const getDestination = (id: string) => destinations.find((d) => d.id === id);
 export const getResorts = (id: string) => resortsByDestination[id] ?? [];
 export const getToursByDestination = (id: string) =>
@@ -651,23 +701,35 @@ export const getToursByDestination = (id: string) =>
 export const getOperator = (id: string) => operators.find((o) => o.id === id)!;
 /** Prefer platform store tour when available (client), else static seed */
 export const getTour = (id: string) => {
-  if (typeof window !== "undefined") {
-    try {
-      const raw = localStorage.getItem("tourgo:platform-v1");
-      if (raw) {
-        const parsed = JSON.parse(raw) as { tours?: Tour[] };
-        const live = parsed.tours?.find((t) => t.id === id);
-        if (live) return live;
-      }
-    } catch {
-      /* ignore */
-    }
-  }
+  const live = readPlatformStore()?.tours?.find((t) => t.id === id);
+  if (live) return live;
   return tours.find((t) => t.id === id);
 };
 
+export const tourCover = (tour: Tour, hotel = getHotel(tour.hotelId)) =>
+  tour.photos?.[0] || hotel.image;
+
 export const hotTours = tours.filter((t) => t.tags.includes("hot")).slice(0, 4);
 export const premiumTours = tours.filter((t) => t.tags.includes("premium")).slice(0, 3);
+export const experienceTours = tours.filter((t) => t.offerCategory === "excursion").slice(0, 12);
+
+export const priceFreshnessMinutes = (tour: Tour) => 6 + (Number(tour.id.replace(/\D/g, "")) % 37);
+
+export const availabilityLabel = (tour: Tour) => {
+  const seats = 2 + (Number(tour.id.replace(/\D/g, "")) % 9);
+  if (tour.offerCategory === "excursion") return `${seats} мест на ближайший слот`;
+  if (tour.offerCategory === "transfer") return "Подтверждение времени до 15 минут";
+  return seats <= 4 ? `Осталось ${seats} места` : "Места есть";
+};
+
+export const supplierTrustScore = (operatorId: string) => {
+  const n = Number(operatorId.replace(/\D/g, "")) || 1;
+  return {
+    responseMinutes: 7 + ((n * 5) % 18),
+    confirmedBookings: 180 + n * 73,
+    rating: (4.6 + (n % 4) * 0.1).toFixed(1),
+  };
+};
 
 export const formatPrice = (value: number) => `${new Intl.NumberFormat("ru-RU").format(value)} ₸`;
 

@@ -18,20 +18,21 @@ import { SiteLayout } from "@/components/site/site-layout";
 import { TourCard } from "@/components/tours/tour-card";
 import { Button } from "@/components/ui/button";
 import { destinations, heroImage, hotTours } from "@/data/demo";
+import { usePlatformStore } from "@/lib/platform/hooks";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "TourGo — найдите тур сами или получите предложения от турфирм" },
+      { title: "TourGo: найдите тур сами или получите предложения от турфирм" },
       {
         name: "description",
         content:
-          "Найдите и сравните предложения разных туристических компаний в одном месте. Или оставьте одну заявку — турфирмы предложат свои варианты.",
+          "Найдите и сравните предложения разных туристических компаний в одном месте. Или оставьте одну заявку, турфирмы предложат свои варианты.",
       },
       {
         property: "og:title",
-        content: "TourGo — найдите тур сами или получите предложения от турфирм",
+        content: "TourGo: найдите тур сами или получите предложения от турфирм",
       },
       {
         property: "og:description",
@@ -65,7 +66,7 @@ const benefits = [
     icon: Sparkles,
     emoji: "✨",
     title: "Можно просто рассказать",
-    text: "Опишите поездку текстом или голосом — TourGo поможет найти варианты.",
+    text: "Опишите поездку текстом или голосом. TourGo поможет найти варианты.",
   },
 ];
 
@@ -139,17 +140,17 @@ function Index() {
         </div>
       </section>
 
-      {/* Ключевая функция: одна заявка — несколько предложений */}
+      {/* Ключевая функция: одна заявка, несколько предложений */}
       <section className="container-page mt-10 md:mt-14">
         <div className="surface-card grid gap-6 p-6 md:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] md:items-center md:p-10">
           <div>
             <p className="text-sm font-semibold text-primary">Не хотите искать сами?</p>
             <h2 className="mt-2 font-display text-2xl font-semibold tracking-tight md:text-3xl">
-              Оставьте одну заявку — несколько проверенных турфирм предложат вам свои варианты
+              Оставьте одну заявку. Несколько проверенных турфирм предложат вам свои варианты
             </h2>
             <p className="mt-3 text-muted-foreground">
               Расскажите, куда и когда хотите поехать. Компании сами пришлют предложения с ценой,
-              отелем и условиями — вы сравните и выберете.
+              отелем и условиями. Вы сравните и выберете.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <Button size="lg" asChild>
@@ -164,7 +165,7 @@ function Index() {
           </div>
           <ol className="space-y-3">
             {[
-              { icon: Users, text: "Одна заявка — несколько турфирм" },
+              { icon: Users, text: "Одна заявка, несколько турфирм" },
               { icon: Scale, text: "Сравнение предложений в одной таблице" },
               { icon: ShieldCheck, text: "Только проверенные компании" },
             ].map((item) => (
@@ -210,6 +211,8 @@ function Index() {
           </Button>
         </div>
       </section>
+
+      <HomeFeaturedTours />
 
       <section className="container-page mt-16 md:mt-24">
         <SectionHead title="Почему TourGo?" />
@@ -284,8 +287,7 @@ function Index() {
               </span>
               <h3 className="mt-5 font-display text-xl font-semibold">Экскурсии и развлечения</h3>
               <p className="mt-2 text-sm text-muted-foreground">
-                Сафари в пустыне, прогулка на яхте, Бурдж-Халифа, поездка в Абу-Даби, Ferrari World,
-                обзорная по Дубаю и трансфер из аэропорта.
+                Сначала страна, затем город. Потом только доступные экскурсии, море и развлечения.
               </p>
             </div>
             <span className="inline-flex items-center gap-1.5 text-sm font-medium text-primary">
@@ -304,8 +306,7 @@ function Index() {
               </span>
               <h3 className="mt-5 font-display text-xl font-semibold">Помощь в поездке</h3>
               <p className="mt-2 text-sm text-muted-foreground">
-                Уже в другой стране и не знаете, к кому обратиться? Опишите, что вам нужно —
-                туристические компании предложат варианты.
+                Уже на месте? Выберите город и задачу. Компании рядом пришлют варианты и цены.
               </p>
             </div>
             <span className="inline-flex items-center gap-1.5 text-sm font-medium text-primary">
@@ -353,7 +354,7 @@ function Index() {
             <div className="min-w-0">
               <h3 className="font-display text-lg font-semibold">Вы туристическая компания?</h3>
               <p className="mt-1 text-sm text-muted-foreground">
-                Размещайте свои туры и получайте новые заявки от путешественников через TourGo.
+                Туристы оставляют заявку, вы отвечаете ценой. Клиент ваш, оплата вам.
               </p>
             </div>
           </div>
@@ -368,6 +369,37 @@ function Index() {
         </div>
       </section>
     </SiteLayout>
+  );
+}
+
+function HomeFeaturedTours() {
+  const state = usePlatformStore();
+  const now = Date.now();
+  const tours = state.promotions
+    .filter(
+      (p) =>
+        p.type === "HOME_FEATURE" &&
+        p.status === "ACTIVE" &&
+        new Date(p.expiresAt).getTime() > now,
+    )
+    .map((p) => state.tours.find((t) => t.id === p.tourOfferId && t.status === "active"))
+    .filter((t): t is NonNullable<typeof t> => Boolean(t))
+    .slice(0, 4);
+
+  if (tours.length === 0) return null;
+
+  return (
+    <section className="container-page mt-16 md:mt-24">
+      <SectionHead
+        title="Рекомендуем"
+        subtitle="Компании подняли эти туры на главную. Сравните и выберите."
+      />
+      <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        {tours.map((tour) => (
+          <TourCard key={tour.id} tour={tour} layout="grid" />
+        ))}
+      </div>
+    </section>
   );
 }
 

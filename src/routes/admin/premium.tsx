@@ -23,7 +23,7 @@ import { usePlatformStore } from "@/lib/platform/hooks";
 import { setState } from "@/lib/platform/store";
 
 export const Route = createFileRoute("/admin/premium")({
-  head: () => ({ meta: [{ title: "Premium — Админ" }] }),
+  head: () => ({ meta: [{ title: "Premium · Админ" }] }),
   component: AdminPremiumPage,
 });
 
@@ -98,7 +98,7 @@ function AdminPremiumPage() {
               <TableBody>
                 {subs.map((s) => (
                   <TableRow key={s.id}>
-                    <TableCell>{s.userId ? userName(s.userId) : "—"}</TableCell>
+                    <TableCell>{s.userId ? userName(s.userId) : "нет"}</TableCell>
                     <TableCell className="text-sm">
                       {new Date(s.expiresAt).toLocaleDateString("ru-RU")}
                     </TableCell>

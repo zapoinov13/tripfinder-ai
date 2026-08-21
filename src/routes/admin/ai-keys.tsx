@@ -25,12 +25,12 @@ import { useRequireAuth } from "@/lib/platform/auth";
 export const Route = createFileRoute("/admin/ai-keys")({
   head: () => ({
     meta: [
-      { title: "AI и ключи API — Админ TourGo" },
+      { title: "AI и ключи API · Админ TourGo" },
       {
         name: "description",
         content: "Подключение LLM-провайдера и API-ключа для AI-чата TourGo.",
       },
-      { property: "og:title", content: "AI и ключи API — Админ TourGo" },
+      { property: "og:title", content: "AI и ключи API · Админ TourGo" },
       {
         property: "og:description",
         content: "Настройка провайдера, модели и системного промпта AI-консьержа.",
@@ -196,7 +196,7 @@ function AdminAiKeysPage() {
                 placeholder="https://api.openai.com/v1"
               />
               <p className="text-xs text-muted-foreground">
-                Оставьте пустым — используется стандартный адрес провайдера.
+                Оставьте пустым: используется стандартный адрес провайдера.
               </p>
             </div>
 
@@ -209,7 +209,7 @@ function AdminAiKeysPage() {
                 value={apiKey}
                 onChange={(e) => setApiKey(e.target.value)}
                 placeholder={
-                  form.hasKey ? `Сохранён: ${form.keyMask} — введите новый для замены` : "sk-…"
+                  form.hasKey ? `Сохранён: ${form.keyMask}, введите новый для замены` : "sk-…"
                 }
               />
               <p className="text-xs text-muted-foreground">
@@ -247,7 +247,7 @@ function AdminAiKeysPage() {
             <h2 className="font-display text-base font-semibold">Как это работает</h2>
             <p className="text-muted-foreground">
               Ключ подключается к AI-чату на странице «AI-поиск» и в блоке на главной. Все запросы
-              идут через сервер — ключ не попадает в браузер.
+              идут через сервер, ключ не попадает в браузер.
             </p>
             <dl className="space-y-2 text-xs">
               <div className="flex justify-between gap-3">
@@ -260,7 +260,7 @@ function AdminAiKeysPage() {
               </div>
               <div className="flex justify-between gap-3">
                 <dt className="text-muted-foreground">Обновлено</dt>
-                <dd>{form.updatedAt ? new Date(form.updatedAt).toLocaleString("ru-RU") : "—"}</dd>
+                <dd>{form.updatedAt ? new Date(form.updatedAt).toLocaleString("ru-RU") : "нет"}</dd>
               </div>
             </dl>
           </aside>

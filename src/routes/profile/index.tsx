@@ -12,7 +12,7 @@ import { useTourState } from "@/lib/tour-state";
 export const Route = createFileRoute("/profile/")({
   head: () => ({
     meta: [
-      { title: "Личный кабинет путешественника — TourGo" },
+      { title: "Личный кабинет путешественника · TourGo" },
       {
         name: "description",
         content: "Избранные туры, история поиска, заявки и настройки Premium-подписки.",

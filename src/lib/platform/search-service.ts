@@ -21,7 +21,7 @@ export class SearchService {
 
     const weights = getState().config.rankingWeights;
     const source = getActiveTours().filter((t) => {
-      // stale offers: older than 14 days sync not shown as active-fresh — keep but ok for MVP
+      // stale offers: older than 14 days sync not shown as active-fresh, keep but ok for MVP
       return t.status === "active";
     });
 
@@ -62,7 +62,7 @@ export class SearchService {
     return results;
   }
 
-  /** Аналитика поиска — отдельным вызовом из эффекта или обработчика. */
+  /** Аналитика поиска: отдельным вызовом из эффекта или обработчика. */
   trackSearch(
     raw: Partial<SearchParams> | Record<string, unknown>,
     count: number,
