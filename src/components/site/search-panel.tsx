@@ -165,20 +165,23 @@ function Counter({
 export function SearchPanel({
   defaultTab = "classic",
   initialAiQuery = "",
+  showAiTab = true,
 }: {
   defaultTab?: "classic" | "ai";
   initialAiQuery?: string;
+  showAiTab?: boolean;
 }) {
-  const [tab, setTab] = useState<"classic" | "ai">(defaultTab);
+  const [tab, setTab] = useState<"classic" | "ai">(showAiTab ? defaultTab : "classic");
   const [from, setFrom] = useState("Алматы");
-  const [to, setTo] = useState("dubai-beach|JBR");
+  const [to, setTo] = useState("dubai-beach|");
   const [range, setRange] = useState<DateRange | undefined>({
-    from: new Date(2026, 7, 10),
-    to: new Date(2026, 7, 17),
+    from: new Date(2026, 8, 10),
+    to: new Date(2026, 8, 17),
   });
+  const [flexible, setFlexible] = useState(false);
   const [adults, setAdults] = useState(2);
-  const [children, setChildren] = useState(2);
-  const [childAges, setChildAges] = useState<number[]>([7, 10]);
+  const [children, setChildren] = useState(1);
+  const [childAges, setChildAges] = useState<number[]>([8, 10]);
   const [budget, setBudget] = useState<[number, number]>([PRICE_MIN, 2500000]);
   const [meals, setMeals] = useState<string[]>([]);
   const [aiQuery, setAiQuery] = useState(initialAiQuery);
