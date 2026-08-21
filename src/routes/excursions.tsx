@@ -30,7 +30,7 @@ export const Route = createFileRoute("/excursions")({
       {
         name: "description",
         content:
-          "Выберите страну и город, затем смотрите доступные экскурсии, морские прогулки и развлечения.",
+          "Сафари, яхты, обзорные туры, парки и билеты. Сравните цены компаний в одном месте.",
       },
     ],
   }),
@@ -109,21 +109,20 @@ function ExcursionsPage() {
     <SiteLayout>
       <div className="border-b border-border/70 bg-secondary/25">
         <div className="container-page py-6 md:py-8">
-          <p className="text-sm font-medium text-primary">Экскурсии и развлечения</p>
+          <p className="text-sm font-medium text-primary">Экскурсии</p>
           <h1 className="mt-1 font-display text-3xl font-semibold md:text-4xl">
             {step === 1
-              ? "Куда хотите поехать?"
+              ? "Что посмотреть и чем заняться"
               : step === 2
-                ? `Какой город в стране ${dest?.country}?`
+                ? `Город в стране ${dest?.country}`
                 : `${city}, ${dest?.country}`}
           </h1>
           <p className="mt-2 max-w-2xl text-sm text-muted-foreground md:text-base">
             {step === 1
-              ? "Сначала выберите страну. Затем город. После этого покажем только доступные программы."
+              ? "Сафари, яхты, обзор города, парки и билеты. Выберите страну."
               : step === 2
-                ? "Выберите город, и откроются экскурсии, море и развлечения именно там."
-                : "Это программы, которые сейчас можно заказать в выбранном городе."}
-          </p>
+                ? "Выберите город, чтобы увидеть экскурсии и цены именно там."
+                : "Что можно заказать в этом городе. Сравните цены и напишите компании."}
           <Stepper step={step} />
         </div>
       </div>

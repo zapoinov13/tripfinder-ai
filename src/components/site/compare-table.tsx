@@ -4,15 +4,15 @@ import { cn } from "@/lib/utils";
 
 type Cell = boolean | "partial";
 
-const columns = ["TourGo", "Сайты поставщиков", "Турагентство"] as const;
+const columns = ["TourGo", "Сайты компаний", "Агентство"] as const;
 
 const rows: { label: string; values: [Cell, Cell, Cell] }[] = [
-  { label: "Все поставщики в одном поиске", values: [true, false, "partial"] },
-  { label: "Запрос обычным языком или голосом", values: [true, false, "partial"] },
-  { label: "Сравнение цен по одному отелю", values: [true, false, false] },
-  { label: "Доступно круглосуточно", values: [true, true, false] },
-  { label: "Price check перед бронью", values: [true, true, "partial"] },
-  { label: "Подбор занимает минуты, а не дни", values: [true, "partial", false] },
+  { label: "Несколько компаний в одном поиске", values: [true, false, "partial"] },
+  { label: "Можно сказать голосом, какой отдых нужен", values: [true, false, "partial"] },
+  { label: "Цены и отели рядом, не в пяти чатах", values: [true, false, false] },
+  { label: "Смотреть можно ночью и в выходные", values: [true, true, false] },
+  { label: "Цена проверяется перед бронью", values: [true, true, "partial"] },
+  { label: "Подбор за минуты, не за дни", values: [true, "partial", false] },
 ];
 
 function CellIcon({ value }: { value: Cell }) {
@@ -43,7 +43,7 @@ export function CompareTable() {
           <thead>
             <tr className="border-b border-border bg-secondary/40">
               <th className="px-6 py-4 text-left font-medium text-muted-foreground">
-                Что важно при выборе тура
+                Что важно, когда выбираете тур
               </th>
               {columns.map((col, i) => (
                 <th

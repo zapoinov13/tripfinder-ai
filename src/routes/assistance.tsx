@@ -36,7 +36,7 @@ export const Route = createFileRoute("/assistance")({
       {
         name: "description",
         content:
-          "Уже в другой стране? Выберите город и что нужно. Местные компании пришлют варианты и цены.",
+          "Уже в поездке? Нужна машина, гид или билеты на сегодня. Компании в городе пришлют цены.",
       },
     ],
   }),
@@ -159,11 +159,11 @@ function AssistancePage() {
             Уже на месте
           </p>
           <h1 className="mt-4 max-w-3xl font-display text-3xl font-semibold leading-tight text-primary-foreground md:text-5xl">
-            Нужна помощь в поездке. Компании рядом ответят.
+            Уже в поездке? Компании в городе помогут
           </h1>
           <p className="mt-3 max-w-xl text-sm text-primary-foreground/80 md:text-base">
-            Выберите, где вы сейчас и что нужно на сегодня или завтра. Несколько турфирм пришлют
-            варианты и цены. Вы сравниваете и выбираете.
+            Машина, трансфер, гид или билеты на сегодня. Напишите, что нужно. Несколько компаний
+            пришлют цены. Вы выбираете.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Button size="lg" asChild>

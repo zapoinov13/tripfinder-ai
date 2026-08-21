@@ -1,5 +1,7 @@
 import { Link } from "@tanstack/react-router";
-import { Plane } from "lucide-react";
+import { ArrowRight, Mail, Plane } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
 
 const columns = [
   {
@@ -7,7 +9,7 @@ const columns = [
     links: [
       { label: "Все туры", to: "/search" },
       { label: "Экскурсии", to: "/excursions" },
-      { label: "Помощь в поездке", to: "/assistance" },
+      { label: "Уже в поездке", to: "/assistance" },
       { label: "Горящие туры", to: "/hot" },
     ],
   },
@@ -16,58 +18,105 @@ const columns = [
     links: [
       { label: "О TourGo", to: "/about" },
       { label: "Для турфирм", to: "/for-companies" },
-      { label: "Добавить свою турфирму", to: "/company-signup" },
+      { label: "Добавить турфирму", to: "/company-signup" },
       { label: "Контакты", to: "/about", hash: "contacts" },
     ],
   },
   {
-    title: "Помощь",
+    title: "Справка",
     links: [
-      { label: "FAQ", to: "/about", hash: "faq" },
+      { label: "Вопросы", to: "/about", hash: "faq" },
       { label: "Поддержка", to: "/about", hash: "support" },
       { label: "Условия", to: "/about", hash: "terms" },
-      { label: "Политика конфиденциальности", to: "/about", hash: "privacy" },
+      { label: "Конфиденциальность", to: "/about", hash: "privacy" },
     ],
   },
 ];
 
 export function SiteFooter() {
   return (
-    <footer className="mt-24 border-t border-border bg-secondary/40">
-      <div className="container-page grid gap-10 py-14 md:grid-cols-[1.4fr_repeat(3,1fr)]">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="grid size-9 place-items-center rounded-xl bg-primary text-primary-foreground">
-              <Plane className="size-4" />
-            </span>
-            <span className="font-display text-lg font-semibold">TourGo</span>
+    <footer className="mt-16 bg-ink text-primary-foreground md:mt-24">
+      <div className="container-page py-12 md:py-16">
+        <div className="flex flex-col gap-8 border-b border-primary-foreground/10 pb-10 lg:flex-row lg:items-end lg:justify-between">
+          <div className="max-w-xl">
+            <Link to="/" className="inline-flex items-center gap-2">
+              <span className="grid size-10 place-items-center rounded-xl bg-primary text-primary-foreground">
+                <Plane className="size-4" />
+              </span>
+              <span className="font-display text-xl font-semibold tracking-tight">TourGo</span>
+            </Link>
+            <p className="mt-4 text-sm text-primary-foreground/70 md:text-base">
+              Маркетплейс туров. Несколько компаний показывают цены рядом. Вы выбираете и платите
+              выбранной фирме.
+            </p>
           </div>
-          <p className="mt-4 max-w-xs text-sm text-muted-foreground">
-            Найдите тур сами или оставьте одну заявку и получите предложения от нескольких
-            проверенных турфирм.
-          </p>
+          <div className="flex flex-wrap gap-3">
+            <Button
+              size="lg"
+              variant="secondary"
+              className="bg-primary-foreground text-ink hover:bg-primary-foreground/90"
+              asChild
+            >
+              <Link to="/search" search={{} as never}>
+                Найти тур
+                <ArrowRight className="size-4" />
+              </Link>
+            </Button>
+            <Button
+              size="lg"
+              variant="secondary"
+              className="bg-primary-foreground/10 text-primary-foreground hover:bg-primary-foreground/20"
+              asChild
+            >
+              <Link to="/for-companies">Для турфирм</Link>
+            </Button>
+          </div>
         </div>
-        {columns.map((col) => (
-          <div key={col.title}>
-            <h3 className="text-sm font-semibold">{col.title}</h3>
-            <ul className="mt-4 space-y-3">
-              {col.links.map((link, i) => (
-                <li key={`${link.label}-${i}`}>
-                  <Link
-                    to={link.to}
-                    {...("hash" in link && link.hash ? { hash: link.hash } : {})}
-                    className="text-sm text-muted-foreground transition-colors hover:text-foreground"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
+
+        <div className="mt-10 grid grid-cols-2 gap-8 md:grid-cols-4">
+          {columns.map((col) => (
+            <div key={col.title}>
+              <h3 className="text-xs font-semibold tracking-[0.16em] text-primary-foreground/50 uppercase">
+                {col.title}
+              </h3>
+              <ul className="mt-4 space-y-3">
+                {col.links.map((link, i) => (
+                  <li key={`${link.label}-${i}`}>
+                    <Link
+                      to={link.to}
+                      {...("hash" in link && link.hash ? { hash: link.hash } : {})}
+                      className="text-sm text-primary-foreground/75 transition-colors hover:text-primary-foreground"
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+          <div>
+            <h3 className="text-xs font-semibold tracking-[0.16em] text-primary-foreground/50 uppercase">
+              Связь
+            </h3>
+            <p className="mt-4 text-sm text-primary-foreground/75">
+              Напишите, если заявка зависла или компания не отвечает.
+            </p>
+            <a
+              href="mailto:support@tourgo.demo"
+              className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-primary-foreground hover:underline"
+            >
+              <Mail className="size-4" />
+              support@tourgo.demo
+            </a>
           </div>
-        ))}
+        </div>
       </div>
-      <div className="border-t border-border/70">
-        <div className="container-page py-6 text-xs text-muted-foreground">© 2026 TourGo</div>
+
+      <div className="border-t border-primary-foreground/10">
+        <div className="container-page flex flex-col gap-2 py-5 text-xs text-primary-foreground/50 sm:flex-row sm:items-center sm:justify-between">
+          <p>© 2026 TourGo. Туры продают компании, не мы.</p>
+          <p>Поиск и заявка бесплатные для туриста.</p>
+        </div>
       </div>
     </footer>
   );
