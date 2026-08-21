@@ -13,8 +13,8 @@ import {
 import type { ReactNode } from "react";
 
 import { SearchPanel } from "@/components/site/search-panel";
-import { CompareTable } from "@/components/site/compare-table";
 import { SiteLayout } from "@/components/site/site-layout";
+import { SafeImage } from "@/components/media/safe-image";
 import { TourCard } from "@/components/tours/tour-card";
 import { Button } from "@/components/ui/button";
 import { destinations, formatPrice, heroImage, hotTours } from "@/data/demo";
@@ -43,9 +43,14 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
+/** Локальные кадры для баннеров: без Unsplash, чтобы не ломались на главной. */
 function destPhoto(id: string, index = 0) {
   const dest = destinations.find((d) => d.id === id);
-  return dest?.photos?.[index] ?? dest?.image ?? heroImage;
+  if (!dest) return heroImage;
+  const local = [dest.image, ...(dest.photos ?? [])].filter(
+    (src) => src && !src.includes("images.unsplash.com"),
+  );
+  return local[index] ?? local[0] ?? dest.image ?? heroImage;
 }
 
 const steps = [
@@ -81,61 +86,34 @@ function Index() {
             height={1080}
             className="animate-soft-zoom h-full min-h-[92vh] w-full object-cover md:min-h-[90vh]"
           />
-          <div className="absolute inset-0 bg-[linear-gradient(180deg,oklch(0.16_0.02_250/0.28)_0%,oklch(0.16_0.02_250/0.22)_28%,oklch(0.16_0.02_250/0.78)_100%)]" />
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,oklch(0.16_0.02_250/0.55)_0%,oklch(0.16_0.02_250/0.48)_35%,oklch(0.16_0.02_250/0.88)_100%)]" />
         </div>
 
         <div className="container-page relative flex min-h-[92vh] flex-col justify-end pb-8 pt-6 md:min-h-[90vh] md:pb-14 md:pt-8">
           <div className="animate-fade-up max-w-3xl">
-            <p className="font-display text-sm font-semibold tracking-[0.22em] text-primary-foreground/80 uppercase">
+            <p className="font-display text-sm font-semibold tracking-[0.22em] text-primary-foreground uppercase drop-shadow-sm">
               TourGo
             </p>
-            <h1 className="mt-3 font-display text-4xl font-semibold tracking-tight text-primary-foreground md:text-6xl md:leading-[1.05]">
+            <h1 className="mt-4 font-display text-5xl font-semibold tracking-tight text-primary-foreground drop-shadow-md md:text-7xl md:leading-[1.02]">
               Куда хотите поехать?
             </h1>
-            <p className="mt-3 max-w-lg text-base text-primary-foreground/85 md:text-lg">
+            <p className="mt-4 max-w-xl text-lg text-primary-foreground md:text-xl">
               Несколько компаний. Цены рядом. Вы выбираете.
             </p>
-            <div className="mt-5 flex flex-wrap gap-2">
-              {["Проверенные компании", "Сравнение рядом", "Платите фирме"].map((item) => (
-                <span
-                  key={item}
-                  className="rounded-full border border-primary-foreground/20 bg-primary-foreground/10 px-3 py-1 text-xs font-medium text-primary-foreground/90 backdrop-blur-md"
-                >
-                  {item}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          <div className="animate-fade-up animation-delay-150 mt-6 flex gap-2.5 overflow-x-auto pb-1 no-scrollbar md:mt-8">
-            {destinations.map((dest) => (
-              <Link
-                key={dest.id}
-                to="/destination/$destinationId"
-                params={{ destinationId: dest.id }}
-                className="group relative h-24 w-[7.5rem] shrink-0 overflow-hidden rounded-2xl md:h-28 md:w-36"
-              >
-                <img
-                  src={dest.image}
-                  alt=""
-                  className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/15 to-transparent" />
-                <span className="absolute inset-x-2 bottom-2 font-display text-sm font-semibold text-primary-foreground">
-                  {dest.flag} {dest.country}
-                </span>
-              </Link>
-            ))}
           </div>
 
           <div
             id="search"
-            className="animate-fade-up animation-delay-300 mt-5 scroll-mt-28 md:mt-7"
+            className="animate-fade-up animation-delay-150 mt-8 scroll-mt-28 md:mt-10"
           >
             <SearchPanel tone="hero" />
-            <p className="mt-3 text-sm text-primary-foreground/75">
+            <p className="mt-3 text-sm text-primary-foreground/85">
               Не хотите заполнять форму?{" "}
-              <Link to="/request" search={{}} className="font-semibold text-primary-foreground underline-offset-4 hover:underline">
+              <Link
+                to="/request"
+                search={{}}
+                className="font-semibold text-primary-foreground underline underline-offset-4"
+              >
                 Получите предложения от компаний
               </Link>
             </p>
@@ -145,7 +123,7 @@ function Index() {
 
       <section className="container-page mt-10 md:mt-14">
         <div className="relative overflow-hidden rounded-[2rem]">
-          <img
+          <SafeImage
             src={destPhoto("thailand", 1)}
             alt=""
             className="absolute inset-0 size-full object-cover"
@@ -292,7 +270,7 @@ function Index() {
             search={{}}
             className="group relative min-h-[300px] overflow-hidden rounded-[2rem] lg:col-span-7 lg:row-span-2 lg:min-h-[520px]"
           >
-            <img
+            <SafeImage
               src={destPhoto("uae", 1)}
               alt=""
               className="absolute inset-0 size-full object-cover transition-transform duration-700 group-hover:scale-105"
@@ -321,7 +299,7 @@ function Index() {
             search={{} as never}
             className="group relative min-h-[220px] overflow-hidden rounded-[2rem] lg:col-span-5"
           >
-            <img
+            <SafeImage
               src={destPhoto("maldives", 0)}
               alt=""
               className="absolute inset-0 size-full object-cover transition-transform duration-700 group-hover:scale-105"
@@ -341,7 +319,7 @@ function Index() {
             to="/about"
             className="group relative min-h-[220px] overflow-hidden rounded-[2rem] lg:col-span-5"
           >
-            <img
+            <SafeImage
               src={destPhoto("turkey", 0)}
               alt=""
               className="absolute inset-0 size-full object-cover transition-transform duration-700 group-hover:scale-105"
@@ -398,50 +376,48 @@ function Index() {
             </ul>
           </div>
         </div>
-
-        <div className="container-page mt-8">
-          <CompareTable />
-        </div>
       </section>
 
       <section className="container-page mt-16 md:mt-24">
         <SectionHead title="Популярные направления" />
-        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {destinations.map((dest, i) => (
+        <div className="mt-8 grid grid-cols-2 gap-3 md:gap-4">
+          {destinations.map((dest) => (
             <Link
               key={dest.id}
               to="/destination/$destinationId"
               params={{ destinationId: dest.id }}
-              className={cn(
-                "hover-lift group relative overflow-hidden rounded-3xl",
-                i === 0 && "sm:col-span-2 lg:col-span-1",
-              )}
+              className="hover-lift group relative overflow-hidden rounded-3xl"
             >
               <img
                 src={dest.image}
                 alt={dest.country}
                 loading="lazy"
-                className="h-72 w-full object-cover transition-transform duration-700 group-hover:scale-105 lg:h-80"
+                className="h-48 w-full object-cover transition-transform duration-700 group-hover:scale-105 sm:h-64 md:h-72 lg:h-80"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/25 to-transparent" />
-              {dest.photos?.slice(1, 4).length ? (
-                <div className="absolute right-3 top-3 flex gap-1">
-                  {dest.photos.slice(1, 4).map((img, i) => (
-                    <img
+              {dest.photos?.filter((p) => !p.includes("images.unsplash.com")).slice(1, 4).length ? (
+                <div className="absolute right-2 top-2 flex gap-1 sm:right-3 sm:top-3">
+                  {dest.photos
+                    .filter((p) => !p.includes("images.unsplash.com"))
+                    .slice(1, 4)
+                    .map((img, i) => (
+                    <SafeImage
                       key={`${dest.id}-${i}`}
                       src={img}
                       alt=""
-                      className="size-10 rounded-lg object-cover ring-1 ring-primary-foreground/40"
+                      className="size-7 rounded-md object-cover ring-1 ring-primary-foreground/40 sm:size-10 sm:rounded-lg"
                     />
                   ))}
                 </div>
               ) : null}
-              <div className="absolute inset-x-0 bottom-0 p-5">
-                <h3 className="font-display text-xl font-semibold text-primary-foreground">
+              <div className="absolute inset-x-0 bottom-0 p-3 sm:p-5">
+                <h3 className="font-display text-base font-semibold text-primary-foreground sm:text-xl">
                   {dest.flag} {dest.country}
                 </h3>
-                <p className="mt-1 text-sm text-primary-foreground/80">{dest.blurb}</p>
-                <p className="mt-2 text-xs font-semibold uppercase tracking-wide text-primary-foreground/70">
+                <p className="mt-1 line-clamp-2 text-xs text-primary-foreground/80 sm:text-sm">
+                  {dest.blurb}
+                </p>
+                <p className="mt-1.5 text-[10px] font-semibold uppercase tracking-wide text-primary-foreground/70 sm:mt-2 sm:text-xs">
                   {dest.tours} предложений · {dest.city}
                 </p>
               </div>
@@ -456,8 +432,8 @@ function Index() {
             to="/excursions"
             className="group relative overflow-hidden rounded-3xl"
           >
-            <img
-              src={destinations.find((d) => d.id === "uae")?.photos?.[2] ?? destinations[1]?.image}
+            <SafeImage
+              src={destPhoto("uae", 2)}
               alt=""
               className="absolute inset-0 size-full object-cover transition-transform duration-700 group-hover:scale-105"
             />
@@ -480,8 +456,8 @@ function Index() {
             to="/assistance"
             className="group relative overflow-hidden rounded-3xl"
           >
-            <img
-              src={destinations.find((d) => d.id === "turkey")?.image}
+            <SafeImage
+              src={destPhoto("turkey", 0)}
               alt=""
               className="absolute inset-0 size-full object-cover transition-transform duration-700 group-hover:scale-105"
             />
@@ -566,7 +542,7 @@ function Index() {
 
       <section className="container-page mt-16 mb-8 md:mt-24">
         <div className="relative overflow-hidden rounded-[2rem]">
-          <img
+          <SafeImage
             src={destPhoto("uae", 2)}
             alt=""
             className="absolute inset-0 size-full object-cover"

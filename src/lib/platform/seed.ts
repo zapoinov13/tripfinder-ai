@@ -16,7 +16,7 @@ import type {
 } from "./types";
 
 export const DEMO_PASSWORD = "demo1234";
-export const STORE_KEY = "tourgo:dubai-platform-v1";
+export const STORE_KEY = "tourgo:dubai-platform-v2";
 
 const cities = ["Алматы", "Астана", "Ташкент", "Бишкек", "Москва", "Санкт-Петербург"];
 const monthNames = [

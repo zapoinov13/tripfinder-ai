@@ -11,6 +11,7 @@ import {
 
 import { Button } from "@/components/ui/button";
 import { PhotoCount } from "@/components/media/photo-gallery";
+import { SafeImage } from "@/components/media/safe-image";
 import {
   formatNumber,
   formatPrice,
@@ -112,7 +113,7 @@ export function TourCard({
           layout === "row" ? "aspect-[4/3] sm:aspect-auto sm:min-h-[280px]" : "aspect-[5/4]",
         )}
       >
-        <img
+        <SafeImage
           src={cover}
           alt={title}
           loading="lazy"

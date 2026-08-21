@@ -1,6 +1,7 @@
 import { ChevronLeft, ChevronRight, Images, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
+import { SafeImage } from "@/components/media/safe-image";
 import { cn } from "@/lib/utils";
 
 export function PhotoGallery({
@@ -44,7 +45,7 @@ export function PhotoGallery({
           onClick={() => setOpen(0)}
           className="relative h-64 overflow-hidden md:row-span-2 md:h-full"
         >
-          <img src={photos[0]} alt={alt} className="size-full object-cover" />
+          <SafeImage src={photos[0]} alt={alt} className="size-full object-cover" />
           <span className="absolute bottom-3 left-3 inline-flex items-center gap-1.5 rounded-full bg-ink/75 px-3 py-1 text-xs font-semibold text-primary-foreground backdrop-blur-sm md:hidden">
             <Images className="size-3.5" />
             {photos.length} фото
@@ -62,7 +63,7 @@ export function PhotoGallery({
                 shown.length === 2 && "md:row-span-2",
               )}
             >
-              <img src={img} alt={`${alt} фото ${i + 2}`} className="size-full object-cover" />
+              <SafeImage src={img} alt={`${alt} фото ${i + 2}`} className="size-full object-cover" />
               {isLast ? (
                 <span className="absolute inset-0 grid place-items-center bg-ink/55 text-sm font-semibold text-primary-foreground">
                   +{extra + 1} фото
@@ -82,7 +83,7 @@ export function PhotoGallery({
               onClick={() => setOpen(i + 1)}
               className="h-16 w-24 shrink-0 overflow-hidden rounded-xl"
             >
-              <img src={img} alt="" className="size-full object-cover" />
+              <SafeImage src={img} alt="" className="size-full object-cover" />
             </button>
           ))}
         </div>
@@ -127,7 +128,7 @@ export function PhotoGallery({
               </button>
             </>
           ) : null}
-          <img
+          <SafeImage
             src={photos[open]}
             alt={`${alt} ${open + 1}`}
             className="max-h-[86vh] max-w-full rounded-2xl object-contain"
