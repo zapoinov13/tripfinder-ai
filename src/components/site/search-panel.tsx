@@ -165,20 +165,23 @@ function Counter({
 export function SearchPanel({
   defaultTab = "classic",
   initialAiQuery = "",
+  showAiTab = true,
 }: {
   defaultTab?: "classic" | "ai";
   initialAiQuery?: string;
+  showAiTab?: boolean;
 }) {
-  const [tab, setTab] = useState<"classic" | "ai">(defaultTab);
+  const [tab, setTab] = useState<"classic" | "ai">(showAiTab ? defaultTab : "classic");
   const [from, setFrom] = useState("Алматы");
-  const [to, setTo] = useState("dubai-beach|JBR");
+  const [to, setTo] = useState("dubai-beach|");
   const [range, setRange] = useState<DateRange | undefined>({
-    from: new Date(2026, 7, 10),
-    to: new Date(2026, 7, 17),
+    from: new Date(2026, 8, 10),
+    to: new Date(2026, 8, 17),
   });
+  const [flexible, setFlexible] = useState(false);
   const [adults, setAdults] = useState(2);
-  const [children, setChildren] = useState(2);
-  const [childAges, setChildAges] = useState<number[]>([7, 10]);
+  const [children, setChildren] = useState(1);
+  const [childAges, setChildAges] = useState<number[]>([8, 10]);
   const [budget, setBudget] = useState<[number, number]>([PRICE_MIN, 2500000]);
   const [meals, setMeals] = useState<string[]>([]);
   const [aiQuery, setAiQuery] = useState(initialAiQuery);
@@ -206,13 +209,14 @@ export function SearchPanel({
         priceMin: budget[0],
         priceMax: budget[1],
         meals,
+        flexibleDates: flexible,
       }) as never,
     });
   };
 
   const dateLabel = range?.from
     ? range.to
-      ? `${dateFormatter.format(range.from).replace(/\s\S+$/, "")}–${dateFormatter.format(range.to)}`
+      ? `${dateFormatter.format(range.from).replace(/\s\S+$/, "")}–${dateFormatter.format(range.to)}${flexible ? " ±3" : ""}`
       : dateFormatter.format(range.from)
     : "Выберите даты";
   const guestsLabelText =
@@ -255,30 +259,33 @@ export function SearchPanel({
 
   return (
     <div className="surface-card overflow-hidden p-2 shadow-lift">
-      <div className="flex gap-1 rounded-2xl bg-secondary/70 p-1">
-        <button
-          type="button"
-          onClick={() => setTab("classic")}
-          className={cn(
-            "flex-1 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors",
-            tab === "classic" ? "bg-card text-foreground shadow-card" : "text-muted-foreground",
-          )}
-        >
-          Найти тур
-        </button>
-        <button
-          type="button"
-          onClick={() => setTab("ai")}
-          className={cn(
-            "flex-1 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors",
-            tab === "ai"
-              ? "gradient-ai text-primary-foreground shadow-card"
-              : "text-muted-foreground",
-          )}
-        >
-          ✨ Найти с AI
-        </button>
-      </div>
+      {showAiTab ? (
+        <div className="flex gap-1 rounded-2xl bg-secondary/70 p-1">
+          <button
+            type="button"
+            onClick={() => setTab("classic")}
+            className={cn(
+              "flex-1 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors",
+              tab === "classic" ? "bg-card text-foreground shadow-card" : "text-muted-foreground",
+            )}
+          >
+            Найти тур
+          </button>
+          <button
+            type="button"
+            onClick={() => setTab("ai")}
+            className={cn(
+              "flex-1 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors",
+              tab === "ai"
+                ? "gradient-ai text-primary-foreground shadow-card"
+                : "text-muted-foreground",
+            )}
+          >
+            ✨ Найти с AI
+          </button>
+        </div>
+      ) : null}
+
 
       {tab === "classic" ? (
         <div className="p-3 md:p-4">
