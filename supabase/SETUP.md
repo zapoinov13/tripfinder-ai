@@ -1,16 +1,20 @@
 # Supabase setup (TourGo)
 
 **Проект:** [mgyufoyornzbwvgdfojb](https://supabase.com/dashboard/project/mgyufoyornzbwvgdfojb)  
-**URL:** `https://mgyufoyornzbwvgdfojb.supabase.co`
+**URL:** `https://mgyufoyornzbwvgdfojb.supabase.co`  
+**SQL Editor:** https://supabase.com/dashboard/project/mgyufoyornzbwvgdfojb/sql/new
 
-## Куда открывать SQL
+## Что сделать сейчас (коротко)
 
-1. Открой: https://supabase.com/dashboard/project/mgyufoyornzbwvgdfojb/sql/new
-2. Скопируй содержимое файла из репозитория целиком
-3. Вставь в SQL Editor → **Run**
-4. Если ошибка «already exists» — это нормально, иди к следующему файлу
+1. Открой SQL Editor по ссылке выше.
+2. По очереди выполни **все 16 файлов** из таблицы ниже: открыл файл → скопировал целиком → вставил → **Run**.
+3. Auth: Dashboard → Authentication → Providers → Email включи. Confirm email для демо можно выключить.
+4. В Lovable и Vercel проверь env (см. ниже).
+5. В Lovable: Security → ignore/resolve critical finding → **Publish**.
 
-Порядок строго сверху вниз. Файлы идемпотентные, повторный запуск безопасен.
+Ошибка `already exists` при Run нормальна: иди к следующему файлу.
+
+## Порядок SQL (строго сверху вниз)
 
 | # | Файл | Зачем |
 |---|------|--------|
@@ -26,45 +30,28 @@
 | 10 | `supabase/migrations/20260821064637_c004e3e1-5b2b-42ed-86e1-cebfb4030cb7.sql` | правки публичных вью |
 | 11 | `supabase/migrations/20260821_requests_and_offers.sql` | заявки туристов и предложения фирм |
 | 12 | `supabase/migrations/20260821_messages_and_reviews.sql` | чат по заявке, отзывы, фото компании |
-| 13 | `supabase/migrations/20260821_public_company_page.sql` | публичная страница турфирмы для туриста |
-| 14 | `supabase/seed.sql` | демо-пользователи и админ `zapoinov@bk.ru` |
+| 13 | `supabase/migrations/20260821_public_company_page.sql` | публичная страница турфирмы + поля фото тура |
+| 14 | `supabase/seed.sql` | демо-пользователи и админ |
 | 15 | `supabase/seed_catalog.sql` | направления, отели, туры |
-| 16 | `supabase/seed_companies.sql` | ещё 3 проверенные турфирмы для сравнения |
+| 16 | `supabase/seed_companies.sql` | ещё 3 проверенные турфирмы |
 
-После шага 13 отдельно выполни в SQL Editor:
+Если база уже частично залита: достаточно проверить, что шаги **11–16** точно выполнены. Шаги 1–10 можно прогнать повторно.
 
-```sql
-alter table public.tour_offers
-  add column if not exists title text not null default '',
-  add column if not exists description text not null default '',
-  add column if not exists photos text[] not null default '{}',
-  add column if not exists videos text[] not null default '{}';
-```
-
-## Auth
-
-Dashboard → Authentication → Providers → Email: включи Email.  
-Confirm email можно выключить на время демо, иначе новые регистрации не зайдут без письма.
-
-## Env в Vercel и Lovable
-
-Те же ключи, что в локальном `.env`:
+## Env в Lovable и Vercel
 
 ```
 VITE_SUPABASE_URL=https://mgyufoyornzbwvgdfojb.supabase.co
-VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_...
+VITE_SUPABASE_PUBLISHABLE_KEY=<publishable key из .env / Supabase API>
 VITE_SUPABASE_PROJECT_ID=mgyufoyornzbwvgdfojb
 ```
 
-Service role в фронт не класть.
+Service role на фронт не класть.
 
 ## Логины после seed.sql
 
 - Админ: `zapoinov@bk.ru` / `zapoinov@bk.ru`
 - Турист: `tourist@tourgo.demo` / `demo1234`
 - Турфирма: `operator@tourgo.demo` / `demo1234`
-
-Если админ не поднимается, локально: `node scripts/ensure-owner-admin.mjs`
 
 ## Security
 
