@@ -259,30 +259,33 @@ export function SearchPanel({
 
   return (
     <div className="surface-card overflow-hidden p-2 shadow-lift">
-      <div className="flex gap-1 rounded-2xl bg-secondary/70 p-1">
-        <button
-          type="button"
-          onClick={() => setTab("classic")}
-          className={cn(
-            "flex-1 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors",
-            tab === "classic" ? "bg-card text-foreground shadow-card" : "text-muted-foreground",
-          )}
-        >
-          Найти тур
-        </button>
-        <button
-          type="button"
-          onClick={() => setTab("ai")}
-          className={cn(
-            "flex-1 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors",
-            tab === "ai"
-              ? "gradient-ai text-primary-foreground shadow-card"
-              : "text-muted-foreground",
-          )}
-        >
-          ✨ Найти с AI
-        </button>
-      </div>
+      {showAiTab ? (
+        <div className="flex gap-1 rounded-2xl bg-secondary/70 p-1">
+          <button
+            type="button"
+            onClick={() => setTab("classic")}
+            className={cn(
+              "flex-1 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors",
+              tab === "classic" ? "bg-card text-foreground shadow-card" : "text-muted-foreground",
+            )}
+          >
+            Найти тур
+          </button>
+          <button
+            type="button"
+            onClick={() => setTab("ai")}
+            className={cn(
+              "flex-1 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors",
+              tab === "ai"
+                ? "gradient-ai text-primary-foreground shadow-card"
+                : "text-muted-foreground",
+            )}
+          >
+            ✨ Найти с AI
+          </button>
+        </div>
+      ) : null}
+
 
       {tab === "classic" ? (
         <div className="p-3 md:p-4">
