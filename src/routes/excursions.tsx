@@ -173,7 +173,7 @@ function ExcursionsPage() {
                   src={item.image}
                   alt={item.country}
                   loading="lazy"
-                  className="h-64 w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  className="h-72 w-full object-cover transition-transform duration-700 group-hover:scale-105"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/25 to-transparent" />
                 <div className="absolute inset-x-0 bottom-0 p-5">
@@ -199,7 +199,7 @@ function ExcursionsPage() {
                 onClick={() => go({ destination: dest.id, city: item.city })}
                 className="hover-lift group overflow-hidden rounded-3xl border border-border bg-card text-left shadow-card"
               >
-                <div className="relative h-44 overflow-hidden">
+                <div className="relative h-52 overflow-hidden">
                   <img
                     src={item.image}
                     alt={item.city}
@@ -253,7 +253,21 @@ function ExcursionsPage() {
               <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                 {visible.map((e) => (
                   <article key={e.id} className="surface-card overflow-hidden">
-                    <img src={e.image} alt="" className="h-44 w-full object-cover" loading="lazy" />
+                    <div className="relative">
+                      <img src={e.image} alt={e.title} className="h-56 w-full object-cover" loading="lazy" />
+                      {e.photos?.length > 1 ? (
+                        <div className="absolute inset-x-3 bottom-3 flex gap-1.5">
+                          {e.photos.slice(1, 4).map((img, i) => (
+                            <img
+                              key={`${e.id}-${i}`}
+                              src={img}
+                              alt=""
+                              className="h-12 w-16 rounded-lg object-cover ring-1 ring-primary-foreground/50"
+                            />
+                          ))}
+                        </div>
+                      ) : null}
+                    </div>
                     <div className="p-5">
                       <Badge className="bg-secondary text-muted-foreground">{e.category}</Badge>
                       <h2 className="mt-2 font-display text-lg font-semibold">{e.title}</h2>

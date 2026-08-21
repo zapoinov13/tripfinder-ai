@@ -43,7 +43,7 @@ const categories = [
 ];
 
 function ExperiencesPage() {
-  const hero = destinations.find((d) => d.id === "dubai-experiences") ?? destinations[0]!;
+  const hero = destinations.find((d) => d.id === "uae") ?? destinations[0]!;
   const featured = experienceTours.slice(0, 3);
   const avgPrice = Math.round(
     experienceTours.reduce((sum, tour) => sum + tour.price, 0) /
@@ -92,6 +92,19 @@ function ExperiencesPage() {
           </div>
         </div>
       </section>
+
+      {(hero.photos?.length ?? 0) > 1 ? (
+        <div className="container-page mt-6 flex gap-2 overflow-x-auto pb-1 no-scrollbar">
+          {hero.photos.slice(0, 8).map((img, i) => (
+            <img
+              key={`${img}-${i}`}
+              src={img}
+              alt=""
+              className="h-28 w-44 shrink-0 rounded-2xl object-cover md:h-36 md:w-56"
+            />
+          ))}
+        </div>
+      ) : null}
 
       <section className="container-page mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {[

@@ -1,14 +1,5 @@
-import destTurkey from "@/assets/dest-turkey.jpg";
-import destUae from "@/assets/dest-uae.jpg";
-import destThailand from "@/assets/dest-thailand.jpg";
-import destEgypt from "@/assets/dest-egypt.jpg";
-import destVietnam from "@/assets/dest-vietnam.jpg";
-import destMaldives from "@/assets/dest-maldives.jpg";
-import hotel1 from "@/assets/hotel-1.jpg";
-import hotel2 from "@/assets/hotel-2.jpg";
-import hotel3 from "@/assets/hotel-3.jpg";
-import hotel4 from "@/assets/hotel-4.jpg";
 import { destinations, resortsByDestination } from "@/data/demo";
+import { cityCover, excursionGallery } from "@/data/photos";
 
 export type ExcursionCategory = "Экскурсии" | "Развлечения" | "Море" | "Трансферы";
 
@@ -21,13 +12,11 @@ export type Excursion = {
   duration: string;
   price: number;
   image: string;
+  photos: string[];
   summary: string;
   includes: string[];
   company: string;
 };
-
-const photos = [hotel1, hotel2, hotel3, hotel4, destTurkey, destUae, destThailand, destEgypt, destVietnam, destMaldives];
-const photo = (i: number) => photos[i % photos.length]!;
 
 type Seed = [
   id: string,
@@ -110,19 +99,23 @@ const seeds: Seed[] = [
   ["exc-ubud-swing", "Качели над джунглями", "indonesia", "Убуд", "Развлечения", "3 часа", 20000, 2, "Фото на качелях и короткая прогулка по рисовым полям.", ["Вход", "Фото"], "Bali Local"],
 ];
 
-export const excursions: Excursion[] = seeds.map((row) => ({
-  id: row[0],
-  title: row[1],
-  destinationId: row[2],
-  city: row[3],
-  category: row[4],
-  duration: row[5],
-  price: row[6],
-  image: photo(row[7]),
-  summary: row[8],
-  includes: row[9],
-  company: row[10],
-}));
+export const excursions: Excursion[] = seeds.map((row, i) => {
+  const photos = excursionGallery(row[0], row[2], i);
+  return {
+    id: row[0],
+    title: row[1],
+    destinationId: row[2],
+    city: row[3],
+    category: row[4],
+    duration: row[5],
+    price: row[6],
+    image: photos[0]!,
+    photos,
+    summary: row[8],
+    includes: row[9],
+    company: row[10],
+  };
+});
 
 export const excursionCategories: ExcursionCategory[] = [
   "Экскурсии",
@@ -147,7 +140,7 @@ export function getExcursionCities(destinationId: string) {
     city,
     count: list.filter((e) => e.city === city).length,
     blurb: resortsByDestination[destinationId]?.find((r) => r.name === city)?.blurb ?? "",
-    image: list.find((e) => e.city === city)?.image ?? photos[0]!,
+    image: cityCover(destinationId, city, names.indexOf(city)),
   }));
 }
 

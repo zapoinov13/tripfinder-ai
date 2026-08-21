@@ -28,3 +28,10 @@ CREATE OR REPLACE VIEW public.organizations_public AS
 
 ALTER VIEW public.organizations_public SET (security_invoker = false);
 GRANT SELECT ON public.organizations_public TO anon, authenticated;
+
+-- Фото и описание тура, которые компания добавляет в кабинете.
+alter table public.tour_offers
+  add column if not exists title text not null default '',
+  add column if not exists description text not null default '',
+  add column if not exists photos text[] not null default '{}',
+  add column if not exists videos text[] not null default '{}';

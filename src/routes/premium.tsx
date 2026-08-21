@@ -2,7 +2,7 @@ import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 
 import { SiteLayout } from "@/components/site/site-layout";
 import { Button } from "@/components/ui/button";
-import { formatPrice, getHotel } from "@/data/demo";
+import { formatPrice, getHotel, tourCover } from "@/data/demo";
 import { useAuth } from "@/lib/platform/auth";
 import { trackEvent } from "@/lib/platform/catalog";
 import { usePlatformStore } from "@/lib/platform/hooks";
@@ -99,10 +99,10 @@ function PremiumPage() {
               return (
                 <div key={tour.id} className="surface-card overflow-hidden">
                   <img
-                    src={hotel.image}
+                    src={tourCover(tour, hotel)}
                     alt={hotel.name}
                     loading="lazy"
-                    className="h-44 w-full object-cover"
+                    className="h-56 w-full object-cover"
                   />
                   <div className="p-5">
                     <div className="text-xs font-semibold text-premium">PREMIUM</div>

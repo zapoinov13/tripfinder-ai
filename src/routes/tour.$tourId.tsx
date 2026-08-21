@@ -22,6 +22,7 @@ import {
 import { useEffect, useState } from "react";
 
 import { SiteLayout } from "@/components/site/site-layout";
+import { PhotoGallery } from "@/components/media/photo-gallery";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -34,7 +35,6 @@ import {
   amenityLabels,
   formatPrice,
   formatNumber,
-  galleryImages,
   getOperator,
   getTour,
   guestsLabel,
@@ -43,7 +43,7 @@ import {
   availabilityLabel,
   priceFreshnessMinutes,
   supplierTrustScore,
-  tourCover,
+  tourPhotos,
   type Hotel,
   type Tour,
 } from "@/data/demo";
@@ -122,9 +122,7 @@ function buildPriceBreakdown(tour: Tour) {
 
 function TourPage() {
   const { tour, hotel, operator } = Route.useLoaderData();
-  const gallery = tour.photos?.length
-    ? tour.photos
-    : [tourCover(tour, hotel), ...galleryImages.filter((img) => img !== hotel.image)].slice(0, 3);
+  const gallery = tourPhotos(tour, hotel);
   const navigate = useNavigate();
   const { user, isAuthenticated, isPremium } = useAuth();
   const {
@@ -208,22 +206,7 @@ function TourPage() {
   return (
     <SiteLayout>
       <div className="container-page py-4 pb-[calc(10.5rem+env(safe-area-inset-bottom))] md:py-6 lg:pb-6">
-        <div className="grid gap-2 overflow-hidden rounded-2xl md:rounded-3xl md:grid-cols-[2fr_1fr] md:grid-rows-2">
-          <img
-            src={gallery[0]}
-            alt={tour.title || hotel.name}
-            className="h-60 w-full object-cover sm:h-72 md:row-span-2 md:h-[420px]"
-          />
-          {gallery.slice(1, 3).map((img, i) => (
-            <img
-              key={`${img}-${i}`}
-              src={img}
-              alt={`${tour.title || hotel.name} фото ${i + 2}`}
-              loading="lazy"
-              className="hidden h-[206px] w-full object-cover md:block"
-            />
-          ))}
-        </div>
+        <PhotoGallery images={gallery} alt={tour.title || hotel.name} />
 
         <div className="mt-6 grid gap-4 md:mt-8 md:grid-cols-[minmax(0,1fr)_auto] md:items-start">
           <div className="min-w-0">

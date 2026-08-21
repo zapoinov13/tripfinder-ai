@@ -40,7 +40,7 @@ function DestinationsPage() {
                 src={dest.image}
                 alt={dest.country}
                 loading="lazy"
-                className="h-64 w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                className="h-80 w-full object-cover transition-transform duration-700 group-hover:scale-105"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-ink/85 to-transparent" />
               <div className="absolute inset-x-0 bottom-0 p-5">

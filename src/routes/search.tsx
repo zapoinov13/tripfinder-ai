@@ -648,7 +648,7 @@ function SearchPage() {
                     : "border-border bg-card hover:border-primary/40",
                 )}
               >
-                <img src={dest.image} alt="" className="h-12 w-16 object-cover" />
+                <img src={dest.image} alt="" className="h-16 w-24 object-cover" />
                 <span>
                   <span className="block text-sm font-semibold">
                     {dest.flag} {dest.country}

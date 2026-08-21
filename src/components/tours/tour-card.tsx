@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { PhotoCount } from "@/components/media/photo-gallery";
 import {
   formatNumber,
   formatPrice,
@@ -17,6 +18,7 @@ import {
   guestsLabel,
   nightsLabel,
   tourCover,
+  tourPhotos,
   type Tour,
 } from "@/data/demo";
 import { useAuth } from "@/lib/platform/auth";
@@ -69,6 +71,7 @@ export function TourCard({
   const hotel = getHotel(tour.hotelId);
   const operator = getOperator(tour.operatorId);
   const cover = tourCover(tour, hotel);
+  const shots = tourPhotos(tour, hotel);
   const title = tour.title || hotel.name;
   const { isFavorite, toggleFavorite, isCompared, toggleCompare } = useTourState();
   const { isPremium } = useAuth();
@@ -106,7 +109,7 @@ export function TourCard({
       <div
         className={cn(
           "relative overflow-hidden",
-          layout === "row" ? "aspect-[4/3] sm:aspect-auto sm:min-h-[220px]" : "aspect-[4/3]",
+          layout === "row" ? "aspect-[4/3] sm:aspect-auto sm:min-h-[280px]" : "aspect-[5/4]",
         )}
       >
         <img
@@ -151,14 +154,26 @@ export function TourCard({
             <Heart className={cn("size-4", fav && "fill-current")} />
           </button>
         </div>
-        <div className="absolute inset-x-3 bottom-3 z-20 flex flex-wrap gap-1.5">
-          <span className="rounded-full bg-card/95 px-2.5 py-1 text-[11px] font-semibold shadow-sm">
-            {nightsLabel(tour.nights)}
-          </span>
-          <span className="rounded-full bg-card/95 px-2.5 py-1 text-[11px] font-medium text-muted-foreground shadow-sm">
-            {tour.meal}
-          </span>
+        <div className="absolute inset-x-3 bottom-3 z-20 flex flex-wrap items-end justify-between gap-1.5">
+          <div className="flex flex-wrap gap-1.5">
+            <span className="rounded-full bg-card/95 px-2.5 py-1 text-[11px] font-semibold shadow-sm">
+              {nightsLabel(tour.nights)}
+            </span>
+            <span className="rounded-full bg-card/95 px-2.5 py-1 text-[11px] font-medium text-muted-foreground shadow-sm">
+              {tour.meal}
+            </span>
+          </div>
+          <PhotoCount count={shots.length} />
         </div>
+        {shots.length > 2 ? (
+          <div className="absolute inset-x-3 bottom-12 z-20 hidden gap-1.5 sm:flex">
+            {shots.slice(1, 4).map((img, i) => (
+              <span key={`${img}-${i}`} className="h-12 w-16 overflow-hidden rounded-lg ring-1 ring-primary-foreground/40">
+                <img src={img} alt="" className="size-full object-cover" />
+              </span>
+            ))}
+          </div>
+        ) : null}
       </div>
 
       <div

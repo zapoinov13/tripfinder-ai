@@ -1,17 +1,14 @@
 import heroImg from "@/assets/hero.jpg";
-import destTurkey from "@/assets/dest-turkey.jpg";
-import destUae from "@/assets/dest-uae.jpg";
-import destThailand from "@/assets/dest-thailand.jpg";
-import destEgypt from "@/assets/dest-egypt.jpg";
-import destVietnam from "@/assets/dest-vietnam.jpg";
-import destMaldives from "@/assets/dest-maldives.jpg";
-import hotel1 from "@/assets/hotel-1.jpg";
-import hotel2 from "@/assets/hotel-2.jpg";
-import hotel3 from "@/assets/hotel-3.jpg";
-import hotel4 from "@/assets/hotel-4.jpg";
+import {
+  destinationCover,
+  destinationPhotos,
+  fallbackGallery,
+  hotelPhotos as hotelPhotoSet,
+  rotate,
+} from "@/data/photos";
 
 export const heroImage = heroImg;
-export const galleryImages = [hotel1, hotel2, hotel3, hotel4];
+export const galleryImages = fallbackGallery;
 
 export type Destination = {
   id: string;
@@ -21,6 +18,7 @@ export type Destination = {
   blurb: string;
   tours: number;
   image: string;
+  photos: string[];
 };
 
 export type Resort = {
@@ -97,7 +95,8 @@ export const destinations: Destination[] = [
     flag: "🇹🇷",
     blurb: "Пляжи, all inclusive и короткий перелёт",
     tours: 1284,
-    image: destTurkey,
+    image: destinationCover("turkey"),
+    photos: destinationPhotos("turkey", 10),
   },
   {
     id: "uae",
@@ -106,7 +105,8 @@ export const destinations: Destination[] = [
     flag: "🇦🇪",
     blurb: "Городской люкс и пляжные резорты",
     tours: 942,
-    image: destUae,
+    image: destinationCover("uae"),
+    photos: destinationPhotos("uae", 10),
   },
   {
     id: "thailand",
@@ -115,7 +115,8 @@ export const destinations: Destination[] = [
     flag: "🇹🇭",
     blurb: "Тропики, острова и спа",
     tours: 763,
-    image: destThailand,
+    image: destinationCover("thailand"),
+    photos: destinationPhotos("thailand", 10),
   },
   {
     id: "egypt",
@@ -124,7 +125,8 @@ export const destinations: Destination[] = [
     flag: "🇪🇬",
     blurb: "Красное море и лучший дайвинг",
     tours: 651,
-    image: destEgypt,
+    image: destinationCover("egypt"),
+    photos: destinationPhotos("egypt", 10),
   },
   {
     id: "vietnam",
@@ -133,7 +135,8 @@ export const destinations: Destination[] = [
     flag: "🇻🇳",
     blurb: "Океан, кухня и природа",
     tours: 418,
-    image: destVietnam,
+    image: destinationCover("vietnam"),
+    photos: destinationPhotos("vietnam", 10),
   },
   {
     id: "maldives",
@@ -142,7 +145,8 @@ export const destinations: Destination[] = [
     flag: "🇲🇻",
     blurb: "Виллы над водой и приватность",
     tours: 287,
-    image: destMaldives,
+    image: destinationCover("maldives"),
+    photos: destinationPhotos("maldives", 10),
   },
   {
     id: "georgia",
@@ -151,7 +155,8 @@ export const destinations: Destination[] = [
     flag: "🇬🇪",
     blurb: "Море, горы и гастрономия",
     tours: 312,
-    image: destTurkey,
+    image: destinationCover("georgia"),
+    photos: destinationPhotos("georgia", 10),
   },
   {
     id: "qatar",
@@ -160,7 +165,8 @@ export const destinations: Destination[] = [
     flag: "🇶🇦",
     blurb: "Новые отели и короткие поездки",
     tours: 164,
-    image: destUae,
+    image: destinationCover("qatar"),
+    photos: destinationPhotos("qatar", 10),
   },
   {
     id: "srilanka",
@@ -169,7 +175,8 @@ export const destinations: Destination[] = [
     flag: "🇱🇰",
     blurb: "Океан, чай и аюрведа",
     tours: 208,
-    image: destThailand,
+    image: destinationCover("srilanka"),
+    photos: destinationPhotos("srilanka", 10),
   },
   {
     id: "indonesia",
@@ -178,7 +185,8 @@ export const destinations: Destination[] = [
     flag: "🇮🇩",
     blurb: "Серф, джунгли и виллы",
     tours: 356,
-    image: destVietnam,
+    image: destinationCover("indonesia"),
+    photos: destinationPhotos("indonesia", 10),
   },
 ];
 
@@ -212,6 +220,7 @@ export type Hotel = {
   distanceToSea: number;
   amenities: string[];
   image: string;
+  photos?: string[];
 };
 
 /** Canonical amenity keys used by filters. */
@@ -513,14 +522,13 @@ const hotelSeed: Array<
   ],
 ];
 
-const hotelImages = [hotel1, hotel2, hotel3, hotel4];
-
 export const hotels: Hotel[] = hotelSeed.map(
   (
     [name, destinationId, city, stars, rating, district, beachLine, distanceToSea, amenities],
     i,
   ) => {
     const dest = destinations.find((d) => d.id === destinationId)!;
+    const photos = hotelPhotoSet(destinationId, i, 12);
     return {
       id: `hotel-${i + 1}`,
       name,
@@ -535,7 +543,8 @@ export const hotels: Hotel[] = hotelSeed.map(
       beachLine,
       distanceToSea,
       amenities,
-      image: hotelImages[i % hotelImages.length]!,
+      image: photos[0]!,
+      photos,
     };
   },
 );
@@ -670,6 +679,7 @@ export const tours: Tour[] = Array.from({ length: 200 }, (_, i) => {
     views: 1200 + ((i * 371) % 9000),
     bookings: 3 + ((i * 7) % 40),
     createdAt: iso(new Date(2026, 5, 1 + ((i * 11) % 60))),
+    photos: rotate(hotel.photos ?? [hotel.image], i),
   };
 });
 
@@ -706,8 +716,15 @@ export const getTour = (id: string) => {
   return tours.find((t) => t.id === id);
 };
 
+export const tourPhotos = (tour: Tour, hotel = getHotel(tour.hotelId)) => {
+  const live = tour.photos?.filter(Boolean) ?? [];
+  if (live.length) return live;
+  if (hotel.photos?.length) return hotel.photos;
+  return hotel.image ? [hotel.image] : galleryImages;
+};
+
 export const tourCover = (tour: Tour, hotel = getHotel(tour.hotelId)) =>
-  tour.photos?.[0] || hotel.image;
+  tourPhotos(tour, hotel)[0] || hotel.image;
 
 export const hotTours = tours.filter((t) => t.tags.includes("hot")).slice(0, 4);
 export const premiumTours = tours.filter((t) => t.tags.includes("premium")).slice(0, 3);

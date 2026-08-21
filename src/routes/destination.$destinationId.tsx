@@ -5,6 +5,7 @@ import { SiteLayout } from "@/components/site/site-layout";
 import { TourCard } from "@/components/tours/tour-card";
 import { Button } from "@/components/ui/button";
 import { formatNumber, getDestination, getResorts, getToursByDestination } from "@/data/demo";
+import { cityCover } from "@/data/photos";
 
 export const Route = createFileRoute("/destination/$destinationId")({
   loader: ({ params }) => {
@@ -60,7 +61,7 @@ function DestinationPage() {
   return (
     <SiteLayout>
       <section className="relative">
-        <img src={dest.image} alt={dest.country} className="h-72 w-full object-cover md:h-96" />
+        <img src={dest.image} alt={dest.country} className="h-[22rem] w-full object-cover md:h-[28rem]" />
         <div className="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/40 to-transparent" />
         <div className="container-page absolute inset-x-0 bottom-0 pb-8">
           <Link
@@ -79,6 +80,19 @@ function DestinationPage() {
         </div>
       </section>
 
+      {(dest.photos?.length ?? 0) > 1 ? (
+        <div className="container-page mt-4 flex gap-2 overflow-x-auto pb-1 no-scrollbar md:mt-6">
+          {dest.photos.slice(1, 8).map((img, i) => (
+            <img
+              key={`${img}-${i}`}
+              src={img}
+              alt=""
+              className="h-28 w-44 shrink-0 rounded-2xl object-cover shadow-card md:h-36 md:w-56"
+            />
+          ))}
+        </div>
+      ) : null}
+
       <section className="container-page mt-12">
         <h2 className="font-display text-2xl font-semibold md:text-3xl">
           Курорты: {dest.country}
@@ -92,18 +106,24 @@ function DestinationPage() {
               key={resort.name}
               to="/search"
               search={{ destination: dest.id, city: resort.name } as never}
-              className="surface-card hover-lift group flex items-start gap-3 p-5"
+              className="hover-lift group relative overflow-hidden rounded-3xl"
             >
-              <span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-secondary text-primary">
-                <MapPin className="size-4" />
-              </span>
-              <span className="min-w-0 flex-1">
+              <img
+                src={cityCover(dest.id, resort.name)}
+                alt={resort.name}
+                className="h-52 w-full object-cover transition-transform duration-700 group-hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/20 to-transparent" />
+              <span className="absolute inset-x-0 bottom-0 p-5">
                 <span className="flex items-center gap-2">
-                  <span className="truncate font-display text-lg font-semibold">{resort.name}</span>
-                  <ArrowRight className="size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-1" />
+                  <MapPin className="size-4 text-primary-foreground/80" />
+                  <span className="font-display text-lg font-semibold text-primary-foreground">
+                    {resort.name}
+                  </span>
+                  <ArrowRight className="size-4 text-primary-foreground/70 transition-transform group-hover:translate-x-1" />
                 </span>
-                <span className="mt-1 block text-sm text-muted-foreground">{resort.blurb}</span>
-                <span className="mt-3 block text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                <span className="mt-1 block text-sm text-primary-foreground/80">{resort.blurb}</span>
+                <span className="mt-3 block text-xs font-semibold uppercase tracking-wide text-primary-foreground/70">
                   {formatNumber(resort.tours)} туров
                 </span>
               </span>

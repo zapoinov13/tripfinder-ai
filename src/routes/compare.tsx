@@ -10,6 +10,7 @@ import {
   getOperator,
   getTour,
   nightsLabel,
+  tourCover,
   type Tour,
 } from "@/data/demo";
 import { useTourState } from "@/lib/tour-state";
@@ -115,10 +116,10 @@ function ComparePage() {
                     >
                       <div className="relative">
                         <img
-                          src={hotel.image}
+                          src={tourCover(tour, hotel)}
                           alt={hotel.name}
                           loading="lazy"
-                          className="h-32 w-full rounded-2xl object-cover"
+                          className="h-44 w-full rounded-2xl object-cover"
                         />
                         <button
                           type="button"

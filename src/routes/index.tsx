@@ -4,7 +4,6 @@ import {
   Building2,
   Flame,
   Layers,
-  MapPinned,
   Scale,
   ShieldCheck,
   Sparkles,
@@ -85,12 +84,7 @@ const steps = [
   { n: "4", title: "Выберите", text: "Сравните условия и свяжитесь с подходящей компанией." },
 ];
 
-const availableNow = ["uae"];
-
 function Index() {
-  const ready = destinations.filter((d) => availableNow.includes(d.id));
-  const soon = destinations.filter((d) => !availableNow.includes(d.id)).slice(0, 5);
-
   return (
     <SiteLayout>
       <section className="relative isolate overflow-hidden">
@@ -126,13 +120,14 @@ function Index() {
           </div>
 
           <div className="animate-fade-up animation-delay-300 mt-4 flex gap-2 overflow-x-auto pb-1 no-scrollbar">
-            {destinations.slice(0, 6).map((dest) => (
+            {destinations.map((dest) => (
               <Link
                 key={dest.id}
                 to="/destination/$destinationId"
                 params={{ destinationId: dest.id }}
-                className="shrink-0 rounded-full border border-primary-foreground/20 bg-primary-foreground/10 px-3.5 py-2 text-sm text-primary-foreground backdrop-blur-md transition-colors hover:bg-primary-foreground/20"
+                className="flex shrink-0 items-center gap-2 rounded-full border border-primary-foreground/20 bg-primary-foreground/10 py-1 pr-3.5 pl-1 text-sm text-primary-foreground backdrop-blur-md transition-colors hover:bg-primary-foreground/20"
               >
+                <img src={dest.image} alt="" className="size-8 rounded-full object-cover" />
                 {dest.flag} {dest.country}
               </Link>
             ))}
@@ -236,41 +231,46 @@ function Index() {
 
       <section className="container-page mt-16 md:mt-24">
         <SectionHead title="Популярные направления" />
-        <p className="mt-6 text-sm font-semibold text-success">Доступно сейчас</p>
-        <div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {ready.map((dest) => (
+        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {destinations.map((dest, i) => (
             <Link
               key={dest.id}
               to="/destination/$destinationId"
               params={{ destinationId: dest.id }}
-              className="hover-lift group relative overflow-hidden rounded-3xl"
+              className={cn(
+                "hover-lift group relative overflow-hidden rounded-3xl",
+                i === 0 && "sm:col-span-2 lg:col-span-1",
+              )}
             >
               <img
                 src={dest.image}
                 alt={dest.country}
                 loading="lazy"
-                className="h-64 w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                className="h-72 w-full object-cover transition-transform duration-700 group-hover:scale-105 lg:h-80"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/25 to-transparent" />
+              {dest.photos?.slice(1, 4).length ? (
+                <div className="absolute right-3 top-3 flex gap-1">
+                  {dest.photos.slice(1, 4).map((img, i) => (
+                    <img
+                      key={`${dest.id}-${i}`}
+                      src={img}
+                      alt=""
+                      className="size-10 rounded-lg object-cover ring-1 ring-primary-foreground/40"
+                    />
+                  ))}
+                </div>
+              ) : null}
               <div className="absolute inset-x-0 bottom-0 p-5">
                 <h3 className="font-display text-xl font-semibold text-primary-foreground">
                   {dest.flag} {dest.country}
                 </h3>
                 <p className="mt-1 text-sm text-primary-foreground/80">{dest.blurb}</p>
+                <p className="mt-2 text-xs font-semibold uppercase tracking-wide text-primary-foreground/70">
+                  {dest.tours} предложений · {dest.city}
+                </p>
               </div>
             </Link>
-          ))}
-        </div>
-
-        <p className="mt-8 text-sm font-semibold text-muted-foreground">Скоро</p>
-        <div className="mt-3 flex flex-wrap gap-2">
-          {soon.map((dest) => (
-            <span
-              key={dest.id}
-              className="rounded-full border border-border bg-card px-4 py-2 text-sm text-muted-foreground"
-            >
-              {dest.flag} {dest.country}
-            </span>
           ))}
         </div>
       </section>
@@ -279,40 +279,50 @@ function Index() {
         <div className="grid gap-5 md:grid-cols-2">
           <Link
             to="/excursions"
-            className="surface-card group flex flex-col justify-between gap-5 p-6 transition-colors hover:border-primary/40 md:p-8"
+            className="group relative overflow-hidden rounded-3xl"
           >
-            <div>
-              <span className="grid size-11 place-items-center rounded-2xl bg-primary-soft text-primary">
-                <MapPinned className="size-5" />
-              </span>
-              <h3 className="mt-5 font-display text-xl font-semibold">Экскурсии и развлечения</h3>
-              <p className="mt-2 text-sm text-muted-foreground">
+            <img
+              src={destinations.find((d) => d.id === "uae")?.photos?.[2] ?? destinations[1]?.image}
+              alt=""
+              className="absolute inset-0 size-full object-cover transition-transform duration-700 group-hover:scale-105"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/45 to-ink/15" />
+            <div className="relative flex h-full min-h-[260px] flex-col justify-end p-6 md:p-8">
+              <h3 className="font-display text-xl font-semibold text-primary-foreground">
+                Экскурсии и развлечения
+              </h3>
+              <p className="mt-2 text-sm text-primary-foreground/80">
                 Сначала страна, затем город. Потом только доступные экскурсии, море и развлечения.
               </p>
+              <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-primary-foreground">
+                Смотреть экскурсии
+                <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
+              </span>
             </div>
-            <span className="inline-flex items-center gap-1.5 text-sm font-medium text-primary">
-              Смотреть экскурсии
-              <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
-            </span>
           </Link>
 
           <Link
             to="/assistance"
-            className="surface-card group flex flex-col justify-between gap-5 p-6 transition-colors hover:border-primary/40 md:p-8"
+            className="group relative overflow-hidden rounded-3xl"
           >
-            <div>
-              <span className="grid size-11 place-items-center rounded-2xl bg-ai/10 text-ai">
-                <Users className="size-5" />
-              </span>
-              <h3 className="mt-5 font-display text-xl font-semibold">Помощь в поездке</h3>
-              <p className="mt-2 text-sm text-muted-foreground">
+            <img
+              src={destinations.find((d) => d.id === "turkey")?.image}
+              alt=""
+              className="absolute inset-0 size-full object-cover transition-transform duration-700 group-hover:scale-105"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/45 to-ink/15" />
+            <div className="relative flex h-full min-h-[260px] flex-col justify-end p-6 md:p-8">
+              <h3 className="font-display text-xl font-semibold text-primary-foreground">
+                Помощь в поездке
+              </h3>
+              <p className="mt-2 text-sm text-primary-foreground/80">
                 Уже на месте? Выберите город и задачу. Компании рядом пришлют варианты и цены.
               </p>
+              <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-primary-foreground">
+                Оставить заявку
+                <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
+              </span>
             </div>
-            <span className="inline-flex items-center gap-1.5 text-sm font-medium text-primary">
-              Оставить заявку
-              <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
-            </span>
           </Link>
         </div>
       </section>
