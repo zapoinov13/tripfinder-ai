@@ -209,13 +209,14 @@ export function SearchPanel({
         priceMin: budget[0],
         priceMax: budget[1],
         meals,
+        flexibleDates: flexible,
       }) as never,
     });
   };
 
   const dateLabel = range?.from
     ? range.to
-      ? `${dateFormatter.format(range.from).replace(/\s\S+$/, "")}–${dateFormatter.format(range.to)}`
+      ? `${dateFormatter.format(range.from).replace(/\s\S+$/, "")}–${dateFormatter.format(range.to)}${flexible ? " ±3" : ""}`
       : dateFormatter.format(range.from)
     : "Выберите даты";
   const guestsLabelText =
