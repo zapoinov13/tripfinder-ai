@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/lib/platform/auth";
-import { DEMO_PASSWORD } from "@/lib/platform/seed";
 import { getState } from "@/lib/platform/store";
 import { migrateAnonymousToUser } from "@/lib/platform/user-data";
 
@@ -22,10 +21,10 @@ export const Route = createFileRoute("/login")({
 });
 
 function LoginPage() {
-  const { login, user, supabaseEnabled } = useAuth();
+  const { login, user } = useAuth();
   const navigate = useNavigate();
-  const [email, setEmail] = useState("tourist@tourgo.demo");
-  const [password, setPassword] = useState(DEMO_PASSWORD);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -44,8 +43,7 @@ function LoginPage() {
         <div className="surface-card w-full max-w-md p-6 md:p-8">
           <h1 className="font-display text-2xl font-semibold">Войти в TourGo</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Демо: tourist / premium / operator / admin @tourgo.demo · пароль {DEMO_PASSWORD}
-            {supabaseEnabled ? " · Supabase Auth" : " · local store"}
+            Введите email и пароль, чтобы продолжить.
           </p>
           <form
             className="mt-6 space-y-4"

@@ -16,12 +16,11 @@ export class MockOperatorAdapter implements TourOperatorAdapter {
 
   async testConnection(): Promise<{ ok: boolean; message: string }> {
     await delay(300);
-    // Simulate occasional failure for org ending with pending operator org
     const org = getState().organizations.find((o) => o.id === this.organizationId);
     if (org?.status === "SUSPENDED") {
-      return { ok: false, message: "Organization suspended" };
+      return { ok: false, message: "Поставщик приостановлен" };
     }
-    return { ok: true, message: "Mock API connection OK" };
+    return { ok: true, message: "API поставщика доступен" };
   }
 
   async getDestinations() {
@@ -97,7 +96,7 @@ export class MockOperatorAdapter implements TourOperatorAdapter {
     return { cancelled: true };
   }
 
-  /** Sync catalog from mock feed into platform store */
+  /** Sync catalog from supplier feed into platform store */
   async sync(options?: { fail?: boolean }) {
     await delay(500);
     if (options?.fail) {
@@ -108,7 +107,7 @@ export class MockOperatorAdapter implements TourOperatorAdapter {
         toursImported: 0,
         toursUpdated: 0,
         toursRemoved: 0,
-        message: "Mock API timeout",
+        message: "Поставщик не ответил за отведённое время",
         createdAt: nowIso(),
       };
       setState((s) => ({
@@ -145,7 +144,7 @@ export class MockOperatorAdapter implements TourOperatorAdapter {
       toursImported: 0,
       toursUpdated: updated,
       toursRemoved: 0,
-      message: `Synced ${updated} tours`,
+      message: `Синхронизировано предложений: ${updated}`,
       createdAt: nowIso(),
     };
     setState((s) => ({ ...s, syncLogs: [log, ...s.syncLogs] }));

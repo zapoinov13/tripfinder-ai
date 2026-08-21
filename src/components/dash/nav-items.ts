@@ -78,7 +78,7 @@ export function useOperatorNav(orgId?: string): DashItem[] {
 const adminNavBase: DashItem[] = [
   { label: "Обзор", to: "/admin", icon: Gauge },
   { label: "Пользователи", to: "/admin/users", icon: Users },
-  { label: "Операторы", to: "/admin/operators", icon: Building },
+  { label: "Турфирмы", to: "/admin/operators", icon: Building },
   { label: "Туры", to: "/admin/tours", icon: Luggage },
   { label: "Бронирования", to: "/admin/bookings", icon: Ticket },
   { label: "Платежи", to: "/admin/payments", icon: Receipt },
@@ -87,6 +87,7 @@ const adminNavBase: DashItem[] = [
   { label: "Мониторинг API", to: "/admin/api-monitoring", icon: Cable },
   { label: "Журнал аудита", to: "/admin/audit-logs", icon: ShieldCheck },
   { label: "Аналитика", to: "/admin/analytics", icon: BarChart3 },
+  { label: "AI и ключи API", to: "/admin/ai-keys", icon: Sparkles },
   { label: "Настройки", to: "/admin/settings", icon: Settings },
 ];
 

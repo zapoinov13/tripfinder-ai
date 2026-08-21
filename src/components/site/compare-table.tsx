@@ -4,14 +4,14 @@ import { cn } from "@/lib/utils";
 
 type Cell = boolean | "partial";
 
-const columns = ["TourGo", "Сайты операторов", "Турагентство"] as const;
+const columns = ["TourGo", "Сайты поставщиков", "Турагентство"] as const;
 
 const rows: { label: string; values: [Cell, Cell, Cell] }[] = [
-  { label: "Все операторы в одном поиске", values: [true, false, "partial"] },
+  { label: "Все поставщики в одном поиске", values: [true, false, "partial"] },
   { label: "Запрос обычным языком или голосом", values: [true, false, "partial"] },
   { label: "Сравнение цен по одному отелю", values: [true, false, false] },
   { label: "Доступно круглосуточно", values: [true, true, false] },
-  { label: "Цена как у оператора, без наценки", values: [true, true, "partial"] },
+  { label: "Price check перед бронью", values: [true, true, "partial"] },
   { label: "Подбор занимает минуты, а не дни", values: [true, "partial", false] },
 ];
 

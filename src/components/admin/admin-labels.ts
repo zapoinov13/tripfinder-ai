@@ -11,8 +11,8 @@ import type {
 export const roleLabel: Record<Role, string> = {
   TOURIST: "Турист",
   PREMIUM_TOURIST: "Premium-турист",
-  OPERATOR_ADMIN: "Админ оператора",
-  OPERATOR_MANAGER: "Менеджер оператора",
+  OPERATOR_ADMIN: "Админ поставщика",
+  OPERATOR_MANAGER: "Менеджер поставщика",
   PLATFORM_ADMIN: "Админ платформы",
   PLATFORM_MANAGER: "Менеджер платформы",
 };
@@ -60,7 +60,7 @@ export const paymentStatusLabel: Record<PaymentStatus, string> = {
 
 export const paymentTypeLabel: Record<PaymentType, string> = {
   premium_subscription: "Premium-подписка",
-  operator_subscription: "Подписка оператора",
+  operator_subscription: "Подписка поставщика",
   tour_package: "Пакет туров",
   promotion: "Продвижение",
   advertising: "Реклама",
@@ -102,8 +102,8 @@ export const auditActionLabel: Record<string, string> = {
   user_suspend: "Блокировка пользователя",
   user_restore: "Восстановление пользователя",
   user_role_change: "Смена роли",
-  operator_status: "Статус оператора",
-  operator_plan_admin: "Тариф оператора",
+  operator_status: "Статус поставщика",
+  operator_plan_admin: "Тариф поставщика",
   tour_hide: "Скрытие тура",
   tour_block: "Блокировка тура",
   tour_restore: "Восстановление тура",

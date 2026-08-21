@@ -6,13 +6,14 @@ import { destinations } from "@/data/demo";
 export const Route = createFileRoute("/destinations")({
   head: () => ({
     meta: [
-      { title: "Направления — куда поехать | TourGo" },
+      { title: "Направления | TourGo" },
       {
         name: "description",
-        content: "10 популярных направлений: Турция, ОАЭ, Таиланд, Египет, Мальдивы и другие.",
+        content:
+          "Доступные направления TourGo. На старте каталог открыт по Дубаю: JBR, Marina, Palm Jumeirah, Downtown, семейный и бюджетный отдых.",
       },
       { property: "og:title", content: "Направления — TourGo" },
-      { property: "og:description", content: "Идеи для вашего следующего путешествия." },
+      { property: "og:description", content: "Первое доступное направление платформы — Дубай." },
     ],
   }),
   component: DestinationsPage,
@@ -23,7 +24,10 @@ function DestinationsPage() {
     <SiteLayout>
       <div className="container-page py-10">
         <h1 className="font-display text-3xl font-semibold md:text-4xl">Направления</h1>
-        <p className="mt-2 text-muted-foreground">Идеи для вашего следующего путешествия</p>
+        <p className="mt-2 text-muted-foreground">
+          На старте доступны предложения по Дубаю. Выберите сценарий поездки: пляж, Palm, Downtown,
+          семейный отдых, бюджет или экскурсии.
+        </p>
         <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {destinations.map((dest) => (
             <Link
@@ -45,7 +49,7 @@ function DestinationsPage() {
                 </h2>
                 <p className="mt-1 text-sm text-primary-foreground/80">{dest.blurb}</p>
                 <p className="mt-3 text-xs font-semibold uppercase text-primary-foreground/70">
-                  {dest.tours} туров · {dest.city}
+                  {dest.tours} предложений · {dest.city}
                 </p>
               </div>
             </Link>

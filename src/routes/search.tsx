@@ -36,14 +36,18 @@ export const Route = createFileRoute("/search")({
   validateSearch: validateSearchParams,
   head: () => ({
     meta: [
-      { title: "Поиск туров — сравните предложения операторов | TourGo" },
+      { title: "Поиск предложений | TourGo" },
       {
         name: "description",
         content:
-          "Туры от проверенных операторов: фильтры по цене, питанию, отелю, рейтингу и удобствам.",
+          "Поиск туров, отелей, экскурсий и трансферов от проверенных поставщиков. Первый доступный каталог — Дубай.",
       },
-      { property: "og:title", content: "Поиск туров — TourGo" },
-      { property: "og:description", content: "Сравните туры от разных операторов в одном месте." },
+      { property: "og:title", content: "Поиск предложений — TourGo" },
+      {
+        property: "og:description",
+        content:
+          "Сравните предложения поставщиков в одном месте. Сейчас доступны варианты по Дубаю.",
+      },
     ],
   }),
   component: SearchPage,
@@ -258,7 +262,7 @@ function SearchPage() {
   const routeLabel = `${params.from || "Любой город"} → ${
     params.city ||
     (params.destination ? destinations.find((d) => d.id === params.destination)?.country : "") ||
-    "Все направления"
+    "Все доступные предложения"
   }`;
 
   const chips = [
@@ -297,10 +301,10 @@ function SearchPage() {
 
   return (
     <SiteLayout>
-      <div className="container-page py-8">
-        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4">
+      <div className="container-page py-5 md:py-8">
+        <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
           <div className="min-w-0">
-            <h1 className="truncate font-display text-2xl font-semibold md:text-3xl">
+            <h1 className="line-clamp-2 font-display text-2xl font-semibold leading-tight md:text-3xl">
               {routeLabel}
             </h1>
             <div className="mt-2 flex flex-wrap gap-2">
@@ -316,12 +320,15 @@ function SearchPage() {
           </div>
           <Sheet>
             <SheetTrigger asChild>
-              <Button variant="outline" className="lg:hidden">
+              <Button variant="outline" className="min-h-11 w-full sm:w-auto lg:hidden">
                 <SlidersHorizontal className="size-4" />
                 Фильтры
               </Button>
             </SheetTrigger>
-            <SheetContent side="bottom" className="max-h-[85vh] overflow-y-auto rounded-t-3xl">
+            <SheetContent
+              side="bottom"
+              className="max-h-[88svh] overflow-y-auto rounded-t-3xl pb-[env(safe-area-inset-bottom)]"
+            >
               <SheetHeader>
                 <SheetTitle className="font-display">Фильтры</SheetTitle>
               </SheetHeader>
@@ -335,7 +342,7 @@ function SearchPage() {
           </Sheet>
         </div>
 
-        <div className="mt-8 grid gap-8 lg:grid-cols-[300px_minmax(0,1fr)]">
+        <div className="mt-6 grid gap-8 md:mt-8 lg:grid-cols-[300px_minmax(0,1fr)]">
           <aside className="hidden lg:block">
             <div className="surface-card sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto p-6">
               <div className="flex items-center justify-between gap-2">
@@ -351,7 +358,7 @@ function SearchPage() {
           </aside>
 
           <div>
-            <div className="gradient-ai mb-5 rounded-3xl p-5">
+            <div className="gradient-ai mb-5 rounded-3xl p-4 md:p-5">
               <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
                 <div>
                   <h2 className="flex items-center gap-2 font-display text-lg font-semibold text-primary-foreground">
@@ -361,22 +368,27 @@ function SearchPage() {
                   <Textarea
                     value={refinement}
                     onChange={(e) => setRefinement(e.target.value)}
-                    placeholder="Например: покажи дешевле, только 5 звёзд, ближе к центру или с лучшими отзывами"
+                    placeholder="Например: покажи дешевле, только 5 звёзд, JBR или Marina, с сафари, ближе к Dubai Mall или с лучшими отзывами"
                     className="mt-3 min-h-20 border-primary-foreground/20 bg-primary-foreground/10 text-primary-foreground placeholder:text-primary-foreground/65"
                   />
                 </div>
-                <Button variant="secondary" onClick={applyRefinement} disabled={!refinement.trim()}>
+                <Button
+                  variant="secondary"
+                  className="w-full md:w-auto"
+                  onClick={applyRefinement}
+                  disabled={!refinement.trim()}
+                >
                   Применить
                 </Button>
               </div>
             </div>
 
-            <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4">
+            <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
               <p className="truncate text-sm font-medium text-muted-foreground">
-                Найдено {results.length} туров
+                Найдено {results.length} предложений
               </p>
               <Select value={params.sort} onValueChange={(v) => update({ sort: v as SortKey })}>
-                <SelectTrigger className="w-48">
+                <SelectTrigger className="w-full sm:w-48">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -408,7 +420,7 @@ function SearchPage() {
                 <ul className="mt-4 space-y-1.5 text-sm text-muted-foreground">
                   <li>Попробуйте увеличить бюджет</li>
                   <li>Измените даты</li>
-                  <li>Выберите другое направление</li>
+                  <li>Выберите другой район Дубая</li>
                 </ul>
                 <Button className="mt-6" onClick={reset}>
                   Сбросить фильтры

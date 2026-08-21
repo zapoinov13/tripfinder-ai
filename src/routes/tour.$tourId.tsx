@@ -4,14 +4,17 @@ import {
   Bell,
   Bus,
   CheckCircle2,
+  Clock3,
   Heart,
   MapPin,
   MessageSquare,
   Plane,
   Scale,
   Share2,
+  ShieldCheck,
   Sparkles,
   Star,
+  TicketCheck,
   UtensilsCrossed,
   Waves,
   Wifi,
@@ -37,6 +40,10 @@ import {
   getTour,
   guestsLabel,
   nightsLabel,
+  offerCategoryLabels,
+  availabilityLabel,
+  priceFreshnessMinutes,
+  supplierTrustScore,
   type Hotel,
   type Tour,
 } from "@/data/demo";
@@ -59,12 +66,15 @@ export const Route = createFileRoute("/tour/$tourId")({
   head: ({ loaderData }) => {
     if (!loaderData) {
       return {
-        meta: [{ title: "Тур не найден — TourGo" }, { name: "robots", content: "noindex" }],
+        meta: [
+          { title: "Предложение не найдено — TourGo" },
+          { name: "robots", content: "noindex" },
+        ],
       };
     }
     const { hotel, tour } = loaderData;
-    const title = `${hotel.name}, ${hotel.city} — тур за ${formatPrice(tour.price)}`;
-    const description = `${hotel.name} ${hotel.stars}★ · ${tour.meal} · ${nightsLabel(tour.nights)} · рейтинг ${hotel.rating}. Сравните предложения операторов.`;
+    const title = `${hotel.name}, ${hotel.city} — ${offerCategoryLabels[tour.offerCategory ?? "tour"]} за ${formatPrice(tour.price)}`;
+    const description = `${hotel.name} ${hotel.stars}★ · ${tour.meal} · ${nightsLabel(tour.nights)} · рейтинг ${hotel.rating}. Проверяем цену и наличие перед бронью.`;
     return {
       meta: [
         { title },
@@ -137,6 +147,10 @@ function TourPage() {
   const isPremiumDeal = tour.tags.includes("premium") && Boolean(tour.premiumPrice);
   const displayPrice =
     isPremiumDeal && isPremium && tour.premiumPrice ? tour.premiumPrice : tour.price;
+  const trust = supplierTrustScore(operator.id);
+  const whatsappText = encodeURIComponent(
+    `Здравствуйте! Хочу уточнить предложение TourGo: ${hotel.name}, ${tour.dateStart}–${tour.dateEnd}, ${formatPrice(displayPrice)}. ID брони: ${confirmedId || tour.id}`,
+  );
 
   useEffect(() => {
     trackEvent("TOUR_VIEWED", user?.id, { tourId: tour.id });
@@ -189,12 +203,12 @@ function TourPage() {
 
   return (
     <SiteLayout>
-      <div className="container-page py-6 pb-28 lg:pb-6">
-        <div className="grid gap-2 overflow-hidden rounded-3xl md:grid-cols-[2fr_1fr] md:grid-rows-2">
+      <div className="container-page py-4 pb-[calc(10.5rem+env(safe-area-inset-bottom))] md:py-6 lg:pb-6">
+        <div className="grid gap-2 overflow-hidden rounded-2xl md:rounded-3xl md:grid-cols-[2fr_1fr] md:grid-rows-2">
           <img
             src={galleryImages[0]}
             alt={hotel.name}
-            className="h-64 w-full object-cover md:row-span-2 md:h-[420px]"
+            className="h-60 w-full object-cover sm:h-72 md:row-span-2 md:h-[420px]"
           />
           {galleryImages.slice(1, 3).map((img, i) => (
             <img
@@ -207,11 +221,13 @@ function TourPage() {
           ))}
         </div>
 
-        <div className="mt-8 grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4">
+        <div className="mt-6 grid gap-4 md:mt-8 md:grid-cols-[minmax(0,1fr)_auto] md:items-start">
           <div className="min-w-0">
-            <h1 className="font-display text-2xl font-semibold md:text-4xl">{hotel.name}</h1>
+            <h1 className="font-display text-2xl font-semibold leading-tight md:text-4xl">
+              {hotel.name}
+            </h1>
             <p className="mt-2 text-muted-foreground">
-              {hotel.city}, {hotel.country}
+              {offerCategoryLabels[tour.offerCategory ?? "tour"]} · {hotel.city}, {hotel.country}
             </p>
             <div className="mt-3 flex flex-wrap items-center gap-3">
               <span className="flex items-center gap-0.5 text-premium">
@@ -232,24 +248,72 @@ function TourPage() {
 
         <div className="mt-10 grid gap-8 lg:grid-cols-[minmax(0,1fr)_380px]">
           <div className="space-y-8">
-            <section className="surface-card p-6 md:p-8">
-              <h2 className="font-display text-xl font-semibold">Об отеле</h2>
+            <section className="surface-card p-5 md:p-8">
+              <h2 className="font-display text-xl font-semibold">О предложении</h2>
               <p className="mt-3 text-muted-foreground">
-                {hotel.name} — курортный комплекс {hotel.stars}★ в районе {hotel.district}, в{" "}
-                {hotel.distanceToSea} м от моря. Просторные номера, несколько бассейнов, spa-центр и
-                собственный пляж. Отель подходит как для семейного отдыха, так и для спокойного
-                отпуска вдвоём.
+                {hotel.name} — {offerCategoryLabels[tour.offerCategory ?? "tour"].toLowerCase()} в
+                районе {hotel.district}. Предложение подходит туристам из СНГ, которые хотят собрать
+                поездку с понятной ценой, логистикой и поддержкой на русском языке. Сейчас каталог
+                TourGo открыт по Дубаю. Перед бронью мы проверяем актуальную цену и наличие у
+                поставщика.
               </p>
             </section>
 
-            <section className="surface-card p-6 md:p-8">
+            <section className="surface-card p-5 md:p-8">
+              <div className="flex flex-wrap items-start justify-between gap-4">
+                <div>
+                  <h2 className="font-display text-xl font-semibold">Поставщик и доверие</h2>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    {operator.name} подключён к TourGo как проверенный поставщик. Мы фиксируем
+                    заявку, проверку цены и историю статусов в кабинете.
+                  </p>
+                </div>
+                <span className="inline-flex items-center gap-2 rounded-full bg-success/10 px-3 py-1.5 text-sm font-semibold text-success">
+                  <ShieldCheck className="size-4" />
+                  Проверен
+                </span>
+              </div>
+              <div className="mt-5 grid gap-3 sm:grid-cols-3">
+                {[
+                  { label: "Рейтинг поставщика", value: `${trust.rating} / 5` },
+                  { label: "Средний ответ", value: `~${trust.responseMinutes} мин` },
+                  { label: "Брони через TourGo", value: formatNumber(trust.confirmedBookings) },
+                ].map((item) => (
+                  <div key={item.label} className="rounded-2xl bg-secondary p-4">
+                    <div className="font-display text-xl font-semibold">{item.value}</div>
+                    <div className="mt-1 text-xs text-muted-foreground">{item.label}</div>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            <section className="surface-card p-5 md:p-8">
               <h2 className="font-display text-xl font-semibold">Что входит</h2>
               <ul className="mt-4 grid gap-3 sm:grid-cols-2">
                 {[
-                  { icon: Plane, text: `Перелёт ${tour.from} → ${hotel.city}` },
-                  { icon: MapPin, text: `Проживание, ${nightsLabel(tour.nights)}` },
+                  {
+                    icon: Plane,
+                    text:
+                      tour.offerCategory === "hotel" || tour.offerCategory === "excursion"
+                        ? `Старт для туристов из ${tour.from}`
+                        : `Перелёт или пакет из ${tour.from} → Дубай`,
+                  },
+                  {
+                    icon: MapPin,
+                    text:
+                      tour.offerCategory === "excursion"
+                        ? `Впечатление в районе ${hotel.district}`
+                        : tour.offerCategory === "transfer"
+                          ? `Маршрут и время подтверждаются поставщиком`
+                          : `Проживание, ${nightsLabel(tour.nights)}`,
+                  },
                   { icon: UtensilsCrossed, text: `${tour.mealCode} · ${tour.meal}` },
-                  { icon: Bus, text: tour.transfer ? "Групповой трансфер" : "Трансфер не включён" },
+                  {
+                    icon: Bus,
+                    text: tour.transfer
+                      ? "Трансфер или pickup включён/доступен"
+                      : "Трансфер уточняется у поставщика",
+                  },
                 ].map((item) => (
                   <li key={item.text} className="flex items-center gap-3 text-sm">
                     <span className="grid size-9 place-items-center rounded-xl bg-secondary">
@@ -261,7 +325,7 @@ function TourPage() {
               </ul>
             </section>
 
-            <section className="surface-card p-6 md:p-8">
+            <section className="surface-card p-5 md:p-8">
               <h2 className="font-display text-xl font-semibold">Удобства</h2>
               <div className="mt-4 flex flex-wrap gap-2">
                 {hotel.amenities.map((key: string) => {
@@ -280,7 +344,7 @@ function TourPage() {
             </section>
 
             <section className="surface-card overflow-hidden">
-              <div className="p-6 md:p-8">
+              <div className="p-5 md:p-8">
                 <h2 className="font-display text-xl font-semibold">Расположение</h2>
                 <p className="mt-2 text-sm text-muted-foreground">
                   {hotel.district} · {hotel.distanceToSea} м до моря
@@ -294,9 +358,9 @@ function TourPage() {
               </div>
             </section>
 
-            <section className="gradient-ai overflow-hidden rounded-3xl p-6 md:p-8">
+            <section className="gradient-ai overflow-hidden rounded-3xl p-5 md:p-8">
               <h2 className="font-display text-xl font-semibold text-primary-foreground">
-                ✨ Почему этот тур подходит вам
+                ✨ Почему это предложение подходит вам
               </h2>
               <ul className="mt-5 grid gap-3 sm:grid-cols-2">
                 {aiReasons.map((reason) => (
@@ -315,7 +379,7 @@ function TourPage() {
               </Button>
             </section>
 
-            <section className="surface-card p-6 md:p-8">
+            <section className="surface-card p-5 md:p-8">
               <h2 className="font-display text-xl font-semibold">Price breakdown</h2>
               <div className="mt-4 space-y-3">
                 {priceBreakdown.map(([label, value]) => (
@@ -336,7 +400,7 @@ function TourPage() {
           </div>
 
           <aside>
-            <div className="surface-card sticky top-24 p-6">
+            <div className="surface-card sticky top-24 p-5 md:p-6">
               <ul className="space-y-2.5 text-sm">
                 <li className="flex justify-between gap-4">
                   <span className="text-muted-foreground">Даты</span>
@@ -369,7 +433,7 @@ function TourPage() {
               </ul>
 
               <div className="mt-6 border-t border-border pt-6">
-                <div className="text-sm text-muted-foreground">Цена за тур</div>
+                <div className="text-sm text-muted-foreground">Цена за предложение</div>
                 {isPremiumDeal && !isPremium ? (
                   <>
                     <div className="font-display text-3xl font-semibold">Premium Deal</div>
@@ -383,6 +447,21 @@ function TourPage() {
                   </div>
                 )}
                 <div className="mt-1 text-xs text-muted-foreground">от {operator.name}</div>
+              </div>
+
+              <div className="mt-5 grid gap-2 text-xs text-muted-foreground">
+                <span className="inline-flex items-center gap-2 rounded-xl bg-secondary px-3 py-2">
+                  <Clock3 className="size-4 text-accent" />
+                  Цена проверялась {priceFreshnessMinutes(tour)} мин назад
+                </span>
+                <span className="inline-flex items-center gap-2 rounded-xl bg-secondary px-3 py-2">
+                  <TicketCheck className="size-4 text-primary" />
+                  {availabilityLabel(tour)}
+                </span>
+                <span className="inline-flex items-center gap-2 rounded-xl bg-secondary px-3 py-2">
+                  <ShieldCheck className="size-4 text-success" />
+                  Оплата после price check
+                </span>
               </div>
 
               <Button
@@ -436,7 +515,7 @@ function TourPage() {
         </div>
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur-xl md:hidden">
+      <div className="fixed inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] z-30 border-t border-border bg-background/95 p-3 shadow-[0_-10px_30px_oklch(0.2_0.02_250/0.08)] backdrop-blur-xl md:hidden">
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
@@ -454,8 +533,8 @@ function TourPage() {
           >
             <Scale className="size-4" />
           </Button>
-          <Button className="flex-1" onClick={() => setBookingOpen(true)}>
-            Забронировать — {formatPrice(tour.price)}
+          <Button className="min-w-0 flex-1 px-3" onClick={() => setBookingOpen(true)}>
+            <span className="truncate">Забронировать — {formatPrice(displayPrice)}</span>
           </Button>
         </div>
       </div>
@@ -470,11 +549,12 @@ function TourPage() {
           }
         }}
       >
-        <DialogContent>
+        <DialogContent className="max-h-[92svh] overflow-y-auto sm:max-w-lg">
           <DialogHeader>
             <DialogTitle className="font-display">Бронирование</DialogTitle>
             <DialogDescription>
-              Перед оплатой проверяем цену и наличие через API оператора.
+              Перед оплатой проверяем цену и наличие у поставщика. Если instant API недоступен,
+              заявка уйдёт на ручное подтверждение.
             </DialogDescription>
           </DialogHeader>
           <div className="rounded-2xl bg-secondary p-4 text-sm">
@@ -489,6 +569,18 @@ function TourPage() {
           </div>
           {bookingStep === "form" ? (
             <div className="space-y-3">
+              <div className="grid gap-2 rounded-2xl border border-border p-4 text-sm">
+                {[
+                  "Проверим цену и места у поставщика",
+                  "Зафиксируем заявку в TourGo",
+                  "После подтверждения покажем ID брони и отправим уведомление",
+                ].map((item) => (
+                  <div key={item} className="flex items-center gap-2">
+                    <CheckCircle2 className="size-4 text-success" />
+                    {item}
+                  </div>
+                ))}
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="passenger">Пассажир (ФИО)</Label>
                 <Input
@@ -505,13 +597,27 @@ function TourPage() {
             </div>
           ) : null}
           {bookingStep === "loading" ? (
-            <p className="text-sm text-muted-foreground">
-              Проверяем цену и наличие… Сравниваем предложения операторов…
-            </p>
+            <div className="space-y-3 text-sm">
+              {[
+                "Отправляем price check поставщику",
+                "Проверяем наличие мест",
+                "Готовим подтверждение заявки",
+              ].map((item) => (
+                <div key={item} className="flex items-center gap-2 text-muted-foreground">
+                  <Clock3 className="size-4 animate-pulse text-primary" />
+                  {item}
+                </div>
+              ))}
+            </div>
           ) : null}
           {bookingStep === "done" ? (
             <div className="space-y-3">
               <p className="text-sm text-success">Бронирование {confirmedId} подтверждено.</p>
+              <Button variant="outline" className="w-full" asChild>
+                <a href={`https://wa.me/?text=${whatsappText}`} target="_blank" rel="noreferrer">
+                  Написать в WhatsApp по заявке
+                </a>
+              </Button>
               <Button asChild className="w-full">
                 <Link to="/profile/trips">Мои поездки</Link>
               </Button>
@@ -521,11 +627,11 @@ function TourPage() {
       </Dialog>
 
       <Dialog open={alertOpen} onOpenChange={setAlertOpen}>
-        <DialogContent>
+        <DialogContent className="max-h-[92svh] overflow-y-auto sm:max-w-lg">
           <DialogHeader>
             <DialogTitle className="font-display">Price alert</DialogTitle>
             <DialogDescription>
-              Сообщим, если цена на этот тур опустится ниже выбранного порога.
+              Сообщим, если цена на это предложение опустится ниже выбранного порога.
             </DialogDescription>
           </DialogHeader>
           <div className="rounded-2xl bg-secondary p-4 text-sm">

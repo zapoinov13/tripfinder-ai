@@ -54,12 +54,13 @@ function AdminSettingsPage() {
         <div className="surface-card space-y-4 p-6">
           <h2 className="font-display text-lg font-semibold">Данные и сессия</h2>
           <p className="text-sm text-muted-foreground">
-            Локальный MVP: данные в localStorage. Сброс пересоздаёт демо-seed.
+            В локальном режиме данные хранятся в браузере. Сброс пересоздаёт стартовый каталог и
+            тестовые аккаунты.
           </p>
           <ConfirmAction
             triggerLabel="Сбросить данные платформы"
             title="Сбросить всё локальное хранилище?"
-            description="Пользователи, брони, платежи и настройки в браузере будут пересозданы из демо-данных."
+            description="Пользователи, брони, платежи и настройки в браузере будут пересозданы из стартовых данных."
             confirmLabel="Сбросить"
             destructive
             variant="destructive"

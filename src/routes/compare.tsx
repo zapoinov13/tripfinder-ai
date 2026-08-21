@@ -45,7 +45,7 @@ function ComparePage() {
 
   const fields: Array<[string, (t: Tour) => string]> = [
     ["Отель", (t) => getHotel(t.hotelId).name],
-    ["Оператор", (t) => getOperator(t.operatorId).name],
+    ["Поставщик", (t) => getOperator(t.operatorId).name],
     ["Цена", (t) => formatPrice(t.price)],
     ["Рейтинг", (t) => `${getHotel(t.hotelId).rating.toFixed(1)} / 10`],
     ["Звёзды", (t) => `${getHotel(t.hotelId).stars}★`],

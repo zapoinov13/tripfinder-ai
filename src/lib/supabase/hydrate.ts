@@ -10,9 +10,9 @@ export async function hydrateCatalogFromSupabase() {
   if (!sb) return { ok: false as const, reason: "not_configured" };
 
   const [configRes, toursRes, orgsRes] = await Promise.all([
-    sb.from("platform_config").select("*").eq("id", 1).maybeSingle(),
+    sb.from("platform_config_public").select("*").eq("id", 1).maybeSingle(),
     sb.from("tour_offers").select("*").eq("status", "active").limit(500),
-    sb.from("organizations").select("*"),
+    sb.from("organizations_public").select("*"),
   ]);
 
   if (configRes.error && toursRes.error) {
@@ -25,20 +25,19 @@ export async function hydrateCatalogFromSupabase() {
       let next = { ...s };
 
       if (configRes.data) {
-        const c = configRes.data;
+        const c = configRes.data as Record<string, unknown>;
         next = {
           ...next,
           config: {
             ...next.config,
-            premiumMonthlyPrice: Number(c.premium_monthly_price),
-            premiumCurrency: c.premium_currency,
+            premiumMonthlyPrice: Number(c["premium_monthly_price"]),
+            premiumCurrency: (c["premium_currency"] ??
+              next.config.premiumCurrency) as PlatformConfig["premiumCurrency"],
             operatorPlans:
-              (c.operator_plans as PlatformConfig["operatorPlans"]) ?? next.config.operatorPlans,
-            promotionPrices:
-              (c.promotion_prices as PlatformConfig["promotionPrices"]) ??
-              next.config.promotionPrices,
-            rankingWeights:
-              (c.ranking_weights as PlatformConfig["rankingWeights"]) ?? next.config.rankingWeights,
+              (c["operator_plans"] as PlatformConfig["operatorPlans"]) ?? next.config.operatorPlans,
+            // Публичное вью не отдаёт цены продвижения и веса ранжирования.
+            promotionPrices: next.config.promotionPrices,
+            rankingWeights: next.config.rankingWeights,
           },
         };
       }
@@ -46,81 +45,84 @@ export async function hydrateCatalogFromSupabase() {
       if (orgsRes.data?.length) {
         next = {
           ...next,
-          organizations: orgsRes.data.map((o) => ({
-            id: o.id,
-            name: o.name,
-            legalName: o.legal_name,
-            registrationNumber: o.registration_number,
-            country: o.country,
-            city: o.city,
-            address: o.address,
-            phone: o.phone,
-            email: o.email,
-            website: o.website,
-            contactPerson: o.contact_person,
-            status: o.status,
-            planCode: o.plan_code,
-            additionalTourLimit: o.additional_tour_limit,
-            advertisingBalance: Number(o.advertising_balance),
-            promotionBalance: Number(o.promotion_balance),
-            createdAt: o.created_at,
-            services: strList(o.services),
-            countries: strList(o.countries),
-            clientCountries: strList(o.client_countries),
-            languages: strList(o.languages),
-            about: str(o.about),
-            logoUrl: str(o.logo_url),
-            coverUrl: str(o.cover_url),
-            photos: strList(o.photos),
-            videos: strList(o.videos),
-            whatsapp: str(o.whatsapp),
-            instagram: str(o.instagram),
-            telegram: str(o.telegram),
-            documents: strList(o.documents),
-            ...(o.verification_submitted_at
-              ? { verificationSubmittedAt: str(o.verification_submitted_at) }
-              : {}),
-          })),
+          // Вью отдаёт только то, что можно показать туристу; остальное берём из локального стора.
+          organizations: (orgsRes.data as Row[]).map((o) => {
+            const prev = s.organizations.find((x) => x.id === str(o["id"]));
+            return {
+              ...(prev ?? ({} as (typeof s.organizations)[number])),
+              id: str(o["id"]),
+              name: str(o["name"]),
+              legalName: prev?.legalName ?? "",
+              registrationNumber: prev?.registrationNumber ?? "",
+              country: str(o["country"]),
+              city: str(o["city"]),
+              address: prev?.address ?? "",
+              phone: str(o["phone"], prev?.phone ?? ""),
+              email: prev?.email ?? "",
+              website: str(o["website"]),
+              contactPerson: prev?.contactPerson ?? "",
+              status: str(o["status"]) as (typeof s.organizations)[number]["status"],
+              planCode: str(o["plan_code"]) as (typeof s.organizations)[number]["planCode"],
+              additionalTourLimit: prev?.additionalTourLimit ?? 0,
+              advertisingBalance: prev?.advertisingBalance ?? 0,
+              promotionBalance: prev?.promotionBalance ?? 0,
+              createdAt: str(o["created_at"]),
+              services: strList(o["services"]),
+              countries: strList(o["countries"]),
+              clientCountries: strList(o["client_countries"]),
+              languages: strList(o["languages"]),
+              about: str(o["about"], prev?.about ?? ""),
+              logoUrl: str(o["logo_url"], prev?.logoUrl ?? ""),
+              coverUrl: str(o["cover_url"], prev?.coverUrl ?? ""),
+              photos: strList(o["photos"]),
+              videos: strList(o["videos"]),
+              whatsapp: str(o["whatsapp"], prev?.whatsapp ?? ""),
+              instagram: str(o["instagram"], prev?.instagram ?? ""),
+              telegram: str(o["telegram"], prev?.telegram ?? ""),
+            };
+          }),
         };
       }
 
       if (toursRes.data?.length) {
-        const mapped: PlatformTour[] = toursRes.data.map((t) => {
-          // ensure hotel exists locally for images
+        const mapped: PlatformTour[] = toursRes.data.flatMap((t) => {
+          // Пропускаем строки на отели, которых нет в локальном каталоге: без них нет картинок.
           try {
             getHotel(t.hotel_id);
           } catch {
-            /* ignore */
+            return [];
           }
-          return {
-            id: t.id,
-            hotelId: t.hotel_id,
-            operatorId: t.operator_id,
-            operatorOrgId: t.operator_org_id ?? `org-${t.operator_id}`,
-            from: t.from_city,
-            nights: t.nights,
-            dateStart: t.date_start,
-            dateEnd: t.date_end,
-            departure: t.departure,
-            mealCode: t.meal_code,
-            meal: t.meal,
-            price: Number(t.price),
-            ...(t.old_price != null ? { oldPrice: Number(t.old_price) } : {}),
-            ...(t.premium_price != null ? { premiumPrice: Number(t.premium_price) } : {}),
-            tags: (t.tags ?? []) as TourTag[],
-            adults: t.adults,
-            children: t.children,
-            transfer: t.transfer,
-            views: t.views,
-            bookings: t.bookings,
-            createdAt: t.created_at?.slice?.(0, 10) ?? t.created_at,
-            externalId: t.external_id,
-            roomType: t.room_type,
-            currency: t.currency,
-            availability: t.availability,
-            status: t.status,
-            lastSyncedAt: t.last_synced_at,
-          };
+          return [
+            {
+              id: t.id,
+              hotelId: t.hotel_id,
+              operatorId: t.operator_id,
+              operatorOrgId: t.operator_org_id ?? `org-${t.operator_id}`,
+              from: t.from_city,
+              nights: t.nights,
+              dateStart: t.date_start,
+              dateEnd: t.date_end,
+              departure: t.departure,
+              mealCode: t.meal_code,
+              meal: t.meal,
+              price: Number(t.price),
+              ...(t.old_price != null ? { oldPrice: Number(t.old_price) } : {}),
+              ...(t.premium_price != null ? { premiumPrice: Number(t.premium_price) } : {}),
+              tags: (t.tags ?? []) as TourTag[],
+              adults: t.adults,
+              children: t.children,
+              transfer: t.transfer,
+              views: t.views,
+              bookings: t.bookings,
+              createdAt: t.created_at?.slice?.(0, 10) ?? t.created_at,
+              externalId: t.external_id,
+              roomType: t.room_type,
+              currency: t.currency,
+              availability: t.availability,
+              status: t.status,
+              lastSyncedAt: t.last_synced_at,
+            },
+          ];
         });
         next = { ...next, tours: mapped };
       }
