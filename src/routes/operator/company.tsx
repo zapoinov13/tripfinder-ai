@@ -2,9 +2,7 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import {
   BadgeCheck,
   ExternalLink,
-  FileText,
   ImagePlus,
-  ShieldCheck,
   Trash2,
   Video,
 } from "lucide-react";
@@ -13,6 +11,10 @@ import { toast } from "sonner";
 
 import { DashShell } from "@/components/dash/dash-shell";
 import { useOperatorNav } from "@/components/dash/nav-items";
+import {
+  VerificationDocumentsPanel,
+  canSubmitVerification,
+} from "@/components/operator/verification-documents";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,6 +27,7 @@ import {
   clientCountryOptions,
   companyCountryOptions,
   companyServiceOptions,
+  hasRequiredVerificationDocuments,
   languageOptions,
   submitForVerification,
   updateCompanyProfile,
@@ -40,7 +43,6 @@ export const Route = createFileRoute("/operator/company")({
   component: OperatorCompanyPage,
 });
 
-const documentOptions = ["Документ о регистрации", "Лицензия", "Другой документ"];
 const MAX_PHOTOS = 12;
 const MAX_VIDEOS = 3;
 
@@ -57,7 +59,7 @@ function OperatorCompanyPage() {
 
   const members = state.members.filter((m) => m.organizationId === organization.id);
   const readOnly = user.role === "OPERATOR_MANAGER";
-  const documents = form.documents ?? [];
+  const verificationFiles = form.verificationFiles ?? [];
   const photos = form.photos ?? [];
   const videos = form.videos ?? [];
   const verified = organization.status === "APPROVED";
@@ -330,66 +332,43 @@ function OperatorCompanyPage() {
           </section>
 
           <section className="surface-card space-y-4 p-6">
-            <div className="rounded-2xl border border-success/30 bg-success/5 p-4">
-              <p className="flex items-center gap-2 font-display font-semibold">
-                <BadgeCheck className="size-5 text-success" />
-                Знак «Проверенная компания»
-              </p>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Компании со знаком обычно получают больше бронирований: туристы спокойнее оставляют
-                заявку.
-              </p>
-            </div>
-            <div className="space-y-2">
-              {documentOptions.map((doc) => {
-                const on = documents.includes(doc);
-                return (
-                  <label
-                    key={doc}
-                    className={cn(
-                      "flex cursor-pointer items-center justify-between gap-3 rounded-xl border px-4 py-3 text-sm",
-                      on ? "border-success/40 bg-success/5" : "border-border",
-                      readOnly && "pointer-events-none opacity-70",
-                    )}
-                  >
-                    <span className="flex items-center gap-2">
-                      <FileText className={cn("size-4", on ? "text-success" : "text-muted-foreground")} />
-                      {doc}
-                    </span>
-                    <span className={cn("text-xs font-semibold", on ? "text-success" : "text-primary")}>
-                      {on ? "Добавлено" : "Добавить"}
-                    </span>
-                    <input
-                      type="checkbox"
-                      className="sr-only"
-                      checked={on}
-                      disabled={readOnly}
-                      onChange={() =>
-                        setForm({
-                          ...form,
-                          documents: on ? documents.filter((d) => d !== doc) : [...documents, doc],
-                        })
-                      }
-                    />
-                  </label>
-                );
-              })}
-            </div>
+            <VerificationDocumentsPanel
+              companyName={form.name}
+              companySummary={[form.city, form.country, (form.services ?? []).join(", ")]
+                .filter(Boolean)
+                .join(" · ")}
+              files={verificationFiles}
+              readOnly={readOnly}
+              showPreview={false}
+              onChange={(next) => setForm({ ...form, verificationFiles: next })}
+            />
             <Button
               variant="outline"
-              disabled={readOnly || documents.length === 0 || verified}
+              disabled={
+                readOnly ||
+                verified ||
+                !canSubmitVerification(verificationFiles) ||
+                verificationFiles.length === 0
+              }
               onClick={() => {
-                submitForVerification(organization.id, documents);
-                toast.success("Документы отправлены. Кабинет уже открыт, знак появится после проверки.");
+                if (!hasRequiredVerificationDocuments(verificationFiles)) {
+                  toast.error("Загрузите свидетельство о регистрации.");
+                  return;
+                }
+                submitForVerification(organization.id, verificationFiles);
+                toast.success("Документы отправлены на проверку. Обычно до 2 рабочих дней.");
               }}
             >
-              <ShieldCheck className="size-4" />
+              <BadgeCheck className="size-4" />
               {verified ? "Проверка пройдена" : "Отправить на проверку"}
             </Button>
             {organization.verificationSubmittedAt && !verified ? (
               <p className="text-xs text-muted-foreground">
                 Отправлено{" "}
                 {new Date(organization.verificationSubmittedAt).toLocaleString("ru-RU")}
+                {organization.documents?.length
+                  ? ` · ${organization.documents.join(", ")}`
+                  : ""}
               </p>
             ) : null}
           </section>

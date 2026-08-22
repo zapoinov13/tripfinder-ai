@@ -83,7 +83,19 @@ export type Organization = {
   telegram?: string;
   /** Названия загруженных документов для проверки компании. */
   documents?: string[];
+  /** Загруженные файлы для проверки (хранятся локально / в профиле). */
+  verificationFiles?: CompanyVerificationFile[];
   verificationSubmittedAt?: string;
+};
+
+export type VerificationDocumentId = "registration" | "tourism_license" | "liability_insurance";
+
+export type CompanyVerificationFile = {
+  type: VerificationDocumentId;
+  fileName: string;
+  mimeType: string;
+  uploadedAt: string;
+  dataUrl: string;
 };
 
 export type OrganizationMember = {

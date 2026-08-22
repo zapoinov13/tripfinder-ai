@@ -1,6 +1,16 @@
 import { appendAudit } from "./catalog";
 import { getState, nowIso, setState } from "./store";
-import type { Organization } from "./types";
+import type { CompanyVerificationFile, Organization } from "./types";
+import { verificationDocumentLabel } from "./verification-documents";
+
+export {
+  hasRequiredVerificationDocuments,
+  readVerificationFile,
+  removeVerificationFile,
+  upsertVerificationFile,
+  verificationDocumentTypes,
+} from "./verification-documents";
+export type { VerificationDocumentId } from "./types";
 
 export const companyServiceOptions = [
   "Туры",
@@ -40,9 +50,10 @@ export function findOrgByEmail(email: string) {
 }
 
 /** Компания отправила документы: платформа увидит её в очереди на проверку. */
-export function submitForVerification(orgId: string, documents: string[]) {
+export function submitForVerification(orgId: string, files: CompanyVerificationFile[]) {
   updateCompanyProfile(orgId, {
-    documents,
+    verificationFiles: files,
+    documents: files.map((file) => verificationDocumentLabel(file.type)),
     verificationSubmittedAt: nowIso(),
     status: "PENDING_APPROVAL",
   });
@@ -50,6 +61,6 @@ export function submitForVerification(orgId: string, documents: string[]) {
     action: "company_verification_submitted",
     entityType: "organization",
     entityId: orgId,
-    meta: { documents: documents.length },
+    meta: { documents: files.length },
   });
 }

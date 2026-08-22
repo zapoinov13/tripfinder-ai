@@ -1,8 +1,14 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, ArrowRight, BadgeCheck, Check, FileText, ShieldCheck } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
+import {
+  VerificationDocumentsPanel,
+  canSubmitVerification,
+  verificationSubmitHint,
+  verificationSubmitLabel,
+} from "@/components/operator/verification-documents";
 import { SiteLayout } from "@/components/site/site-layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,10 +21,12 @@ import {
   companyCountryOptions,
   companyServiceOptions,
   findOrgByEmail,
+  hasRequiredVerificationDocuments,
   languageOptions,
   submitForVerification,
   updateCompanyProfile,
 } from "@/lib/platform/company";
+import type { CompanyVerificationFile } from "@/lib/platform/types";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/company-signup")({
@@ -57,7 +65,7 @@ const steps = [
   },
   {
     title: "Проверка",
-    hint: "Знак «Проверенная компания» обычно даёт больше бронирований.",
+    hint: "Загрузите документы — после проверки появится знак «Проверенная компания».",
   },
 ];
 
@@ -89,7 +97,7 @@ function CompanySignupPage() {
   const [countries, setCountries] = useState<string[]>(["ОАЭ"]);
   const [clientCountries, setClientCountries] = useState<string[]>(["Казахстан"]);
   const [languages, setLanguages] = useState<string[]>(["Русский"]);
-  const [documents, setDocuments] = useState<string[]>([]);
+  const [verificationFiles, setVerificationFiles] = useState<CompanyVerificationFile[]>([]);
 
   const toggle = (list: string[], set: (v: string[]) => void, value: string) =>
     set(list.includes(value) ? list.filter((v) => v !== value) : [...list, value]);
@@ -110,6 +118,11 @@ function CompanySignupPage() {
   };
 
   const submit = async () => {
+    if (verificationFiles.length > 0 && !hasRequiredVerificationDocuments(verificationFiles)) {
+      toast.error("Загрузите свидетельство о регистрации, чтобы отправить документы на проверку.");
+      return;
+    }
+
     setSaving(true);
     const contactPerson = `${person.firstName} ${person.lastName}`.trim();
     const res = await registerOperator({
@@ -144,12 +157,12 @@ function CompanySignupPage() {
         languages,
         about: company.about,
       });
-      if (documents.length > 0) submitForVerification(org.id, documents);
+      if (verificationFiles.length > 0) submitForVerification(org.id, verificationFiles);
     }
     toast.success(
-      documents.length
-        ? "Компания создана. Документы на проверке. Со знаком обычно больше бронирований."
-        : "Компания создана. Кабинет уже открыт. Документы можно добавить позже.",
+      verificationFiles.length
+        ? "Компания создана. Документы отправлены на проверку — обычно до 2 рабочих дней."
+        : "Компания создана. Кабинет открыт — документы можно добавить позже.",
     );
     void navigate({ to: "/operator" });
   };
@@ -348,74 +361,18 @@ function CompanySignupPage() {
             ) : null}
 
             {step === 5 ? (
-              <div className="space-y-5">
-                <div className="rounded-3xl border border-success/30 bg-success/5 p-5">
-                  <p className="flex items-center gap-2 font-display text-lg font-semibold">
-                    <BadgeCheck className="size-5 text-success" />
-                    Знак «Проверенная компания»
-                  </p>
-                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                    Компании, которые прошли проверку и получили знак, обычно получают больше
-                    бронирований. Туристы чаще выбирают тех, у кого есть отметка на странице.
-                  </p>
-                  <ul className="mt-3 space-y-1.5 text-sm text-muted-foreground">
-                    <li>Знак виден на странице компании и в предложениях</li>
-                    <li>Туристы спокойнее оставляют заявку и выбирают вас</li>
-                    <li>Кабинет открыт уже сейчас, ждать проверку не обязательно</li>
-                  </ul>
-                </div>
-
-                <div className="rounded-2xl bg-secondary/50 p-4 text-sm">
-                  <p className="font-semibold">{company.name || "Название компании"}</p>
-                  <p className="mt-1 text-muted-foreground">
-                    {company.city}
-                    {company.country ? `, ${company.country}` : ""}
-                    {services.length ? ` · ${services.join(", ")}` : ""}
-                  </p>
-                </div>
-
-                <div>
-                  <h3 className="text-sm font-semibold">Документы для знака</h3>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    Регистрация и лицензия, если она нужна в вашей стране. Проверка занимает до двух
-                    рабочих дней.
-                  </p>
-                  <div className="mt-3 space-y-2">
-                    {["Документ о регистрации", "Лицензия", "Другой документ"].map((doc) => {
-                      const on = documents.includes(doc);
-                      return (
-                        <label
-                          key={doc}
-                          className={cn(
-                            "flex cursor-pointer items-center justify-between gap-3 rounded-xl border px-4 py-3 text-sm transition-colors",
-                            on ? "border-success/40 bg-success/5" : "border-border hover:border-primary/40",
-                          )}
-                        >
-                          <span className="flex items-center gap-2">
-                            <FileText className={cn("size-4", on ? "text-success" : "text-muted-foreground")} />
-                            {doc}
-                          </span>
-                          <span className={cn("text-xs font-semibold", on ? "text-success" : "text-primary")}>
-                            {on ? "Добавлено" : "Добавить"}
-                          </span>
-                          <input
-                            type="checkbox"
-                            className="sr-only"
-                            checked={on}
-                            onChange={() => toggle(documents, setDocuments, doc)}
-                          />
-                        </label>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                <p className="flex items-start gap-2 text-sm text-muted-foreground">
-                  <ShieldCheck className="mt-0.5 size-4 shrink-0 text-success" />
-                  Без документов кабинет всё равно откроется. Знак появится после проверки и обычно
-                  помогает получить больше бронирований.
-                </p>
-              </div>
+              <VerificationDocumentsPanel
+                companyName={company.name}
+                companySummary={[
+                  company.city,
+                  company.country,
+                  services.length ? services.join(", ") : "",
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
+                files={verificationFiles}
+                onChange={setVerificationFiles}
+              />
             ) : null}
 
             <div className="flex items-center justify-between gap-3 border-t border-border pt-5">
@@ -445,10 +402,16 @@ function CompanySignupPage() {
                   <ArrowRight className="size-4" />
                 </Button>
               ) : (
-                <Button onClick={() => void submit()} disabled={saving}>
-                  <Check className="size-4" />
-                  {documents.length ? "Отправить на проверку" : "Создать и открыть кабинет"}
-                </Button>
+                <div className="space-y-2 text-right">
+                  <Button
+                    onClick={() => void submit()}
+                    disabled={saving || !canSubmitVerification(verificationFiles)}
+                  >
+                    <Check className="size-4" />
+                    {verificationSubmitLabel(verificationFiles)}
+                  </Button>
+                  <p className="text-xs text-muted-foreground">{verificationSubmitHint(verificationFiles)}</p>
+                </div>
               )}
             </div>
           </div>
