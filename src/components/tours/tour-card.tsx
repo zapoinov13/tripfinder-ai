@@ -119,7 +119,7 @@ export function TourCard({
           loading="lazy"
           className="size-full object-cover transition-transform duration-700 group-hover:scale-105"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-ink/55 via-transparent to-ink/10" />
+        <div className="absolute inset-0 bg-gradient-to-t from-ink/70 via-ink/15 to-ink/20" />
         <div className="absolute left-3 top-3 z-20 flex max-w-[70%] flex-wrap gap-1.5">
           {bestPrice ? <TagBadge tag="price" /> : null}
           {tour.tags.map((tag) => (

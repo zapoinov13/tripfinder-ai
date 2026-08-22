@@ -66,7 +66,7 @@ function CompanyPage() {
           ) : (
             <div className="h-44 w-full bg-[linear-gradient(120deg,oklch(0.55_0.13_250),oklch(0.45_0.1_265))] md:h-60" />
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-ink/55 to-transparent" />
+          <div className="absolute inset-0 media-scrim" />
         </div>
 
         <div className="surface-card relative z-10 -mt-14 mx-auto flex flex-wrap items-center gap-5 p-5 md:mx-8 md:p-6">

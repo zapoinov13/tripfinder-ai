@@ -1,11 +1,18 @@
 import { Link, createFileRoute, notFound } from "@tanstack/react-router";
 import { ArrowRight, MapPin } from "lucide-react";
 
+import {
+  MediaCardCaption,
+  mediaBodyClass,
+  mediaMetaClass,
+  mediaTitleClass,
+} from "@/components/media/media-card-overlay";
 import { SiteLayout } from "@/components/site/site-layout";
 import { TourCard } from "@/components/tours/tour-card";
 import { Button } from "@/components/ui/button";
 import { formatNumber, getDestination, getResorts, getToursByDestination } from "@/data/demo";
 import { cityCover } from "@/data/photos";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/destination/$destinationId")({
   loader: ({ params }) => {
@@ -62,19 +69,19 @@ function DestinationPage() {
     <SiteLayout>
       <section className="relative">
         <img src={dest.image} alt={dest.country} className="h-[22rem] w-full object-cover md:h-[28rem]" />
-        <div className="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/40 to-transparent" />
-        <div className="container-page absolute inset-x-0 bottom-0 pb-8">
+        <div className="absolute inset-0 media-scrim-strong" />
+        <div className="container-page absolute inset-x-0 bottom-0 pb-8 pt-20">
           <Link
             to="/destinations"
-            className="text-sm font-medium text-primary-foreground/80 hover:text-primary-foreground"
+            className="media-caption-muted text-sm font-medium hover:opacity-100"
           >
             ← Все направления
           </Link>
-          <h1 className="mt-3 font-display text-3xl font-semibold text-primary-foreground md:text-5xl">
+          <h1 className={cn(mediaTitleClass("lg"), "mt-3 text-3xl md:text-5xl")}>
             {dest.flag} {dest.country}
           </h1>
-          <p className="mt-2 max-w-2xl text-primary-foreground/85">{dest.blurb}</p>
-          <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-primary-foreground/70">
+          <p className="media-caption-muted mt-2 max-w-2xl text-sm sm:text-base">{dest.blurb}</p>
+          <p className="media-caption-muted mt-3 text-xs font-semibold tracking-wide">
             {formatNumber(dest.tours)} туров · {resorts.length} курортов
           </p>
         </div>
@@ -113,20 +120,16 @@ function DestinationPage() {
                 alt={resort.name}
                 className="h-52 w-full object-cover transition-transform duration-700 group-hover:scale-105"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/20 to-transparent" />
-              <span className="absolute inset-x-0 bottom-0 p-5">
+              <div className="absolute inset-0 media-scrim-strong" />
+              <MediaCardCaption>
                 <span className="flex items-center gap-2">
-                  <MapPin className="size-4 text-primary-foreground/80" />
-                  <span className="font-display text-lg font-semibold text-primary-foreground">
-                    {resort.name}
-                  </span>
-                  <ArrowRight className="size-4 text-primary-foreground/70 transition-transform group-hover:translate-x-1" />
+                  <MapPin className="size-4 shrink-0 opacity-90" />
+                  <span className={mediaTitleClass("sm")}>{resort.name}</span>
+                  <ArrowRight className="size-4 opacity-80 transition-transform group-hover:translate-x-1" />
                 </span>
-                <span className="mt-1 block text-sm text-primary-foreground/80">{resort.blurb}</span>
-                <span className="mt-3 block text-xs font-semibold uppercase tracking-wide text-primary-foreground/70">
-                  {formatNumber(resort.tours)} туров
-                </span>
-              </span>
+                <span className={mediaBodyClass()}>{resort.blurb}</span>
+                <span className={mediaMetaClass()}>{formatNumber(resort.tours)} туров</span>
+              </MediaCardCaption>
             </Link>
           ))}
         </div>

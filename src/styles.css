@@ -246,6 +246,41 @@
   }
 }
 
+/** Dark bottom scrim for photo cards — keeps white captions readable on any image. */
+@utility media-scrim {
+  background-image: linear-gradient(
+    to top,
+    oklch(0.14 0.02 250 / 0.94) 0%,
+    oklch(0.14 0.02 250 / 0.72) 38%,
+    oklch(0.14 0.02 250 / 0.28) 68%,
+    oklch(0.14 0.02 250 / 0) 100%
+  );
+}
+
+@utility media-scrim-strong {
+  background-image: linear-gradient(
+    to top,
+    oklch(0.12 0.02 250 / 0.96) 0%,
+    oklch(0.12 0.02 250 / 0.78) 45%,
+    oklch(0.12 0.02 250 / 0.35) 72%,
+    oklch(0.12 0.02 250 / 0) 100%
+  );
+}
+
+@utility media-caption {
+  color: oklch(0.99 0.005 90);
+  text-shadow:
+    0 1px 2px oklch(0 0 0 / 0.55),
+    0 2px 14px oklch(0 0 0 / 0.4);
+}
+
+@utility media-caption-muted {
+  color: oklch(0.97 0.005 90 / 0.94);
+  text-shadow:
+    0 1px 2px oklch(0 0 0 / 0.6),
+    0 2px 12px oklch(0 0 0 / 0.42);
+}
+
 @utility no-scrollbar {
   scrollbar-width: none;
 
@@ -297,4 +332,11 @@ html.native-app {
 html.native-app body {
   overscroll-behavior-y: none;
   min-height: 100dvh;
+}
+
+/* Photo-card captions: slightly larger type on narrow phones */
+@media (max-width: 420px) {
+  .media-caption {
+    letter-spacing: -0.01em;
+  }
 }

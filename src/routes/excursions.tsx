@@ -17,6 +17,12 @@ import {
 import { useMemo, useState } from "react";
 
 import { PhotoCount } from "@/components/media/photo-gallery";
+import {
+  MediaCardCaption,
+  mediaBodyClass,
+  mediaMetaClass,
+  mediaTitleClass,
+} from "@/components/media/media-card-overlay";
 import { SafeImage } from "@/components/media/safe-image";
 import { SiteLayout } from "@/components/site/site-layout";
 import { Badge } from "@/components/ui/badge";
@@ -263,18 +269,14 @@ function ExcursionsPage() {
                       alt={item.country}
                       className="h-72 w-full object-cover transition-transform duration-700 group-hover:scale-105"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/30 to-transparent" />
-                    <div className="absolute inset-x-0 bottom-0 p-5">
-                      <h3 className="font-display text-xl font-semibold text-primary-foreground">
+                    <div className="absolute inset-0 media-scrim-strong" />
+                    <MediaCardCaption>
+                      <h3 className={mediaTitleClass("md")}>
                         {item.flag} {item.country}
                       </h3>
-                      <p className="mt-1 line-clamp-2 text-sm text-primary-foreground/80">
-                        {item.blurb}
-                      </p>
-                      <p className="mt-3 text-xs font-semibold text-primary-foreground/75">
-                        {countLabel(item.count)}
-                      </p>
-                    </div>
+                      <p className={mediaBodyClass()}>{item.blurb}</p>
+                      <p className={mediaMetaClass()}>{countLabel(item.count)}</p>
+                    </MediaCardCaption>
                   </button>
                 ))}
               </div>
@@ -316,8 +318,8 @@ function ExcursionsPage() {
                     alt={item.city}
                     className="size-full object-cover transition-transform duration-700 group-hover:scale-105"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-ink/75 to-transparent" />
-                  <p className="absolute bottom-3 left-4 font-display text-lg font-semibold text-primary-foreground">
+                  <div className="absolute inset-0 media-scrim-strong" />
+                  <p className={cn(mediaTitleClass("sm"), "absolute bottom-3 left-4 right-4 z-[1]")}>
                     {item.city}
                   </p>
                 </div>
@@ -532,8 +534,8 @@ function ExcursionCard({
           alt={e.title}
           className="h-56 w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
         />
-        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink/80 to-transparent p-4 pt-16">
-          <Badge className="border-0 bg-primary/90 text-primary-foreground">
+        <div className="absolute inset-x-0 bottom-0 media-scrim p-4 pt-16">
+          <Badge className="border-0 bg-primary/95 text-primary-foreground shadow-sm">
             <Icon className="mr-1 size-3" />
             {e.category}
           </Badge>

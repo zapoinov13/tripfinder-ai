@@ -14,6 +14,12 @@ import type { ReactNode } from "react";
 
 import { SearchPanel } from "@/components/site/search-panel";
 import { SiteLayout } from "@/components/site/site-layout";
+import {
+  MediaCardCaption,
+  mediaBodyClass,
+  mediaMetaClass,
+  mediaTitleClass,
+} from "@/components/media/media-card-overlay";
 import { SafeImage } from "@/components/media/safe-image";
 import { TourCard } from "@/components/tours/tour-card";
 import { Button } from "@/components/ui/button";
@@ -110,7 +116,7 @@ function Index() {
               Сравните цены
               <br className="hidden sm:block" /> и купите тур выгоднее
             </h1>
-            <p className="mt-3 max-w-xl text-base text-primary-foreground/90 md:mt-4 md:text-xl">
+            <p className="mt-3 max-w-xl text-base text-primary-foreground drop-shadow-md md:mt-4 md:text-xl">
               Готовые туры от разных турфирм — в одном каталоге. Или одна заявка: компании сами
               пришлют цены, вы выберете лучшую и оплатите напрямую фирме.
             </p>
@@ -186,9 +192,9 @@ function Index() {
                 loading="lazy"
                 className="h-48 w-full object-cover transition-transform duration-700 group-hover:scale-105 sm:h-64 md:h-72 lg:h-80"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/25 to-transparent" />
+              <div className="absolute inset-0 media-scrim-strong" />
               {dest.photos?.filter((p) => !p.includes("images.unsplash.com")).slice(1, 4).length ? (
-                <div className="absolute right-2 top-2 flex gap-1 sm:right-3 sm:top-3">
+                <div className="absolute right-2 top-2 z-[2] flex gap-1 sm:right-3 sm:top-3">
                   {dest.photos
                     .filter((p) => !p.includes("images.unsplash.com"))
                     .slice(1, 4)
@@ -197,22 +203,20 @@ function Index() {
                       key={`${dest.id}-${i}`}
                       src={img}
                       alt=""
-                      className="size-7 rounded-md object-cover ring-1 ring-primary-foreground/40 sm:size-10 sm:rounded-lg"
+                      className="size-7 rounded-md object-cover ring-1 ring-white/50 shadow-sm sm:size-10 sm:rounded-lg"
                     />
                   ))}
                 </div>
               ) : null}
-              <div className="absolute inset-x-0 bottom-0 p-3 sm:p-5">
-                <h3 className="font-display text-base font-semibold text-primary-foreground sm:text-xl">
+              <MediaCardCaption>
+                <h3 className={mediaTitleClass("md")}>
                   {dest.flag} {dest.country}
                 </h3>
-                <p className="mt-1 line-clamp-2 text-xs text-primary-foreground/80 sm:text-sm">
-                  {dest.blurb}
-                </p>
-                <p className="mt-1.5 text-[10px] font-semibold uppercase tracking-wide text-primary-foreground/70 sm:mt-2 sm:text-xs">
+                <p className={mediaBodyClass()}>{dest.blurb}</p>
+                <p className={mediaMetaClass()}>
                   {dest.tours} предложений · {dest.city}
                 </p>
-              </div>
+              </MediaCardCaption>
             </Link>
           ))}
         </div>
@@ -260,15 +264,15 @@ function Index() {
               alt=""
               className="absolute inset-0 size-full object-cover transition-transform duration-700 group-hover:scale-105"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/45 to-ink/15" />
+            <div className="absolute inset-0 media-scrim-strong" />
             <div className="relative flex h-full min-h-[260px] flex-col justify-end p-6 md:p-8">
-              <h3 className="font-display text-xl font-semibold text-primary-foreground">
+              <h3 className="media-caption font-display text-xl font-semibold">
                 Экскурсии
               </h3>
-              <p className="mt-2 text-sm text-primary-foreground/80">
+              <p className="media-caption-muted mt-2 text-sm">
                 Сафари, яхты, обзор города, парки и билеты. Цены от разных компаний рядом.
               </p>
-              <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-primary-foreground">
+              <span className="media-caption mt-5 inline-flex items-center gap-1.5 text-sm font-medium">
                 Смотреть экскурсии
                 <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
               </span>
@@ -284,15 +288,15 @@ function Index() {
               alt=""
               className="absolute inset-0 size-full object-cover transition-transform duration-700 group-hover:scale-105"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/45 to-ink/15" />
+            <div className="absolute inset-0 media-scrim-strong" />
             <div className="relative flex h-full min-h-[260px] flex-col justify-end p-6 md:p-8">
-              <h3 className="font-display text-xl font-semibold text-primary-foreground">
+              <h3 className="media-caption font-display text-xl font-semibold">
                 Уже в поездке?
               </h3>
-              <p className="mt-2 text-sm text-primary-foreground/80">
+              <p className="media-caption-muted mt-2 text-sm">
                 Нужна машина, гид или билеты на сегодня? Компании в городе пришлют цены.
               </p>
-              <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-primary-foreground">
+              <span className="media-caption mt-5 inline-flex items-center gap-1.5 text-sm font-medium">
                 Попросить помощь
                 <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
               </span>
@@ -490,19 +494,19 @@ function Index() {
               alt=""
               className="absolute inset-0 size-full object-cover transition-transform duration-700 group-hover:scale-105"
             />
-            <div className="absolute inset-0 bg-[linear-gradient(180deg,oklch(0.16_0.02_250/0.15)_0%,oklch(0.16_0.02_250/0.78)_100%)]" />
+            <div className="absolute inset-0 media-scrim-strong" />
             <div className="relative flex h-full min-h-[300px] flex-col justify-end p-6 md:p-8 lg:min-h-[520px]">
-              <span className="w-fit rounded-full bg-primary-foreground/14 px-3 py-1 text-xs font-semibold text-primary-foreground backdrop-blur-md">
+              <span className="w-fit rounded-full bg-black/35 px-3 py-1 text-xs font-semibold text-white backdrop-blur-md">
                 Самый удобный способ
               </span>
-              <h3 className="mt-4 font-display text-2xl font-semibold text-primary-foreground md:text-4xl">
+              <h3 className="media-caption mt-4 font-display text-2xl font-semibold md:text-4xl">
                 Одна заявка — цены от нескольких турфирм
               </h3>
-              <p className="mt-3 max-w-lg text-sm text-primary-foreground/80 md:text-base">
+              <p className="media-caption-muted mt-3 max-w-lg text-sm md:text-base">
                 Опишите куда, когда и бюджет. Подходящие компании пришлют свои варианты. Вы
                 сравниваете и пишете той, чья цена и условия лучше.
               </p>
-              <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-primary-foreground">
+              <span className="media-caption mt-5 inline-flex items-center gap-1.5 text-sm font-medium">
                 Получить цены от компаний
                 <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
               </span>
@@ -519,12 +523,12 @@ function Index() {
               alt=""
               className="absolute inset-0 size-full object-cover transition-transform duration-700 group-hover:scale-105"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/40 to-ink/10" />
+            <div className="absolute inset-0 media-scrim-strong" />
             <div className="relative flex h-full min-h-[220px] flex-col justify-end p-6">
-              <h3 className="font-display text-xl font-semibold text-primary-foreground">
+              <h3 className="media-caption font-display text-xl font-semibold">
                 Каталог как витрина, а не лента сторис
               </h3>
-              <p className="mt-2 text-sm text-primary-foreground/80">
+              <p className="media-caption-muted mt-2 text-sm">
                 Цена, питание, перелёт и название компании — сразу на карточке. Без скринов из чата.
               </p>
             </div>
@@ -539,12 +543,12 @@ function Index() {
               alt=""
               className="absolute inset-0 size-full object-cover transition-transform duration-700 group-hover:scale-105"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/40 to-ink/10" />
+            <div className="absolute inset-0 media-scrim-strong" />
             <div className="relative flex h-full min-h-[220px] flex-col justify-end p-6">
-              <h3 className="font-display text-xl font-semibold text-primary-foreground">
+              <h3 className="media-caption font-display text-xl font-semibold">
                 Платите турфирме, не «сайту»
               </h3>
-              <p className="mt-2 text-sm text-primary-foreground/80">
+              <p className="media-caption-muted mt-2 text-sm">
                 TourGo — витрина. Договор и деньги — у компании, которую выбрали вы.
               </p>
             </div>

@@ -1,19 +1,28 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 
+import {
+  MediaCardCaption,
+  mediaBodyClass,
+  mediaMetaClass,
+  mediaTitleClass,
+} from "@/components/media/media-card-overlay";
 import { SiteLayout } from "@/components/site/site-layout";
 import { destinations } from "@/data/demo";
 
 export const Route = createFileRoute("/destinations")({
   head: () => ({
     meta: [
-      { title: "Направления | TourGo" },
+      { title: "Направления — куда поехать · TourGo" },
       {
         name: "description",
         content:
-          "Доступные направления TourGo. На старте каталог открыт по Дубаю: JBR, Marina, Palm Jumeirah, Downtown, семейный и бюджетный отдых.",
+          "Страны и курорты с турами от разных компаний. Откройте направление и сравните цены рядом.",
       },
       { property: "og:title", content: "Направления · TourGo" },
-      { property: "og:description", content: "Первое доступное направление платформы: Дубай." },
+      {
+        property: "og:description",
+        content: "Выберите страну и сравните предложения турфирм.",
+      },
     ],
   }),
   component: DestinationsPage,
@@ -23,12 +32,11 @@ function DestinationsPage() {
   return (
     <SiteLayout>
       <div className="container-page py-10">
-        <h1 className="font-display text-3xl font-semibold md:text-4xl">Направления</h1>
-        <p className="mt-2 text-muted-foreground">
-          На старте доступны предложения по Дубаю. Выберите сценарий поездки: пляж, Palm, Downtown,
-          семейный отдых, бюджет или экскурсии.
+        <h1 className="font-display text-3xl font-semibold md:text-4xl">Куда поехать</h1>
+        <p className="mt-2 max-w-2xl text-muted-foreground">
+          Выберите страну — внутри туры от разных компаний с ценами, отелями и питанием рядом.
         </p>
-        <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {destinations.map((dest) => (
             <Link
               key={dest.id}
@@ -40,18 +48,18 @@ function DestinationsPage() {
                 src={dest.image}
                 alt={dest.country}
                 loading="lazy"
-                className="h-80 w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                className="h-72 w-full object-cover transition-transform duration-700 group-hover:scale-105 sm:h-80"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-ink/85 to-transparent" />
-              <div className="absolute inset-x-0 bottom-0 p-5">
-                <h2 className="font-display text-xl font-semibold text-primary-foreground">
+              <div className="absolute inset-0 media-scrim-strong" />
+              <MediaCardCaption>
+                <h2 className={mediaTitleClass("lg")}>
                   {dest.flag} {dest.country}
                 </h2>
-                <p className="mt-1 text-sm text-primary-foreground/80">{dest.blurb}</p>
-                <p className="mt-3 text-xs font-semibold uppercase text-primary-foreground/70">
+                <p className={mediaBodyClass()}>{dest.blurb}</p>
+                <p className={mediaMetaClass()}>
                   {dest.tours} предложений · {dest.city}
                 </p>
-              </div>
+              </MediaCardCaption>
             </Link>
           ))}
         </div>
