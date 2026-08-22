@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Heart, LogOut, Menu, Plane, User } from "lucide-react";
+import { Heart, LogOut, Menu, Plane, User, Bell } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -14,10 +14,10 @@ const nav: Array<{ label: string; to: string; exact?: boolean }> = [
   { label: "Помощь в поездке", to: "/assistance" },
 ];
 
-export function SiteHeader() {
+export function SiteHeader({ compact = false }: { compact?: boolean }) {
   const { user, isAuthenticated, logout } = useAuth();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const isHome = pathname === "/";
+  const isHome = pathname === "/" && !compact;
   const [scrolled, setScrolled] = useState(false);
   const overlay = isHome && !scrolled;
 
@@ -43,10 +43,10 @@ export function SiteHeader() {
   return (
     <header
       className={cn(
-        "sticky top-0 z-40 transition-colors duration-300",
-        overlay
-          ? "border-b border-transparent bg-transparent"
-          : "border-b border-border/70 bg-background/85 backdrop-blur-xl",
+        "sticky top-0 z-40 transition-colors duration-300 native-app:pt-[env(safe-area-inset-top)]",
+        compact || !overlay
+          ? "border-b border-border/70 bg-background/85 backdrop-blur-xl"
+          : "border-b border-transparent bg-transparent",
       )}
     >
       <div className="container-page grid h-16 grid-cols-[minmax(0,1fr)_auto] items-center gap-4 md:h-[72px] md:grid-cols-[auto_1fr_auto]">
@@ -152,71 +152,81 @@ export function SiteHeader() {
           )}
         </div>
 
-        <div className="flex items-center justify-end gap-1 md:hidden">
-          <Button
-            variant="ghost"
-            size="icon"
-            className={
-              overlay
-                ? "text-primary-foreground hover:bg-primary-foreground/12 hover:text-primary-foreground"
-                : undefined
-            }
-            asChild
-          >
-            <Link to={accountTo} aria-label="Аккаунт">
-              <User className="size-5" />
-            </Link>
-          </Button>
-          <Sheet>
-            <SheetTrigger asChild>
+        <div className={cn("flex items-center justify-end gap-1 md:hidden", compact && "gap-2")}>
+          {!compact ? (
+            <>
               <Button
                 variant="ghost"
                 size="icon"
-                aria-label="Меню"
                 className={
                   overlay
                     ? "text-primary-foreground hover:bg-primary-foreground/12 hover:text-primary-foreground"
                     : undefined
                 }
+                asChild
               >
-                <Menu className="size-5" />
+                <Link to={accountTo} aria-label="Аккаунт">
+                  <User className="size-5" />
+                </Link>
               </Button>
-            </SheetTrigger>
-            <SheetContent side="right" className="w-[82vw] max-w-sm">
-              <SheetHeader>
-                <SheetTitle className="font-display">Меню</SheetTitle>
-              </SheetHeader>
-              <nav className="mt-2 flex flex-col gap-1 px-4">
-                {[
-                  ...nav,
-                  { label: "Избранное", to: "/favorites" },
-                  { label: "Горящие туры", to: "/hot" },
-                  { label: "Для турфирм", to: "/for-companies" },
-                  {
-                    label: isAuthenticated ? (user?.name ?? "Профиль") : "Войти",
-                    to: accountTo,
-                  },
-                ].map((item) => (
-                  <Link
-                    key={item.to + item.label}
-                    to={item.to}
-                    className="rounded-xl px-3 py-3 text-base font-medium text-foreground hover:bg-secondary"
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label="Меню"
+                    className={
+                      overlay
+                        ? "text-primary-foreground hover:bg-primary-foreground/12 hover:text-primary-foreground"
+                        : undefined
+                    }
                   >
-                    {item.label}
-                  </Link>
-                ))}
-                {isAuthenticated ? (
-                  <button
-                    type="button"
-                    className="rounded-xl px-3 py-3 text-left text-base font-medium text-foreground hover:bg-secondary"
-                    onClick={logout}
-                  >
-                    Выйти
-                  </button>
-                ) : null}
-              </nav>
-            </SheetContent>
-          </Sheet>
+                    <Menu className="size-5" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-[82vw] max-w-sm">
+                  <SheetHeader>
+                    <SheetTitle className="font-display">Меню</SheetTitle>
+                  </SheetHeader>
+                  <nav className="mt-2 flex flex-col gap-1 px-4">
+                    {[
+                      ...nav,
+                      { label: "Избранное", to: "/favorites" },
+                      { label: "Горящие туры", to: "/hot" },
+                      { label: "Для турфирм", to: "/for-companies" },
+                      {
+                        label: isAuthenticated ? (user?.name ?? "Профиль") : "Войти",
+                        to: accountTo,
+                      },
+                    ].map((item) => (
+                      <Link
+                        key={item.to + item.label}
+                        to={item.to}
+                        className="rounded-xl px-3 py-3 text-base font-medium text-foreground hover:bg-secondary"
+                      >
+                        {item.label}
+                      </Link>
+                    ))}
+                    {isAuthenticated ? (
+                      <button
+                        type="button"
+                        className="rounded-xl px-3 py-3 text-left text-base font-medium text-foreground hover:bg-secondary"
+                        onClick={logout}
+                      >
+                        Выйти
+                      </button>
+                    ) : null}
+                  </nav>
+                </SheetContent>
+              </Sheet>
+            </>
+          ) : (
+            <Button variant="ghost" size="icon" asChild>
+              <Link to="/notifications" aria-label="Уведомления">
+                <Bell className="size-5" />
+              </Link>
+            </Button>
+          )}
         </div>
       </div>
     </header>

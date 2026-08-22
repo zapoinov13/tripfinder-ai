@@ -289,3 +289,12 @@
 @utility animation-delay-300 {
   animation-delay: 300ms;
 }
+
+html.native-app {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html.native-app body {
+  overscroll-behavior-y: none;
+  min-height: 100dvh;
+}

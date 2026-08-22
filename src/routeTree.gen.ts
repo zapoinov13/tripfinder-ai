@@ -27,9 +27,11 @@ import { Route as HotRouteImport } from './routes/hot'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as PremiumRouteImport } from './routes/premium'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ProfileRouteRouteImport } from './routes/profile/route'
 import { Route as RegistrationRouteImport } from './routes/registration'
 import { Route as SearchRouteImport } from './routes/search'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as AdminAiKeysRouteImport } from './routes/admin/ai-keys'
 import { Route as AdminAiKeys2RouteImport } from './routes/admin/ai-keys 2'
@@ -160,6 +162,11 @@ const PremiumRoute = PremiumRouteImport.update({
   path: '/premium',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProfileRouteRoute = ProfileRouteRouteImport.update({
   id: '/profile',
   path: '/profile',
@@ -173,6 +180,11 @@ const RegistrationRoute = RegistrationRouteImport.update({
 const SearchRoute = SearchRouteImport.update({
   id: '/search',
   path: '/search',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
@@ -392,8 +404,10 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/notifications': typeof NotificationsRoute
   '/premium': typeof PremiumRoute
+  '/privacy': typeof PrivacyRoute
   '/registration': typeof RegistrationRoute
   '/search': typeof SearchRoute
+  '/terms': typeof TermsRoute
   '/admin/ai-keys': typeof AdminAiKeysRoute
   '/admin/ai-keys 2': typeof AdminAiKeys2Route
   '/admin/analytics': typeof AdminAnalyticsRoute
@@ -453,8 +467,10 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/notifications': typeof NotificationsRoute
   '/premium': typeof PremiumRoute
+  '/privacy': typeof PrivacyRoute
   '/registration': typeof RegistrationRoute
   '/search': typeof SearchRoute
+  '/terms': typeof TermsRoute
   '/admin/ai-keys': typeof AdminAiKeysRoute
   '/admin/ai-keys 2': typeof AdminAiKeys2Route
   '/admin/analytics': typeof AdminAnalyticsRoute
@@ -516,8 +532,10 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/notifications': typeof NotificationsRoute
   '/premium': typeof PremiumRoute
+  '/privacy': typeof PrivacyRoute
   '/registration': typeof RegistrationRoute
   '/search': typeof SearchRoute
+  '/terms': typeof TermsRoute
   '/admin/ai-keys': typeof AdminAiKeysRoute
   '/admin/ai-keys 2': typeof AdminAiKeys2Route
   '/admin/analytics': typeof AdminAnalyticsRoute
@@ -580,8 +598,10 @@ export interface FileRouteTypes {
     | '/login'
     | '/notifications'
     | '/premium'
+    | '/privacy'
     | '/registration'
     | '/search'
+    | '/terms'
     | '/admin/ai-keys'
     | '/admin/ai-keys 2'
     | '/admin/analytics'
@@ -641,8 +661,10 @@ export interface FileRouteTypes {
     | '/login'
     | '/notifications'
     | '/premium'
+    | '/privacy'
     | '/registration'
     | '/search'
+    | '/terms'
     | '/admin/ai-keys'
     | '/admin/ai-keys 2'
     | '/admin/analytics'
@@ -703,8 +725,10 @@ export interface FileRouteTypes {
     | '/login'
     | '/notifications'
     | '/premium'
+    | '/privacy'
     | '/registration'
     | '/search'
+    | '/terms'
     | '/admin/ai-keys'
     | '/admin/ai-keys 2'
     | '/admin/analytics'
@@ -766,8 +790,10 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   NotificationsRoute: typeof NotificationsRoute
   PremiumRoute: typeof PremiumRoute
+  PrivacyRoute: typeof PrivacyRoute
   RegistrationRoute: typeof RegistrationRoute
   SearchRoute: typeof SearchRoute
+  TermsRoute: typeof TermsRoute
   AdminAiKeysRoute: typeof AdminAiKeysRoute
   AdminAiKeys2Route: typeof AdminAiKeys2Route
   AdminAnalyticsRoute: typeof AdminAnalyticsRoute
@@ -930,6 +956,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PremiumRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/profile': {
       id: '/profile'
       path: '/profile'
@@ -949,6 +982,13 @@ declare module '@tanstack/react-router' {
       path: '/search'
       fullPath: '/search'
       preLoaderRoute: typeof SearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/': {
@@ -1271,8 +1311,10 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   NotificationsRoute: NotificationsRoute,
   PremiumRoute: PremiumRoute,
+  PrivacyRoute: PrivacyRoute,
   RegistrationRoute: RegistrationRoute,
   SearchRoute: SearchRoute,
+  TermsRoute: TermsRoute,
   AdminAiKeysRoute: AdminAiKeysRoute,
   AdminAiKeys2Route: AdminAiKeys2Route,
   AdminAnalyticsRoute: AdminAnalyticsRoute,

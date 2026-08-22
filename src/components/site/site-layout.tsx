@@ -1,18 +1,20 @@
 import type { ReactNode } from "react";
 
-import { MobileNav } from "./mobile-nav";
+import { useAppTabBarPaddingClass, useCompactAppUi } from "@/hooks/use-native-app";
+import { cn } from "@/lib/utils";
+
 import { SiteFooter } from "./site-footer";
 import { SiteHeader } from "./site-header";
 
 export function SiteLayout({ children }: { children: ReactNode }) {
+  const compactApp = useCompactAppUi();
+  const tabPadding = useAppTabBarPaddingClass();
+
   return (
     <div className="flex min-h-screen flex-col bg-background">
-      <SiteHeader />
-      <main className="flex-1 pb-[calc(5.25rem+env(safe-area-inset-bottom))] md:pb-0">
-        {children}
-      </main>
-      <SiteFooter />
-      <MobileNav />
+      <SiteHeader compact={compactApp} />
+      <main className={cn("flex-1", tabPadding)}>{children}</main>
+      {!compactApp ? <SiteFooter /> : null}
     </div>
   );
 }

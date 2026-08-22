@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">TourGo</string>
+    <string name="title_activity_main">TourGo</string>
+    <string name="package_name">com.tourgo.app</string>
+    <string name="custom_url_scheme">com.tourgo.app</string>
+</resources>

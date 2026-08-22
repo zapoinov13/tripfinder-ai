@@ -27,8 +27,8 @@ const columns = [
     links: [
       { label: "Вопросы", to: "/about", hash: "faq" },
       { label: "Поддержка", to: "/about", hash: "support" },
-      { label: "Условия", to: "/about", hash: "terms" },
-      { label: "Конфиденциальность", to: "/about", hash: "privacy" },
+      { label: "Условия", to: "/terms" },
+      { label: "Конфиденциальность", to: "/privacy" },
     ],
   },
 ];

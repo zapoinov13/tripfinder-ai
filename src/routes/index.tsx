@@ -19,6 +19,7 @@ import { TourCard } from "@/components/tours/tour-card";
 import { Button } from "@/components/ui/button";
 import { destinations, formatPrice, heroImage, hotTours } from "@/data/demo";
 import { usePlatformStore } from "@/lib/platform/hooks";
+import { useCompactAppUi } from "@/hooks/use-native-app";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/")({
@@ -82,6 +83,8 @@ const heroFacts = [
 
 
 function Index() {
+  const compactApp = useCompactAppUi();
+
   return (
     <SiteLayout>
       <section className="relative isolate -mt-[65px] overflow-hidden md:-mt-[73px]">
@@ -155,6 +158,7 @@ function Index() {
       </section>
 
 
+      {!compactApp ? (
       <section className="container-page mt-10 md:mt-14">
         <div className="relative overflow-hidden rounded-[2rem]">
           <SafeImage
@@ -254,6 +258,7 @@ function Index() {
           </div>
         </div>
       </section>
+      ) : null}
 
       <section className="container-page mt-16 md:mt-24">
         <SectionHead
@@ -284,8 +289,9 @@ function Index() {
         </div>
       </section>
 
-      <HomeFeaturedTours />
+      {!compactApp ? <HomeFeaturedTours /> : null}
 
+      {!compactApp ? (
       <section className="mt-16 md:mt-24">
         <div className="container-page">
           <p className="text-sm font-semibold tracking-[0.18em] text-primary uppercase">Почему TourGo</p>
@@ -411,6 +417,7 @@ function Index() {
           </div>
         </div>
       </section>
+      ) : null}
 
       <section className="container-page mt-16 md:mt-24">
         <SectionHead title="Популярные направления" />
@@ -512,6 +519,8 @@ function Index() {
         </div>
       </section>
 
+      {!compactApp ? (
+      <>
       <section className="container-page mt-16 md:mt-24">
         <div className="overflow-hidden rounded-[2rem] bg-ink text-primary-foreground">
           <div className="grid gap-8 p-6 md:grid-cols-[minmax(0,1fr)_auto] md:items-end md:p-10">
@@ -635,6 +644,8 @@ function Index() {
           </div>
         </div>
       </section>
+      </>
+      ) : null}
     </SiteLayout>
   );
 }

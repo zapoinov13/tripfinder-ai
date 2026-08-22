@@ -1,7 +1,8 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useRouterState } from "@tanstack/react-router";
 import { Menu, Plane } from "lucide-react";
 import type { ComponentType, ReactNode } from "react";
 
+import { useAppTabBarPaddingClass } from "@/hooks/use-native-app";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
@@ -44,6 +45,7 @@ export function DashShell({
   brand,
   actions,
   children,
+  showAppTabs = false,
 }: {
   items: DashItem[];
   title: string;
@@ -51,7 +53,12 @@ export function DashShell({
   brand: string;
   actions?: ReactNode;
   children: ReactNode;
+  showAppTabs?: boolean;
 }) {
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const tabPadding = useAppTabBarPaddingClass();
+  const tabs = showAppTabs || pathname.startsWith("/profile");
+
   return (
     <div className="flex min-h-screen bg-secondary/30">
       <aside className="hidden w-64 shrink-0 border-r border-border bg-card lg:block">
@@ -93,7 +100,7 @@ export function DashShell({
             <div className="flex items-center gap-2">{actions}</div>
           </div>
         </header>
-        <div className="p-4 md:p-8">{children}</div>
+        <div className={cn("p-4 md:p-8", tabs && tabPadding)}>{children}</div>
       </div>
     </div>
   );
