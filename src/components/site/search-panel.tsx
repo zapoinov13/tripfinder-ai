@@ -65,11 +65,11 @@ function FieldShell({
   icon: typeof MapPin;
 }) {
   return (
-    <span className="flex min-h-[3.5rem] w-full min-w-0 items-center gap-3 rounded-xl border border-border/80 bg-background px-3 py-2.5 text-left shadow-sm transition-[border-color,box-shadow] hover:border-primary/35 hover:shadow-md md:min-h-[3.25rem] md:rounded-2xl">
-      <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-secondary/80 text-muted-foreground">
+    <span className="flex min-h-[3.25rem] w-full min-w-0 items-center gap-2.5 rounded-xl border border-border/80 bg-background px-3 py-2 text-left shadow-sm transition-[border-color,box-shadow] hover:border-primary/35 hover:shadow-md sm:min-h-[3.5rem] sm:gap-3 md:min-h-[3.25rem] md:rounded-2xl">
+      <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-secondary/80 text-muted-foreground sm:size-9">
         <Icon className="size-4" />
       </span>
-      <span className="min-w-0 flex-1">
+      <span className="min-w-0 flex-1 overflow-hidden">
         <span className="block text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
           {label}
         </span>
@@ -317,16 +317,20 @@ export function SearchPanel({
 
       {tab === "classic" ? (
         <div className="space-y-3 px-3 pb-3 md:p-4">
-          <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-[repeat(4,minmax(0,1fr))_auto] xl:items-end">
-            <SelectField
-              label="Откуда"
-              value={from}
-              options={originCities.map((c) => ({ value: c, label: c }))}
-              onChange={setFrom}
-            />
-            <SelectField label="Куда" value={to} options={destinationOptions} onChange={setTo} />
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-[repeat(4,minmax(0,1fr))_auto] xl:items-end">
+            <div className="min-w-0">
+              <SelectField
+                label="Откуда"
+                value={from}
+                options={originCities.map((c) => ({ value: c, label: c }))}
+                onChange={setFrom}
+              />
+            </div>
+            <div className="min-w-0">
+              <SelectField label="Куда" value={to} options={destinationOptions} onChange={setTo} />
+            </div>
 
-            <div className="grid grid-cols-2 gap-2 md:contents">
+            <div className="min-w-0">
               <DateRangePicker
                 variant="field"
                 label="Даты"
@@ -336,7 +340,9 @@ export function SearchPanel({
                   setRange({ from: parseIsoDate(from), to: parseIsoDate(to) })
                 }
               />
+            </div>
 
+            <div className="min-w-0">
               <Popover>
                 <PopoverTrigger asChild>
                   <button type="button" className="min-w-0 w-full">
@@ -348,43 +354,43 @@ export function SearchPanel({
                     />
                   </button>
                 </PopoverTrigger>
-              <PopoverContent align="start" className="w-72 space-y-4 p-4">
-                <Counter label="Взрослые" value={adults} min={1} onChange={setAdults} />
-                <Counter label="Дети" value={children} min={0} onChange={setChildren} />
-                {children > 0 ? (
-                  <div className="space-y-2 border-t border-border pt-3">
-                    <p className="text-xs uppercase tracking-wide text-muted-foreground">
-                      Возраст детей
-                    </p>
-                    {Array.from({ length: children }).map((_, i) => (
-                      <label key={i} className="flex items-center justify-between gap-3 text-sm">
-                        <span>Ребёнок {i + 1}</span>
-                        <select
-                          className="rounded-xl border border-border bg-card px-2 py-1.5 text-sm"
-                          value={childAges[i] ?? 7}
-                          onChange={(e) => {
-                            const next = [...childAges];
-                            next[i] = Number(e.target.value);
-                            setChildAges(next);
-                          }}
-                        >
-                          {Array.from({ length: 18 }).map((__, age) => (
-                            <option key={age} value={age}>
-                              {age} лет
-                            </option>
-                          ))}
-                        </select>
-                      </label>
-                    ))}
-                  </div>
-                ) : null}
-              </PopoverContent>
-            </Popover>
+                <PopoverContent align="start" className="w-72 space-y-4 p-4">
+                  <Counter label="Взрослые" value={adults} min={1} onChange={setAdults} />
+                  <Counter label="Дети" value={children} min={0} onChange={setChildren} />
+                  {children > 0 ? (
+                    <div className="space-y-2 border-t border-border pt-3">
+                      <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                        Возраст детей
+                      </p>
+                      {Array.from({ length: children }).map((_, i) => (
+                        <label key={i} className="flex items-center justify-between gap-3 text-sm">
+                          <span>Ребёнок {i + 1}</span>
+                          <select
+                            className="rounded-xl border border-border bg-card px-2 py-1.5 text-sm"
+                            value={childAges[i] ?? 7}
+                            onChange={(e) => {
+                              const next = [...childAges];
+                              next[i] = Number(e.target.value);
+                              setChildAges(next);
+                            }}
+                          >
+                            {Array.from({ length: 18 }).map((__, age) => (
+                              <option key={age} value={age}>
+                                {age} лет
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                      ))}
+                    </div>
+                  ) : null}
+                </PopoverContent>
+              </Popover>
             </div>
 
             <Button
               size="lg"
-              className="col-span-2 h-12 w-full rounded-xl px-6 shadow-md md:col-span-2 xl:col-span-1 xl:h-[3.25rem] xl:rounded-2xl"
+              className="h-12 w-full rounded-xl px-6 shadow-md sm:col-span-2 xl:col-span-1 xl:h-[3.25rem] xl:rounded-2xl"
               onClick={goSearch}
             >
               <Search className="size-4" />

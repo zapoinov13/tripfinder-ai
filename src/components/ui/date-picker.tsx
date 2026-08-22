@@ -113,15 +113,15 @@ export function DateRangePicker({
       <PopoverTrigger asChild>
         <button type="button" className={cn("min-w-0 w-full text-left", className)}>
           {variant === "field" ? (
-            <span className="flex min-h-[3.5rem] w-full min-w-0 items-center gap-3 rounded-xl border border-border/80 bg-background px-3 py-2.5 shadow-sm transition-[border-color,box-shadow] hover:border-primary/35 hover:shadow-md md:min-h-[3.25rem] md:rounded-2xl">
-              <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-secondary/80 text-muted-foreground">
+            <span className="flex min-h-[3.25rem] w-full min-w-0 items-center gap-2.5 overflow-hidden rounded-xl border border-border/80 bg-background px-3 py-2 shadow-sm transition-[border-color,box-shadow] hover:border-primary/35 hover:shadow-md sm:min-h-[3.5rem] sm:gap-3 md:min-h-[3.25rem] md:rounded-2xl">
+              <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-secondary/80 text-muted-foreground sm:size-9">
                 <CalendarDays className="size-4" />
               </span>
-              <span className="min-w-0 flex-1">
+              <span className="min-w-0 flex-1 overflow-hidden">
                 <span className="block text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                   {label}
                 </span>
-                <span className="block text-sm font-semibold leading-snug text-foreground">
+                <span className="block truncate text-sm font-semibold leading-snug text-foreground">
                   {formatRangeLabelCompact(fromDate, toDate)}
                 </span>
                 {nights > 0 ? (
