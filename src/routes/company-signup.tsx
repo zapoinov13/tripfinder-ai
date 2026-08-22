@@ -32,10 +32,11 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/company-signup")({
   head: () => ({
     meta: [
-      { title: "Создать страницу компании · TourGo" },
+      { title: "Добавить турфирму — получать заявки от туристов · TourGo" },
       {
         name: "description",
-        content: "Добавьте турфирму: данные, услуги, страны. После проверки появится знак, с ним обычно больше бронирований.",
+        content:
+          "Откройте кабинет: туристы оставляют заявки, вы отвечаете ценой. Клиент и оплата — ваши.",
       },
     ],
   }),
@@ -173,12 +174,13 @@ function CompanySignupPage() {
     <SiteLayout>
       <div className="border-b border-border/70 bg-secondary/25">
         <div className="container-page py-6 md:py-8">
-          <p className="text-sm font-medium text-primary">Для турфирм</p>
+          <p className="text-sm font-medium text-primary">Кабинет турфирмы на TourGo</p>
           <h1 className="mt-1 font-display text-3xl font-semibold md:text-4xl">
-            Создать страницу компании
+            Подключите компанию и получайте заявки
           </h1>
           <p className="mt-2 max-w-2xl text-sm text-muted-foreground md:text-base">
-            Несколько коротких шагов. После этого можно добавлять туры и отвечать на заявки.
+            Несколько коротких шагов. Сразу можно выкладывать туры и отвечать туристам. Знак
+            проверки появится после документов.
           </p>
         </div>
       </div>

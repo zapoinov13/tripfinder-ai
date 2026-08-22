@@ -49,8 +49,8 @@ export function SiteFooter() {
               <span className="font-display text-xl font-semibold tracking-tight">TourGo</span>
             </Link>
             <p className="mt-4 text-sm text-primary-foreground/70 md:text-base">
-              Маркетплейс туров. Несколько компаний показывают цены рядом. Вы выбираете и платите
-              выбранной фирме.
+              Сравнивайте туры от разных компаний в одном месте. Выбирайте лучшую цену и платите
+              напрямую турфирме — не «сайту-посреднику».
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
@@ -117,7 +117,7 @@ export function SiteFooter() {
 
       <div className="border-t border-primary-foreground/10">
         <div className="container-page flex flex-col gap-2 py-5 text-xs text-primary-foreground/50 sm:flex-row sm:items-center sm:justify-between">
-          <p>© 2026 TourGo. Туры продают компании, не мы.</p>
+          <p>© 2026 TourGo. Туры продают компании — мы помогаем их сравнить.</p>
           <p>Поиск и заявка бесплатные для туриста.</p>
         </div>
       </div>

@@ -27,7 +27,7 @@ export function AppSplash({ fading }: Props) {
 
         <div className="text-center">
           <p className="font-display text-3xl font-semibold tracking-tight text-foreground">TourGo</p>
-          <p className="mt-2 text-sm text-muted-foreground">Подбираем туры для вас…</p>
+          <p className="mt-2 text-sm text-muted-foreground">Сравниваем туры для вас…</p>
         </div>
 
         <div className="flex gap-1.5" aria-hidden>

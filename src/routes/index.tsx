@@ -25,19 +25,20 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "TourGo: найдите тур сами или получите предложения от турфирм" },
+      { title: "TourGo — сравните туры от разных компаний и выберите лучшую цену" },
       {
         name: "description",
         content:
-          "Найдите и сравните предложения разных туристических компаний в одном месте. Или оставьте одну заявку, турфирмы предложат свои варианты.",
+          "Готовые туры в одном каталоге или одна заявка нескольким турфирмам. Сравнивайте цены, отели и условия — платите напрямую выбранной компании.",
       },
       {
         property: "og:title",
-        content: "TourGo: найдите тур сами или получите предложения от турфирм",
+        content: "TourGo — сравните туры от разных компаний и выберите лучшую цену",
       },
       {
         property: "og:description",
-        content: "Найдите и сравните предложения разных туристических компаний в одном месте.",
+        content:
+          "Готовые туры в одном каталоге или одна заявка нескольким турфирмам. Платите напрямую компании.",
       },
     ],
   }),
@@ -58,27 +59,27 @@ const steps = [
   {
     n: "01",
     icon: Search,
-    title: "Находите",
-    text: "Смотрите туры в каталоге или оставьте одну заявку. Можно написать текстом или сказать голосом.",
+    title: "Ищете сами или пишете заявку",
+    text: "Откройте каталог туров — или опишите поездку один раз. Можно текстом или голосом.",
   },
   {
     n: "02",
     icon: Scale,
-    title: "Сравниваете",
-    text: "Несколько компаний на одну поездку. Цена, отель, питание и условия рядом.",
+    title: "Смотрите цены рядом",
+    text: "Несколько турфирм предлагают варианты одной поездки. Отель, питание и цена — в одном списке.",
   },
   {
     n: "03",
     icon: Handshake,
-    title: "Выбираете",
-    text: "Пишете выбранной фирме. Договор и оплата у неё. TourGo за тур денег не берёт.",
+    title: "Бронируете у компании",
+    text: "Выбираете лучшее предложение и пишете фирме. Договор и оплата — напрямую ей, не через нас.",
   },
 ];
 
 const heroFacts = [
-  { icon: Users, value: "40+", label: "турфирм в подборке" },
-  { icon: Scale, value: "0 ₸", label: "комиссии для туриста" },
-  { icon: Flame, value: "1 200+", label: "актуальных туров" },
+  { icon: Users, value: "40+", label: "проверенных турфирм" },
+  { icon: Scale, value: "0 ₸", label: "доплаты туристу" },
+  { icon: Flame, value: "1 200+", label: "туров в каталоге" },
 ];
 
 
@@ -103,14 +104,15 @@ function Index() {
           <div className="animate-fade-up max-w-3xl">
             <p className="inline-flex items-center gap-2 rounded-full border border-primary-foreground/25 bg-primary-foreground/10 px-3 py-1.5 text-[0.7rem] font-semibold tracking-[0.14em] text-primary-foreground uppercase backdrop-blur-md md:text-xs">
               <ShieldCheck className="size-3.5" />
-              Проверенные турфирмы
+              Туры от проверенных компаний
             </p>
             <h1 className="mt-4 font-display text-[2.1rem] font-semibold leading-[1.05] tracking-tight text-primary-foreground drop-shadow-md md:mt-5 md:text-7xl md:leading-[1.02]">
-              Куда хотите
-              <br className="hidden sm:block" /> поехать?
+              Сравните цены
+              <br className="hidden sm:block" /> и купите тур выгоднее
             </h1>
             <p className="mt-3 max-w-xl text-base text-primary-foreground/90 md:mt-4 md:text-xl">
-              Несколько компаний на одну поездку. Цены рядом. Вы выбираете.
+              Готовые туры от разных турфирм — в одном каталоге. Или одна заявка: компании сами
+              пришлют цены, вы выберете лучшую и оплатите напрямую фирме.
             </p>
 
             <ul className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-[0.8rem] text-primary-foreground/85 md:mt-6 md:gap-x-6 md:text-sm">
@@ -131,13 +133,13 @@ function Index() {
             <SearchPanel tone="hero" />
             <div className="mt-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
               <p className="text-sm text-primary-foreground/85">
-                Не хотите заполнять форму?{" "}
+                Не хотите листать каталог?{" "}
                 <Link
                   to="/request"
                   search={{}}
                   className="font-semibold text-primary-foreground underline underline-offset-4"
                 >
-                  Получите предложения от компаний
+                  Оставьте заявку — турфирмы пришлют цены сами
                 </Link>
               </p>
               <div className="-mx-4 flex snap-x gap-2 overflow-x-auto px-4 pb-1 md:mx-0 md:px-0">
@@ -159,7 +161,8 @@ function Index() {
 
       <section className="container-page mt-10 md:mt-16">
         <SectionHead
-          title="Популярные направления"
+          title="Куда едут чаще всего"
+          subtitle="Откройте страну — внутри туры от разных компаний с ценами рядом"
           action={
             <Button variant="outline" asChild>
               <Link to="/destinations">
@@ -217,8 +220,8 @@ function Index() {
 
       <section className="container-page mt-16 md:mt-24">
         <SectionHead
-          title="🔥 Горящие туры"
-          subtitle="Выгодные предложения на ближайшие даты"
+          title="Горящие туры — успейте на скидку"
+          subtitle="Вылеты в ближайшие даты: компании уже снизили цену"
           action={
             <Button variant="outline" asChild>
               <Link to="/hot">
@@ -230,7 +233,7 @@ function Index() {
         />
         <div className="mt-3 flex items-center gap-2 text-sm text-muted-foreground md:hidden">
           <Flame className="size-4 text-primary" />
-          Свежие скидки на вылет
+          Скидки на ближайший вылет
         </div>
         <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {hotTours.map((tour) => (
@@ -407,14 +410,14 @@ function Index() {
           <div className="grid gap-8 p-6 md:grid-cols-[minmax(0,1fr)_auto] md:items-end md:p-10">
             <div>
               <p className="text-xs font-semibold tracking-[0.18em] text-primary-foreground/70 uppercase">
-                Как это работает
+                Как устроен TourGo
               </p>
               <h2 className="mt-3 max-w-xl font-display text-3xl font-semibold tracking-tight md:text-4xl">
-                Три шага. Без десяти чатов.
+                От идеи отпуска — до выбора турфирмы за три шага
               </h2>
               <p className="mt-3 max-w-xl text-sm text-primary-foreground/75 md:text-base">
-                Ищете сами или оставляете заявку. Сравниваете предложения. Платите компании,
-                которую выбрали.
+                Мы не продаём туры сами. Мы собираем предложения компаний, чтобы вы сравнили цены и
+                купили у той, что подходит.
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
@@ -468,11 +471,11 @@ function Index() {
         <div className="container-page">
           <p className="text-sm font-semibold tracking-[0.18em] text-primary uppercase">Почему TourGo</p>
           <h2 className="mt-3 max-w-3xl font-display text-3xl font-semibold tracking-tight md:text-5xl md:leading-[1.08]">
-            Хватит собирать отпуск в десяти чатах
+            Хватит собирать отпуск в десяти WhatsApp
           </h2>
           <p className="mt-4 max-w-2xl text-base text-muted-foreground md:text-lg">
-            Мы не турагентство и не продаём туры. Компании показывают цены рядом. Вы сравниваете и
-            платите той фирме, которую выбрали.
+            Раньше вы писали знакомым агентам и ждали скрины прайсов. Здесь все ответы — в одном
+            окне: кто какую цену дал, какой отель и что входит.
           </p>
         </div>
 
@@ -490,17 +493,17 @@ function Index() {
             <div className="absolute inset-0 bg-[linear-gradient(180deg,oklch(0.16_0.02_250/0.15)_0%,oklch(0.16_0.02_250/0.78)_100%)]" />
             <div className="relative flex h-full min-h-[300px] flex-col justify-end p-6 md:p-8 lg:min-h-[520px]">
               <span className="w-fit rounded-full bg-primary-foreground/14 px-3 py-1 text-xs font-semibold text-primary-foreground backdrop-blur-md">
-                Главное
+                Самый удобный способ
               </span>
               <h3 className="mt-4 font-display text-2xl font-semibold text-primary-foreground md:text-4xl">
-                Одна заявка. Несколько ответов.
+                Одна заявка — цены от нескольких турфирм
               </h3>
               <p className="mt-3 max-w-lg text-sm text-primary-foreground/80 md:text-base">
-                Раньше вы писали в десять WhatsApp. Здесь оставляете пожелание один раз. Компании
-                сами присылают цену, отель и условия.
+                Опишите куда, когда и бюджет. Подходящие компании пришлют свои варианты. Вы
+                сравниваете и пишете той, чья цена и условия лучше.
               </p>
               <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-primary-foreground">
-                Получить предложения
+                Получить цены от компаний
                 <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
               </span>
             </div>
@@ -519,10 +522,10 @@ function Index() {
             <div className="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/40 to-ink/10" />
             <div className="relative flex h-full min-h-[220px] flex-col justify-end p-6">
               <h3 className="font-display text-xl font-semibold text-primary-foreground">
-                Сравнивайте как на витрине
+                Каталог как витрина, а не лента сторис
               </h3>
               <p className="mt-2 text-sm text-primary-foreground/80">
-                Цена, питание, перелёт и компания рядом. Без сторис и скринов в переписке.
+                Цена, питание, перелёт и название компании — сразу на карточке. Без скринов из чата.
               </p>
             </div>
           </Link>
@@ -539,10 +542,10 @@ function Index() {
             <div className="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/40 to-ink/10" />
             <div className="relative flex h-full min-h-[220px] flex-col justify-end p-6">
               <h3 className="font-display text-xl font-semibold text-primary-foreground">
-                Платите фирме, не посреднику
+                Платите турфирме, не «сайту»
               </h3>
               <p className="mt-2 text-sm text-primary-foreground/80">
-                Договор и деньги у компании, которую выбрали вы. TourGo не берёт оплату за поездку.
+                TourGo — витрина. Договор и деньги — у компании, которую выбрали вы.
               </p>
             </div>
           </Link>
@@ -551,13 +554,13 @@ function Index() {
         <div className="container-page mt-4 grid gap-4 md:grid-cols-2">
           <div className="rounded-[2rem] border border-border/80 bg-secondary/40 p-6 md:p-8">
             <p className="text-xs font-semibold tracking-[0.16em] text-muted-foreground uppercase">
-              Раньше
+              Как было раньше
             </p>
             <ul className="mt-5 space-y-4">
               {[
                 { icon: MessageCircle, text: "Десять чатов, сторис и «скину прайс вечером»" },
-                { icon: Users, text: "Непонятно, какая фирма настоящая, а какая просто пишет" },
-                { icon: Scale, text: "Цены в разных местах. Сравнить почти невозможно" },
+                { icon: Users, text: "Непонятно, кому можно доверять, а кто просто пишет" },
+                { icon: Scale, text: "Цены разбросаны — сравнить почти невозможно" },
               ].map((item) => (
                 <li key={item.text} className="flex items-start gap-3 text-sm text-muted-foreground">
                   <span className="mt-0.5 grid size-8 shrink-0 place-items-center rounded-xl bg-card">
@@ -570,12 +573,12 @@ function Index() {
           </div>
           <div className="rounded-[2rem] bg-ink p-6 text-primary-foreground md:p-8">
             <p className="text-xs font-semibold tracking-[0.16em] text-primary-foreground/70 uppercase">
-              С TourGo
+              Как с TourGo
             </p>
             <ul className="mt-5 space-y-4">
               {[
-                { icon: ShieldCheck, text: "Проверенные компании. Данные смотрим до размещения" },
-                { icon: Scale, text: "Отели, питание и цены рядом. Выбираете за минуты" },
+                { icon: ShieldCheck, text: "Только компании с проверкой документов" },
+                { icon: Scale, text: "Отели, питание и цены — рядом, выбор за минуты" },
                 { icon: Mic, text: "Можно просто сказать голосом, какой отдых хотите" },
               ].map((item) => (
                 <li key={item.text} className="flex items-start gap-3 text-sm text-primary-foreground/90">
@@ -604,10 +607,11 @@ function Index() {
                 Для турфирм
               </p>
               <h2 className="mt-4 max-w-xl font-display text-3xl font-semibold tracking-tight text-primary-foreground md:text-5xl md:leading-[1.08]">
-                Туристы уже ищут. Покажите свои цены.
+                Туристы уже ищут отпуск. Покажите свою цену первыми
               </h2>
               <p className="mt-4 max-w-lg text-sm text-primary-foreground/80 md:text-base">
-                Оставляют заявку, вы отвечаете. Клиент ваш, оплата вам. Кабинет можно открыть сразу.
+                Заявки приходят в кабинет. Вы отвечаете предложением. Клиент ваш — оплата идёт вам,
+                не платформе.
               </p>
               <div className="mt-7 flex flex-wrap gap-3">
                 <Button
@@ -627,15 +631,24 @@ function Index() {
                   className="bg-primary-foreground/12 text-primary-foreground hover:bg-primary-foreground/20"
                   asChild
                 >
-                  <Link to="/for-companies">Как это устроено</Link>
+                  <Link to="/for-companies">Как получать заявки</Link>
                 </Button>
               </div>
             </div>
             <ul className="space-y-3">
               {[
-                { title: "Заявки приходят сами", text: "Турист пишет один раз. Вы видите подходящие запросы." },
-                { title: "Клиент остаётся вашим", text: "Договор и оплата у вас. TourGo за тур денег не берёт." },
-                { title: "Страница компании", text: "Фото, отзывы и знак проверки, который видят туристы." },
+                {
+                  title: "Заявки без холодных звонков",
+                  text: "Турист сам описал поездку — вы видите только подходящие запросы.",
+                },
+                {
+                  title: "Клиент остаётся вашим",
+                  text: "Договор и оплата у вас. TourGo не забирает комиссию с тура.",
+                },
+                {
+                  title: "Страница с знаком доверия",
+                  text: "Фото, отзывы и проверка — турист видит, что вы настоящая компания.",
+                },
               ].map((item) => (
                 <li
                   key={item.title}
@@ -676,8 +689,8 @@ function HomeFeaturedTours() {
   return (
     <section className="container-page mt-16 md:mt-24">
       <SectionHead
-        title="Рекомендуем"
-        subtitle="Компании подняли эти туры на главную. Сравните и выберите."
+        title="Туры на главной"
+        subtitle="Компании подняли эти предложения повыше — сравните и выберите"
       />
       <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {tours.map((tour) => (

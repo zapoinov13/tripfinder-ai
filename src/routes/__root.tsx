@@ -89,32 +89,32 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
       { name: "apple-mobile-web-app-title", content: "TourGo" },
-      { title: "TourGo: найдите тур сами или получите предложения от турфирм" },
+      { title: "TourGo — сравните туры от разных компаний и выберите лучшую цену" },
       {
         name: "description",
         content:
-          "Найдите тур сами или оставьте одну заявку и получите предложения от нескольких проверенных турфирм.",
+          "Готовые туры в одном каталоге или одна заявка нескольким турфирмам. Сравнивайте цены и платите напрямую выбранной компании.",
       },
       {
         property: "og:title",
-        content: "TourGo: найдите тур сами или получите предложения от турфирм",
+        content: "TourGo — сравните туры от разных компаний и выберите лучшую цену",
       },
       {
         property: "og:description",
         content:
-          "Найдите тур сами или оставьте одну заявку и получите предложения от нескольких проверенных турфирм.",
+          "Готовые туры в одном каталоге или одна заявка нескольким турфирмам. Платите напрямую компании.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:site", content: "@Lovable" },
       {
         name: "twitter:title",
-        content: "TourGo: найдите тур сами или получите предложения от турфирм",
+        content: "TourGo — сравните туры от разных компаний и выберите лучшую цену",
       },
       {
         name: "twitter:description",
         content:
-          "Найдите тур сами или оставьте одну заявку и получите предложения от нескольких проверенных турфирм.",
+          "Готовые туры в одном каталоге или одна заявка нескольким турфирмам. Платите напрямую компании.",
       },
       {
         property: "og:image",
