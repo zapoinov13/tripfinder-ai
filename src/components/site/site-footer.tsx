@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { ArrowRight, Mail, Plane } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { SUPPORT_EMAIL, SUPPORT_MAILTO } from "@/lib/contact";
 
 const columns = [
   {
@@ -104,11 +105,11 @@ export function SiteFooter() {
               Напишите, если заявка зависла или компания не отвечает.
             </p>
             <a
-              href="mailto:support@tourgo.demo"
+              href={SUPPORT_MAILTO}
               className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-primary-foreground hover:underline"
             >
               <Mail className="size-4" />
-              support@tourgo.demo
+              {SUPPORT_EMAIL}
             </a>
           </div>
         </div>

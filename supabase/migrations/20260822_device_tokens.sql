@@ -12,6 +12,8 @@ CREATE INDEX IF NOT EXISTS device_tokens_user_id_idx ON public.device_tokens(use
 
 ALTER TABLE public.device_tokens ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users manage own device tokens" ON public.device_tokens;
+
 CREATE POLICY "Users manage own device tokens"
   ON public.device_tokens
   FOR ALL

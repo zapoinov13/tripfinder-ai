@@ -3,6 +3,7 @@ import { Mail, MessageCircle } from "lucide-react";
 
 import { SiteLayout } from "@/components/site/site-layout";
 import { Button } from "@/components/ui/button";
+import { SUPPORT_EMAIL, SUPPORT_MAILTO } from "@/lib/contact";
 
 export const Route = createFileRoute("/support")({
   head: () => ({
@@ -31,10 +32,10 @@ function SupportPage() {
             <div>
               <h2 className="font-display font-semibold">Email</h2>
               <a
-                href="mailto:support@tourgo.demo"
+                href={SUPPORT_MAILTO}
                 className="mt-1 block text-sm text-primary underline underline-offset-4"
               >
-                support@tourgo.demo
+                {SUPPORT_EMAIL}
               </a>
             </div>
           </div>

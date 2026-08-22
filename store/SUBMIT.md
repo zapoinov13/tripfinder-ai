@@ -106,15 +106,22 @@ npm run cap:sync             # после иконок — sync в нативн�
 
 ---
 
-## Шаг 4 — Supabase (для review-логинов на production)
+## Шаг 4 — Supabase (для review-логинов и удаления аккаунта)
 
-Выполнить в SQL Editor:
-1. `scripts/supabase-review-accounts.sql` — инструкция по пользователям  
-2. Создать в Dashboard → Authentication → Users:
-   - `tourist@test.tourgo.app` / `Test1234!`
-   - `operator@test.tourgo.app` / `Test1234!`
+1. Review-пользователи:
+   ```bash
+   SUPABASE_URL=https://mgyufoyornzbwvgdfojb.supabase.co \
+   SUPABASE_SERVICE_ROLE_KEY=<service role из Dashboard → API> \
+   npm run review:users
+   ```
+2. Edge Function удаления аккаунта:
+   ```bash
+   supabase functions deploy delete-account --project-ref mgyufoyornzbwvgdfojb
+   ```
+3. Apple Sign-In: см. `store/APPLE_SIGNIN.md`
+4. Deep links: см. `store/DEEP_LINKS.md` (Team ID + SHA256 после enroll)
 
-Опционально (push позже): `supabase/migrations/20260822_device_tokens.sql`
+Опционально (push позже): `supabase/migrations/20260822_device_tokens.sql` — уже применена у вас.
 
 ---
 
@@ -131,5 +138,5 @@ npm run cap:sync             # после иконок — sync в нативн�
 
 ## Контакты в карточке
 
-- Support: support@tourgo.demo (замените на реальный email перед релизом)
+- Support: support@tourgo.app (или `VITE_SUPPORT_EMAIL` на Vercel)
 - Website: https://tripfinder-ai.vercel.app

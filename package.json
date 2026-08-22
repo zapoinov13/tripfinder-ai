@@ -16,7 +16,8 @@
     "mobile:preview": "CAPACITOR_SERVER_URL=http://localhost:8080 npx cap run ios",
     "store:icons": "node scripts/generate-store-assets.mjs",
     "store:screenshots": "node scripts/capture-store-screenshots.mjs",
-    "store:assets": "npm run store:icons && npm run store:screenshots"
+    "store:assets": "npm run store:icons && npm run store:screenshots",
+    "review:users": "node scripts/create-review-users.mjs"
   },
   "dependencies": {
     "@capacitor-community/apple-sign-in": "^7.1.0",

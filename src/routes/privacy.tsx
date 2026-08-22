@@ -2,6 +2,7 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 
 import { SiteLayout } from "@/components/site/site-layout";
 import { Button } from "@/components/ui/button";
+import { SUPPORT_EMAIL, SUPPORT_MAILTO } from "@/lib/contact";
 
 export const Route = createFileRoute("/privacy")({
   head: () => ({
@@ -45,8 +46,8 @@ function PrivacyPage() {
           <h2 className="font-display text-lg font-semibold text-foreground">Удаление аккаунта</h2>
           <p>
             В приложении: Профиль → Настройки → «Удалить аккаунт». Или напишите на{" "}
-            <a href="mailto:support@tourgo.demo" className="text-primary underline underline-offset-4">
-              support@tourgo.demo
+            <a href={SUPPORT_MAILTO} className="text-primary underline underline-offset-4">
+              {SUPPORT_EMAIL}
             </a>
             .
           </p>

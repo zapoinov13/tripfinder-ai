@@ -336,8 +336,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const sb = getSupabase();
     if (sb) {
-      await sb.from("profiles").update({ status: "deleted" }).eq("id", current);
-      await sb.auth.signOut();
+      const {
+        data: { session },
+      } = await sb.auth.getSession();
+
+      let remoteDeleted = false;
+      if (session?.access_token) {
+        const baseUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;
+        const apiKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined;
+        if (baseUrl && apiKey) {
+          try {
+            const res = await fetch(`${baseUrl}/functions/v1/delete-account`, {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${session.access_token}`,
+                apikey: apiKey,
+              },
+            });
+            if (res.ok) {
+              remoteDeleted = true;
+            }
+          } catch {
+            // Edge Function may not be deployed yet — fallback below
+          }
+        }
+      }
+
+      if (!remoteDeleted) {
+        await sb.from("profiles").update({ status: "deleted" }).eq("id", current);
+        await sb.auth.signOut();
+      }
     }
 
     setState((s) => ({

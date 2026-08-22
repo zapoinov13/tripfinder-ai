@@ -13,6 +13,7 @@ import {
 
 import { FaqSection } from "@/components/site/faq-section";
 import { SiteLayout } from "@/components/site/site-layout";
+import { SUPPORT_EMAIL, SUPPORT_MAILTO } from "@/lib/contact";
 import { Button } from "@/components/ui/button";
 import { destinations, heroImage } from "@/data/demo";
 
@@ -211,11 +212,11 @@ function AboutPage() {
               Напишите, если что-то не открывается, заявка зависла или компания не отвечает.
             </p>
             <a
-              href="mailto:support@tourgo.demo"
+              href={SUPPORT_MAILTO}
               className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline"
             >
               <Mail className="size-4" />
-              support@tourgo.demo
+              {SUPPORT_EMAIL}
             </a>
             <p className="mt-2 text-xs text-muted-foreground">Обычно отвечаем в рабочие часы, в течение дня.</p>
           </div>
@@ -256,8 +257,11 @@ function AboutPage() {
               выбрали. Мы не продаём контакты.
             </p>
             <p>
-              Вход и избранное хранятся в вашем аккаунте. Если есть вопрос по данным, напишите на
-              support@tourgo.demo.
+              Вход и избранное хранятся в вашем аккаунте. Если есть вопрос по данным, напишите на{" "}
+              <a href={SUPPORT_MAILTO} className="text-primary underline underline-offset-4">
+                {SUPPORT_EMAIL}
+              </a>
+              .
             </p>
           </div>
         </section>

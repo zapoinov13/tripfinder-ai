@@ -1,0 +1,16 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appIDs": ["TEAM_ID.com.tourgo.app"],
+        "components": [
+          {
+            "/": "/*",
+            "comment": "Replace TEAM_ID with Apple Developer Team ID (store/DEEP_LINKS.md)"
+          }
+        ]
+      }
+    ]
+  }
+}

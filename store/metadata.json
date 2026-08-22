@@ -15,7 +15,7 @@
       "submitGuide": "store/SUBMIT.md",
       "reviewNotes": "store/review-notes.txt"
     },
-  "supportEmail": "support@tourgo.demo",
+  "supportEmail": "support@tourgo.app",
   "supportUrl": "https://tripfinder-ai.vercel.app/support",
   "privacyUrl": "https://tripfinder-ai.vercel.app/privacy",
   "termsUrl": "https://tripfinder-ai.vercel.app/terms",

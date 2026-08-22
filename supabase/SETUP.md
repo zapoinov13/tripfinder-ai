@@ -36,6 +36,27 @@
 | 14 | `supabase/seed.sql` | демо-пользователи и админ |
 | 15 | `supabase/seed_catalog.sql` | направления, отели, туры |
 | 16 | `supabase/seed_companies.sql` | ещё 3 проверенные турфирмы |
+| 17 | `supabase/migrations/20260822_device_tokens.sql` | push-токены (идемпотентно) |
+
+## Edge Function — удаление аккаунта (App Store)
+
+```bash
+# Локально с Supabase CLI (или Dashboard → Edge Functions → deploy)
+supabase functions deploy delete-account --project-ref mgyufoyornzbwvgdfojb
+```
+
+Функция: `supabase/functions/delete-account` — удаляет пользователя из Auth + помечает profile.
+
+## Review-аккаунты для App Store / Play
+
+```bash
+SUPABASE_URL=https://mgyufoyornzbwvgdfojb.supabase.co \
+SUPABASE_SERVICE_ROLE_KEY=<service role> \
+npm run review:users
+```
+
+Создаёт `tourist@test.tourgo.app` и `operator@test.tourgo.app` / `Test1234!`
+
 
 Если база уже частично залита: достаточно проверить, что шаги **11–16** точно выполнены. Шаги 1–10 можно прогнать повторно.
 
