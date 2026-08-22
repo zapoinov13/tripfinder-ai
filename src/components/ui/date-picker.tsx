@@ -43,6 +43,17 @@ function nightsWord(n: number) {
   return `${n} ночей`;
 }
 
+function formatRangeLabelCompact(from?: Date, to?: Date) {
+  if (!from) return "Выберите даты";
+  if (!to || toIsoDate(from) === toIsoDate(to)) return shortFmt.format(from);
+  const sameMonth = from.getMonth() === to.getMonth() && from.getFullYear() === to.getFullYear();
+  if (sameMonth) {
+    const month = shortFmt.format(from).replace(/^\d+\s*/, "");
+    return `${from.getDate()}–${to.getDate()} ${month}`;
+  }
+  return `${shortFmt.format(from)} – ${shortFmt.format(to)}`;
+}
+
 function formatRangeLabel(from?: Date, to?: Date) {
   if (!from) return "Выберите даты";
   if (!to || toIsoDate(from) === toIsoDate(to)) return dayFmt.format(from);
@@ -102,16 +113,22 @@ export function DateRangePicker({
       <PopoverTrigger asChild>
         <button type="button" className={cn("min-w-0 w-full text-left", className)}>
           {variant === "field" ? (
-            <span className="flex w-full min-w-0 items-center gap-2.5 rounded-2xl border border-border bg-card px-3.5 py-3 transition-colors hover:border-primary/40">
-              <CalendarDays className="size-4 shrink-0 text-muted-foreground" />
+            <span className="flex min-h-[3.5rem] w-full min-w-0 items-center gap-3 rounded-xl border border-border/80 bg-background px-3 py-2.5 shadow-sm transition-[border-color,box-shadow] hover:border-primary/35 hover:shadow-md md:min-h-[3.25rem] md:rounded-2xl">
+              <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-secondary/80 text-muted-foreground">
+                <CalendarDays className="size-4" />
+              </span>
               <span className="min-w-0 flex-1">
-                <span className="block text-[11px] uppercase tracking-wide text-muted-foreground">
+                <span className="block text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                   {label}
                 </span>
-                <span className="block truncate text-sm font-medium">
-                  {formatRangeLabel(fromDate, toDate)}
-                  {nights > 0 ? ` · ${nightsWord(nights)}` : ""}
+                <span className="block text-sm font-semibold leading-snug text-foreground">
+                  {formatRangeLabelCompact(fromDate, toDate)}
                 </span>
+                {nights > 0 ? (
+                  <span className="hidden text-xs font-medium text-muted-foreground sm:block">
+                    {nightsWord(nights)}
+                  </span>
+                ) : null}
               </span>
             </span>
           ) : (

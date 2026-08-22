@@ -56,20 +56,33 @@ const extraOptions = [
 function FieldShell({
   label,
   value,
+  valueDesktop,
   icon: Icon,
 }: {
   label: string;
   value: string;
+  valueDesktop?: string;
   icon: typeof MapPin;
 }) {
   return (
-    <span className="flex w-full min-w-0 items-center gap-2.5 rounded-2xl border border-border bg-card px-3.5 py-3 text-left transition-colors hover:border-primary/40">
-      <Icon className="size-4 shrink-0 text-muted-foreground" />
+    <span className="flex min-h-[3.5rem] w-full min-w-0 items-center gap-3 rounded-xl border border-border/80 bg-background px-3 py-2.5 text-left shadow-sm transition-[border-color,box-shadow] hover:border-primary/35 hover:shadow-md md:min-h-[3.25rem] md:rounded-2xl">
+      <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-secondary/80 text-muted-foreground">
+        <Icon className="size-4" />
+      </span>
       <span className="min-w-0 flex-1">
-        <span className="block text-[11px] uppercase tracking-wide text-muted-foreground">
+        <span className="block text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
           {label}
         </span>
-        <span className="block truncate text-sm font-medium">{value}</span>
+        <span className="block truncate text-sm font-semibold leading-snug text-foreground">
+          {valueDesktop ? (
+            <>
+              <span className="md:hidden">{value}</span>
+              <span className="hidden md:inline">{valueDesktop}</span>
+            </>
+          ) : (
+            value
+          )}
+        </span>
       </span>
     </span>
   );
@@ -91,7 +104,7 @@ function SelectField({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <button type="button" className="min-w-0">
+        <button type="button" className="min-w-0 w-full">
           <FieldShell label={label} value={current?.label ?? "Выберите"} icon={MapPin} />
         </button>
       </PopoverTrigger>
@@ -220,6 +233,11 @@ export function SearchPanel({
 
   const guestsLabelText =
     children > 0
+      ? `${adults} взр. · ${children} ${children === 1 ? "реб." : "дет."}`
+      : `${adults} взрослых`;
+
+  const guestsLabelDesktop =
+    children > 0
       ? `${adults} взрослых · ${children} ${children === 1 ? "ребёнок" : "детей"}`
       : `${adults} взрослых`;
 
@@ -263,19 +281,21 @@ export function SearchPanel({
   return (
     <div
       className={cn(
-        "overflow-hidden p-2 shadow-lift",
+        "overflow-hidden rounded-[1.35rem] border shadow-lift md:rounded-[1.75rem]",
         tone === "hero"
-          ? "rounded-[1.75rem] border border-primary-foreground/20 bg-primary-foreground/90 backdrop-blur-xl"
-          : "surface-card",
+          ? "border-primary-foreground/15 bg-primary-foreground/94 backdrop-blur-xl"
+          : "border-border/60 bg-card",
       )}
     >
-      <div className="flex gap-1 rounded-2xl bg-secondary/70 p-1">
+      <div className="grid grid-cols-2 gap-1 border-b border-border/50 bg-secondary/40 p-1.5 md:p-2">
         <button
           type="button"
           onClick={() => setTab("classic")}
           className={cn(
-            "flex-1 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors",
-            tab === "classic" ? "bg-card text-foreground shadow-card" : "text-muted-foreground",
+            "rounded-xl px-3 py-2.5 text-sm font-semibold transition-all md:px-4",
+            tab === "classic"
+              ? "bg-background text-foreground shadow-sm ring-1 ring-border/60"
+              : "text-muted-foreground hover:text-foreground",
           )}
         >
           Найти туры
@@ -284,49 +304,50 @@ export function SearchPanel({
           type="button"
           onClick={() => setTab("ai")}
           className={cn(
-            "flex flex-1 items-center justify-center gap-1.5 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors",
+            "flex items-center justify-center gap-1.5 rounded-xl px-3 py-2.5 text-sm font-semibold transition-all md:px-4",
             tab === "ai"
-              ? "gradient-ai text-primary-foreground shadow-card"
-              : "text-muted-foreground",
+              ? "bg-primary text-primary-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground",
           )}
         >
           <Sparkles className="size-4" />
           Умный поиск
         </button>
-
       </div>
 
       {tab === "classic" ? (
-        <div className="p-3 md:p-4">
-          <div className="grid grid-cols-2 gap-2 md:grid-cols-2 xl:grid-cols-[repeat(4,minmax(0,1fr))_auto]">
-            <div className="col-span-2 w-full min-w-0 md:col-span-1 [&_button]:w-full">
-              <SelectField
-                label="Откуда"
-                value={from}
-                options={originCities.map((c) => ({ value: c, label: c }))}
-                onChange={setFrom}
-              />
-            </div>
-            <div className="col-span-2 w-full min-w-0 md:col-span-1 [&_button]:w-full">
-              <SelectField label="Куда" value={to} options={destinationOptions} onChange={setTo} />
-            </div>
-
-            <DateRangePicker
-              variant="field"
-              label="Даты"
-              from={range?.from ? toIsoDate(range.from) : ""}
-              to={range?.to ? toIsoDate(range.to) : ""}
-              onChange={({ from, to }) =>
-                setRange({ from: parseIsoDate(from), to: parseIsoDate(to) })
-              }
+        <div className="space-y-3 px-3 pb-3 md:p-4">
+          <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-[repeat(4,minmax(0,1fr))_auto] xl:items-end">
+            <SelectField
+              label="Откуда"
+              value={from}
+              options={originCities.map((c) => ({ value: c, label: c }))}
+              onChange={setFrom}
             />
+            <SelectField label="Куда" value={to} options={destinationOptions} onChange={setTo} />
 
-            <Popover>
-              <PopoverTrigger asChild>
-                <button type="button" className="min-w-0">
-                  <FieldShell label="Туристы" value={guestsLabelText} icon={Users} />
-                </button>
-              </PopoverTrigger>
+            <div className="grid grid-cols-2 gap-2 md:contents">
+              <DateRangePicker
+                variant="field"
+                label="Даты"
+                from={range?.from ? toIsoDate(range.from) : ""}
+                to={range?.to ? toIsoDate(range.to) : ""}
+                onChange={({ from, to }) =>
+                  setRange({ from: parseIsoDate(from), to: parseIsoDate(to) })
+                }
+              />
+
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button type="button" className="min-w-0 w-full">
+                    <FieldShell
+                      label="Туристы"
+                      value={guestsLabelText}
+                      valueDesktop={guestsLabelDesktop}
+                      icon={Users}
+                    />
+                  </button>
+                </PopoverTrigger>
               <PopoverContent align="start" className="w-72 space-y-4 p-4">
                 <Counter label="Взрослые" value={adults} min={1} onChange={setAdults} />
                 <Counter label="Дети" value={children} min={0} onChange={setChildren} />
@@ -359,10 +380,11 @@ export function SearchPanel({
                 ) : null}
               </PopoverContent>
             </Popover>
+            </div>
 
             <Button
               size="lg"
-              className="col-span-2 h-full min-h-13 rounded-2xl px-7 md:col-span-2 xl:col-span-1"
+              className="col-span-2 h-12 w-full rounded-xl px-6 shadow-md md:col-span-2 xl:col-span-1 xl:h-[3.25rem] xl:rounded-2xl"
               onClick={goSearch}
             >
               <Search className="size-4" />
@@ -373,7 +395,7 @@ export function SearchPanel({
           <button
             type="button"
             onClick={() => setShowMore((v) => !v)}
-            className="mt-3 inline-flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+            className="inline-flex items-center gap-2 rounded-lg px-1 py-1 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
           >
             <SlidersHorizontal className="size-4" />
             {showMore ? "Скрыть фильтры" : "Ещё фильтры"}
@@ -466,42 +488,56 @@ export function SearchPanel({
           ) : null}
         </div>
       ) : (
-        <div className="p-3 md:p-4">
-          <p className="text-sm font-semibold">✨ Не хотите заполнять всё вручную?</p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Просто расскажите, куда и как хотите поехать.
-          </p>
+        <div className="space-y-4 px-3 pb-4 md:p-4">
+          <div className="rounded-2xl bg-gradient-to-br from-primary/8 via-background to-ai/10 p-4 md:p-5">
+            <div className="flex items-start gap-3">
+              <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
+                <Sparkles className="size-5" />
+              </span>
+              <div>
+                <p className="font-display text-base font-semibold leading-snug">
+                  Не хотите заполнять всё вручную?
+                </p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Просто расскажите, куда и как хотите поехать — AI подберёт параметры.
+                </p>
+              </div>
+            </div>
 
-          <div className="relative mt-3 rounded-2xl border border-ai/25 bg-ai/[0.04] p-3">
-            <Textarea
-              placeholder="Например: хотим в Дубай на неделю, двое взрослых и ребёнок, хороший отель у моря, бюджет до 1 500 000 ₸."
-              value={aiQuery}
-              onChange={(e) => {
-                setAiQuery(e.target.value);
-                setParsedAi(null);
-              }}
-              className="min-h-28 resize-none border-0 bg-transparent text-base shadow-none focus-visible:ring-0"
-            />
-          </div>
+            <div className="relative mt-4 overflow-hidden rounded-2xl border border-border/80 bg-background shadow-sm focus-within:border-primary/40 focus-within:ring-2 focus-within:ring-primary/15">
+              <Textarea
+                placeholder="Например: хотим в Дубай на неделю, двое взрослых и ребёнок, хороший отель у моря, бюджет до 1 500 000 ₸."
+                value={aiQuery}
+                onChange={(e) => {
+                  setAiQuery(e.target.value);
+                  setParsedAi(null);
+                }}
+                className="min-h-[7.5rem] resize-none border-0 bg-transparent px-4 py-3.5 text-[15px] leading-relaxed shadow-none focus-visible:ring-0 md:min-h-28"
+              />
+            </div>
 
-          <div className="mt-3 flex flex-col gap-2 sm:flex-row">
-            <Button
-              variant="outline"
-              size="lg"
-              className={cn("rounded-2xl", recording && "border-ai text-ai")}
-              onClick={runVoiceSearch}
-            >
-              <Mic className="size-4" />
-              {recording ? "Слушаем…" : "Сказать голосом"}
-            </Button>
-            <Button
-              size="lg"
-              className="gradient-ai flex-1 rounded-2xl text-primary-foreground hover:opacity-90"
-              onClick={() => parseAi()}
-            >
-              <Sparkles className="size-4" />
-              Найти для меня
-            </Button>
+            <div className="mt-3 grid gap-2 sm:grid-cols-[auto_1fr]">
+              <Button
+                variant="outline"
+                size="lg"
+                className={cn(
+                  "h-12 rounded-xl border-border/80 bg-background shadow-sm sm:px-5",
+                  recording && "border-primary text-primary",
+                )}
+                onClick={runVoiceSearch}
+              >
+                <Mic className="size-4" />
+                {recording ? "Слушаем…" : "Голосом"}
+              </Button>
+              <Button
+                size="lg"
+                className="h-12 rounded-xl bg-primary shadow-md hover:bg-primary/90"
+                onClick={() => parseAi()}
+              >
+                <Sparkles className="size-4" />
+                Найти для меня
+              </Button>
+            </div>
           </div>
 
           {parsedAi ? (
