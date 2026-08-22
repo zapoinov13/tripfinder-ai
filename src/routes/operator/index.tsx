@@ -352,9 +352,9 @@ function OperatorDashboard() {
               </dd>
             </div>
             <div className="flex items-start justify-between gap-3">
-              <dt className="text-muted-foreground">Загрузка туров</dt>
+              <dt className="text-muted-foreground">Каталог API</dt>
               <dd className="font-medium">
-                {api?.status === "connected" ? "Подключена" : "Не настроена"}
+                {api?.status === "connected" ? "Подключён" : "Не настроен"}
               </dd>
             </div>
             <div className="flex items-start justify-between gap-3">
@@ -366,9 +366,9 @@ function OperatorDashboard() {
           <div className="mt-auto space-y-2 pt-6">
             {api?.status !== "connected" ? (
               <Button variant="outline" size="sm" className="w-full" asChild>
-                <Link to="/operator/api">
+                <Link to="/operator/tours" search={{ add: "api" }}>
                   <Cable className="size-4" />
-                  Настроить API
+                  Загрузить по API
                 </Link>
               </Button>
             ) : null}

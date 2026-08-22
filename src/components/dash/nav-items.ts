@@ -39,7 +39,6 @@ const operatorNavBase: DashItem[] = [
   { label: "Отзывы", to: "/operator/reviews", icon: Star },
   { label: "Продвижение", to: "/operator/promotion", icon: Megaphone },
   { label: "Статистика", to: "/operator/analytics", icon: BarChart3 },
-  { label: "Загрузка туров", to: "/operator/api", icon: Cable },
   { label: "Тариф", to: "/operator/billing", icon: CreditCard },
   { label: "Настройки", to: "/operator/settings", icon: Settings },
 ];

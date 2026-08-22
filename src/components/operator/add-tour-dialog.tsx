@@ -1,8 +1,9 @@
-import { Check, ImagePlus, Link2, PencilLine, Star, Trash2, Video } from "lucide-react";
+import { Check, Cable, ImagePlus, Link2, PencilLine, Star, Trash2, Video } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { TourApiImportPanel } from "@/components/operator/tour-api-import";
 import {
   Dialog,
   DialogContent,
@@ -44,13 +45,21 @@ import {
 import { originCities } from "@/lib/search";
 import { cn } from "@/lib/utils";
 
-type Mode = "choose" | "manual" | "url" | "review";
+type Mode = "choose" | "manual" | "url" | "review" | "api";
 
 const MAX_PHOTOS = 8;
 const MAX_VIDEOS = 3;
 
-export function AddTourDialog({ orgId, onClose }: { orgId: string; onClose: () => void }) {
-  const [mode, setMode] = useState<Mode>("choose");
+export function AddTourDialog({
+  orgId,
+  onClose,
+  initialMode = "choose",
+}: {
+  orgId: string;
+  onClose: () => void;
+  initialMode?: Mode;
+}) {
+  const [mode, setMode] = useState<Mode>(initialMode);
   const [draft, setDraft] = useState<TourDraft>(() => emptyDraft());
   const [url, setUrl] = useState("");
   const [importedFields, setImportedFields] = useState<string[]>([]);
@@ -103,24 +112,26 @@ export function AddTourDialog({ orgId, onClose }: { orgId: string; onClose: () =
           <DialogTitle>Добавить тур</DialogTitle>
           <DialogDescription>
             {mode === "choose"
-              ? "Соберите карточку тура: фото, питание, что входит в цену."
+              ? "Соберите карточку тура: вручную, по ссылке или загрузкой из вашего API."
               : mode === "url"
                 ? "Мы попробуем перенести название, отель, даты, питание и цену."
-                : "Так турист увидит предложение в поиске и на странице тура."}
+                : mode === "api"
+                  ? "Подключите каталог, и туры появятся в списке автоматически."
+                  : "Так турист увидит предложение в поиске и на странице тура."}
           </DialogDescription>
         </DialogHeader>
 
         {mode === "choose" ? (
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid gap-3 sm:grid-cols-3">
             <button
               type="button"
               onClick={() => setMode("manual")}
               className="surface-card p-5 text-left transition-colors hover:border-primary/50"
             >
               <PencilLine className="size-5 text-primary" />
-              <p className="mt-3 font-display text-base font-semibold">Заполнить самостоятельно</p>
+              <p className="mt-3 font-display text-base font-semibold">Заполнить вручную</p>
               <p className="mt-1 text-sm text-muted-foreground">
-                Фото отеля, видео, завтрак, трансфер, описание и цена.
+                Фото отеля, видео, питание, трансфер и цена.
               </p>
             </button>
             <button
@@ -129,13 +140,26 @@ export function AddTourDialog({ orgId, onClose }: { orgId: string; onClose: () =
               className="surface-card p-5 text-left transition-colors hover:border-primary/50"
             >
               <Link2 className="size-5 text-primary" />
-              <p className="mt-3 font-display text-base font-semibold">Загрузить с моего сайта</p>
+              <p className="mt-3 font-display text-base font-semibold">Со страницы тура</p>
               <p className="mt-1 text-sm text-muted-foreground">
-                Вставьте ссылку, затем проверьте и дополните карточку.
+                Вставьте ссылку с вашего сайта и проверьте карточку.
+              </p>
+            </button>
+            <button
+              type="button"
+              onClick={() => setMode("api")}
+              className="surface-card p-5 text-left transition-colors hover:border-primary/50"
+            >
+              <Cable className="size-5 text-primary" />
+              <p className="mt-3 font-display text-base font-semibold">Загрузить по API</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Синхронизация каталога: цены, наличие, новые туры.
               </p>
             </button>
           </div>
         ) : null}
+
+        {mode === "api" ? <TourApiImportPanel orgId={orgId} /> : null}
 
         {mode === "url" ? (
           <div className="space-y-3">
@@ -212,6 +236,11 @@ export function AddTourDialog({ orgId, onClose }: { orgId: string; onClose: () =
                 {importedFields.length > 0 ? "Всё верно, опубликовать" : "Опубликовать"}
               </Button>
             </>
+          ) : null}
+          {mode === "api" ? (
+            <Button variant="ghost" onClick={() => setMode("choose")}>
+              Назад
+            </Button>
           ) : null}
         </DialogFooter>
       </DialogContent>

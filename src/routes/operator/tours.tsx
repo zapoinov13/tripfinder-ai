@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { DashShell } from "@/components/dash/dash-shell";
 import { useOperatorNav } from "@/components/dash/nav-items";
@@ -20,7 +20,12 @@ import { nowIso, setState } from "@/lib/platform/store";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
+type Search = { add?: "api" | "1" };
+
 export const Route = createFileRoute("/operator/tours")({
+  validateSearch: (search: Record<string, unknown>): Search => ({
+    ...(search["add"] === "api" || search["add"] === "1" ? { add: search["add"] as "api" | "1" } : {}),
+  }),
   head: () => ({ meta: [{ title: "Мои туры · TourGo" }] }),
   component: OperatorToursPage,
 });
@@ -28,10 +33,19 @@ export const Route = createFileRoute("/operator/tours")({
 function OperatorToursPage() {
   const { allowed } = useRequireAuth(["OPERATOR_ADMIN", "OPERATOR_MANAGER"]);
   const { organization } = useAuth();
+  const search = Route.useSearch();
   const state = usePlatformStore();
   const nav = useOperatorNav(organization?.id);
   const [filter, setFilter] = useState("active");
   const [adding, setAdding] = useState(false);
+  const [addMode, setAddMode] = useState<"choose" | "api">("choose");
+
+  useEffect(() => {
+    if (search.add === "api" || search.add === "1") {
+      setAddMode(search.add === "api" ? "api" : "choose");
+      setAdding(true);
+    }
+  }, [search.add]);
 
   const orgTours = useMemo(
     () => (organization ? state.tours.filter((t) => t.operatorOrgId === organization.id) : []),
@@ -80,6 +94,7 @@ function OperatorToursPage() {
               return;
             }
             setAdding(true);
+            setAddMode("choose");
           }}
         >
           + Добавить тур
@@ -113,7 +128,7 @@ function OperatorToursPage() {
           <p className="mt-2 text-sm text-muted-foreground">
             Добавьте карточку: фото отеля, питание, что входит в цену и описание.
           </p>
-          <Button className="mt-5" onClick={() => setAdding(true)}>
+          <Button className="mt-5" onClick={() => { setAddMode("choose"); setAdding(true); }}>
             Добавить тур
           </Button>
         </div>
@@ -194,7 +209,16 @@ function OperatorToursPage() {
         </div>
       )}
 
-      {adding ? <AddTourDialog orgId={organization.id} onClose={() => setAdding(false)} /> : null}
+      {adding ? (
+        <AddTourDialog
+          orgId={organization.id}
+          initialMode={addMode}
+          onClose={() => {
+            setAdding(false);
+            setAddMode("choose");
+          }}
+        />
+      ) : null}
     </DashShell>
   );
 }

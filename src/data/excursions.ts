@@ -147,3 +147,68 @@ export function getExcursionCities(destinationId: string) {
 export function getCityExcursions(destinationId: string, city: string) {
   return excursions.filter((e) => e.destinationId === destinationId && e.city === city);
 }
+
+export function getExcursionStats() {
+  const countries = getExcursionCountries();
+  return {
+    countries: countries.length,
+    programs: excursions.length,
+    cities: new Set(excursions.map((e) => e.city)).size,
+    minPrice: Math.min(...excursions.map((e) => e.price)),
+  };
+}
+
+/** Популярные программы для витрины на первом шаге. */
+export function getFeaturedExcursions(limit = 6) {
+  const picked = new Set<string>();
+  const out: Excursion[] = [];
+  const priority = ["uae", "turkey", "thailand", "egypt", "georgia", "vietnam"];
+
+  for (const destId of priority) {
+    const item = excursions.find((e) => e.destinationId === destId && !picked.has(e.id));
+    if (!item) continue;
+    picked.add(item.id);
+    out.push(item);
+    if (out.length >= limit) return out;
+  }
+
+  for (const item of excursions) {
+    if (picked.has(item.id)) continue;
+    out.push(item);
+    if (out.length >= limit) break;
+  }
+  return out;
+}
+
+export function filterExcursions(
+  list: Excursion[],
+  query: string,
+  category: ExcursionCategory | "Все",
+) {
+  const q = query.trim().toLowerCase();
+  return list.filter((e) => {
+    if (category !== "Все" && e.category !== category) return false;
+    if (!q) return true;
+    const hay = `${e.title} ${e.summary} ${e.city} ${e.company} ${e.includes.join(" ")}`.toLowerCase();
+    return hay.includes(q);
+  });
+}
+
+export type ExcursionSort = "recommended" | "price-asc" | "price-desc";
+
+export function sortExcursions(list: Excursion[], sort: ExcursionSort) {
+  const out = [...list];
+  if (sort === "price-asc") return out.sort((a, b) => a.price - b.price);
+  if (sort === "price-desc") return out.sort((a, b) => b.price - a.price);
+  return out;
+}
+
+export const categoryHints: Record<
+  ExcursionCategory,
+  { blurb: string; emoji: string }
+> = {
+  Экскурсии: { blurb: "Гиды, музеи, обзорные маршруты", emoji: "🗺️" },
+  Развлечения: { blurb: "Парки, шоу, сафари и активности", emoji: "🎢" },
+  Море: { blurb: "Яхты, острова, снорклинг", emoji: "⛵" },
+  Трансферы: { blurb: "Аэропорт, отель, между городами", emoji: "🚐" },
+};
