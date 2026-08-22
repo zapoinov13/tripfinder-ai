@@ -4,9 +4,15 @@ import { useRouter } from "@tanstack/react-router";
 import { bindNativeDeepLinks } from "@/lib/native/deep-links";
 import { isNativeApp } from "@/lib/native/app";
 import { registerNativePushNotifications } from "@/lib/native/push";
+import { getAppLocale } from "@/lib/locale";
 
 export function NativeBootstrap() {
   const router = useRouter();
+
+  useEffect(() => {
+    const locale = getAppLocale();
+    document.documentElement.lang = locale === "kk" ? "kk" : "ru";
+  }, []);
 
   useEffect(() => {
     if (!isNativeApp()) return;

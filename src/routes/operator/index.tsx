@@ -173,13 +173,13 @@ function OperatorDashboard() {
     <DashShell
       brand={organization.name}
       items={nav}
-      title={`Добрый день, ${organization.name}`}
+      title="Кабинет турфирмы"
       subtitle={
         verified
-          ? `Тариф ${organization.planCode} · ${formatNumber(active.length)} активных туров`
+          ? `${organization.name} · тариф ${organization.planCode} · ${formatNumber(active.length)} туров`
           : openRequests > 0
-            ? `${openRequests} новых заявок ждут ответа`
-            : "Начните с заявок или добавьте первый тур"
+            ? `${organization.name} · ${openRequests} новых заявок`
+            : `${organization.name} · заявки, туры и страница компании`
       }
       actions={
         openRequests > 0 ? (

@@ -32,13 +32,13 @@ import { setState } from "@/lib/platform/store";
 import { TouristAccountGate } from "@/components/site/tourist-account-gate";
 
 export const Route = createFileRoute("/profile/settings")({
-  head: () => ({ meta: [{ title: "Настройки · TourGo" }] }),
+  head: () => ({ meta: [{ title: "Данные туриста · TourGo" }] }),
   component: SettingsPage,
 });
 
 function SettingsPage() {
   return (
-    <TouristAccountGate kind="profile" title="Настройки аккаунта — после входа">
+    <TouristAccountGate kind="profile" title="Данные туриста — после входа">
       <SettingsContent />
     </TouristAccountGate>
   );
@@ -59,10 +59,10 @@ function SettingsContent() {
   const isOperator = user.role.startsWith("OPERATOR");
 
   return (
-    <DashShell brand="TourGo" items={profileNav} title="Настройки" subtitle="Профиль и приложение">
+    <DashShell brand="TourGo" items={profileNav} title="Данные туриста" subtitle="Имя, город и уведомления">
       <div className="grid max-w-2xl gap-6">
         <div className="surface-card space-y-4 p-6">
-          <h2 className="font-display text-lg font-semibold">Профиль</h2>
+          <h2 className="font-display text-lg font-semibold">Личные данные</h2>
           <div className="space-y-2">
             <Label htmlFor="name">Имя</Label>
             <Input id="name" value={name} onChange={(e) => setNameEdit(e.target.value)} />

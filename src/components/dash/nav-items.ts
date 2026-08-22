@@ -14,7 +14,6 @@ import {
   Megaphone,
   MessageSquare,
   Receipt,
-  Scale,
   Settings,
   ShieldCheck,
   Sparkles,
@@ -30,12 +29,12 @@ import type { DashItem } from "./dash-shell";
 
 const operatorNavBase: DashItem[] = [
   { label: "Главная", to: "/operator", icon: LayoutDashboard },
-  { label: "Заявки туристов", to: "/operator/requests", icon: Inbox },
-  { label: "Мои предложения", to: "/operator/offers", icon: HandCoins },
-  { label: "Мои туры", to: "/operator/tours", icon: Luggage },
+  { label: "Заявки", to: "/operator/requests", icon: Inbox },
+  { label: "Предложения", to: "/operator/offers", icon: HandCoins },
+  { label: "Туры", to: "/operator/tours", icon: Luggage },
   { label: "Сообщения", to: "/operator/messages", icon: MessageSquare },
-  { label: "Бронирования", to: "/operator/bookings", icon: Ticket },
-  { label: "Страница компании", to: "/operator/company", icon: Building },
+  { label: "Брони", to: "/operator/bookings", icon: Ticket },
+  { label: "Компания", to: "/operator/company", icon: Building },
   { label: "Отзывы", to: "/operator/reviews", icon: Star },
   { label: "Продвижение", to: "/operator/promotion", icon: Megaphone },
   { label: "Статистика", to: "/operator/analytics", icon: BarChart3 },
@@ -75,7 +74,7 @@ export function useOperatorNav(orgId?: string): DashItem[] {
 }
 
 const adminNavBase: DashItem[] = [
-  { label: "Обзор", to: "/admin", icon: Gauge },
+  { label: "Обзор платформы", to: "/admin", icon: Gauge },
   { label: "Пользователи", to: "/admin/users", icon: Users },
   { label: "Турфирмы", to: "/admin/operators", icon: Building },
   { label: "Туры", to: "/admin/tours", icon: Luggage },
@@ -83,11 +82,11 @@ const adminNavBase: DashItem[] = [
   { label: "Платежи", to: "/admin/payments", icon: Receipt },
   { label: "Premium", to: "/admin/premium", icon: Gem },
   { label: "Продвижение", to: "/admin/promotions", icon: Megaphone },
-  { label: "Мониторинг API", to: "/admin/api-monitoring", icon: Cable },
+  { label: "API", to: "/admin/api-monitoring", icon: Cable },
   { label: "Push", to: "/admin/push", icon: Bell },
-  { label: "Журнал аудита", to: "/admin/audit-logs", icon: ShieldCheck },
+  { label: "Аудит", to: "/admin/audit-logs", icon: ShieldCheck },
   { label: "Аналитика", to: "/admin/analytics", icon: BarChart3 },
-  { label: "AI и ключи API", to: "/admin/ai-keys", icon: Sparkles },
+  { label: "AI и ключи", to: "/admin/ai-keys", icon: Sparkles },
   { label: "Настройки", to: "/admin/settings", icon: Settings },
 ];
 
@@ -109,14 +108,10 @@ export function useAdminNav(): DashItem[] {
 }
 
 export const profileNav: DashItem[] = [
-  { label: "Мой профиль", to: "/profile", icon: User },
-  { label: "Мои заявки", to: "/profile/requests", icon: Inbox },
+  { label: "Кабинет", to: "/profile", icon: User },
+  { label: "Поездки", to: "/profile/trips", icon: Luggage },
+  { label: "Заявки", to: "/profile/requests", icon: Inbox },
   { label: "Сообщения", to: "/profile/messages", icon: MessageSquare },
-  { label: "Мои поездки", to: "/profile/trips", icon: Luggage },
-  { label: "Избранное", to: "/profile/favorites", icon: Heart },
-  { label: "Сравнение", to: "/compare", icon: Scale },
-  { label: "Умный поиск", to: "/profile/ai", icon: Sparkles },
-  { label: "Уведомления", to: "/notifications", icon: Bell },
-  { label: "Premium", to: "/premium", icon: Gem },
-  { label: "Настройки", to: "/profile/settings", icon: Settings },
+  { label: "Избранное", to: "/favorites", icon: Heart },
+  { label: "Данные туриста", to: "/profile/settings", icon: Settings },
 ];

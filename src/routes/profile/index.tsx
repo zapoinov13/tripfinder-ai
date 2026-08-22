@@ -1,22 +1,44 @@
-import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
+import {
+  ChevronRight,
+  Gift,
+  Globe2,
+  History,
+  LogOut,
+  Mail,
+  Sparkles,
+  TicketPercent,
+  UserRound,
+} from "lucide-react";
+import { useEffect, useState, type ComponentType } from "react";
+import { toast } from "sonner";
 
-import { DashShell } from "@/components/dash/dash-shell";
-import { profileNav } from "@/components/dash/nav-items";
+import { SiteLayout } from "@/components/site/site-layout";
 import { TouristAccountGate } from "@/components/site/tourist-account-gate";
-import { TourCard } from "@/components/tours/tour-card";
 import { Button } from "@/components/ui/button";
-import { formatPrice, getHotel, getTour } from "@/data/demo";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { SUPPORT_EMAIL, SUPPORT_MAILTO } from "@/lib/contact";
+import { tProfile, useAppLocale, type AppLocale } from "@/lib/locale";
 import { useAuth } from "@/lib/platform/auth";
-import { usePlatformStore } from "@/lib/platform/hooks";
-import { useTourState } from "@/lib/tour-state";
+import { useBonusPoints } from "@/lib/tourist-bonuses";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/profile/")({
   head: () => ({
     meta: [
-      { title: "Профиль · TourGo" },
+      { title: "Личный кабинет · TourGo" },
       {
         name: "description",
-        content: "Заявки, поездки, избранное и настройки аккаунта туриста.",
+        content: "Бонусы, промокоды, история поездок, данные туриста и поддержка.",
       },
     ],
   }),
@@ -26,120 +48,294 @@ export const Route = createFileRoute("/profile/")({
 function ProfilePage() {
   return (
     <TouristAccountGate kind="profile">
-      <ProfileContent />
+      <TouristCabinet />
     </TouristAccountGate>
   );
 }
 
-function ProfileContent() {
-  const { user, isPremium, purchasePremium, logout } = useAuth();
-  const state = usePlatformStore();
-  const { favorites, priceAlerts } = useTourState();
-  const navigate = useNavigate();
+function TouristCabinet() {
+  const { user, logout } = useAuth();
+  const { locale, setLocale } = useAppLocale();
+  const t = tProfile(locale);
+  const { points, redeem, refresh } = useBonusPoints();
+  const [promoOpen, setPromoOpen] = useState(false);
+  const [giftOpen, setGiftOpen] = useState(false);
+  const [bonusOpen, setBonusOpen] = useState(false);
+  const [promoCode, setPromoCode] = useState("");
+
+  useEffect(() => {
+    document.documentElement.lang = locale === "kk" ? "kk" : "ru";
+  }, [locale]);
 
   if (!user) return null;
 
-  const favTours = favorites
-    .map((id) => getTour(id))
-    .filter(Boolean)
-    .slice(0, 3);
-  const bookings = state.bookings.filter((b) => b.userId === user.id);
-  const nextTrip = bookings.find((b) =>
-    ["CONFIRMED", "PAID", "AWAITING_PAYMENT", "PENDING"].includes(b.status),
-  );
+  const applyPromo = () => {
+    const result = redeem(promoCode);
+    if (result.ok) {
+      toast.success(`${t.promoOk}: +${result.points} ${t.points}`);
+      setPromoCode("");
+      setPromoOpen(false);
+      refresh();
+      return;
+    }
+    if (result.reason === "used") toast.error(locale === "kk" ? "Бұл код қолданылған" : "Этот код уже использован");
+    else toast.error(t.promoBad);
+  };
 
   return (
-    <DashShell
-      brand="TourGo"
-      items={profileNav}
-      title={user.name}
-      subtitle={`${user.email} · ${user.city}`}
-      actions={
-        <div className="flex gap-2">
-          {!isPremium ? (
-            <Button size="sm" onClick={() => purchasePremium()}>
-              Подключить Premium
-            </Button>
-          ) : (
-            <Button size="sm" variant="secondary" asChild>
-              <Link to="/premium">Premium активен</Link>
-            </Button>
-          )}
-          <Button size="sm" variant="outline" onClick={logout}>
-            Выйти
-          </Button>
-        </div>
-      }
-    >
-      <div className="grid gap-5 md:grid-cols-4">
-        {[
-          ["Ближайшая поездка", nextTrip?.status ?? "Нет"],
-          ["Избранное", `${favorites.length}`],
-          ["Активные alerts", `${priceAlerts.filter((a) => a.status === "active").length}`],
-          ["Premium", isPremium ? "Active" : "Free"],
-        ].map(([label, value]) => (
-          <div key={label} className="surface-card p-5">
-            <p className="text-sm text-muted-foreground">{label}</p>
-            <p className="mt-2 font-display text-2xl font-semibold">{value}</p>
-          </div>
-        ))}
-      </div>
+    <SiteLayout>
+      <div className="container-page py-6 md:py-10">
+        <div className="mx-auto max-w-lg">
+          <header className="mb-6">
+            <p className="text-xs font-semibold tracking-[0.16em] text-primary uppercase">
+              {t.cabinet}
+            </p>
+            <h1 className="mt-1 font-display text-2xl font-semibold tracking-tight md:text-3xl">
+              {user.name}
+            </h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {user.email}
+              {user.city ? ` · ${user.city}` : ""}
+            </p>
+          </header>
 
-      <div className="mt-8 grid gap-6 lg:grid-cols-2">
-        <div className="surface-card p-6">
-          <div className="flex items-center justify-between">
-            <h2 className="font-display text-lg font-semibold">Избранное</h2>
-            <Button variant="ghost" size="sm" asChild>
-              <Link to="/profile/favorites">Все</Link>
-            </Button>
-          </div>
-          <div className="mt-4 space-y-3">
-            {favTours.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Пока пусто</p>
-            ) : (
-              favTours.map((tour) =>
-                tour ? (
-                  <button
-                    key={tour.id}
-                    type="button"
-                    className="flex w-full items-center gap-3 rounded-2xl bg-secondary p-3 text-left"
-                    onClick={() => navigate({ to: "/tour/$tourId", params: { tourId: tour.id } })}
-                  >
-                    <img
-                      src={getHotel(tour.hotelId).image}
-                      alt=""
-                      className="size-12 rounded-xl object-cover"
-                    />
-                    <div className="min-w-0">
-                      <p className="truncate font-medium">{getHotel(tour.hotelId).name}</p>
-                      <p className="text-xs text-muted-foreground">{formatPrice(tour.price)}</p>
-                    </div>
-                  </button>
-                ) : null,
-              )
-            )}
-          </div>
-        </div>
+          <button
+            type="button"
+            onClick={() => setBonusOpen(true)}
+            className="surface-card mb-4 flex w-full items-center justify-between gap-3 p-5 text-left transition-colors hover:border-primary/40"
+          >
+            <div>
+              <p className="text-sm text-muted-foreground">{t.bonusBalance}</p>
+              <p className="mt-1 font-display text-3xl font-semibold tabular-nums">
+                {points.toLocaleString(locale === "kk" ? "kk-KZ" : "ru-RU")}
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">{t.points}</p>
+            </div>
+            <span className="grid size-12 place-items-center rounded-2xl bg-primary-soft text-primary">
+              <Sparkles className="size-5" />
+            </span>
+          </button>
 
-        <div className="surface-card p-6">
-          <div className="flex items-center justify-between">
-            <h2 className="font-display text-lg font-semibold">Рекомендации</h2>
-            <Button variant="ghost" size="sm" asChild>
-              <Link to="/search" search={{} as never}>
-                Поиск
-              </Link>
-            </Button>
+          <div className="surface-card overflow-hidden divide-y divide-border">
+            <MenuRow
+              icon={Sparkles}
+              title={t.bonuses}
+              hint={t.bonusesHint}
+              onClick={() => setBonusOpen(true)}
+            />
+            <MenuRow
+              icon={TicketPercent}
+              title={t.promo}
+              hint={t.promoHint}
+              onClick={() => setPromoOpen(true)}
+            />
+            <MenuLink
+              icon={History}
+              title={t.history}
+              hint={t.historyHint}
+              to="/profile/trips"
+            />
+            <MenuRow
+              icon={Gift}
+              title={t.gift}
+              hint={t.giftHint}
+              onClick={() => setGiftOpen(true)}
+            />
+            <MenuLink
+              icon={UserRound}
+              title={t.data}
+              hint={t.dataHint}
+              to="/profile/settings"
+            />
+            <a
+              href={SUPPORT_MAILTO}
+              className="flex w-full items-center gap-3 px-4 py-3.5 text-left transition-colors hover:bg-secondary/60 active:bg-secondary"
+            >
+              <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-secondary text-foreground">
+                <Mail className="size-4" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm font-semibold">{t.contact}</span>
+                <span className="mt-0.5 block text-xs text-muted-foreground">
+                  {t.contactHint} · {SUPPORT_EMAIL}
+                </span>
+              </span>
+              <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
+            </a>
           </div>
-          <div className="mt-4 grid gap-4">
-            {state.tours
-              .filter((t) => t.tags.includes("best"))
-              .slice(0, 2)
-              .map((tour) => (
-                <TourCard key={tour.id} tour={tour} layout="grid" />
+
+          <div className="surface-card mt-4 p-4">
+            <div className="mb-3 flex items-center gap-2 text-sm font-semibold">
+              <Globe2 className="size-4 text-primary" />
+              {t.language}
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              {(
+                [
+                  { code: "ru" as AppLocale, label: "Русский" },
+                  { code: "kk" as AppLocale, label: "Қазақша" },
+                ] as const
+              ).map((item) => (
+                <button
+                  key={item.code}
+                  type="button"
+                  onClick={() => setLocale(item.code)}
+                  className={cn(
+                    "rounded-xl border px-3 py-2.5 text-sm font-medium transition-colors",
+                    locale === item.code
+                      ? "border-primary bg-primary-soft text-primary"
+                      : "border-border bg-background text-muted-foreground hover:border-primary/40 hover:text-foreground",
+                  )}
+                >
+                  {item.label}
+                </button>
               ))}
+            </div>
           </div>
+
+          <Button
+            variant="outline"
+            className="mt-4 w-full"
+            onClick={() => {
+              logout();
+              toast.message(locale === "kk" ? "Сіз шықтыңыз" : "Вы вышли из аккаунта");
+            }}
+          >
+            <LogOut className="size-4" />
+            {t.logout}
+          </Button>
+
+          <p className="mt-6 text-center text-xs text-muted-foreground">
+            {locale === "kk"
+              ? "Әкімші мен турфирма кабинеттері бөлек"
+              : "Кабинеты админа и турфирмы — отдельно"}
+          </p>
         </div>
       </div>
-    </DashShell>
+
+      <Dialog open={promoOpen} onOpenChange={setPromoOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t.promo}</DialogTitle>
+            <DialogDescription>{t.promoHint}</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label htmlFor="promo">{locale === "kk" ? "Промокод" : "Промокод"}</Label>
+            <Input
+              id="promo"
+              value={promoCode}
+              onChange={(e) => setPromoCode(e.target.value)}
+              placeholder={t.promoPlaceholder}
+              autoCapitalize="characters"
+            />
+          </div>
+          <DialogFooter>
+            <Button onClick={applyPromo}>{t.activate}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={bonusOpen} onOpenChange={setBonusOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t.bonuses}</DialogTitle>
+            <DialogDescription>{t.bonusesHint}</DialogDescription>
+          </DialogHeader>
+          <div className="rounded-2xl bg-secondary/70 p-5 text-center">
+            <p className="text-sm text-muted-foreground">{t.bonusBalance}</p>
+            <p className="mt-2 font-display text-4xl font-semibold tabular-nums">
+              {points.toLocaleString(locale === "kk" ? "kk-KZ" : "ru-RU")}
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">{t.points}</p>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            {locale === "kk"
+              ? "Ұпайларды турға жеңілдікке жұмсайсыз. Промокод арқылы толықтырыңыз."
+              : "Баллы можно списать как скидку на тур. Пополняйте промокодом."}
+          </p>
+          <DialogFooter>
+            <Button
+              onClick={() => {
+                setBonusOpen(false);
+                setPromoOpen(true);
+              }}
+            >
+              {t.promo}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={giftOpen} onOpenChange={setGiftOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t.giftTitle}</DialogTitle>
+            <DialogDescription>{t.giftText}</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button asChild>
+              <a href={SUPPORT_MAILTO}>{t.writeSupport}</a>
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </SiteLayout>
+  );
+}
+
+function MenuRow({
+  icon: Icon,
+  title,
+  hint,
+  onClick,
+}: {
+  icon: ComponentType<{ className?: string }>;
+  title: string;
+  hint: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex w-full items-center gap-3 px-4 py-3.5 text-left transition-colors hover:bg-secondary/60 active:bg-secondary"
+    >
+      <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-secondary text-foreground">
+        <Icon className="size-4" />
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block text-sm font-semibold">{title}</span>
+        <span className="mt-0.5 block text-xs text-muted-foreground">{hint}</span>
+      </span>
+      <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
+    </button>
+  );
+}
+
+function MenuLink({
+  icon: Icon,
+  title,
+  hint,
+  to,
+}: {
+  icon: ComponentType<{ className?: string }>;
+  title: string;
+  hint: string;
+  to: "/profile/trips" | "/profile/settings";
+}) {
+  return (
+    <Link
+      to={to}
+      className="flex w-full items-center gap-3 px-4 py-3.5 text-left transition-colors hover:bg-secondary/60 active:bg-secondary"
+    >
+      <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-secondary text-foreground">
+        <Icon className="size-4" />
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block text-sm font-semibold">{title}</span>
+        <span className="mt-0.5 block text-xs text-muted-foreground">{hint}</span>
+      </span>
+      <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
+    </Link>
   );
 }

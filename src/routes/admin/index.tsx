@@ -72,8 +72,8 @@ function AdminDashboard() {
     <DashShell
       brand="TourGo Админ"
       items={nav}
-      title="Обзор"
-      subtitle="Ключевые показатели и задачи"
+      title="Платформа TourGo"
+      subtitle="Пользователи, турфирмы, туры и модерация — не кабинет туриста"
     >
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <KpiLinkCard
