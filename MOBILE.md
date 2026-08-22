@@ -13,6 +13,8 @@
 - **Push (заготовка):** регистрация токена → таблица `device_tokens` в Supabase
 - **Юридические страницы:** `/privacy`, `/terms`
 - **Метаданные для сторов:** `store/metadata.json`
+- **Готовые ассеты:** `store/icons/`, `store/screenshots/`, инструкция `store/SUBMIT.md`
+- **Генерация:** `npm run store:assets` (иконки + скриншоты)
 
 ## Быстрый старт
 

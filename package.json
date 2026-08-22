@@ -13,7 +13,10 @@
     "cap:sync": "npm run build && npx cap sync",
     "cap:ios": "npx cap open ios",
     "cap:android": "npx cap open android",
-    "mobile:preview": "CAPACITOR_SERVER_URL=http://localhost:8080 npx cap run ios"
+    "mobile:preview": "CAPACITOR_SERVER_URL=http://localhost:8080 npx cap run ios",
+    "store:icons": "node scripts/generate-store-assets.mjs",
+    "store:screenshots": "node scripts/capture-store-screenshots.mjs",
+    "store:assets": "npm run store:icons && npm run store:screenshots"
   },
   "dependencies": {
     "@capacitor-community/apple-sign-in": "^7.1.0",
@@ -96,7 +99,9 @@
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^15.15.0",
     "nitro": "3.0.260603-beta",
+    "playwright": "^1.62.1",
     "prettier": "^3.7.3",
+    "sharp": "^0.35.3",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.56.1",
     "vite": "^8.1.5"
