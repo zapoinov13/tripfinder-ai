@@ -96,21 +96,22 @@ function Index() {
           <div className="absolute inset-0 bg-[linear-gradient(175deg,oklch(0.16_0.02_250/0.72)_0%,oklch(0.16_0.02_250/0.38)_38%,oklch(0.16_0.02_250/0.9)_100%)]" />
         </div>
 
-        <div className="container-page relative flex min-h-[100svh] flex-col justify-end gap-6 pb-10 pt-24 md:min-h-[92vh] md:pb-16 md:pt-32">
+        <div className="container-page relative flex min-h-[92svh] flex-col justify-end gap-5 pb-8 pt-20 md:min-h-[92vh] md:gap-6 md:pb-16 md:pt-32">
           <div className="animate-fade-up max-w-3xl">
-            <p className="inline-flex items-center gap-2 rounded-full border border-primary-foreground/25 bg-primary-foreground/10 px-3 py-1.5 text-xs font-semibold tracking-[0.14em] text-primary-foreground uppercase backdrop-blur-md">
+            <p className="inline-flex items-center gap-2 rounded-full border border-primary-foreground/25 bg-primary-foreground/10 px-3 py-1.5 text-[0.7rem] font-semibold tracking-[0.14em] text-primary-foreground uppercase backdrop-blur-md md:text-xs">
               <ShieldCheck className="size-3.5" />
               Проверенные турфирмы
             </p>
-            <h1 className="mt-5 font-display text-[2.6rem] font-semibold leading-[1.05] tracking-tight text-primary-foreground drop-shadow-md md:text-7xl md:leading-[1.02]">
+            <h1 className="mt-4 font-display text-[2.1rem] font-semibold leading-[1.05] tracking-tight text-primary-foreground drop-shadow-md md:mt-5 md:text-7xl md:leading-[1.02]">
               Куда хотите
               <br className="hidden sm:block" /> поехать?
             </h1>
-            <p className="mt-4 max-w-xl text-base text-primary-foreground/90 md:text-xl">
+            <p className="mt-3 max-w-xl text-base text-primary-foreground/90 md:mt-4 md:text-xl">
               Несколько компаний на одну поездку. Цены рядом — вы выбираете.
             </p>
 
-            <ul className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-primary-foreground/85">
+            <ul className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-[0.8rem] text-primary-foreground/85 md:mt-6 md:gap-x-6 md:text-sm">
+
               {heroFacts.map((fact) => (
                 <li key={fact.label} className="flex items-center gap-2">
                   <fact.icon className="size-4 text-primary-foreground" />
