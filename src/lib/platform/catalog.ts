@@ -1,5 +1,6 @@
 import { getState, nowIso, setState, uid } from "./store";
 import type { AnalyticsEvent, AuditLog, PlatformNotification, PlatformTour } from "./types";
+import { dispatchPushNotification } from "@/lib/push/dispatch";
 
 export function getTour(id: string): PlatformTour | undefined {
   return getState().tours.find((t) => t.id === id);
@@ -63,5 +64,12 @@ export function pushNotification(
     ...s,
     notifications: [n, ...s.notifications],
   }));
+  void dispatchPushNotification({
+    userId,
+    title,
+    body,
+    type,
+    data: payload,
+  });
   return n;
 }

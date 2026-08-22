@@ -38,6 +38,15 @@ async function saveDeviceToken(token: string, platform: "ios" | "android") {
   }
 }
 
+export async function linkPushTokenToCurrentUser() {
+  if (!isNativeApp() || !isSupabaseConfigured) return;
+  const stored = localStorage.getItem("tourgo.push.token");
+  if (!stored) return;
+  const { Capacitor } = await import("@capacitor/core");
+  const platform = Capacitor.getPlatform() === "ios" ? "ios" : "android";
+  await saveDeviceToken(stored, platform);
+}
+
 export async function registerNativePushNotifications() {
   if (!isNativeApp() || !isPushEnabledLocally()) return;
 

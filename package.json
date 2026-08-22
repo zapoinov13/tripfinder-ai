@@ -18,6 +18,7 @@
     "store:screenshots": "node scripts/capture-store-screenshots.mjs",
     "store:assets": "npm run store:icons && npm run store:screenshots",
     "review:users": "node scripts/create-review-users.mjs",
+    "ensure:admin": "node scripts/ensure-owner-admin.mjs",
     "smoke": "node scripts/smoke-test.mjs",
     "smoke:extended": "node scripts/smoke-test-extended.mjs",
     "smoke:all": "npm run smoke && npm run smoke:extended"

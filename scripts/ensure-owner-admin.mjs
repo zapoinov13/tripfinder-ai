@@ -1,24 +1,16 @@
+#!/usr/bin/env node
 /**
- * Создаёт или поднимает до PLATFORM_ADMIN пользователя zapoinov@bk.ru в Supabase Auth.
- * Запуск: node scripts/ensure-owner-admin.mjs
+ * Ensures zapoinov@bk.ru exists in Supabase Auth with PLATFORM_ADMIN role.
+ *
+ * SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... node scripts/ensure-owner-admin.mjs
  */
-import { readFileSync } from "node:fs";
 import { createClient } from "@supabase/supabase-js";
 
-const env = Object.fromEntries(
-  readFileSync(new URL("../.env", import.meta.url), "utf8")
-    .split("\n")
-    .filter((line) => line && !line.startsWith("#") && line.includes("="))
-    .map((line) => {
-      const i = line.indexOf("=");
-      return [line.slice(0, i).trim(), line.slice(i + 1).trim().replace(/^["']|["']$/g, "")];
-    }),
-);
+const url = process.env.SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;
+const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-const url = env["VITE_SUPABASE_URL"];
-const key = env["VITE_SUPABASE_PUBLISHABLE_KEY"];
-if (!url || !key) {
-  console.error("Нет VITE_SUPABASE_URL или VITE_SUPABASE_PUBLISHABLE_KEY в .env");
+if (!url || !serviceKey) {
+  console.error("Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY");
   process.exit(1);
 }
 
@@ -26,43 +18,46 @@ const email = "zapoinov@bk.ru";
 const password = "zapoinov@bk.ru";
 const name = "Юрий Запойнов";
 
-const sb = createClient(url, key, {
-  auth: { persistSession: false, autoRefreshToken: false },
+const admin = createClient(url, serviceKey, {
+  auth: { autoRefreshToken: false, persistSession: false },
 });
 
-const signup = await sb.auth.signUp({
-  email,
-  password,
-  options: { data: { name, city: "Алматы" } },
-});
+const { data: list } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
+let authUser = list?.users?.find((u) => u.email?.toLowerCase() === email);
 
-if (signup.error && !/already|registered|exists/i.test(signup.error.message)) {
-  console.error("signUp:", signup.error.message);
+if (!authUser) {
+  const { data, error } = await admin.auth.admin.createUser({
+    email,
+    password,
+    email_confirm: true,
+    user_metadata: { name, city: "Алматы" },
+    app_metadata: { role: "PLATFORM_ADMIN" },
+  });
+  if (error) throw new Error(error.message);
+  authUser = data.user;
+  console.log("Created auth user:", email);
+} else {
+  await admin.auth.admin.updateUserById(authUser.id, {
+    password,
+    email_confirm: true,
+    app_metadata: { role: "PLATFORM_ADMIN" },
+  });
+  console.log("Updated auth user:", email);
 }
 
-const signed = await sb.auth.signInWithPassword({ email, password });
-if (signed.error || !signed.data.user) {
-  console.error("signIn:", signed.error?.message ?? "нет сессии");
-  console.error("Если почту нужно подтвердить, выполните supabase/seed.sql в SQL Editor.");
-  process.exit(1);
-}
-
-const userId = signed.data.user.id;
-const { error: profileError } = await sb
-  .from("profiles")
-  .update({
-    role: "PLATFORM_ADMIN",
+const { error: profileError } = await admin.from("profiles").upsert(
+  {
+    id: authUser.id,
+    email,
     name,
     city: "Алматы",
+    role: "PLATFORM_ADMIN",
     status: "active",
-    email,
-  })
-  .eq("id", userId);
+    organization_id: null,
+  },
+  { onConflict: "id" },
+);
 
-if (profileError) {
-  console.error("profiles.update:", profileError.message);
-  process.exit(1);
-}
+if (profileError) throw new Error(profileError.message);
 
-const { data: profile } = await sb.from("profiles").select("email, role, status, name").eq("id", userId).maybeSingle();
-console.log("Готово:", profile ?? { id: userId, email, role: "PLATFORM_ADMIN" });
+console.log("Admin ready:", email, "/", password, "→ /admin");

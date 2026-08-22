@@ -84,6 +84,7 @@ const adminNavBase: DashItem[] = [
   { label: "Premium", to: "/admin/premium", icon: Gem },
   { label: "Продвижение", to: "/admin/promotions", icon: Megaphone },
   { label: "Мониторинг API", to: "/admin/api-monitoring", icon: Cable },
+  { label: "Push", to: "/admin/push", icon: Bell },
   { label: "Журнал аудита", to: "/admin/audit-logs", icon: ShieldCheck },
   { label: "Аналитика", to: "/admin/analytics", icon: BarChart3 },
   { label: "AI и ключи API", to: "/admin/ai-keys", icon: Sparkles },

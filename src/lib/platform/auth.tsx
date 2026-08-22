@@ -164,6 +164,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!mounted) return;
       if (profile) {
         upsertLocalUser(profile);
+        void import("@/lib/native/push").then((m) => m.linkPushTokenToCurrentUser());
         void hydrateUserDataFromSupabase(userId).then((res) => {
           if (res.ok) console.info("[supabase] данные пользователя загружены", res);
         });
@@ -244,6 +245,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { ok: false, error: "Аккаунт приостановлен" };
       }
       if (profile) upsertLocalUser(profile);
+      else {
+        // profile trigger may lag — keep session with auth metadata
+        upsertLocalUser({
+          id: data.user.id,
+          email: data.user.email ?? email.trim().toLowerCase(),
+          name: String(data.user.user_metadata?.["name"] ?? "Пользователь"),
+          city: String(data.user.user_metadata?.["city"] ?? "Алматы"),
+          role: String(data.user.app_metadata?.["role"] ?? "TOURIST") as Role,
+          organization_id: null,
+        });
+      }
+      void import("@/lib/native/push").then((m) => m.linkPushTokenToCurrentUser());
       appendAudit({
         actorId: data.user.id,
         action: "login",

@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/lib/platform/auth";
+import { getPostLoginPath } from "@/lib/platform/routing";
 import { getState } from "@/lib/platform/store";
 import { migrateAnonymousToUser } from "@/lib/platform/user-data";
 
@@ -52,17 +53,12 @@ function LoginPage() {
               setError(res.error ?? "Ошибка входа");
               return;
             }
-            const sessionUser = email.trim().toLowerCase();
-            const u = getState().users.find((x) => x.email === sessionUser);
+            const sessionUserId = getState().session?.userId;
+            const u = sessionUserId
+              ? getState().users.find((x) => x.id === sessionUserId)
+              : getState().users.find((x) => x.email === email.trim().toLowerCase());
             if (u) migrateAnonymousToUser(u.id);
-            const role = u?.role ?? "TOURIST";
-            navigate({
-              to: role.startsWith("PLATFORM")
-                ? "/admin"
-                : role.startsWith("OPERATOR")
-                  ? "/operator"
-                  : "/profile",
-            });
+            navigate({ to: getPostLoginPath(u?.role) });
           } finally {
             setBusy(false);
           }
