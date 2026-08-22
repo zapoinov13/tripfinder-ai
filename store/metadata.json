@@ -6,6 +6,7 @@
   "category": "Travel",
   "ageRating": "4+",
   "supportEmail": "support@tourgo.demo",
+  "supportUrl": "https://tripfinder-ai.vercel.app/support",
   "privacyUrl": "https://tripfinder-ai.vercel.app/privacy",
   "termsUrl": "https://tripfinder-ai.vercel.app/terms",
   "website": "https://tripfinder-ai.vercel.app",

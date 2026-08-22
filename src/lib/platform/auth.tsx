@@ -11,6 +11,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 
 import { AppSplash } from "@/components/site/app-splash";
+import { authorizeAppleSignIn, type AppleAuthResult } from "@/lib/native/apple-auth";
 import { rolePermissions, type Role } from "@/lib/platform-contracts";
 import { getSupabase, isSupabaseConfigured } from "@/lib/supabase/client";
 import { hydrateUserDataFromSupabase } from "@/lib/supabase/hydrate";
@@ -30,7 +31,9 @@ type AuthCtx = {
   isPremium: boolean;
   supabaseEnabled: boolean;
   login: (email: string, password: string) => Promise<AuthResult>;
+  loginWithApple: (auth?: AppleAuthResult) => Promise<AuthResult>;
   logout: () => Promise<void>;
+  deleteAccount: () => Promise<AuthResult>;
   registerTourist: (input: {
     name: string;
     email: string;
@@ -273,6 +276,85 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
     trackEvent("LOGIN", found.id);
     toast.success(`С возвращением, ${found.name}`);
+    return { ok: true };
+  }, []);
+
+  const loginWithApple = useCallback(async (auth?: AppleAuthResult): Promise<AuthResult> => {
+    const sb = getSupabase();
+    const flow = auth ?? (await authorizeAppleSignIn());
+
+    if (flow.mode === "oauth") {
+      if (!sb) {
+        return {
+          ok: false,
+          error: "Apple Sign-In доступен после подключения Supabase OAuth (Authentication → Apple).",
+        };
+      }
+      const redirectTo = `${window.location.origin}/profile`;
+      const { error } = await sb.auth.signInWithOAuth({
+        provider: "apple",
+        options: { redirectTo },
+      });
+      if (error) return { ok: false, error: error.message };
+      return { ok: true };
+    }
+
+    if (!sb) {
+      return { ok: false, error: "Supabase не настроен для Apple Sign-In." };
+    }
+
+    const { data, error } = await sb.auth.signInWithIdToken({
+      provider: "apple",
+      token: flow.idToken,
+    });
+    if (error || !data.user) {
+      return { ok: false, error: error?.message ?? "Не удалось войти через Apple" };
+    }
+
+    const profile = await fetchProfile(data.user.id);
+    if (profile) {
+      upsertLocalUser(profile);
+    } else {
+      upsertLocalUser({
+        id: data.user.id,
+        email: flow.email ?? data.user.email ?? "apple@tourgo.app",
+        name: flow.givenName?.trim() || "Apple User",
+        city: "Алматы",
+        role: "TOURIST",
+        status: "active",
+      });
+    }
+
+    trackEvent("LOGIN", data.user.id);
+    toast.success("Вход через Apple");
+    return { ok: true };
+  }, []);
+
+  const deleteAccount = useCallback(async (): Promise<AuthResult> => {
+    const current = getState().session?.userId;
+    if (!current) return { ok: false, error: "Вы не авторизованы" };
+
+    const sb = getSupabase();
+    if (sb) {
+      await sb.from("profiles").update({ status: "deleted" }).eq("id", current);
+      await sb.auth.signOut();
+    }
+
+    setState((s) => ({
+      ...s,
+      users: s.users.map((u) =>
+        u.id === current ? { ...u, status: "suspended" as const, email: `deleted+${u.id}@tourgo.app` } : u,
+      ),
+      session: null,
+    }));
+
+    appendAudit({
+      actorId: current,
+      action: "delete_account",
+      entityType: "user",
+      entityId: current,
+    });
+    toast.success("Аккаунт удалён");
     return { ok: true };
   }, []);
 
@@ -585,7 +667,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isPremium: user?.role === "PREMIUM_TOURIST",
       supabaseEnabled: isSupabaseConfigured,
       login,
+      loginWithApple,
       logout,
+      deleteAccount,
       registerTourist,
       registerOperator,
       purchasePremium,
@@ -596,7 +680,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return perms.includes("admin:all") || perms.includes(permission);
       },
     }),
-    [user, organization, login, logout, registerTourist, registerOperator, purchasePremium],
+    [user, organization, login, loginWithApple, logout, deleteAccount, registerTourist, registerOperator, purchasePremium],
   );
 
   return (

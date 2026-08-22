@@ -31,6 +31,7 @@ import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ProfileRouteRouteImport } from './routes/profile/route'
 import { Route as RegistrationRouteImport } from './routes/registration'
 import { Route as SearchRouteImport } from './routes/search'
+import { Route as SupportRouteImport } from './routes/support'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as AdminAiKeysRouteImport } from './routes/admin/ai-keys'
@@ -180,6 +181,11 @@ const RegistrationRoute = RegistrationRouteImport.update({
 const SearchRoute = SearchRouteImport.update({
   id: '/search',
   path: '/search',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SupportRoute = SupportRouteImport.update({
+  id: '/support',
+  path: '/support',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TermsRoute = TermsRouteImport.update({
@@ -407,6 +413,7 @@ export interface FileRoutesByFullPath {
   '/privacy': typeof PrivacyRoute
   '/registration': typeof RegistrationRoute
   '/search': typeof SearchRoute
+  '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
   '/admin/ai-keys': typeof AdminAiKeysRoute
   '/admin/ai-keys 2': typeof AdminAiKeys2Route
@@ -470,6 +477,7 @@ export interface FileRoutesByTo {
   '/privacy': typeof PrivacyRoute
   '/registration': typeof RegistrationRoute
   '/search': typeof SearchRoute
+  '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
   '/admin/ai-keys': typeof AdminAiKeysRoute
   '/admin/ai-keys 2': typeof AdminAiKeys2Route
@@ -535,6 +543,7 @@ export interface FileRoutesById {
   '/privacy': typeof PrivacyRoute
   '/registration': typeof RegistrationRoute
   '/search': typeof SearchRoute
+  '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
   '/admin/ai-keys': typeof AdminAiKeysRoute
   '/admin/ai-keys 2': typeof AdminAiKeys2Route
@@ -601,6 +610,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/registration'
     | '/search'
+    | '/support'
     | '/terms'
     | '/admin/ai-keys'
     | '/admin/ai-keys 2'
@@ -664,6 +674,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/registration'
     | '/search'
+    | '/support'
     | '/terms'
     | '/admin/ai-keys'
     | '/admin/ai-keys 2'
@@ -728,6 +739,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/registration'
     | '/search'
+    | '/support'
     | '/terms'
     | '/admin/ai-keys'
     | '/admin/ai-keys 2'
@@ -793,6 +805,7 @@ export interface RootRouteChildren {
   PrivacyRoute: typeof PrivacyRoute
   RegistrationRoute: typeof RegistrationRoute
   SearchRoute: typeof SearchRoute
+  SupportRoute: typeof SupportRoute
   TermsRoute: typeof TermsRoute
   AdminAiKeysRoute: typeof AdminAiKeysRoute
   AdminAiKeys2Route: typeof AdminAiKeys2Route
@@ -982,6 +995,13 @@ declare module '@tanstack/react-router' {
       path: '/search'
       fullPath: '/search'
       preLoaderRoute: typeof SearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/support': {
+      id: '/support'
+      path: '/support'
+      fullPath: '/support'
+      preLoaderRoute: typeof SupportRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/terms': {
@@ -1314,6 +1334,7 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacyRoute: PrivacyRoute,
   RegistrationRoute: RegistrationRoute,
   SearchRoute: SearchRoute,
+  SupportRoute: SupportRoute,
   TermsRoute: TermsRoute,
   AdminAiKeysRoute: AdminAiKeysRoute,
   AdminAiKeys2Route: AdminAiKeys2Route,

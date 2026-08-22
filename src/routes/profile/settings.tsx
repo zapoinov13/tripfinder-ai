@@ -1,10 +1,21 @@
-import { Link, createFileRoute } from "@tanstack/react-router";
-import { Building2, ExternalLink, Shield } from "lucide-react";
+import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
+import { Building2, ExternalLink, Shield, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
 import { DashShell } from "@/components/dash/dash-shell";
 import { profileNav } from "@/components/dash/nav-items";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,7 +37,8 @@ export const Route = createFileRoute("/profile/settings")({
 
 function SettingsPage() {
   const { allowed } = useRequireAuth(["TOURIST", "PREMIUM_TOURIST"]);
-  const { user } = useAuth();
+  const { user, deleteAccount } = useAuth();
+  const navigate = useNavigate();
   const isNative = useIsNativeApp();
   const [nameEdit, setNameEdit] = useState<string | null>(null);
   const [cityEdit, setCityEdit] = useState<string | null>(null);
@@ -151,10 +163,57 @@ function SettingsPage() {
               </span>
               <ExternalLink className="size-4 text-muted-foreground" />
             </Link>
+            <Link
+              to="/support"
+              className="flex items-center justify-between rounded-xl px-3 py-2.5 text-sm hover:bg-secondary"
+            >
+              <span className="flex items-center gap-2">
+                <Shield className="size-4 text-muted-foreground" />
+                Поддержка
+              </span>
+              <ExternalLink className="size-4 text-muted-foreground" />
+            </Link>
           </div>
           {isNative ? (
             <p className="pt-2 text-xs text-muted-foreground">TourGo · версия 1.0.0 (build 1)</p>
           ) : null}
+        </div>
+
+        <div className="surface-card border-destructive/20 p-6">
+          <h2 className="font-display text-lg font-semibold text-destructive">Удалить аккаунт</h2>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Данные профиля и история будут удалены. Это действие необратимо (требование App Store).
+          </p>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive" className="mt-4">
+                <Trash2 className="size-4" />
+                Удалить аккаунт
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Удалить аккаунт?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Вы потеряете доступ к заявкам, избранному и сообщениям. Восстановить аккаунт будет
+                  нельзя.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Отмена</AlertDialogCancel>
+                <AlertDialogAction
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  onClick={async () => {
+                    const res = await deleteAccount();
+                    if (res.ok) navigate({ to: "/" });
+                    else toast.error(res.error ?? "Не удалось удалить");
+                  }}
+                >
+                  Удалить
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </div>
     </DashShell>

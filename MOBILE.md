@@ -72,6 +72,18 @@ npm run cap:ios
 | Турист | tourist@test.tourgo.app | Test1234! |
 | Турфирма | operator@test.tourgo.app | Test1234! |
 
+Аккаунты уже в demo-seed — работают без Supabase. Для production Supabase см. `scripts/supabase-review-accounts.sql`.
+
+## Apple Sign-In
+
+1. Apple Developer → Identifiers → включить **Sign in with Apple** для `com.tourgo.app`
+2. Supabase Dashboard → Authentication → Providers → **Apple** (Service ID + key)
+3. Xcode → Signing & Capabilities → Sign in with Apple (entitlements уже в `ios/App/App/App.entitlements`)
+
+## Удаление аккаунта (App Store)
+
+Реализовано: **Профиль → Настройки → Удалить аккаунт**
+
 ## Структура файлов
 
 ```

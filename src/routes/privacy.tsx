@@ -42,10 +42,9 @@ function PrivacyPage() {
             Имя и телефон из заявки видят только те компании, которым вы отправили запрос или которых
             выбрали. Мы не продаём и не передаём контакты третьим лицам для рекламы.
           </p>
-          <h2 className="font-display text-lg font-semibold text-foreground">Хранение и удаление</h2>
+          <h2 className="font-display text-lg font-semibold text-foreground">Удаление аккаунта</h2>
           <p>
-            Данные хранятся в защищённой базе Supabase. Вы можете запросить удаление аккаунта и
-            данных на{" "}
+            В приложении: Профиль → Настройки → «Удалить аккаунт». Или напишите на{" "}
             <a href="mailto:support@tourgo.demo" className="text-primary underline underline-offset-4">
               support@tourgo.demo
             </a>

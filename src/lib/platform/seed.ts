@@ -275,6 +275,27 @@ function buildUsers(orgs: Organization[]): PlatformUser[] {
       organizationId: orgs[0]!.id,
       createdAt: ts,
     },
+    {
+      id: "user-review-tourist",
+      email: "tourist@test.tourgo.app",
+      password: "Test1234!",
+      name: "Review Tourist",
+      city: "Алматы",
+      role: "TOURIST",
+      status: "active",
+      createdAt: ts,
+    },
+    {
+      id: "user-review-operator",
+      email: "operator@test.tourgo.app",
+      password: "Test1234!",
+      name: "Review Operator",
+      city: "Алматы",
+      role: "OPERATOR_ADMIN",
+      status: "active",
+      organizationId: orgs[0]!.id,
+      createdAt: ts,
+    },
   ];
 }
 

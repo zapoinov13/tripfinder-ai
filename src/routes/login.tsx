@@ -3,6 +3,7 @@ import { LogIn } from "lucide-react";
 import { useState } from "react";
 
 import { AuthLayout } from "@/components/site/auth-layout";
+import { AppleSignInButton } from "@/components/auth/apple-sign-in-button";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -95,6 +96,31 @@ function LoginPage() {
           {busy ? "Входим…" : "Войти"}
         </Button>
       </form>
+
+      <div className="relative my-5">
+        <div className="absolute inset-0 flex items-center">
+          <span className="w-full border-t border-border" />
+        </div>
+        <span className="relative mx-auto block w-fit bg-card px-2 text-xs text-muted-foreground">
+          или
+        </span>
+      </div>
+
+      <AppleSignInButton />
+
+      <details className="mt-5 rounded-xl border border-border/80 bg-secondary/30 px-3 py-2 text-xs text-muted-foreground">
+        <summary className="cursor-pointer font-medium text-foreground">Тестовые аккаунты (review)</summary>
+        <ul className="mt-2 space-y-1.5">
+          <li>
+            Турист: <code className="text-foreground">tourist@test.tourgo.app</code> /{" "}
+            <code className="text-foreground">Test1234!</code>
+          </li>
+          <li>
+            Турфирма: <code className="text-foreground">operator@test.tourgo.app</code> /{" "}
+            <code className="text-foreground">Test1234!</code>
+          </li>
+        </ul>
+      </details>
       <p className="mt-5 text-center text-sm text-muted-foreground">
         Нет аккаунта?{" "}
         <Link to="/registration" className="font-medium text-primary">

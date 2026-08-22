@@ -26,7 +26,7 @@ const columns = [
     title: "Справка",
     links: [
       { label: "Вопросы", to: "/about", hash: "faq" },
-      { label: "Поддержка", to: "/about", hash: "support" },
+      { label: "Поддержка", to: "/support" },
       { label: "Условия", to: "/terms" },
       { label: "Конфиденциальность", to: "/privacy" },
     ],
