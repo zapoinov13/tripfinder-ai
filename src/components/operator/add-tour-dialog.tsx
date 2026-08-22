@@ -1,4 +1,4 @@
-import { Check, Cable, ImagePlus, Link2, PencilLine, Star, Trash2, Video } from "lucide-react";
+import { Check, Cable, ImagePlus, Link2, PencilLine, Send, Star, Trash2, Video } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
@@ -31,7 +31,6 @@ import {
 import { readImageFile, youtubeEmbed } from "@/lib/image-file";
 import {
   applyHotelToDraft,
-  draftFromUrl,
   emptyDraft,
   extraIncludeOptions,
   includesFromDraft,
@@ -42,10 +41,11 @@ import {
   type ExtraIncludeKey,
   type TourDraft,
 } from "@/lib/platform/tour-editor";
+import { draftFromTelegram, draftFromUrl } from "@/lib/platform/ingest";
 import { originCities } from "@/lib/search";
 import { cn } from "@/lib/utils";
 
-type Mode = "choose" | "manual" | "url" | "review" | "api";
+type Mode = "choose" | "manual" | "url" | "telegram" | "review" | "api";
 
 const MAX_PHOTOS = 8;
 const MAX_VIDEOS = 3;
@@ -62,7 +62,10 @@ export function AddTourDialog({
   const [mode, setMode] = useState<Mode>(initialMode);
   const [draft, setDraft] = useState<TourDraft>(() => emptyDraft());
   const [url, setUrl] = useState("");
+  const [telegramText, setTelegramText] = useState("");
+  const [telegramLink, setTelegramLink] = useState("");
   const [importedFields, setImportedFields] = useState<string[]>([]);
+  const [ingestWarnings, setIngestWarnings] = useState<string[]>([]);
 
   const destinationHotels = hotels.filter((h) => h.destinationId === draft.destinationId);
   const dest = destinations.find((d) => d.id === draft.destinationId);
@@ -90,7 +93,26 @@ export function AddTourDialog({
     const result = draftFromUrl(url.trim());
     setDraft(result.draft);
     setImportedFields(result.fields);
+    setIngestWarnings([]);
     setMode("review");
+  };
+
+  const loadFromTelegram = () => {
+    const result = draftFromTelegram({
+      text: telegramText.trim(),
+      sourceLink: telegramLink.trim() || undefined,
+    });
+    if (result.warnings.includes("Вставьте текст поста или описание тура") && !telegramText.trim()) {
+      toast.error("Вставьте текст поста или описание");
+      return;
+    }
+    setDraft(result.draft);
+    setImportedFields(result.fields);
+    setIngestWarnings(result.warnings.filter((w) => !w.startsWith("Вставьте")));
+    setMode("review");
+    if (result.warnings.some((w) => !w.startsWith("Вставьте"))) {
+      toast.message("Черновик собран — проверьте поля перед публикацией");
+    }
   };
 
   const canPublish = Boolean(draft.hotelName.trim() && draft.price > 0 && draft.fromCity.trim());
@@ -112,17 +134,19 @@ export function AddTourDialog({
           <DialogTitle>Добавить тур</DialogTitle>
           <DialogDescription>
             {mode === "choose"
-              ? "Соберите карточку тура: вручную, по ссылке или загрузкой из вашего API."
+              ? "Соберите карточку: вручную, со сайта, из Telegram или автозагрузкой каталога (Бизнес/Про)."
               : mode === "url"
                 ? "Мы попробуем перенести название, отель, даты, питание и цену."
-                : mode === "api"
-                  ? "Подключите каталог, и туры появятся в списке автоматически."
-                  : "Так турист увидит предложение в поиске и на странице тура."}
+                : mode === "telegram"
+                  ? "Вставьте пост или описание — соберём черновик для проверки."
+                  : mode === "api"
+                    ? "Подключите Supplier Feed: цены и наличие подтянутся сами."
+                    : "Так турист увидит предложение в поиске и на странице тура."}
           </DialogDescription>
         </DialogHeader>
 
         {mode === "choose" ? (
-          <div className="grid gap-3 sm:grid-cols-3">
+          <div className="grid gap-3 sm:grid-cols-2">
             <button
               type="button"
               onClick={() => setMode("manual")}
@@ -147,13 +171,24 @@ export function AddTourDialog({
             </button>
             <button
               type="button"
+              onClick={() => setMode("telegram")}
+              className="surface-card p-5 text-left transition-colors hover:border-primary/50"
+            >
+              <Send className="size-5 text-primary" />
+              <p className="mt-3 font-display text-base font-semibold">Из Telegram</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Текст поста, ссылка t.me или описание с ценой и отелем.
+              </p>
+            </button>
+            <button
+              type="button"
               onClick={() => setMode("api")}
               className="surface-card p-5 text-left transition-colors hover:border-primary/50"
             >
               <Cable className="size-5 text-primary" />
-              <p className="mt-3 font-display text-base font-semibold">Загрузить по API</p>
+              <p className="mt-3 font-display text-base font-semibold">Каталог по API</p>
               <p className="mt-1 text-sm text-muted-foreground">
-                Синхронизация каталога: цены, наличие, новые туры.
+                Бизнес/Про: синхронизация цен и наличия из вашего feed.
               </p>
             </button>
           </div>
@@ -176,20 +211,57 @@ export function AddTourDialog({
           </div>
         ) : null}
 
+        {mode === "telegram" ? (
+          <div className="space-y-3">
+            <div className="space-y-2">
+              <Label htmlFor="tg-text">Текст поста или описание</Label>
+              <Textarea
+                id="tg-text"
+                value={telegramText}
+                onChange={(e) => setTelegramText(e.target.value)}
+                placeholder={"Дубай, Rixos, 7 ночей AI\nВылет из Алматы 12.09\nЦена 1 450 000 тг\nhttps://t.me/yourchannel/42"}
+                className="min-h-32"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="tg-link">Ссылка на пост (необязательно)</Label>
+              <Input
+                id="tg-link"
+                value={telegramLink}
+                onChange={(e) => setTelegramLink(e.target.value)}
+                placeholder="https://t.me/channel/123"
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Собираем черновик по тексту. Полноценный бот для канала — следующий шаг на том же
+              формате.
+            </p>
+          </div>
+        ) : null}
+
         {mode === "manual" || mode === "review" ? (
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_280px]">
-            <TourDraftForm
-              draft={draft}
-              destLabel={dest ? `${dest.flag} ${dest.country}` : ""}
-              destinationHotels={destinationHotels}
-              imported={mode === "review" ? importedFields : []}
-              onPatch={patch}
-              onDestination={changeDestination}
-              onHotel={(hotelId) => {
-                const hotel = hotels.find((h) => h.id === hotelId);
-                if (hotel) setDraft(applyHotelToDraft(draft, hotel));
-              }}
-            />
+            <div className="space-y-3">
+              {mode === "review" && ingestWarnings.length > 0 ? (
+                <ul className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-900 dark:text-amber-100">
+                  {ingestWarnings.map((w) => (
+                    <li key={w}>{w}</li>
+                  ))}
+                </ul>
+              ) : null}
+              <TourDraftForm
+                draft={draft}
+                destLabel={dest ? `${dest.flag} ${dest.country}` : ""}
+                destinationHotels={destinationHotels}
+                imported={mode === "review" ? importedFields : []}
+                onPatch={patch}
+                onDestination={changeDestination}
+                onHotel={(hotelId) => {
+                  const hotel = hotels.find((h) => h.id === hotelId);
+                  if (hotel) setDraft(applyHotelToDraft(draft, hotel));
+                }}
+              />
+            </div>
             <TourCardPreview draft={draft} city={dest?.city ?? ""} country={dest?.country ?? ""} />
           </div>
         ) : null}
@@ -206,6 +278,14 @@ export function AddTourDialog({
                 Назад
               </Button>
               <Button onClick={loadFromUrl}>Загрузить данные</Button>
+            </>
+          ) : null}
+          {mode === "telegram" ? (
+            <>
+              <Button variant="ghost" onClick={() => setMode("choose")}>
+                Назад
+              </Button>
+              <Button onClick={loadFromTelegram}>Собрать черновик</Button>
             </>
           ) : null}
           {mode === "manual" ? (

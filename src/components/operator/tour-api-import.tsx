@@ -1,27 +1,54 @@
+import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { getAdapterForOrg } from "@/lib/platform/adapters";
-import { appendAudit } from "@/lib/platform/catalog";
 import { useAuth } from "@/lib/platform/auth";
+import { appendAudit } from "@/lib/platform/catalog";
 import { usePlatformStore } from "@/lib/platform/hooks";
+import { apiFeedUpgradeHint, planAllowsApiFeed, planAllowsLivePrice } from "@/lib/platform/plans";
+import { SUPPLIER_FEED_EXAMPLE } from "@/lib/platform/supplier-feed";
 import { setState, uid } from "@/lib/platform/store";
 
 export function TourApiImportPanel({ orgId }: { orgId: string }) {
-  const { user } = useAuth();
+  const { user, organization } = useAuth();
   const state = usePlatformStore();
-  const [endpoint, setEndpoint] = useState("https://api.tourgo.travel/supplier-feed");
+  const plan = organization?.planCode ?? state.organizations.find((o) => o.id === orgId)?.planCode;
+  const allowed = planAllowsApiFeed(plan);
+  const [endpoint, setEndpoint] = useState(
+    () =>
+      state.apiConnections.find((c) => c.organizationId === orgId)?.endpoint ??
+      "/supplier-feed.example.json",
+  );
   const [apiKey, setApiKey] = useState("");
   const [secret, setSecret] = useState("");
+  const [pasteJson, setPasteJson] = useState("");
   const [busy, setBusy] = useState(false);
 
   if (!user) return null;
 
   const conn = state.apiConnections.find((c) => c.organizationId === orgId);
   const logs = state.syncLogs.filter((l) => l.organizationId === orgId).slice(0, 5);
+  const upgradeHint = apiFeedUpgradeHint(plan);
+
+  if (!allowed) {
+    return (
+      <div className="space-y-4 rounded-xl border border-border bg-secondary/40 p-5">
+        <p className="text-sm font-medium">Автозагрузка каталога — «Бизнес» и «Про»</p>
+        <p className="text-sm text-muted-foreground">
+          {upgradeHint} На «Старте» добавляйте туры вручную, по ссылке с сайта или из Telegram-поста.
+          После подключения feed TourGo сам подтягивает цены и наличие — не нужно вести два кабинета.
+        </p>
+        <Button asChild>
+          <Link to="/operator/billing">Смотреть тарифы</Link>
+        </Button>
+      </div>
+    );
+  }
 
   const saveConnection = () => {
     const maskedKey = apiKey ? `****${apiKey.slice(-4)}` : (conn?.apiKeyMasked ?? "****");
@@ -31,12 +58,12 @@ export function TourApiImportPanel({ orgId }: { orgId: string }) {
       const next = {
         id: existing?.id ?? uid(),
         organizationId: orgId,
-        provider: "SupplierFeed",
+        provider: "TourGoSupplierFeed",
         endpoint,
         apiKeyMasked: maskedKey,
         secretMasked: maskedSecret,
-        apiKey: apiKey || existing?.apiKey || "demo-api-key",
-        secret: secret || existing?.secret || "demo-secret",
+        apiKey: apiKey || existing?.apiKey || "",
+        secret: secret || existing?.secret || "",
         authType: "api_key" as const,
         currency: "KZT" as const,
         syncIntervalMin: 60,
@@ -61,17 +88,24 @@ export function TourApiImportPanel({ orgId }: { orgId: string }) {
     toast.success("Подключение сохранено");
   };
 
-  const runSync = async (fail = false) => {
+  const runSync = async (mode: "url" | "paste" | "example") => {
     setBusy(true);
     try {
+      if (mode === "url") saveConnection();
       const adapter = getAdapterForOrg(orgId);
       const test = await adapter.testConnection();
       if (!test.ok) {
         toast.error(test.message);
         return;
       }
-      const log = await adapter.sync({ fail });
-      toast[log.status === "success" ? "success" : "error"](log.message);
+      const log = await adapter.sync(
+        mode === "paste"
+          ? { feedJson: pasteJson }
+          : mode === "example"
+            ? { useExample: true }
+            : undefined,
+      );
+      toast[log.status === "error" ? "error" : "success"](log.message);
     } finally {
       setBusy(false);
     }
@@ -80,20 +114,31 @@ export function TourApiImportPanel({ orgId }: { orgId: string }) {
   return (
     <div className="space-y-5">
       <p className="text-sm text-muted-foreground">
-        Подключите каталог туроператора: цены, наличие и статусы подтянутся автоматически. После
-        синхронизации туры появятся в списке «Мои туры».
+        Выгружайте каталог в формате{" "}
+        <a className="underline underline-offset-2" href="/supplier-feed.example.json" target="_blank" rel="noreferrer">
+          TourGo Supplier Feed
+        </a>
+        . Меняете цены у себя — здесь они обновятся после синхронизации. Заявки туристов остаются в
+        кабинете TourGo.
+        {planAllowsLivePrice(plan)
+          ? " На «Про» при заявке дополнительно перепроверяется цена у поставщика."
+          : ""}
       </p>
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2 sm:col-span-2">
-          <Label>Адрес API (endpoint)</Label>
-          <Input value={endpoint} onChange={(e) => setEndpoint(e.target.value)} />
+          <Label>URL JSON feed</Label>
+          <Input
+            value={endpoint}
+            onChange={(e) => setEndpoint(e.target.value)}
+            placeholder="https://your-company.kz/api/tourgo-feed.json"
+          />
         </div>
         <div className="space-y-2">
           <Label>API key</Label>
           <Input
             type="password"
-            placeholder={conn?.apiKeyMasked ?? "новый ключ"}
+            placeholder={conn?.apiKeyMasked ?? "если feed закрыт ключом"}
             value={apiKey}
             onChange={(e) => setApiKey(e.target.value)}
           />
@@ -102,7 +147,7 @@ export function TourApiImportPanel({ orgId }: { orgId: string }) {
           <Label>Secret</Label>
           <Input
             type="password"
-            placeholder={conn?.secretMasked ?? "новый secret"}
+            placeholder={conn?.secretMasked ?? "опционально"}
             value={secret}
             onChange={(e) => setSecret(e.target.value)}
           />
@@ -110,9 +155,30 @@ export function TourApiImportPanel({ orgId }: { orgId: string }) {
       </div>
 
       <div className="flex flex-wrap gap-2">
-        <Button onClick={saveConnection}>Сохранить подключение</Button>
-        <Button variant="secondary" disabled={busy} onClick={() => void runSync(false)}>
-          {busy ? "Синхронизация…" : "Загрузить туры"}
+        <Button onClick={saveConnection}>Сохранить</Button>
+        <Button variant="secondary" disabled={busy} onClick={() => void runSync("url")}>
+          {busy ? "Синхронизация…" : "Загрузить с URL"}
+        </Button>
+        <Button variant="outline" disabled={busy} onClick={() => void runSync("example")}>
+          Демо-feed
+        </Button>
+      </div>
+
+      <div className="space-y-2">
+        <Label>Или вставьте JSON вручную</Label>
+        <Textarea
+          value={pasteJson}
+          onChange={(e) => setPasteJson(e.target.value)}
+          placeholder={JSON.stringify(SUPPLIER_FEED_EXAMPLE, null, 2).slice(0, 280) + "…"}
+          className="min-h-28 font-mono text-xs"
+        />
+        <Button
+          variant="secondary"
+          size="sm"
+          disabled={busy || !pasteJson.trim()}
+          onClick={() => void runSync("paste")}
+        >
+          Импортировать JSON
         </Button>
       </div>
 
@@ -130,8 +196,8 @@ export function TourApiImportPanel({ orgId }: { orgId: string }) {
           <ul className="mt-3 space-y-2 text-xs text-muted-foreground">
             {logs.map((log) => (
               <li key={log.id}>
-                {new Date(log.createdAt).toLocaleString("ru-RU")} · {log.message} (+{log.toursImported}{" "}
-                / ~{log.toursUpdated})
+                {new Date(log.createdAt).toLocaleString("ru-RU")} · {log.message} (+
+                {log.toursImported} / ~{log.toursUpdated})
               </li>
             ))}
           </ul>

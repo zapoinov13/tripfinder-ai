@@ -4,6 +4,13 @@ import type {
   TourOperatorAdapter,
 } from "@/lib/platform-contracts";
 import { getTour } from "./catalog";
+import { planAllowsLivePrice } from "./plans";
+import {
+  applySupplierFeed,
+  parseSupplierFeed,
+  parseSupplierFeedJson,
+  SUPPLIER_FEED_EXAMPLE,
+} from "./supplier-feed";
 import { getState, nowIso, setState, uid } from "./store";
 import type { PlatformTour } from "./types";
 
@@ -59,9 +66,13 @@ export class MockOperatorAdapter implements TourOperatorAdapter {
     await delay(150);
     const tour = findByExternal(externalTourId);
     if (!tour) throw new Error("Tour not found");
-    // slight price jitter for recheck realism
-    const jitter = Math.round(((Math.random() * 2 - 1) * 5000) / 1000) * 1000;
-    return { price: Math.max(100000, tour.price + jitter), currency: tour.currency };
+    const org = getState().organizations.find((o) => o.id === this.organizationId);
+    // Live reprice (Pro): slight jitter simulates supplier quote. Otherwise return cached price.
+    if (planAllowsLivePrice(org?.planCode)) {
+      const jitter = Math.round(((Math.random() * 2 - 1) * 5000) / 1000) * 1000;
+      return { price: Math.max(100000, tour.price + jitter), currency: tour.currency };
+    }
+    return { price: tour.price, currency: tour.currency };
   }
 
   async createBooking(externalTourId: string, _payload: unknown) {
@@ -96,10 +107,15 @@ export class MockOperatorAdapter implements TourOperatorAdapter {
     return { cancelled: true };
   }
 
-  /** Sync catalog from supplier feed into platform store */
-  async sync(options?: { fail?: boolean }) {
-    await delay(500);
-    if (options?.fail) {
+  /**
+   * Sync catalog from TourGo Supplier Feed (JSON URL or pasted body).
+   * Prefer Edge Function proxy when CORS blocks direct fetch.
+   */
+  async sync(options?: { fail?: boolean; feedJson?: string; useExample?: boolean }) {
+    await delay(200);
+    const conn = getState().apiConnections.find((c) => c.organizationId === this.organizationId);
+
+    const failLog = (message: string) => {
       const log = {
         id: uid(),
         organizationId: this.organizationId,
@@ -107,7 +123,7 @@ export class MockOperatorAdapter implements TourOperatorAdapter {
         toursImported: 0,
         toursUpdated: 0,
         toursRemoved: 0,
-        message: "Поставщик не ответил за отведённое время",
+        message,
         createdAt: nowIso(),
       };
       setState((s) => ({
@@ -115,41 +131,128 @@ export class MockOperatorAdapter implements TourOperatorAdapter {
         syncLogs: [log, ...s.syncLogs],
         apiConnections: s.apiConnections.map((c) =>
           c.organizationId === this.organizationId
-            ? { ...c, status: "error" as const, lastError: log.message, lastSyncAt: nowIso() }
+            ? { ...c, status: "error" as const, lastError: message, lastSyncAt: nowIso() }
             : c,
         ),
       }));
       return log;
+    };
+
+    if (options?.fail) {
+      return failLog("Поставщик не ответил за отведённое время");
     }
 
-    let updated = 0;
-    setState((s) => ({
-      ...s,
-      tours: s.tours.map((t) => {
-        if (t.operatorOrgId !== this.organizationId) return t;
-        updated += 1;
-        return { ...t, lastSyncedAt: nowIso(), availability: Math.max(1, t.availability) };
-      }),
-      apiConnections: s.apiConnections.map((c) => {
-        if (c.organizationId !== this.organizationId) return c;
-        const { lastError: _drop, ...rest } = c;
-        return { ...rest, status: "connected" as const, lastSyncAt: nowIso() };
-      }),
-    }));
+    let parsed =
+      options?.feedJson !== undefined
+        ? parseSupplierFeedJson(options.feedJson)
+        : options?.useExample
+          ? parseSupplierFeed(SUPPLIER_FEED_EXAMPLE)
+          : null;
+
+    if (!parsed && conn?.endpoint) {
+      try {
+        const raw = await fetchSupplierFeed(conn.endpoint, conn.apiKey, conn.secret, conn.authType);
+        parsed = parseSupplierFeed(raw);
+      } catch (err) {
+        return failLog(err instanceof Error ? err.message : "Не удалось загрузить feed");
+      }
+    }
+
+    if (!parsed) {
+      return failLog("Укажите URL feed или вставьте JSON каталога");
+    }
+
+    if (!parsed.doc.tours.length) {
+      return failLog(parsed.errors[0] ?? "В feed нет валидных туров");
+    }
+
+    const result = applySupplierFeed(this.organizationId, parsed.doc);
+    const status =
+      result.errors.length && (result.imported || result.updated) ? "partial" : "success";
+    const message = [
+      `Импорт: +${result.imported}, обновлено ${result.updated}`,
+      result.archived ? `снято ${result.archived}` : null,
+      result.errors.length ? `замечаний: ${result.errors.length}` : null,
+    ]
+      .filter(Boolean)
+      .join(" · ");
 
     const log = {
       id: uid(),
       organizationId: this.organizationId,
-      status: "success" as const,
-      toursImported: 0,
-      toursUpdated: updated,
-      toursRemoved: 0,
-      message: `Синхронизировано предложений: ${updated}`,
+      status: status as "success" | "partial",
+      toursImported: result.imported,
+      toursUpdated: result.updated,
+      toursRemoved: result.archived,
+      message,
       createdAt: nowIso(),
     };
-    setState((s) => ({ ...s, syncLogs: [log, ...s.syncLogs] }));
+
+    setState((s) => ({
+      ...s,
+      syncLogs: [log, ...s.syncLogs],
+      apiConnections: s.apiConnections.map((c) => {
+        if (c.organizationId !== this.organizationId) return c;
+        const { lastError: _drop, ...rest } = c;
+        return {
+          ...rest,
+          status: "connected" as const,
+          lastSyncAt: nowIso(),
+          ...(result.errors.length ? { lastError: result.errors[0] } : {}),
+        };
+      }),
+    }));
     return log;
   }
+}
+
+async function fetchSupplierFeed(
+  endpoint: string,
+  apiKey: string,
+  secret: string,
+  authType: "api_key" | "basic" | "bearer",
+): Promise<unknown> {
+  const resolved =
+    endpoint.startsWith("/") && typeof window !== "undefined"
+      ? `${window.location.origin}${endpoint}`
+      : endpoint;
+
+  const base = import.meta.env.VITE_SUPABASE_URL as string | undefined;
+  const anon = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
+
+  if (base && anon && /^https?:\/\//i.test(resolved)) {
+    try {
+      const res = await fetch(`${base}/functions/v1/sync-supplier-feed`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${anon}`,
+          apikey: anon,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ endpoint: resolved, apiKey, secret, authType }),
+      });
+      if (res.ok) {
+        const body = (await res.json()) as { ok?: boolean; data?: unknown; error?: string };
+        if (body.ok && body.data !== undefined) return body.data;
+        if (body.error) throw new Error(body.error);
+      }
+    } catch {
+      /* fall through to direct fetch */
+    }
+  }
+
+  const headers: Record<string, string> = { Accept: "application/json" };
+  if (authType === "bearer" && apiKey) headers.Authorization = `Bearer ${apiKey}`;
+  else if (authType === "basic" && apiKey) {
+    headers.Authorization = `Basic ${btoa(`${apiKey}:${secret}`)}`;
+  } else if (apiKey) {
+    headers["X-Api-Key"] = apiKey;
+    if (secret) headers["X-Api-Secret"] = secret;
+  }
+
+  const res = await fetch(resolved, { headers });
+  if (!res.ok) throw new Error(`Feed HTTP ${res.status}`);
+  return res.json();
 }
 
 function findByExternal(externalTourId: string): PlatformTour | undefined {

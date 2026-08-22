@@ -90,5 +90,12 @@ export type OperatorPlan = {
   features: string[];
 };
 
+/** Plan feature flags used by product copy and gates. */
+export const operatorPlanFeatureLabels: Record<OperatorPlan["code"], string[]> = {
+  START: ["manual", "url", "telegram"],
+  BUSINESS: ["manual", "url", "telegram", "api_feed"],
+  PRO: ["manual", "url", "telegram", "api_feed", "live_price", "priority"],
+};
+
 export const canCreateTour = (activeTours: number, plan: OperatorPlan, extraLimit = 0) =>
   activeTours < plan.activeTourLimit + extraLimit;

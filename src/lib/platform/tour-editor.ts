@@ -156,39 +156,6 @@ export function applyHotelToDraft(draft: TourDraft, hotel: Hotel): TourDraft {
   };
 }
 
-/**
- * Мок разбора страницы тура: реальный парсер появится вместе с интеграцией,
- * поэтому сейчас берём отель из каталога и заполняем поля значениями по умолчанию,
- * а турфирма обязательно проверяет их перед публикацией.
- */
-export function draftFromUrl(url: string): { draft: TourDraft; fields: string[] } {
-  const lower = url.toLowerCase();
-  const destinationId = lower.includes("turk")
-    ? "turkey"
-    : lower.includes("thai")
-      ? "thailand"
-      : lower.includes("egypt")
-        ? "egypt"
-        : "uae";
-  const draft = emptyDraft(destinationId);
-  const nightsMatch = lower.match(/(\d{1,2})\s*(?:night|noch|ноч)/);
-  const priceMatch = lower.match(/(\d{6,8})/);
-  const nights = nightsMatch ? Number(nightsMatch[1]) : draft.nights;
-
-  return {
-    draft: {
-      ...draft,
-      nights,
-      dateEnd: new Date(new Date(draft.dateStart).getTime() + nights * 86400000)
-        .toISOString()
-        .slice(0, 10),
-      ...(priceMatch ? { price: Number(priceMatch[1]) } : {}),
-      sourceUrl: url,
-    },
-    fields: ["название", "отель", "даты", "питание", "цена", "трансфер"],
-  };
-}
-
 function resolveHotel(draft: TourDraft): Hotel {
   const dest = destinations.find((d) => d.id === draft.destinationId) ?? destinations[0]!;
   const catalog = hotels.find((h) => h.id === draft.hotelId);

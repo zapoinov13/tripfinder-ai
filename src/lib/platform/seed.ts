@@ -66,7 +66,7 @@ export const defaultConfig = (): PlatformConfig => ({
       price: 49000,
       currency: "KZT",
       tourLimit: 100,
-      features: ["basic analytics", "API", "basic support"],
+      features: ["manual tours", "url import", "telegram draft", "basic analytics"],
     },
     {
       code: "BUSINESS",
@@ -74,7 +74,13 @@ export const defaultConfig = (): PlatformConfig => ({
       price: 149000,
       currency: "KZT",
       tourLimit: 1000,
-      features: ["advanced analytics", "promotion tools", "featured placements"],
+      features: [
+        "manual tours",
+        "url import",
+        "telegram draft",
+        "supplier feed API",
+        "advanced analytics",
+      ],
     },
     {
       code: "PRO",
@@ -82,7 +88,13 @@ export const defaultConfig = (): PlatformConfig => ({
       price: 349000,
       currency: "KZT",
       tourLimit: 5000,
-      features: ["advanced promotion", "priority placement", "Premium placements"],
+      features: [
+        "supplier feed API",
+        "live price check",
+        "priority placement",
+        "home feature",
+        "advanced analytics",
+      ],
     },
   ],
   promotionPrices: {
@@ -415,8 +427,8 @@ export function createSeedState(): PlatformState {
       {
         id: "api-1",
         organizationId: orgs[0]!.id,
-        provider: "SupplierFeed",
-        endpoint: "https://api.tourgo.travel/supplier-feed",
+        provider: "TourGoSupplierFeed",
+        endpoint: "/supplier-feed.example.json",
         apiKeyMasked: "****demo",
         secretMasked: "****cret",
         apiKey: "demo-api-key",

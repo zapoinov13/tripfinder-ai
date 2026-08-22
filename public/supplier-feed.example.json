@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "currency": "KZT",
+  "updated_at": "2026-08-22T12:00:00.000Z",
+  "tours": [
+    {
+      "external_id": "demo-dubai-ai-7",
+      "title": "Дубай · All Inclusive 7 ночей",
+      "hotel_name": "Rixos Premium Dubai",
+      "destination": "uae",
+      "country": "ОАЭ",
+      "city": "Дубай",
+      "from_city": "Алматы",
+      "nights": 7,
+      "meal": "AI",
+      "price": 1450000,
+      "old_price": 1680000,
+      "currency": "KZT",
+      "availability": 12,
+      "status": "active",
+      "transfer": true,
+      "flight": true,
+      "description": "Перелёт, трансфер и отель у моря. Пример TourGo Supplier Feed.",
+      "photos": []
+    },
+    {
+      "external_id": "demo-antalya-uai-10",
+      "title": "Анталья · Ultra All Inclusive",
+      "hotel_name": "Rixos Premium Belek",
+      "destination": "turkey",
+      "from_city": "Астана",
+      "nights": 10,
+      "meal": "UAI",
+      "price": 1890000,
+      "availability": 6,
+      "status": "active",
+      "hot_deal": true
+    }
+  ]
+}
