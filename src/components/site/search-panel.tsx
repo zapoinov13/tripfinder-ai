@@ -284,26 +284,32 @@ export function SearchPanel({
           type="button"
           onClick={() => setTab("ai")}
           className={cn(
-            "flex-1 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors",
+            "flex flex-1 items-center justify-center gap-1.5 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors",
             tab === "ai"
               ? "gradient-ai text-primary-foreground shadow-card"
               : "text-muted-foreground",
           )}
         >
-          ✨ Умный поиск
+          <Sparkles className="size-4" />
+          Умный поиск
         </button>
+
       </div>
 
       {tab === "classic" ? (
         <div className="p-3 md:p-4">
-          <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-[repeat(4,minmax(0,1fr))_auto]">
-            <SelectField
-              label="Откуда"
-              value={from}
-              options={originCities.map((c) => ({ value: c, label: c }))}
-              onChange={setFrom}
-            />
-            <SelectField label="Куда" value={to} options={destinationOptions} onChange={setTo} />
+          <div className="grid grid-cols-2 gap-2 md:grid-cols-2 xl:grid-cols-[repeat(4,minmax(0,1fr))_auto]">
+            <div className="col-span-2 w-full min-w-0 md:col-span-1 [&_button]:w-full">
+              <SelectField
+                label="Откуда"
+                value={from}
+                options={originCities.map((c) => ({ value: c, label: c }))}
+                onChange={setFrom}
+              />
+            </div>
+            <div className="col-span-2 w-full min-w-0 md:col-span-1 [&_button]:w-full">
+              <SelectField label="Куда" value={to} options={destinationOptions} onChange={setTo} />
+            </div>
 
             <DateRangePicker
               variant="field"
@@ -354,7 +360,11 @@ export function SearchPanel({
               </PopoverContent>
             </Popover>
 
-            <Button size="lg" className="h-full min-h-13 rounded-2xl px-7" onClick={goSearch}>
+            <Button
+              size="lg"
+              className="col-span-2 h-full min-h-13 rounded-2xl px-7 md:col-span-2 xl:col-span-1"
+              onClick={goSearch}
+            >
               <Search className="size-4" />
               Найти туры
             </Button>

@@ -74,52 +74,86 @@ const steps = [
   },
 ];
 
+const heroFacts = [
+  { icon: Users, value: "40+", label: "турфирм в подборке" },
+  { icon: Scale, value: "0 ₸", label: "комиссии для туриста" },
+  { icon: Flame, value: "1 200+", label: "актуальных туров" },
+];
+
+
 function Index() {
   return (
     <SiteLayout>
-      <section className="relative isolate overflow-hidden">
+      <section className="relative isolate -mt-[65px] overflow-hidden md:-mt-[73px]">
         <div className="absolute inset-0">
           <img
             src={heroImage}
             alt=""
             width={1920}
             height={1080}
-            className="animate-soft-zoom h-full min-h-[92vh] w-full object-cover md:min-h-[90vh]"
+            className="animate-soft-zoom size-full object-cover"
           />
-          <div className="absolute inset-0 bg-[linear-gradient(180deg,oklch(0.16_0.02_250/0.55)_0%,oklch(0.16_0.02_250/0.48)_35%,oklch(0.16_0.02_250/0.88)_100%)]" />
+          <div className="absolute inset-0 bg-[linear-gradient(175deg,oklch(0.16_0.02_250/0.72)_0%,oklch(0.16_0.02_250/0.38)_38%,oklch(0.16_0.02_250/0.9)_100%)]" />
         </div>
 
-        <div className="container-page relative flex min-h-[92vh] flex-col justify-end pb-8 pt-6 md:min-h-[90vh] md:pb-14 md:pt-8">
+        <div className="container-page relative flex min-h-[92svh] flex-col justify-end gap-5 pb-8 pt-20 md:min-h-[92vh] md:gap-6 md:pb-16 md:pt-32">
           <div className="animate-fade-up max-w-3xl">
-            <p className="font-display text-sm font-semibold tracking-[0.22em] text-primary-foreground uppercase drop-shadow-sm">
-              TourGo
+            <p className="inline-flex items-center gap-2 rounded-full border border-primary-foreground/25 bg-primary-foreground/10 px-3 py-1.5 text-[0.7rem] font-semibold tracking-[0.14em] text-primary-foreground uppercase backdrop-blur-md md:text-xs">
+              <ShieldCheck className="size-3.5" />
+              Проверенные турфирмы
             </p>
-            <h1 className="mt-4 font-display text-5xl font-semibold tracking-tight text-primary-foreground drop-shadow-md md:text-7xl md:leading-[1.02]">
-              Куда хотите поехать?
+            <h1 className="mt-4 font-display text-[2.1rem] font-semibold leading-[1.05] tracking-tight text-primary-foreground drop-shadow-md md:mt-5 md:text-7xl md:leading-[1.02]">
+              Куда хотите
+              <br className="hidden sm:block" /> поехать?
             </h1>
-            <p className="mt-4 max-w-xl text-lg text-primary-foreground md:text-xl">
-              Несколько компаний. Цены рядом. Вы выбираете.
+            <p className="mt-3 max-w-xl text-base text-primary-foreground/90 md:mt-4 md:text-xl">
+              Несколько компаний на одну поездку. Цены рядом — вы выбираете.
             </p>
+
+            <ul className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-[0.8rem] text-primary-foreground/85 md:mt-6 md:gap-x-6 md:text-sm">
+
+              {heroFacts.map((fact) => (
+                <li key={fact.label} className="flex items-center gap-2">
+                  <fact.icon className="size-4 text-primary-foreground" />
+                  <span>
+                    <span className="font-semibold text-primary-foreground">{fact.value}</span>{" "}
+                    {fact.label}
+                  </span>
+                </li>
+              ))}
+            </ul>
           </div>
 
-          <div
-            id="search"
-            className="animate-fade-up animation-delay-150 mt-8 scroll-mt-28 md:mt-10"
-          >
+          <div id="search" className="animate-fade-up animation-delay-150 scroll-mt-28">
             <SearchPanel tone="hero" />
-            <p className="mt-3 text-sm text-primary-foreground/85">
-              Не хотите заполнять форму?{" "}
-              <Link
-                to="/request"
-                search={{}}
-                className="font-semibold text-primary-foreground underline underline-offset-4"
-              >
-                Получите предложения от компаний
-              </Link>
-            </p>
+            <div className="mt-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+              <p className="text-sm text-primary-foreground/85">
+                Не хотите заполнять форму?{" "}
+                <Link
+                  to="/request"
+                  search={{}}
+                  className="font-semibold text-primary-foreground underline underline-offset-4"
+                >
+                  Получите предложения от компаний
+                </Link>
+              </p>
+              <div className="-mx-4 flex snap-x gap-2 overflow-x-auto px-4 pb-1 md:mx-0 md:px-0">
+                {destinations.slice(0, 6).map((d) => (
+                  <Link
+                    key={d.id}
+                    to="/destination/$destinationId"
+                    params={{ destinationId: d.id }}
+                    className="snap-start whitespace-nowrap rounded-full border border-primary-foreground/25 bg-primary-foreground/10 px-3.5 py-2 text-sm font-medium text-primary-foreground backdrop-blur-md transition-colors hover:bg-primary-foreground/20"
+                  >
+                    {d.flag} {d.country}
+                  </Link>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </section>
+
 
       <section className="container-page mt-10 md:mt-14">
         <div className="relative overflow-hidden rounded-[2rem]">
