@@ -157,6 +157,146 @@ function Index() {
         </div>
       </section>
 
+      <section className="container-page mt-10 md:mt-16">
+        <SectionHead
+          title="Популярные направления"
+          action={
+            <Button variant="outline" asChild>
+              <Link to="/destinations">
+                Все направления
+                <ArrowRight className="size-4" />
+              </Link>
+            </Button>
+          }
+        />
+        <div className="mt-8 grid grid-cols-2 gap-3 md:gap-4">
+          {destinations.map((dest) => (
+            <Link
+              key={dest.id}
+              to="/destination/$destinationId"
+              params={{ destinationId: dest.id }}
+              className="hover-lift group relative overflow-hidden rounded-3xl"
+            >
+              <img
+                src={dest.image}
+                alt={dest.country}
+                loading="lazy"
+                className="h-48 w-full object-cover transition-transform duration-700 group-hover:scale-105 sm:h-64 md:h-72 lg:h-80"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/25 to-transparent" />
+              {dest.photos?.filter((p) => !p.includes("images.unsplash.com")).slice(1, 4).length ? (
+                <div className="absolute right-2 top-2 flex gap-1 sm:right-3 sm:top-3">
+                  {dest.photos
+                    .filter((p) => !p.includes("images.unsplash.com"))
+                    .slice(1, 4)
+                    .map((img, i) => (
+                    <SafeImage
+                      key={`${dest.id}-${i}`}
+                      src={img}
+                      alt=""
+                      className="size-7 rounded-md object-cover ring-1 ring-primary-foreground/40 sm:size-10 sm:rounded-lg"
+                    />
+                  ))}
+                </div>
+              ) : null}
+              <div className="absolute inset-x-0 bottom-0 p-3 sm:p-5">
+                <h3 className="font-display text-base font-semibold text-primary-foreground sm:text-xl">
+                  {dest.flag} {dest.country}
+                </h3>
+                <p className="mt-1 line-clamp-2 text-xs text-primary-foreground/80 sm:text-sm">
+                  {dest.blurb}
+                </p>
+                <p className="mt-1.5 text-[10px] font-semibold uppercase tracking-wide text-primary-foreground/70 sm:mt-2 sm:text-xs">
+                  {dest.tours} предложений · {dest.city}
+                </p>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      <section className="container-page mt-16 md:mt-24">
+        <SectionHead
+          title="🔥 Горящие туры"
+          subtitle="Выгодные предложения на ближайшие даты"
+          action={
+            <Button variant="outline" asChild>
+              <Link to="/hot">
+                Все горящие
+                <ArrowRight className="size-4" />
+              </Link>
+            </Button>
+          }
+        />
+        <div className="mt-3 flex items-center gap-2 text-sm text-muted-foreground md:hidden">
+          <Flame className="size-4 text-primary" />
+          Свежие скидки на вылет
+        </div>
+        <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {hotTours.map((tour) => (
+            <TourCard key={tour.id} tour={tour} layout="grid" />
+          ))}
+        </div>
+        <div className="mt-6 md:hidden">
+          <Button variant="outline" className="w-full" asChild>
+            <Link to="/hot">Смотреть все горящие туры</Link>
+          </Button>
+        </div>
+      </section>
+
+      <HomeFeaturedTours />
+
+      <section className="container-page mt-16 md:mt-24">
+        <div className="grid gap-5 md:grid-cols-2">
+          <Link
+            to="/excursions"
+            className="group relative overflow-hidden rounded-3xl"
+          >
+            <SafeImage
+              src={destPhoto("uae", 2)}
+              alt=""
+              className="absolute inset-0 size-full object-cover transition-transform duration-700 group-hover:scale-105"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/45 to-ink/15" />
+            <div className="relative flex h-full min-h-[260px] flex-col justify-end p-6 md:p-8">
+              <h3 className="font-display text-xl font-semibold text-primary-foreground">
+                Экскурсии
+              </h3>
+              <p className="mt-2 text-sm text-primary-foreground/80">
+                Сафари, яхты, обзор города, парки и билеты. Цены от разных компаний рядом.
+              </p>
+              <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-primary-foreground">
+                Смотреть экскурсии
+                <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
+              </span>
+            </div>
+          </Link>
+
+          <Link
+            to="/assistance"
+            className="group relative overflow-hidden rounded-3xl"
+          >
+            <SafeImage
+              src={destPhoto("turkey", 0)}
+              alt=""
+              className="absolute inset-0 size-full object-cover transition-transform duration-700 group-hover:scale-105"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/45 to-ink/15" />
+            <div className="relative flex h-full min-h-[260px] flex-col justify-end p-6 md:p-8">
+              <h3 className="font-display text-xl font-semibold text-primary-foreground">
+                Уже в поездке?
+              </h3>
+              <p className="mt-2 text-sm text-primary-foreground/80">
+                Нужна машина, гид или билеты на сегодня? Компании в городе пришлют цены.
+              </p>
+              <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-primary-foreground">
+                Попросить помощь
+                <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
+              </span>
+            </div>
+          </Link>
+        </div>
+      </section>
 
       {!compactApp ? (
       <section className="container-page mt-10 md:mt-14">
@@ -260,38 +400,70 @@ function Index() {
       </section>
       ) : null}
 
+      {!compactApp ? (
+      <>
       <section className="container-page mt-16 md:mt-24">
-        <SectionHead
-          title="🔥 Горящие туры"
-          subtitle="Выгодные предложения на ближайшие даты"
-          action={
-            <Button variant="outline" asChild>
-              <Link to="/hot">
-                Все горящие
-                <ArrowRight className="size-4" />
-              </Link>
-            </Button>
-          }
-        />
-        <div className="mt-3 flex items-center gap-2 text-sm text-muted-foreground md:hidden">
-          <Flame className="size-4 text-primary" />
-          Свежие скидки на вылет
-        </div>
-        <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {hotTours.map((tour) => (
-            <TourCard key={tour.id} tour={tour} layout="grid" />
-          ))}
-        </div>
-        <div className="mt-6 md:hidden">
-          <Button variant="outline" className="w-full" asChild>
-            <Link to="/hot">Смотреть все горящие туры</Link>
-          </Button>
+        <div className="overflow-hidden rounded-[2rem] bg-ink text-primary-foreground">
+          <div className="grid gap-8 p-6 md:grid-cols-[minmax(0,1fr)_auto] md:items-end md:p-10">
+            <div>
+              <p className="text-xs font-semibold tracking-[0.18em] text-primary-foreground/70 uppercase">
+                Как это работает
+              </p>
+              <h2 className="mt-3 max-w-xl font-display text-3xl font-semibold tracking-tight md:text-4xl">
+                Три шага. Без десяти чатов.
+              </h2>
+              <p className="mt-3 max-w-xl text-sm text-primary-foreground/75 md:text-base">
+                Ищете сами или оставляете заявку. Сравниваете предложения. Платите компании,
+                которую выбрали.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <Button
+                size="lg"
+                variant="secondary"
+                className="bg-primary-foreground text-ink hover:bg-primary-foreground/90"
+                asChild
+              >
+                <a href="#search">Найти тур</a>
+              </Button>
+              <Button
+                size="lg"
+                variant="secondary"
+                className="bg-primary-foreground/12 text-primary-foreground hover:bg-primary-foreground/20"
+                asChild
+              >
+                <Link to="/request" search={{}}>
+                  Оставить заявку
+                </Link>
+              </Button>
+            </div>
+          </div>
+
+          <ol className="grid border-t border-primary-foreground/10 md:grid-cols-3">
+            {steps.map((step, index) => (
+              <li
+                key={step.n}
+                className={cn(
+                  "relative p-6 md:p-8",
+                  index > 0 && "border-t border-primary-foreground/10 md:border-t-0 md:border-l",
+                )}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="grid size-11 place-items-center rounded-2xl bg-primary-foreground/12">
+                    <step.icon className="size-5" />
+                  </span>
+                  <span className="font-display text-4xl font-semibold text-primary-foreground/20">
+                    {step.n}
+                  </span>
+                </div>
+                <h3 className="mt-6 font-display text-xl font-semibold">{step.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-primary-foreground/75">{step.text}</p>
+              </li>
+            ))}
+          </ol>
         </div>
       </section>
 
-      {!compactApp ? <HomeFeaturedTours /> : null}
-
-      {!compactApp ? (
       <section className="mt-16 md:mt-24">
         <div className="container-page">
           <p className="text-sm font-semibold tracking-[0.18em] text-primary uppercase">Почему TourGo</p>
@@ -415,171 +587,6 @@ function Index() {
               ))}
             </ul>
           </div>
-        </div>
-      </section>
-      ) : null}
-
-      <section className="container-page mt-16 md:mt-24">
-        <SectionHead title="Популярные направления" />
-        <div className="mt-8 grid grid-cols-2 gap-3 md:gap-4">
-          {destinations.map((dest) => (
-            <Link
-              key={dest.id}
-              to="/destination/$destinationId"
-              params={{ destinationId: dest.id }}
-              className="hover-lift group relative overflow-hidden rounded-3xl"
-            >
-              <img
-                src={dest.image}
-                alt={dest.country}
-                loading="lazy"
-                className="h-48 w-full object-cover transition-transform duration-700 group-hover:scale-105 sm:h-64 md:h-72 lg:h-80"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/25 to-transparent" />
-              {dest.photos?.filter((p) => !p.includes("images.unsplash.com")).slice(1, 4).length ? (
-                <div className="absolute right-2 top-2 flex gap-1 sm:right-3 sm:top-3">
-                  {dest.photos
-                    .filter((p) => !p.includes("images.unsplash.com"))
-                    .slice(1, 4)
-                    .map((img, i) => (
-                    <SafeImage
-                      key={`${dest.id}-${i}`}
-                      src={img}
-                      alt=""
-                      className="size-7 rounded-md object-cover ring-1 ring-primary-foreground/40 sm:size-10 sm:rounded-lg"
-                    />
-                  ))}
-                </div>
-              ) : null}
-              <div className="absolute inset-x-0 bottom-0 p-3 sm:p-5">
-                <h3 className="font-display text-base font-semibold text-primary-foreground sm:text-xl">
-                  {dest.flag} {dest.country}
-                </h3>
-                <p className="mt-1 line-clamp-2 text-xs text-primary-foreground/80 sm:text-sm">
-                  {dest.blurb}
-                </p>
-                <p className="mt-1.5 text-[10px] font-semibold uppercase tracking-wide text-primary-foreground/70 sm:mt-2 sm:text-xs">
-                  {dest.tours} предложений · {dest.city}
-                </p>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      <section className="container-page mt-16 md:mt-24">
-        <div className="grid gap-5 md:grid-cols-2">
-          <Link
-            to="/excursions"
-            className="group relative overflow-hidden rounded-3xl"
-          >
-            <SafeImage
-              src={destPhoto("uae", 2)}
-              alt=""
-              className="absolute inset-0 size-full object-cover transition-transform duration-700 group-hover:scale-105"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/45 to-ink/15" />
-            <div className="relative flex h-full min-h-[260px] flex-col justify-end p-6 md:p-8">
-              <h3 className="font-display text-xl font-semibold text-primary-foreground">
-                Экскурсии
-              </h3>
-              <p className="mt-2 text-sm text-primary-foreground/80">
-                Сафари, яхты, обзор города, парки и билеты. Цены от разных компаний рядом.
-              </p>
-              <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-primary-foreground">
-                Смотреть экскурсии
-                <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
-              </span>
-            </div>
-          </Link>
-
-          <Link
-            to="/assistance"
-            className="group relative overflow-hidden rounded-3xl"
-          >
-            <SafeImage
-              src={destPhoto("turkey", 0)}
-              alt=""
-              className="absolute inset-0 size-full object-cover transition-transform duration-700 group-hover:scale-105"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/45 to-ink/15" />
-            <div className="relative flex h-full min-h-[260px] flex-col justify-end p-6 md:p-8">
-              <h3 className="font-display text-xl font-semibold text-primary-foreground">
-                Уже в поездке?
-              </h3>
-              <p className="mt-2 text-sm text-primary-foreground/80">
-                Нужна машина, гид или билеты на сегодня? Компании в городе пришлют цены.
-              </p>
-              <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-primary-foreground">
-                Попросить помощь
-                <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
-              </span>
-            </div>
-          </Link>
-        </div>
-      </section>
-
-      {!compactApp ? (
-      <>
-      <section className="container-page mt-16 md:mt-24">
-        <div className="overflow-hidden rounded-[2rem] bg-ink text-primary-foreground">
-          <div className="grid gap-8 p-6 md:grid-cols-[minmax(0,1fr)_auto] md:items-end md:p-10">
-            <div>
-              <p className="text-xs font-semibold tracking-[0.18em] text-primary-foreground/70 uppercase">
-                Как это работает
-              </p>
-              <h2 className="mt-3 max-w-xl font-display text-3xl font-semibold tracking-tight md:text-4xl">
-                Три шага. Без десяти чатов.
-              </h2>
-              <p className="mt-3 max-w-xl text-sm text-primary-foreground/75 md:text-base">
-                Ищете сами или оставляете заявку. Сравниваете предложения. Платите компании,
-                которую выбрали.
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-3">
-              <Button
-                size="lg"
-                variant="secondary"
-                className="bg-primary-foreground text-ink hover:bg-primary-foreground/90"
-                asChild
-              >
-                <a href="#search">Найти тур</a>
-              </Button>
-              <Button
-                size="lg"
-                variant="secondary"
-                className="bg-primary-foreground/12 text-primary-foreground hover:bg-primary-foreground/20"
-                asChild
-              >
-                <Link to="/request" search={{}}>
-                  Оставить заявку
-                </Link>
-              </Button>
-            </div>
-          </div>
-
-          <ol className="grid border-t border-primary-foreground/10 md:grid-cols-3">
-            {steps.map((step, index) => (
-              <li
-                key={step.n}
-                className={cn(
-                  "relative p-6 md:p-8",
-                  index > 0 && "border-t border-primary-foreground/10 md:border-t-0 md:border-l",
-                )}
-              >
-                <div className="flex items-center justify-between">
-                  <span className="grid size-11 place-items-center rounded-2xl bg-primary-foreground/12">
-                    <step.icon className="size-5" />
-                  </span>
-                  <span className="font-display text-4xl font-semibold text-primary-foreground/20">
-                    {step.n}
-                  </span>
-                </div>
-                <h3 className="mt-6 font-display text-xl font-semibold">{step.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-primary-foreground/75">{step.text}</p>
-              </li>
-            ))}
-          </ol>
         </div>
       </section>
 

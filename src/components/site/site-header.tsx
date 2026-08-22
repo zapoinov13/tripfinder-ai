@@ -10,8 +10,8 @@ import { cn } from "@/lib/utils";
 const nav: Array<{ label: string; to: string; exact?: boolean }> = [
   { label: "Главная", to: "/", exact: true },
   { label: "Туры", to: "/search" },
-  { label: "Экскурсии", to: "/excursions" },
-  { label: "Помощь в поездке", to: "/assistance" },
+  { label: "Направления", to: "/destinations" },
+  { label: "Заявка", to: "/request" },
 ];
 
 export function SiteHeader({ compact = false }: { compact?: boolean }) {
@@ -191,6 +191,8 @@ export function SiteHeader({ compact = false }: { compact?: boolean }) {
                   <nav className="mt-2 flex flex-col gap-1 px-4">
                     {[
                       ...nav,
+                      { label: "Экскурсии", to: "/excursions" },
+                      { label: "Помощь в поездке", to: "/assistance" },
                       { label: "Избранное", to: "/favorites" },
                       { label: "Горящие туры", to: "/hot" },
                       { label: "Для турфирм", to: "/for-companies" },

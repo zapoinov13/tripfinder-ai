@@ -8,9 +8,11 @@ const columns = [
     title: "Путешествия",
     links: [
       { label: "Все туры", to: "/search" },
+      { label: "Направления", to: "/destinations" },
+      { label: "Горящие туры", to: "/hot" },
       { label: "Экскурсии", to: "/excursions" },
       { label: "Уже в поездке", to: "/assistance" },
-      { label: "Горящие туры", to: "/hot" },
+      { label: "Оставить заявку", to: "/request" },
     ],
   },
   {
