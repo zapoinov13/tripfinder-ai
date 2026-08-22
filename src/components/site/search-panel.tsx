@@ -299,7 +299,7 @@ export function SearchPanel({
       {tab === "classic" ? (
         <div className="p-3 md:p-4">
           <div className="grid grid-cols-2 gap-2 md:grid-cols-2 xl:grid-cols-[repeat(4,minmax(0,1fr))_auto]">
-            <div className="col-span-2 w-full min-w-0 md:col-span-1 [&>*]:w-full">
+            <div className="col-span-2 w-full min-w-0 md:col-span-1 [&_button]:w-full">
               <SelectField
                 label="Откуда"
                 value={from}
@@ -307,7 +307,7 @@ export function SearchPanel({
                 onChange={setFrom}
               />
             </div>
-            <div className="col-span-2 w-full min-w-0 md:col-span-1 [&>*]:w-full">
+            <div className="col-span-2 w-full min-w-0 md:col-span-1 [&_button]:w-full">
               <SelectField label="Куда" value={to} options={destinationOptions} onChange={setTo} />
             </div>
 
