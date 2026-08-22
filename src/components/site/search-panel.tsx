@@ -284,14 +284,16 @@ export function SearchPanel({
           type="button"
           onClick={() => setTab("ai")}
           className={cn(
-            "flex-1 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors",
+            "flex flex-1 items-center justify-center gap-1.5 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors",
             tab === "ai"
               ? "gradient-ai text-primary-foreground shadow-card"
               : "text-muted-foreground",
           )}
         >
-          ✨ Умный поиск
+          <Sparkles className="size-4" />
+          Умный поиск
         </button>
+
       </div>
 
       {tab === "classic" ? (
