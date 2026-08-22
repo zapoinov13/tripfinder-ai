@@ -609,7 +609,7 @@ function SearchPage() {
         </div>
       </div>
 
-      <div className="sticky top-16 z-30 border-b border-border/70 bg-background/90 backdrop-blur-xl md:top-[72px]">
+      <div className="border-b border-border/70 bg-background/90 md:sticky md:top-[72px] md:z-30 md:backdrop-blur-xl">
         <div className="container-page py-3">
           <ToursSearchBar params={params} update={update} />
         </div>
