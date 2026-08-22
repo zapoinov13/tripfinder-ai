@@ -74,6 +74,13 @@ const steps = [
   },
 ];
 
+const heroFacts = [
+  { icon: Users, value: "40+", label: "турфирм в подборке" },
+  { icon: Scale, value: "0 ₸", label: "комиссии для туриста" },
+  { icon: Flame, value: "1 200+", label: "актуальных туров" },
+];
+
+
 function Index() {
   return (
     <SiteLayout>
