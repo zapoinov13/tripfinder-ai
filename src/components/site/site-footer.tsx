@@ -50,7 +50,7 @@ export function SiteFooter() {
             </Link>
             <p className="mt-4 text-sm text-primary-foreground/70 md:text-base">
               Сравнивайте туры от разных компаний в одном месте. Выбирайте лучшую цену и платите
-              напрямую турфирме — не «сайту-посреднику».
+              напрямую турфирме, не «сайту-посреднику».
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
@@ -87,7 +87,7 @@ export function SiteFooter() {
                   <li key={`${link.label}-${i}`}>
                     <Link
                       to={link.to}
-                      {...("hash" in link && link.hash ? { hash: link.hash } : {})}
+                      {..("hash" in link && link.hash ? { hash: link.hash } : {})}
                       className="text-sm text-primary-foreground/75 transition-colors hover:text-primary-foreground"
                     >
                       {link.label}
@@ -117,7 +117,7 @@ export function SiteFooter() {
 
       <div className="border-t border-primary-foreground/10">
         <div className="container-page flex flex-col gap-2 py-5 text-xs text-primary-foreground/50 sm:flex-row sm:items-center sm:justify-between">
-          <p>© 2026 TourGo. Туры продают компании — мы помогаем их сравнить.</p>
+          <p>© 2026 TourGo. Туры продают компании. Мы помогаем их сравнить.</p>
           <p>Поиск и заявка бесплатные для туриста.</p>
         </div>
       </div>

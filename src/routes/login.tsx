@@ -42,7 +42,7 @@ function LoginPage() {
   return (
     <AuthLayout
       title="Войти в TourGo"
-      subtitle="Личный кабинет туриста или турфирмы — заявки, избранное и переписка."
+      subtitle="Личный кабинет туриста или турфирмы: заявки, избранное и переписка."
     >
       <form
         className="space-y-4"

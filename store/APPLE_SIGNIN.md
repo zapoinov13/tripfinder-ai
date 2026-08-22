@@ -1,4 +1,4 @@
-# Apple Sign-In — настройка (после Apple Developer $99)
+# Apple Sign-In. настройка (после Apple Developer $99)
 
 Кнопка уже в приложении. Чтобы модератор App Store мог войти через Apple:
 
@@ -29,4 +29,4 @@ Entitlements уже содержат `com.apple.developer.applesignin`.
 2. Login → «Войти через Apple»
 3. Должен создаться пользователь в Supabase Auth
 
-Если OAuth не настроен — review-логины email/password всё равно работают (`store/review-notes.txt`).
+Если OAuth не настроен. review-логины email/password всё равно работают (`store/review-notes.txt`).

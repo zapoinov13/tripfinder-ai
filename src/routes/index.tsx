@@ -31,15 +31,15 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "TourGo — сравните туры от разных компаний и выберите лучшую цену" },
+      { title: "TourGo: сравните туры от разных компаний и выберите лучшую цену" },
       {
         name: "description",
         content:
-          "Готовые туры в одном каталоге или одна заявка нескольким турфирмам. Сравнивайте цены, отели и условия — платите напрямую выбранной компании.",
+          "Готовые туры в одном каталоге или одна заявка нескольким турфирмам. Сравнивайте цены, отели и условия. Платите напрямую выбранной компании.",
       },
       {
         property: "og:title",
-        content: "TourGo — сравните туры от разных компаний и выберите лучшую цену",
+        content: "TourGo: сравните туры от разных компаний и выберите лучшую цену",
       },
       {
         property: "og:description",
@@ -55,7 +55,7 @@ export const Route = createFileRoute("/")({
 function destPhoto(id: string, index = 0) {
   const dest = destinations.find((d) => d.id === id);
   if (!dest) return heroImage;
-  const local = [dest.image, ...(dest.photos ?? [])].filter(
+  const local = [dest.image, ..(dest.photos ?? [])].filter(
     (src) => src && !src.includes("images.unsplash.com"),
   );
   return local[index] ?? local[0] ?? dest.image ?? heroImage;
@@ -66,19 +66,19 @@ const steps = [
     n: "01",
     icon: Search,
     title: "Ищете сами или пишете заявку",
-    text: "Откройте каталог туров — или опишите поездку один раз. Можно текстом или голосом.",
+    text: "Откройте каталог туров или опишите поездку один раз. Можно текстом или голосом.",
   },
   {
     n: "02",
     icon: Scale,
     title: "Смотрите цены рядом",
-    text: "Несколько турфирм предлагают варианты одной поездки. Отель, питание и цена — в одном списке.",
+    text: "Несколько турфирм предлагают варианты одной поездки. Отель, питание и цена в одном списке.",
   },
   {
     n: "03",
     icon: Handshake,
     title: "Бронируете у компании",
-    text: "Выбираете лучшее предложение и пишете фирме. Договор и оплата — напрямую ей, не через нас.",
+    text: "Выбираете лучшее предложение и пишете фирме. Договор и оплата напрямую ей, не через нас.",
   },
 ];
 
@@ -117,7 +117,7 @@ function Index() {
               <br className="hidden sm:block" /> и купите тур выгоднее
             </h1>
             <p className="mt-3 max-w-xl text-base text-primary-foreground drop-shadow-md md:mt-4 md:text-xl">
-              Готовые туры от разных турфирм — в одном каталоге. Или одна заявка: компании сами
+              Готовые туры от разных турфирм в одном каталоге. Или одна заявка: компании сами
               пришлют цены, вы выберете лучшую и оплатите напрямую фирме.
             </p>
 
@@ -145,7 +145,7 @@ function Index() {
                   search={{}}
                   className="font-semibold text-primary-foreground underline underline-offset-4"
                 >
-                  Оставьте заявку — турфирмы пришлют цены сами
+                  Оставьте заявку, турфирмы пришлют цены сами
                 </Link>
               </p>
               <div className="-mx-4 flex snap-x gap-2 overflow-x-auto px-4 pb-1 md:mx-0 md:px-0">
@@ -168,7 +168,7 @@ function Index() {
       <section className="container-page mt-10 md:mt-16">
         <SectionHead
           title="Куда едут чаще всего"
-          subtitle="Откройте страну — внутри туры от разных компаний с ценами рядом"
+          subtitle="Откройте страну: внутри туры от разных компаний с ценами рядом"
           action={
             <Button variant="outline" asChild>
               <Link to="/destinations">
@@ -224,7 +224,7 @@ function Index() {
 
       <section className="container-page mt-16 md:mt-24">
         <SectionHead
-          title="Горящие туры — успейте на скидку"
+          title="Горящие туры: успейте на скидку"
           subtitle="Вылеты в ближайшие даты: компании уже снизили цену"
           action={
             <Button variant="outline" asChild>
@@ -417,7 +417,7 @@ function Index() {
                 Как устроен TourGo
               </p>
               <h2 className="mt-3 max-w-xl font-display text-3xl font-semibold tracking-tight md:text-4xl">
-                От идеи отпуска — до выбора турфирмы за три шага
+                От идеи отпуска до выбора турфирмы за три шага
               </h2>
               <p className="mt-3 max-w-xl text-sm text-primary-foreground/75 md:text-base">
                 Мы не продаём туры сами. Мы собираем предложения компаний, чтобы вы сравнили цены и
@@ -478,7 +478,7 @@ function Index() {
             Хватит собирать отпуск в десяти WhatsApp
           </h2>
           <p className="mt-4 max-w-2xl text-base text-muted-foreground md:text-lg">
-            Раньше вы писали знакомым агентам и ждали скрины прайсов. Здесь все ответы — в одном
+            Раньше вы писали знакомым агентам и ждали скрины прайсов. Здесь все ответы в одном
             окне: кто какую цену дал, какой отель и что входит.
           </p>
         </div>
@@ -500,7 +500,7 @@ function Index() {
                 Самый удобный способ
               </span>
               <h3 className="media-caption mt-4 font-display text-2xl font-semibold md:text-4xl">
-                Одна заявка — цены от нескольких турфирм
+                Одна заявка: цены от нескольких турфирм
               </h3>
               <p className="media-caption-muted mt-3 max-w-lg text-sm md:text-base">
                 Опишите куда, когда и бюджет. Подходящие компании пришлют свои варианты. Вы
@@ -529,7 +529,7 @@ function Index() {
                 Каталог как витрина, а не лента сторис
               </h3>
               <p className="media-caption-muted mt-2 text-sm">
-                Цена, питание, перелёт и название компании — сразу на карточке. Без скринов из чата.
+                Цена, питание, перелёт и название компании сразу на карточке. Без скринов из чата.
               </p>
             </div>
           </Link>
@@ -549,7 +549,7 @@ function Index() {
                 Платите турфирме, не «сайту»
               </h3>
               <p className="media-caption-muted mt-2 text-sm">
-                TourGo — витрина. Договор и деньги — у компании, которую выбрали вы.
+                TourGo: витрина. Договор и деньги у компании, которую выбрали вы.
               </p>
             </div>
           </Link>
@@ -564,7 +564,7 @@ function Index() {
               {[
                 { icon: MessageCircle, text: "Десять чатов, сторис и «скину прайс вечером»" },
                 { icon: Users, text: "Непонятно, кому можно доверять, а кто просто пишет" },
-                { icon: Scale, text: "Цены разбросаны — сравнить почти невозможно" },
+                { icon: Scale, text: "Цены разбросаны: сравнить почти невозможно" },
               ].map((item) => (
                 <li key={item.text} className="flex items-start gap-3 text-sm text-muted-foreground">
                   <span className="mt-0.5 grid size-8 shrink-0 place-items-center rounded-xl bg-card">
@@ -582,7 +582,7 @@ function Index() {
             <ul className="mt-5 space-y-4">
               {[
                 { icon: ShieldCheck, text: "Только компании с проверкой документов" },
-                { icon: Scale, text: "Отели, питание и цены — рядом, выбор за минуты" },
+                { icon: Scale, text: "Отели, питание и цены рядом, выбор за минуты" },
                 { icon: Mic, text: "Можно просто сказать голосом, какой отдых хотите" },
               ].map((item) => (
                 <li key={item.text} className="flex items-start gap-3 text-sm text-primary-foreground/90">
@@ -614,7 +614,7 @@ function Index() {
                 Туристы уже ищут отпуск. Покажите свою цену первыми
               </h2>
               <p className="mt-4 max-w-lg text-sm text-primary-foreground/80 md:text-base">
-                Заявки приходят в кабинет. Вы отвечаете предложением. Клиент ваш — оплата идёт вам,
+                Заявки приходят в кабинет. Вы отвечаете предложением. Клиент ваш, оплата идёт вам,
                 не платформе.
               </p>
               <div className="mt-7 flex flex-wrap gap-3">
@@ -643,7 +643,7 @@ function Index() {
               {[
                 {
                   title: "Заявки без холодных звонков",
-                  text: "Турист сам описал поездку — вы видите только подходящие запросы.",
+                  text: "Турист сам описал поездку, вы видите только подходящие запросы.",
                 },
                 {
                   title: "Клиент остаётся вашим",
@@ -651,7 +651,7 @@ function Index() {
                 },
                 {
                   title: "Страница с знаком доверия",
-                  text: "Фото, отзывы и проверка — турист видит, что вы настоящая компания.",
+                  text: "Фото, отзывы и проверка: турист видит, что вы настоящая компания.",
                 },
               ].map((item) => (
                 <li
@@ -694,7 +694,7 @@ function HomeFeaturedTours() {
     <section className="container-page mt-16 md:mt-24">
       <SectionHead
         title="Туры на главной"
-        subtitle="Компании подняли эти предложения повыше — сравните и выберите"
+        subtitle="Компании подняли эти предложения повыше. Сравните и выберите"
       />
       <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {tours.map((tour) => (

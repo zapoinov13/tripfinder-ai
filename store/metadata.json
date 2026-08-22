@@ -22,10 +22,10 @@
   "website": "https://tripfinder-ai.vercel.app",
   "locales": {
     "ru": {
-      "name": "TourGo — туры и предложения",
+      "name": "TourGo. туры и предложения",
       "subtitle": "Сравните туры от турфирм",
       "shortDescription": "Найдите тур или получите предложения от проверенных турфирм бесплатно.",
-      "description": "TourGo — маркетплейс путешествий. Ищите туры сами или оставьте одну заявку и получите предложения от нескольких проверенных турфирм.\n\n• Бесплатно для туристов\n• Сравнение цен в одном окне\n• Проверенные компании\n• Заявки, сообщения и поездки в профиле\n\nTourGo не продаёт туры — договор и оплата напрямую с выбранной компанией.",
+      "description": "TourGo. маркетплейс путешествий. Ищите туры сами или оставьте одну заявку и получите предложения от нескольких проверенных турфирм.\n\n• Бесплатно для туристов\n• Сравнение цен в одном окне\n• Проверенные компании\n• Заявки, сообщения и поездки в профиле\n\nTourGo не продаёт туры. договор и оплата напрямую с выбранной компанией.",
       "keywords": ["туры", "путешествия", "отдых", "турфирма", "заявка", "маркетплейс", "Travel"],
       "screenshots": [
         "Главная с поиском",
@@ -36,10 +36,10 @@
       ]
     },
     "en": {
-      "name": "TourGo — tours & offers",
+      "name": "TourGo. tours & offers",
       "subtitle": "Compare tours from agencies",
       "shortDescription": "Find a tour or get offers from verified travel agencies for free.",
-      "description": "TourGo is a travel marketplace. Search tours yourself or submit one request and get offers from multiple verified agencies.\n\n• Free for travelers\n• Compare prices in one place\n• Verified companies\n• Requests, messages and trips in your profile\n\nTourGo does not sell tours — you pay the agency you choose.",
+      "description": "TourGo is a travel marketplace. Search tours yourself or submit one request and get offers from multiple verified agencies.\n\n• Free for travelers\n• Compare prices in one place\n• Verified companies\n• Requests, messages and trips in your profile\n\nTourGo does not sell tours. you pay the agency you choose.",
       "keywords": ["travel", "tours", "vacation", "marketplace", "agency", "trip"]
     }
   },

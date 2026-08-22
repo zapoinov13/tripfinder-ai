@@ -1,4 +1,4 @@
-# TourGo — публикация в App Store и Google Play
+# TourGo. публикация в App Store и Google Play
 
 Всё, что можно подготовить в коде, уже сделано. Вам остаётся оплатить аккаунты и пройти мастера загрузки.
 
@@ -23,12 +23,12 @@
 npm run store:icons          # иконки + splash + feature graphic
 npm run store:screenshots    # скрины с production (?app=1)
 npm run store:assets         # всё сразу
-npm run cap:sync             # после иконок — sync в нативные проекты
+npm run cap:sync             # после иконок. sync в нативные проекты
 ```
 
 ---
 
-## Шаг 1 — Оплатить аккаунты (единственное обязательное с вашей стороны)
+## Шаг 1. Оплатить аккаунты (единственное обязательное с вашей стороны)
 
 | Store | Ссылка | Цена |
 |-------|--------|------|
@@ -37,7 +37,7 @@ npm run cap:sync             # после иконок — sync в нативн�
 
 ---
 
-## Шаг 2 — iOS (после Apple Developer)
+## Шаг 2. iOS (после Apple Developer)
 
 1. **App Store Connect** → My Apps → **+** → New App  
    - Name: `TourGo`  
@@ -54,12 +54,12 @@ npm run cap:sync             # после иконок — sync в нативн�
    - Age: 4+
    - Тексты: из `store/metadata.json` → `locales.ru` и `locales.en`
 
-3. **App Privacy** (Nutrition Labels) — указать:
+3. **App Privacy** (Nutrition Labels). указать:
    - Email, имя (аккаунт)
    - Device ID (push, если включите позже)
    - Данные не продаются третьим лицам
 
-4. **Review Information** — вставить из `store/review-notes.txt`
+4. **Review Information**. вставить из `store/review-notes.txt`
 
 5. **Xcode** (на Mac):
    ```bash
@@ -76,7 +76,7 @@ npm run cap:sync             # после иконок — sync в нативн�
 
 ---
 
-## Шаг 3 — Android (после Google Play Console)
+## Шаг 3. Android (после Google Play Console)
 
 1. **Create app** → TourGo, default language Russian
 
@@ -91,10 +91,10 @@ npm run cap:sync             # после иконок — sync в нативн�
    - Privacy policy URL ✓
    - Ads: No (если нет рекламы)
    - Target audience: general
-   - **Data safety** — как в App Privacy (email, name, optional device token)
-   - **Content rating** — пройти опросник IARC (обычно Everyone / 3+)
+   - **Data safety**. как в App Privacy (email, name, optional device token)
+   - **Content rating**. пройти опросник IARC (обычно Everyone / 3+)
 
-4. **App access** — тестовые логины из `store/review-notes.txt`
+4. **App access**. тестовые логины из `store/review-notes.txt`
 
 5. **Release → Production**
    ```bash
@@ -106,7 +106,7 @@ npm run cap:sync             # после иконок — sync в нативн�
 
 ---
 
-## Шаг 4 — Supabase (для review-логинов и удаления аккаунта)
+## Шаг 4. Supabase (для review-логинов и удаления аккаунта)
 
 1. Review-пользователи:
    ```bash
@@ -121,7 +121,7 @@ npm run cap:sync             # после иконок — sync в нативн�
 3. Apple Sign-In: см. `store/APPLE_SIGNIN.md`
 4. Deep links: см. `store/DEEP_LINKS.md` (Team ID + SHA256 после enroll)
 
-Опционально (push позже): `supabase/migrations/20260822_device_tokens.sql` — уже применена у вас.
+Опционально (push позже): `supabase/migrations/20260822_device_tokens.sql`. уже применена у вас.
 
 ---
 

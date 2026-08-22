@@ -72,7 +72,7 @@ function TripsContent() {
         <div className="surface-card p-8 text-center">
           <p className="font-display text-lg font-semibold">Пока нет поездок</p>
           <p className="mt-2 text-sm text-muted-foreground">
-            Найдите тур в каталоге или оставьте заявку — турфирмы пришлют цены.
+            Найдите тур в каталоге или оставьте заявку, турфирмы пришлют цены.
           </p>
           <div className="mt-5 flex flex-wrap justify-center gap-3">
             <Button asChild>

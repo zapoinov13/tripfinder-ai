@@ -14,7 +14,7 @@ export const Route = createFileRoute("/profile/ai")({
 
 function AiHistoryPage() {
   return (
-    <TouristAccountGate kind="generic" title="История AI-поиска — после входа">
+    <TouristAccountGate kind="generic" title="История AI-поиска после входа">
       <AiHistoryContent />
     </TouristAccountGate>
   );

@@ -1,4 +1,4 @@
-# Deep links — финальная настройка
+# Deep links. финальная настройка
 
 Файлы уже лежат в `public/.well-known/` и деплоятся на Vercel.
 

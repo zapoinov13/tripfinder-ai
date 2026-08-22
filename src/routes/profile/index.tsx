@@ -208,7 +208,7 @@ function TouristCabinet() {
           <p className="mt-6 text-center text-xs text-muted-foreground">
             {locale === "kk"
               ? "Әкімші мен турфирма кабинеттері бөлек"
-              : "Кабинеты админа и турфирмы — отдельно"}
+              : "Кабинеты админа и турфирмы отдельно"}
           </p>
         </div>
       </div>

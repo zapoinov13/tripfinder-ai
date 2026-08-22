@@ -38,7 +38,7 @@ export const Route = createFileRoute("/profile/settings")({
 
 function SettingsPage() {
   return (
-    <TouristAccountGate kind="profile" title="Данные туриста — после входа">
+    <TouristAccountGate kind="profile" title="Данные туриста после входа">
       <SettingsContent />
     </TouristAccountGate>
   );
@@ -74,10 +74,10 @@ function SettingsContent() {
           <Button
             onClick={() => {
               setState((s) => ({
-                ...s,
+                ..s,
                 users: s.users.map((u) =>
                   u.id === user.id
-                    ? { ...u, name: name.trim() || u.name, city: city.trim() || u.city }
+                    ? { ..u, name: name.trim() || u.name, city: city.trim() || u.city }
                     : u,
                 ),
               }));
@@ -124,7 +124,7 @@ function SettingsContent() {
             <div className="min-w-0 flex-1">
               <h2 className="font-display text-lg font-semibold">Кабинет турфирмы</h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                Заявки, туры, сообщения и аналитика — в отдельном разделе оператора.
+                Заявки, туры, сообщения и аналитика в отдельном разделе оператора.
               </p>
               <Button className="mt-4" asChild>
                 <Link to="/operator">Открыть кабинет</Link>

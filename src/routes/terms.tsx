@@ -34,7 +34,7 @@ function TermsPage() {
           <h2 className="font-display text-lg font-semibold text-foreground">Для туристов</h2>
           <ul className="list-disc space-y-2 pl-5">
             <li>Поиск, сравнение и заявки на TourGo бесплатны.</li>
-            <li>Оплата тура — напрямую выбранной турфирме.</li>
+            <li>Оплата тура напрямую выбранной турфирме.</li>
             <li>Мы не гарантируем наличие мест: итоговую цену подтверждает компания.</li>
           </ul>
           <h2 className="font-display text-lg font-semibold text-foreground">Для турфирм</h2>

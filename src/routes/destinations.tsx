@@ -12,7 +12,7 @@ import { destinations } from "@/data/demo";
 export const Route = createFileRoute("/destinations")({
   head: () => ({
     meta: [
-      { title: "Направления — куда поехать · TourGo" },
+      { title: "Направления: куда поехать · TourGo" },
       {
         name: "description",
         content:
@@ -34,7 +34,7 @@ function DestinationsPage() {
       <div className="container-page py-10">
         <h1 className="font-display text-3xl font-semibold md:text-4xl">Куда поехать</h1>
         <p className="mt-2 max-w-2xl text-muted-foreground">
-          Выберите страну — внутри туры от разных компаний с ценами, отелями и питанием рядом.
+          Выберите страну: внутри туры от разных компаний с ценами, отелями и питанием рядом.
         </p>
         <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {destinations.map((dest) => (

@@ -80,7 +80,7 @@ function OperatorAnalyticsPage() {
 
   if (!allowed || !organization || !data) return null;
 
-  const sortedTours = [...data.topTours].sort((a, b) => {
+  const sortedTours = [..data.topTours].sort((a, b) => {
     if (tourSort === "bookings") return b.bookings - a.bookings;
     if (tourSort === "conversion") return b.conversion - a.conversion;
     return b.views - a.views;
@@ -131,14 +131,14 @@ function OperatorAnalyticsPage() {
         />
         <MetricCard
           label="Выручка"
-          value={data.paidBookings > 0 ? formatPrice(data.revenue) : "—"}
+          value={data.paidBookings > 0 ? formatPrice(data.revenue) : "-"}
           delta={period === 0 ? null : deltaLabel(data.revenue, data.revenuePrev)}
           up={data.revenue >= data.revenuePrev}
           hint={data.paidBookings > 0 ? `${data.paidBookings} оплат` : "оплат пока нет"}
         />
         <MetricCard
           label="Конверсия ответов"
-          value={data.offersSent ? `${Math.round(data.winRate)}%` : "—"}
+          value={data.offersSent ? `${Math.round(data.winRate)}%` : "-"}
           delta={null}
           up={data.winRate >= 25}
           hint={`${data.chosen} из ${data.offersSent} предложений`}
@@ -151,12 +151,12 @@ function OperatorAnalyticsPage() {
         <KpiCard label="Непрочитанные" value={String(data.unreadMessages)} hint="сообщения туристов" />
         <KpiCard
           label="Среднее время ответа"
-          value={data.avgResponseHours !== null ? `${data.avgResponseHours} ч` : "—"}
+          value={data.avgResponseHours !== null ? `${data.avgResponseHours} ч` : "-"}
           hint="от заявки до предложения"
         />
         <KpiCard
           label="Рейтинг компании"
-          value={data.rating ? `${data.rating.average} ★` : "—"}
+          value={data.rating ? `${data.rating.average} ★` : "-"}
           hint={data.rating ? `${data.rating.count} отзывов` : "отзывов пока нет"}
         />
       </div>
@@ -255,7 +255,7 @@ function OperatorAnalyticsPage() {
               <Eye className="size-10 text-muted-foreground" />
               <p className="mt-4 font-medium">За этот период событий пока мало</p>
               <p className="mt-1 max-w-md text-sm text-muted-foreground">
-                Опубликуйте туры, ответьте на заявки и включите продвижение — график заполнится
+                Опубликуйте туры, ответьте на заявки и включите продвижение, график заполнится
                 автоматически.
               </p>
               <div className="mt-4 flex flex-wrap justify-center gap-2">
@@ -274,7 +274,7 @@ function OperatorAnalyticsPage() {
       <section className="surface-card mt-6 p-6">
         <h2 className="font-display text-lg font-semibold">Воронка туриста</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Где теряется интерес. Цель — сократить путь от просмотра до оплаты.
+          Где теряется интерес. Цель: сократить путь от просмотра до оплаты.
         </p>
         <div className="mt-6 grid gap-2 lg:grid-cols-5">
           {data.funnel.map((step, i) => {
@@ -322,7 +322,7 @@ function OperatorAnalyticsPage() {
           </div>
           {sortedTours.length === 0 ? (
             <p className="p-6 text-sm text-muted-foreground">
-              Опубликуйте тур — здесь появятся цифры.
+              Опубликуйте тур, здесь появятся цифры.
             </p>
           ) : (
             <ul className="divide-y divide-border">

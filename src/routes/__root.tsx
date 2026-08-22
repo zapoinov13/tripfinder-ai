@@ -9,11 +9,11 @@ import {
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 
-import appCss from "../styles.css?url";
+import appCss from "./styles.css?url";
 import { NativeBootstrap } from "@/components/native/native-bootstrap";
 import { NativeNetworkBanner } from "@/components/native/network-banner";
 import { AppTabBar } from "@/components/site/app-tab-bar";
-import { reportLovableError } from "../lib/lovable-error-reporting";
+import { reportLovableError } from "./lib/lovable-error-reporting";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/lib/platform/auth";
 import { TourStateProvider } from "@/lib/tour-state";
@@ -89,7 +89,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
       { name: "apple-mobile-web-app-title", content: "TourGo" },
-      { title: "TourGo — сравните туры от разных компаний и выберите лучшую цену" },
+      { title: "TourGo: сравните туры от разных компаний и выберите лучшую цену" },
       {
         name: "description",
         content:
@@ -97,7 +97,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       {
         property: "og:title",
-        content: "TourGo — сравните туры от разных компаний и выберите лучшую цену",
+        content: "TourGo: сравните туры от разных компаний и выберите лучшую цену",
       },
       {
         property: "og:description",
@@ -109,7 +109,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:site", content: "@Lovable" },
       {
         name: "twitter:title",
-        content: "TourGo — сравните туры от разных компаний и выберите лучшую цену",
+        content: "TourGo: сравните туры от разных компаний и выберите лучшую цену",
       },
       {
         name: "twitter:description",

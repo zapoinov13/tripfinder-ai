@@ -62,7 +62,7 @@ function AdminPushPage() {
               setLastResult(summary);
               toast.success("Рассылка отправлена");
               if (!res.fcmConfigured) {
-                toast.message("FCM_SERVER_KEY не настроен — push на телефоны пока только in-app");
+                toast.message("FCM_SERVER_KEY не настроен: push на телефоны пока только in-app");
               }
             } finally {
               setBusy(false);

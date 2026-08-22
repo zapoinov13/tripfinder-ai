@@ -1,15 +1,15 @@
-# TourGo — мобильное приложение
+# TourGo. мобильное приложение
 
 Инструкция по сборке, тестированию и публикации iOS / Android без оплаты сторов на этапе разработки.
 
 ## Что уже настроено
 
-- **Capacitor 8** — оболочка iOS + Android (`ios/`, `android/`)
+- **Capacitor 8**. оболочка iOS + Android (`ios/`, `android/`)
 - **App ID:** `com.tourgo.app`
 - **Production URL:** приложение грузит `https://tripfinder-ai.vercel.app`
 - **Tab bar:** Главная · Поиск · Поездки · Профиль
 - **Компактный UI** в нативном приложении (без лишнего лендинга)
-- **Deep links:** `https://tripfinder-ai.vercel.app/...` и `tourgo://path`
+- **Deep links:** `https://tripfinder-ai.vercel.app/..` и `tourgo://path`
 - **Push (заготовка):** регистрация токена → таблица `device_tokens` в Supabase
 - **Юридические страницы:** `/privacy`, `/terms`
 - **Метаданные для сторов:** `store/metadata.json`
@@ -74,7 +74,7 @@ npm run cap:ios
 | Турист | tourist@test.tourgo.app | Test1234! |
 | Турфирма | operator@test.tourgo.app | Test1234! |
 
-Аккаунты уже в demo-seed — работают без Supabase. Для production Supabase см. `scripts/supabase-review-accounts.sql`.
+Аккаунты уже в demo-seed. работают без Supabase. Для production Supabase см. `scripts/supabase-review-accounts.sql`.
 
 ## Apple Sign-In
 

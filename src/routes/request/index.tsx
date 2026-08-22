@@ -20,19 +20,19 @@ type Search = { kind?: TripRequestKind; destination?: string; from?: string; cit
 
 export const Route = createFileRoute("/request/")({
   validateSearch: (search: Record<string, unknown>): Search => ({
-    ...(search["kind"] === "assistance" ? { kind: "assistance" as const } : {}),
-    ...(typeof search["destination"] === "string" ? { destination: search["destination"] } : {}),
-    ...(typeof search["from"] === "string" ? { from: search["from"] } : {}),
-    ...(typeof search["city"] === "string" ? { city: search["city"] } : {}),
-    ...(typeof search["wish"] === "string" ? { wish: search["wish"] } : {}),
+    ..(search["kind"] === "assistance" ? { kind: "assistance" as const } : {}),
+    ..(typeof search["destination"] === "string" ? { destination: search["destination"] } : {}),
+    ..(typeof search["from"] === "string" ? { from: search["from"] } : {}),
+    ..(typeof search["city"] === "string" ? { city: search["city"] } : {}),
+    ..(typeof search["wish"] === "string" ? { wish: search["wish"] } : {}),
   }),
   head: () => ({
     meta: [
-      { title: "Заявка турфирмам — получите несколько цен на одну поездку · TourGo" },
+      { title: "Заявка турфирмам: получите несколько цен на одну поездку · TourGo" },
       {
         name: "description",
         content:
-          "Опишите поездку один раз. Проверенные турфирмы пришлют свои варианты с ценой — сравните и выберите.",
+          "Опишите поездку один раз. Проверенные турфирмы пришлют свои варианты с ценой. Сравните и выберите.",
       },
     ],
   }),
@@ -110,13 +110,13 @@ function RequestPage() {
           </p>
           <h1 className="mt-2 font-display text-3xl font-semibold md:text-4xl">
             {kind === "assistance"
-              ? "Что нужно на месте — компании пришлют цены"
-              : "Одна заявка — цены от нескольких турфирм"}
+              ? "Что нужно на месте: компании пришлют цены"
+              : "Одна заявка: цены от нескольких турфирм"}
           </h1>
           <p className="mt-3 text-muted-foreground">
             {kind === "assistance"
               ? "Напишите, что срочно нужно: машина, гид, билеты. Компании в этой стране ответят с ценой."
-              : "Укажите куда, когда и бюджет. Подходящие компании пришлют варианты — вы сравните отель, состав и цену в одном окне."}
+              : "Укажите куда, когда и бюджет. Подходящие компании пришлют варианты, вы сравните отель, состав и цену в одном окне."}
           </p>
 
           <div className="surface-card mt-8 space-y-6 p-6 md:p-8">

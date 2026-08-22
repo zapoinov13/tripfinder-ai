@@ -6,7 +6,7 @@ import { operatorIdForOrg } from "./tour-editor";
 import { getState, nowIso, setState, uid } from "./store";
 import type { Currency, PlatformTour } from "./types";
 
-/** TourGo Supplier Feed v1 — companies export this from their system. */
+/** TourGo Supplier Feed v1. companies export this from their system. */
 export type SupplierFeedItem = {
   external_id: string;
   title: string;
@@ -198,7 +198,7 @@ export function parseSupplierFeed(input: unknown): {
   });
 
   return {
-    doc: { version: 1, currency, ...(updated_at ? { updated_at } : {}), tours },
+    doc: { version: 1, currency, ..(updated_at ? { updated_at } : {}), tours },
     errors,
   };
 }
@@ -250,7 +250,7 @@ function toPlatformTour(
     mealCode,
     meal: mealLabel(mealCode),
     price: item.price,
-    ...(item.old_price && item.old_price > item.price
+    ..(item.old_price && item.old_price > item.price
       ? { oldPrice: item.old_price }
       : existing?.oldPrice
         ? { oldPrice: existing.oldPrice }
@@ -297,7 +297,7 @@ export function applySupplierFeed(orgId: string, doc: SupplierFeedDocument): Fee
   const skipped = 0;
   const errors: string[] = [];
   const seen = new Set<string>();
-  const nextTours = [...state.tours];
+  const nextTours = [..state.tours];
   const hotelPatches: { id: string; name: string; destinationId: string; image?: string }[] = [];
 
   for (const item of doc.tours) {
@@ -326,12 +326,12 @@ export function applySupplierFeed(orgId: string, doc: SupplierFeedDocument): Fee
   }
 
   setState((s) => {
-    let hotels = [...s.hotels];
+    let hotels = [..s.hotels];
     for (const patch of hotelPatches) {
       const dest = destinations.find((d) => d.id === patch.destinationId) ?? destinations[0]!;
       const hi = hotels.findIndex((h) => h.id === patch.id);
       if (hi >= 0) {
-        hotels[hi] = { ...hotels[hi]!, name: patch.name, image: patch.image || hotels[hi]!.image };
+        hotels[hi] = { ..hotels[hi]!, name: patch.name, image: patch.image || hotels[hi]!.image };
       } else {
         hotels = [
           {
@@ -350,11 +350,11 @@ export function applySupplierFeed(orgId: string, doc: SupplierFeedDocument): Fee
             amenities: [],
             image: patch.image || dest.image,
           },
-          ...hotels,
+          ..hotels,
         ];
       }
     }
-    return { ...s, tours: nextTours, hotels };
+    return { ..s, tours: nextTours, hotels };
   });
 
   appendAudit({

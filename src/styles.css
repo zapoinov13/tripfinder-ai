@@ -1,5 +1,5 @@
 @import "tailwindcss" source(none);
-@source "../src";
+@source "./src";
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
@@ -246,7 +246,7 @@
   }
 }
 
-/** Dark bottom scrim for photo cards — keeps white captions readable on any image. */
+/** Dark bottom scrim for photo cards. keeps white captions readable on any image. */
 @utility media-scrim {
   background-image: linear-gradient(
     to top,

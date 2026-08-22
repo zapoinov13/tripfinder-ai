@@ -14,7 +14,7 @@
 
 Ошибка `already exists` при Run нормальна: иди к следующему файлу.
 
-**Если база уже частично залита** — не гоняй все 16 файлов с нуля. Выполни только недостающие шаги из таблицы (обычно **11 → 16**).
+**Если база уже частично залита**. не гоняй все 16 файлов с нуля. Выполни только недостающие шаги из таблицы (обычно **11 → 16**).
 
 ## Порядок SQL (строго сверху вниз)
 
@@ -38,14 +38,14 @@
 | 16 | `supabase/seed_companies.sql` | ещё 3 проверенные турфирмы |
 | 17 | `supabase/migrations/20260822_device_tokens.sql` | push-токены (идемпотентно) |
 
-## Edge Function — удаление аккаунта (App Store)
+## Edge Function. удаление аккаунта (App Store)
 
 ```bash
 # Локально с Supabase CLI (или Dashboard → Edge Functions → deploy)
 supabase functions deploy delete-account --project-ref mgyufoyornzbwvgdfojb
 ```
 
-Функция: `supabase/functions/delete-account` — удаляет пользователя из Auth + помечает profile.
+Функция: `supabase/functions/delete-account`. удаляет пользователя из Auth + помечает profile.
 
 ## Review-аккаунты для App Store / Play
 
@@ -67,23 +67,23 @@ npm run review:users
 | `function public.is_platform_admin() does not exist` | Шаг 3 перенёс хелперы в `private` | Перезапусти **11** `requests_and_offers.sql` (исправлен: использует `private.*`) |
 | `column "whatsapp" does not exist` | Шаг 13 до шага 11 | Сначала **11**, потом **13** `public_company_page.sql` |
 | `relation "public.trip_requests" does not exist` | Шаг 11 не выполнился | Сначала почини **11**, потом **12** |
-| `duplicate key … users_email_partial_key` | `zapoinov@bk.ru` уже есть в Auth | Перезапусти **14** `seed.sql` — подхватит существующего пользователя |
+| `duplicate key … users_email_partial_key` | `zapoinov@bk.ru` уже есть в Auth | Перезапусти **14** `seed.sql`. подхватит существующего пользователя |
 
 ## Env в Lovable
 
-**Secrets — не сюда.** Cloud → Secrets принимает только backend-ключи (`OPENAI_API_KEY`, `STRIPE_SECRET_KEY`).  
-Имена `VITE_*` и `SUPABASE_*` Lovable **запрещает** в Secrets — отсюда ваша ошибка.
+**Secrets. не сюда.** Cloud → Secrets принимает только backend-ключи (`OPENAI_API_KEY`, `STRIPE_SECRET_KEY`).  
+Имена `VITE_*` и `SUPABASE_*` Lovable **запрещает** в Secrets. отсюда ваша ошибка.
 
-### Способ 1 — подключить ваш Supabase (рекомендуется)
+### Способ 1. подключить ваш Supabase (рекомендуется)
 
 1. Lovable → проект **Voyage Finder** → **Cloud** (или **More → Cloud**)
 2. **Already have a Supabase project? Connect it here**
 3. Выберите организацию Supabase → проект **`mgyufoyornzbwvgdfojb`**
 4. **Connect** → **Publish**
 
-Lovable сам пропишет `VITE_SUPABASE_*` и server env. SQL вы уже залили в этот проект — повторно не нужно.
+Lovable сам пропишет `VITE_SUPABASE_*` и server env. SQL вы уже залили в этот проект. повторно не нужно.
 
-### Способ 2 — файл `.env` в редакторе кода
+### Способ 2. файл `.env` в редакторе кода
 
 Если connector не используете: в Lovable открой **Code** → файл **`.env`** (не Secrets!) и вставь:
 
@@ -97,11 +97,11 @@ SUPABASE_PUBLISHABLE_KEY=<тот же publishable key>
 
 Publishable key: [Supabase → Settings → API](https://supabase.com/dashboard/project/mgyufoyornzbwvgdfojb/settings/api).
 
-После сохранения — **Publish**.
+После сохранения. **Publish**.
 
 ### Vercel (если деплоите отдельно)
 
-Project Settings → **Environment Variables** — там можно добавить и `VITE_*`, и остальное.
+Project Settings → **Environment Variables**. там можно добавить и `VITE_*`, и остальное.
 
 Локально: `.env` и `.env.local` → **`mgyufoyornzbwvgdfojb`** (не `hpernnwfdlpfaaphofmg`).
 

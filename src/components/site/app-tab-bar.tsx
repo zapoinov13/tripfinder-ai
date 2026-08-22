@@ -5,7 +5,7 @@ import { useShowAppTabBar } from "@/hooks/use-native-app";
 import { cn } from "@/lib/utils";
 
 /**
- * App bottom tabs — tourist flow only.
+ * App bottom tabs. tourist flow only.
  * Главная → каталог/туры → поездки (аккаунт) → профиль.
  */
 const tabs = [

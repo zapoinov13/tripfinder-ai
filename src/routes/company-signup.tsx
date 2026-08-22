@@ -32,11 +32,11 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/company-signup")({
   head: () => ({
     meta: [
-      { title: "Добавить турфирму — получать заявки от туристов · TourGo" },
+      { title: "Добавить турфирму: получать заявки от туристов · TourGo" },
       {
         name: "description",
         content:
-          "Откройте кабинет: туристы оставляют заявки, вы отвечаете ценой. Клиент и оплата — ваши.",
+          "Откройте кабинет: туристы оставляют заявки, вы отвечаете ценой. Клиент и оплата - ваши.",
       },
     ],
   }),
@@ -101,7 +101,7 @@ function CompanySignupPage() {
   const [verificationFiles, setVerificationFiles] = useState<CompanyVerificationFile[]>([]);
 
   const toggle = (list: string[], set: (v: string[]) => void, value: string) =>
-    set(list.includes(value) ? list.filter((v) => v !== value) : [...list, value]);
+    set(list.includes(value) ? list.filter((v) => v !== value) : [..list, value]);
 
   const canContinue = () => {
     if (step === 0) {
@@ -129,7 +129,7 @@ function CompanySignupPage() {
     const res = await registerOperator({
       name: contactPerson || company.name,
       email: person.email,
-      ...(person.password ? { password: person.password } : {}),
+      ..(person.password ? { password: person.password } : {}),
       company: {
         name: company.name,
         legalName: company.legalName || company.name,
@@ -223,21 +223,21 @@ function CompanySignupPage() {
                   id="first-name"
                   label="Имя"
                   value={person.firstName}
-                  onChange={(v) => setPerson({ ...person, firstName: v })}
+                  onChange={(v) => setPerson({ ..person, firstName: v })}
                   placeholder="Алишер"
                 />
                 <Field
                   id="last-name"
                   label="Фамилия"
                   value={person.lastName}
-                  onChange={(v) => setPerson({ ...person, lastName: v })}
+                  onChange={(v) => setPerson({ ..person, lastName: v })}
                 />
                 <div className="space-y-2">
                   <Label htmlFor="person-phone">Телефон или WhatsApp</Label>
                   <PhoneInput
                     id="person-phone"
                     value={person.phone}
-                    onChange={(phone) => setPerson({ ...person, phone })}
+                    onChange={(phone) => setPerson({ ..person, phone })}
                   />
                 </div>
                 <Field
@@ -245,7 +245,7 @@ function CompanySignupPage() {
                   label="Электронная почта"
                   type="email"
                   value={person.email}
-                  onChange={(v) => setPerson({ ...person, email: v })}
+                  onChange={(v) => setPerson({ ..person, email: v })}
                   placeholder="you@company.kz"
                 />
                 <div className="sm:col-span-2">
@@ -254,7 +254,7 @@ function CompanySignupPage() {
                     label="Пароль для входа"
                     type="password"
                     value={person.password}
-                    onChange={(v) => setPerson({ ...person, password: v })}
+                    onChange={(v) => setPerson({ ..person, password: v })}
                     hint="Минимум 8 символов. Если оставить пустым, кабинет всё равно откроется."
                   />
                 </div>
@@ -267,39 +267,39 @@ function CompanySignupPage() {
                   id="company-name"
                   label="Название компании"
                   value={company.name}
-                  onChange={(v) => setCompany({ ...company, name: v })}
+                  onChange={(v) => setCompany({ ..company, name: v })}
                   placeholder="Dubai Travel"
                 />
                 <Field
                   id="company-country"
                   label="Страна офиса"
                   value={company.country}
-                  onChange={(v) => setCompany({ ...company, country: v })}
+                  onChange={(v) => setCompany({ ..company, country: v })}
                 />
                 <Field
                   id="company-city"
                   label="Город"
                   value={company.city}
-                  onChange={(v) => setCompany({ ...company, city: v })}
+                  onChange={(v) => setCompany({ ..company, city: v })}
                 />
                 <Field
                   id="company-legal"
                   label="Юридическое название"
                   value={company.legalName}
-                  onChange={(v) => setCompany({ ...company, legalName: v })}
+                  onChange={(v) => setCompany({ ..company, legalName: v })}
                 />
                 <Field
                   id="company-reg"
                   label="БИН или регистрационный номер"
                   value={company.registrationNumber}
-                  onChange={(v) => setCompany({ ...company, registrationNumber: v })}
+                  onChange={(v) => setCompany({ ..company, registrationNumber: v })}
                 />
                 <div className="space-y-2">
                   <Label htmlFor="company-phone">Телефон компании</Label>
                   <PhoneInput
                     id="company-phone"
                     value={company.phone}
-                    onChange={(phone) => setCompany({ ...company, phone })}
+                    onChange={(phone) => setCompany({ ..company, phone })}
                   />
                 </div>
                 <Field
@@ -307,13 +307,13 @@ function CompanySignupPage() {
                   label="Почта компании"
                   type="email"
                   value={company.email}
-                  onChange={(v) => setCompany({ ...company, email: v })}
+                  onChange={(v) => setCompany({ ..company, email: v })}
                 />
                 <Field
                   id="company-site"
                   label="Сайт"
                   value={company.website}
-                  onChange={(v) => setCompany({ ...company, website: v })}
+                  onChange={(v) => setCompany({ ..company, website: v })}
                   placeholder="https://"
                 />
                 <div className="space-y-2 sm:col-span-2">
@@ -322,7 +322,7 @@ function CompanySignupPage() {
                     id="company-about"
                     rows={3}
                     value={company.about}
-                    onChange={(e) => setCompany({ ...company, about: e.target.value })}
+                    onChange={(e) => setCompany({ ..company, about: e.target.value })}
                     placeholder="Работаем в Дубае с 2018 года. Семейные поездки, экскурсии, трансферы."
                   />
                 </div>

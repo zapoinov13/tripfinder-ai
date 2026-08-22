@@ -28,7 +28,7 @@ const fmtDate = (iso: string) =>
 
 function TouristMessagesPage() {
   return (
-    <TouristAccountGate kind="generic" title="Сообщения с турфирмами — после входа">
+    <TouristAccountGate kind="generic" title="Сообщения с турфирмами после входа">
       <MessagesContent />
     </TouristAccountGate>
   );

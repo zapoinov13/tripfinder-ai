@@ -12,11 +12,11 @@
 
 ## Формат
 
-См. пример: [`/public/supplier-feed.example.json`](../public/supplier-feed.example.json)
+См. пример: [`/public/supplier-feed.example.json`](./public/supplier-feed.example.json)
 
 Обязательные поля тура: `external_id`, `title`, `hotel_name`, `price`.
 
-`external_id` стабилен у вас — по нему TourGo обновляет карточку, а не создаёт дубликат.
+`external_id` стабилен у вас. по нему TourGo обновляет карточку, а не создаёт дубликат.
 
 ## Подключение
 
@@ -33,4 +33,4 @@ supabase functions deploy sync-supplier-feed --project-ref mgyufoyornzbwvgdfojb
 
 ## Telegram (черновик)
 
-В «Добавить тур» → из Telegram: вставьте текст поста / ссылку `t.me/...` / описание с ценой и отелем. Система соберёт черновик; перед публикацией проверьте поля. Полноценный бот (авто-посты из канала) — следующий этап на том же `TourDraft`.
+В «Добавить тур» → из Telegram: вставьте текст поста / ссылку `t.me/..` / описание с ценой и отелем. Система соберёт черновик; перед публикацией проверьте поля. Полноценный бот (авто-посты из канала). следующий этап на том же `TourDraft`.

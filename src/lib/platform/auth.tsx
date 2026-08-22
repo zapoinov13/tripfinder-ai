@@ -55,7 +55,7 @@ type AuthCtx = {
       | "createdAt"
     >;
   }) => Promise<AuthResult>;
-  hasRole: (...roles: Role[]) => boolean;
+  hasRole: (..roles: Role[]) => boolean;
   hasPermission: (permission: string) => boolean;
   purchasePremium: () => Promise<AuthResult>;
 };
@@ -83,13 +83,13 @@ function upsertLocalUser(profile: {
     city: profile.city,
     role: profile.role,
     status: profile.status ?? "active",
-    ...(profile.organization_id ? { organizationId: profile.organization_id } : {}),
+    ..(profile.organization_id ? { organizationId: profile.organization_id } : {}),
     createdAt: nowIso(),
   };
   setState(
     (s) => ({
-      ...s,
-      users: [...s.users.filter((u) => u.id !== user.id && u.email !== user.email), user],
+      ..s,
+      users: [..s.users.filter((u) => u.id !== user.id && u.email !== user.email), user],
       session: { userId: user.id, createdAt: nowIso() },
     }),
     { silent: true },
@@ -157,7 +157,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const syncSession = async (userId: string | undefined) => {
       if (!userId) {
-        setState((s) => ({ ...s, session: null }), { silent: true });
+        setState((s) => ({ ..s, session: null }), { silent: true });
         return;
       }
       const profile = await fetchProfile(userId);
@@ -224,7 +224,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         );
         if (local && local.password === password && local.status !== "suspended") {
           setState((s) => ({
-            ...s,
+            ..s,
             session: { userId: local.id, createdAt: nowIso() },
           }));
           appendAudit({
@@ -246,7 +246,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       if (profile) upsertLocalUser(profile);
       else {
-        // profile trigger may lag — keep session with auth metadata
+        // profile trigger may lag. keep session with auth metadata
         upsertLocalUser({
           id: data.user.id,
           email: data.user.email ?? email.trim().toLowerCase(),
@@ -278,7 +278,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { ok: false, error: "Аккаунт приостановлен" };
     }
     setState((s) => ({
-      ...s,
+      ..s,
       session: { userId: found.id, createdAt: nowIso() },
     }));
     appendAudit({
@@ -370,7 +370,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               remoteDeleted = true;
             }
           } catch {
-            // Edge Function may not be deployed yet — fallback below
+            // Edge Function may not be deployed yet. fallback below
           }
         }
       }
@@ -382,9 +382,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     setState((s) => ({
-      ...s,
+      ..s,
       users: s.users.map((u) =>
-        u.id === current ? { ...u, status: "suspended" as const, email: `deleted+${u.id}@tourgo.app` } : u,
+        u.id === current ? { ..u, status: "suspended" as const, email: `deleted+${u.id}@tourgo.app` } : u,
       ),
       session: null,
     }));
@@ -411,7 +411,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         entityId: current,
       });
     }
-    setState((s) => ({ ...s, session: null }));
+    setState((s) => ({ ..s, session: null }));
     toast("Вы вышли из аккаунта");
   }, []);
 
@@ -470,8 +470,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         createdAt: nowIso(),
       };
       setState((s) => ({
-        ...s,
-        users: [...s.users, user],
+        ..s,
+        users: [..s.users, user],
         session: { userId: user.id, createdAt: nowIso() },
       }));
       toast.success("Аккаунт туриста создан (local)");
@@ -549,9 +549,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           role: "OPERATOR_ADMIN",
         });
         setState((s) => ({
-          ...s,
+          ..s,
           organizations: [
-            ...s.organizations,
+            ..s.organizations,
             {
               id: org.id,
               name: org.name,
@@ -592,7 +592,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const orgId = uid();
       const userId = uid();
       const org: Organization = {
-        ...input.company,
+        ..input.company,
         id: orgId,
         email: input.company.email || email,
         status: "PENDING_APPROVAL",
@@ -614,11 +614,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         createdAt: nowIso(),
       };
       setState((s) => ({
-        ...s,
-        organizations: [...s.organizations, org],
-        users: [...s.users, user],
+        ..s,
+        organizations: [..s.organizations, org],
+        users: [..s.users, user],
         members: [
-          ...s.members,
+          ..s.members,
           { id: uid(), organizationId: orgId, userId, role: "OPERATOR_ADMIN" },
         ],
         session: { userId, createdAt: nowIso() },
@@ -636,9 +636,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const sb = getSupabase();
 
     setState((s) => ({
-      ...s,
+      ..s,
       users: s.users.map((u) =>
-        u.id === current ? { ...u, role: "PREMIUM_TOURIST" as const } : u,
+        u.id === current ? { ..u, role: "PREMIUM_TOURIST" as const } : u,
       ),
       payments: [
         {
@@ -652,7 +652,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           status: "paid",
           createdAt: nowIso(),
         },
-        ...s.payments,
+        ..s.payments,
       ],
       subscriptions: [
         {
@@ -664,7 +664,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           expiresAt: new Date(Date.now() + 30 * 86400000).toISOString(),
           autoRenew: true,
         },
-        ...s.subscriptions.filter((sub) => sub.userId !== current),
+        ..s.subscriptions.filter((sub) => sub.userId !== current),
       ],
     }));
 
@@ -714,7 +714,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       registerTourist,
       registerOperator,
       purchasePremium,
-      hasRole: (...roles) => (user ? roles.includes(user.role) : false),
+      hasRole: (..roles) => (user ? roles.includes(user.role) : false),
       hasPermission: (permission) => {
         if (!user) return false;
         const perms = rolePermissions[user.role] ?? [];

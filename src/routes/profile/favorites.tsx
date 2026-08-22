@@ -17,7 +17,7 @@ function FavoritesProfilePage() {
   return (
     <TouristAccountGate
       kind="generic"
-      title="Избранное после входа — или на этом устройстве"
+      title="Избранное после входа или на этом устройстве"
       description="Без аккаунта сохранённые туры уже есть в разделе «Избранное». Войдите, чтобы синхронизировать между устройствами."
     >
       <FavoritesContent />

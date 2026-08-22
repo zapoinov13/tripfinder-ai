@@ -2,10 +2,10 @@
 
 ## Что уже работает
 
-- **In-app** — таблица `notifications`, страница `/notifications`
-- **Device tokens** — `device_tokens` при регистрации в Capacitor
-- **Авто-push** — заявки, сообщения, бронирования через `pushNotification()` → Edge Function
-- **Админ-рассылка** — `/admin/push` (PLATFORM_ADMIN)
+- **In-app**. таблица `notifications`, страница `/notifications`
+- **Device tokens**. `device_tokens` при регистрации в Capacitor
+- **Авто-push**. заявки, сообщения, бронирования через `pushNotification()` → Edge Function
+- **Админ-рассылка**. `/admin/push` (PLATFORM_ADMIN)
 
 ## Deploy Edge Function
 
@@ -43,7 +43,7 @@ npm run cap:ios
 ## Тест
 
 1. Войти как admin → `/admin/push` → отправить тест туристам
-2. Или создать заявку — оператор получит in-app + push (если FCM настроен)
+2. Или создать заявку. оператор получит in-app + push (если FCM настроен)
 
 ## Админ
 

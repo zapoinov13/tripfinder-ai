@@ -101,9 +101,9 @@ function OperatorBillingPage() {
       metadata: { plan: code },
     });
     setState((s) => ({
-      ...s,
+      ..s,
       organizations: s.organizations.map((o) =>
-        o.id === organization.id ? { ...o, planCode: code } : o,
+        o.id === organization.id ? { ..o, planCode: code } : o,
       ),
       payments: [
         {
@@ -119,7 +119,7 @@ function OperatorBillingPage() {
           createdAt: nowIso(),
           metadata: { plan: code },
         },
-        ...s.payments,
+        ..s.payments,
       ],
       subscriptions: [
         {
@@ -132,7 +132,7 @@ function OperatorBillingPage() {
           autoRenew: true,
           providerSubscriptionId: payment.providerPaymentId,
         },
-        ...s.subscriptions.filter((item) => item.organizationId !== organization.id),
+        ..s.subscriptions.filter((item) => item.organizationId !== organization.id),
       ],
     }));
     appendAudit({
@@ -301,8 +301,8 @@ function OperatorBillingPage() {
                   ["Активные туры", "100", "1 000", "5 000"],
                   ["Заявки и сообщения", "Да", "Да", "Да"],
                   ["Сайт / Telegram → черновик", "Да", "Да", "Да"],
-                  ["API Supplier Feed", "—", "Да", "Да"],
-                  ["Live цена при заявке", "—", "—", "Да"],
+                  ["API Supplier Feed", "-", "Да", "Да"],
+                  ["Live цена при заявке", "-", "-", "Да"],
                   ["Аналитика", "Базовая", "Полная", "Полная"],
                   ["Место на главной", "Отдельно", "Отдельно", "В приоритете"],
                 ].map(([name, a, b, c]) => (

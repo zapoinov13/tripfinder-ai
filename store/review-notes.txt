@@ -1,10 +1,10 @@
-TourGo — App Store / Google Play Review Notes
+TourGo. App Store / Google Play Review Notes
 ============================================
 
 App type: Travel marketplace (Capacitor shell loading https://tripfinder-ai.vercel.app)
 
 How to test:
-1. Open the app — compact mobile UI with bottom tabs: Home, Search, Trips, Profile
+1. Open the app. compact mobile UI with bottom tabs: Home, Search, Trips, Profile
 2. Search tours on Home or Search tab
 3. Submit a travel request via "Заявка" or /request
 4. Sign in with test accounts below to see profile, trips, messages
@@ -25,4 +25,4 @@ Push notifications: optional; not required for core functionality.
 
 If login fails on review build, use Browse as guest: search, destinations, hot tours, and request form work without login.
 
-Russian UI — primary market Kazakhstan / Russian-speaking travelers.
+Russian UI. primary market Kazakhstan / Russian-speaking travelers.

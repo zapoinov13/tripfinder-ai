@@ -38,10 +38,10 @@ export function TourApiImportPanel({ orgId }: { orgId: string }) {
   if (!allowed) {
     return (
       <div className="space-y-4 rounded-xl border border-border bg-secondary/40 p-5">
-        <p className="text-sm font-medium">Автозагрузка каталога — «Бизнес» и «Про»</p>
+        <p className="text-sm font-medium">Автозагрузка каталога: «Бизнес» и «Про»</p>
         <p className="text-sm text-muted-foreground">
           {upgradeHint} На «Старте» добавляйте туры вручную, по ссылке с сайта или из Telegram-поста.
-          После подключения feed TourGo сам подтягивает цены и наличие — не нужно вести два кабинета.
+          После подключения feed TourGo сам подтягивает цены и наличие, не нужно вести два кабинета.
         </p>
         <Button asChild>
           <Link to="/operator/billing">Смотреть тарифы</Link>
@@ -68,13 +68,13 @@ export function TourApiImportPanel({ orgId }: { orgId: string }) {
         currency: "KZT" as const,
         syncIntervalMin: 60,
         status: "connected" as const,
-        ...(existing?.lastSyncAt ? { lastSyncAt: existing.lastSyncAt } : {}),
+        ..(existing?.lastSyncAt ? { lastSyncAt: existing.lastSyncAt } : {}),
       };
       return {
-        ...s,
+        ..s,
         apiConnections: existing
           ? s.apiConnections.map((c) => (c.id === existing.id ? next : c))
-          : [...s.apiConnections, next],
+          : [..s.apiConnections, next],
       };
     });
     appendAudit({
@@ -118,7 +118,7 @@ export function TourApiImportPanel({ orgId }: { orgId: string }) {
         <a className="underline underline-offset-2" href="/supplier-feed.example.json" target="_blank" rel="noreferrer">
           TourGo Supplier Feed
         </a>
-        . Меняете цены у себя — здесь они обновятся после синхронизации. Заявки туристов остаются в
+        . Меняете цены у себя, здесь они обновятся после синхронизации. Заявки туристов остаются в
         кабинете TourGo.
         {planAllowsLivePrice(plan)
           ? " На «Про» при заявке дополнительно перепроверяется цена у поставщика."

@@ -44,9 +44,9 @@ function NotificationsPage() {
                 onClick={() => {
                   if (!user) return;
                   setState((s) => ({
-                    ...s,
+                    ..s,
                     notifications: s.notifications.map((n) =>
-                      n.userId === user.id ? { ...n, read: true } : n,
+                      n.userId === user.id ? { ..n, read: true } : n,
                     ),
                   }));
                 }}
@@ -104,7 +104,7 @@ function NotificationsPage() {
               {[
                 "In-app уведомления включены",
                 "Push на iOS/Android после FCM",
-                "Email — через support@tourgo.app",
+                "Email через support@tourgo.app",
               ].map((item) => (
                 <li key={item} className="flex items-center gap-2">
                   <CheckCircle2 className="size-4 text-success" />

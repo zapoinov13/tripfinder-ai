@@ -36,7 +36,7 @@ function PrivacyPage() {
           <ul className="list-disc space-y-2 pl-5">
             <li>Имя, email и телефон при регистрации или заявке на тур.</li>
             <li>История поиска, избранное и сообщения в личном кабинете.</li>
-            <li>Для турфирм — реквизиты компании и документы для проверки.</li>
+            <li>Для турфирм: реквизиты компании и документы для проверки.</li>
           </ul>
           <h2 className="font-display text-lg font-semibold text-foreground">Кому видны контакты</h2>
           <p>
