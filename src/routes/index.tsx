@@ -84,7 +84,7 @@ const heroFacts = [
 function Index() {
   return (
     <SiteLayout>
-      <section className="relative isolate -mt-16 overflow-hidden md:-mt-[72px]">
+      <section className="relative isolate -mt-[65px] overflow-hidden md:-mt-[73px]">
         <div className="absolute inset-0">
           <img
             src={heroImage}
