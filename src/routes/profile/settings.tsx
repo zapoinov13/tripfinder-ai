@@ -21,7 +21,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useIsNativeApp } from "@/hooks/use-native-app";
-import { useAuth, useRequireAuth } from "@/lib/platform/auth";
+import { useAuth } from "@/lib/platform/auth";
 import {
   isPushEnabledLocally,
   registerNativePushNotifications,
@@ -29,6 +29,7 @@ import {
   unregisterNativePushNotifications,
 } from "@/lib/native/push";
 import { setState } from "@/lib/platform/store";
+import { TouristAccountGate } from "@/components/site/tourist-account-gate";
 
 export const Route = createFileRoute("/profile/settings")({
   head: () => ({ meta: [{ title: "Настройки · TourGo" }] }),
@@ -36,7 +37,14 @@ export const Route = createFileRoute("/profile/settings")({
 });
 
 function SettingsPage() {
-  const { allowed } = useRequireAuth(["TOURIST", "PREMIUM_TOURIST"]);
+  return (
+    <TouristAccountGate kind="profile" title="Настройки аккаунта — после входа">
+      <SettingsContent />
+    </TouristAccountGate>
+  );
+}
+
+function SettingsContent() {
   const { user, deleteAccount } = useAuth();
   const navigate = useNavigate();
   const isNative = useIsNativeApp();
@@ -46,7 +54,7 @@ function SettingsPage() {
   const name = nameEdit ?? user?.name ?? "";
   const city = cityEdit ?? user?.city ?? "";
 
-  if (!allowed || !user) return null;
+  if (!user) return null;
 
   const isOperator = user.role.startsWith("OPERATOR");
 

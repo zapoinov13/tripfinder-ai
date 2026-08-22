@@ -1,15 +1,24 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Home, Luggage, Search, User } from "lucide-react";
+import { Home, Luggage, Map, User } from "lucide-react";
 
 import { useShowAppTabBar } from "@/hooks/use-native-app";
 import { cn } from "@/lib/utils";
 
+/**
+ * App bottom tabs — tourist flow only.
+ * Главная → каталог/туры → поездки (аккаунт) → профиль.
+ */
 const tabs = [
-  { label: "Главная", to: "/", icon: Home, match: (path: string) => path === "/" },
   {
-    label: "Поиск",
+    label: "Главная",
+    to: "/",
+    icon: Home,
+    match: (path: string) => path === "/",
+  },
+  {
+    label: "Туры",
     to: "/search",
-    icon: Search,
+    icon: Map,
     match: (path: string) =>
       path === "/search" ||
       path.startsWith("/tour/") ||
@@ -18,7 +27,8 @@ const tabs = [
       path === "/compare" ||
       path === "/excursions" ||
       path === "/destinations" ||
-      path === "/experiences",
+      path === "/experiences" ||
+      path === "/assistance",
   },
   {
     label: "Поездки",
@@ -26,8 +36,11 @@ const tabs = [
     icon: Luggage,
     match: (path: string) =>
       path === "/profile/trips" ||
+      path === "/profile/requests" ||
+      path === "/profile/messages" ||
       path.startsWith("/request") ||
       path === "/favorites" ||
+      path === "/profile/favorites" ||
       path === "/notifications",
   },
   {
@@ -35,7 +48,11 @@ const tabs = [
     to: "/profile",
     icon: User,
     match: (path: string) =>
-      (path === "/profile" || path.startsWith("/profile/")) && path !== "/profile/trips",
+      path === "/profile" ||
+      path === "/profile/" ||
+      path === "/profile/settings" ||
+      path === "/profile/ai" ||
+      path === "/premium",
   },
 ] as const;
 
@@ -49,8 +66,9 @@ export function AppTabBar() {
     <nav
       className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 backdrop-blur-xl md:hidden"
       aria-label="Основная навигация"
+      style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
-      <div className="grid grid-cols-4 pb-[env(safe-area-inset-bottom)]">
+      <div className="grid grid-cols-4">
         {tabs.map((tab) => {
           const active = tab.match(pathname);
           return (
@@ -59,12 +77,12 @@ export function AppTabBar() {
               to={tab.to}
               search={tab.to === "/search" ? ({} as never) : undefined}
               className={cn(
-                "flex min-h-[3.25rem] flex-col items-center justify-center gap-1 py-2 text-[11px] font-medium transition-colors active:scale-95",
+                "flex min-h-[3.5rem] flex-col items-center justify-center gap-0.5 px-1 py-2 text-[11px] font-medium transition-colors active:opacity-70",
                 active ? "text-primary" : "text-muted-foreground",
               )}
             >
-              <tab.icon className={cn("size-5", active && "stroke-[2.5px]")} />
-              {tab.label}
+              <tab.icon className={cn("size-[22px]", active && "stroke-[2.35px]")} aria-hidden />
+              <span className={cn(active && "font-semibold")}>{tab.label}</span>
             </Link>
           );
         })}

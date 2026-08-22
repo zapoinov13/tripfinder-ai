@@ -7,10 +7,11 @@ import { profileNav } from "@/components/dash/nav-items";
 import { ThreadView } from "@/components/messages/thread-view";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { useAuth, useRequireAuth } from "@/lib/platform/auth";
+import { useAuth } from "@/lib/platform/auth";
 import { usePlatformStore } from "@/lib/platform/hooks";
 import { getTouristThreads } from "@/lib/platform/messages";
 import { cn } from "@/lib/utils";
+import { TouristAccountGate } from "@/components/site/tourist-account-gate";
 
 export const Route = createFileRoute("/profile/messages")({
   head: () => ({ meta: [{ title: "Сообщения · TourGo" }] }),
@@ -26,12 +27,19 @@ const fmtDate = (iso: string) =>
   });
 
 function TouristMessagesPage() {
-  const { allowed } = useRequireAuth(["TOURIST", "PREMIUM_TOURIST"]);
+  return (
+    <TouristAccountGate kind="generic" title="Сообщения с турфирмами — после входа">
+      <MessagesContent />
+    </TouristAccountGate>
+  );
+}
+
+function MessagesContent() {
   const { user } = useAuth();
   const state = usePlatformStore();
   const [openKey, setOpenKey] = useState<string | null>(null);
 
-  if (!allowed || !user) return null;
+  if (!user) return null;
 
   void state.requestMessages.length;
   const threads = getTouristThreads(user.id);

@@ -6,9 +6,10 @@ import { profileNav } from "@/components/dash/nav-items";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatPrice } from "@/data/demo";
-import { useAuth, useRequireAuth } from "@/lib/platform/auth";
+import { useAuth } from "@/lib/platform/auth";
 import { usePlatformStore } from "@/lib/platform/hooks";
 import { peopleLabel, requestStatusLabel } from "@/lib/platform/requests";
+import { TouristAccountGate } from "@/components/site/tourist-account-gate";
 
 export const Route = createFileRoute("/profile/requests")({
   head: () => ({
@@ -21,10 +22,17 @@ const fmtDate = (iso: string) =>
   new Date(iso).toLocaleDateString("ru-RU", { day: "numeric", month: "long" });
 
 function MyRequestsPage() {
-  const { allowed } = useRequireAuth(["TOURIST", "PREMIUM_TOURIST"]);
+  return (
+    <TouristAccountGate kind="trips" title="Заявки турфирмам — после входа">
+      <RequestsContent />
+    </TouristAccountGate>
+  );
+}
+
+function RequestsContent() {
   const { user } = useAuth();
   const state = usePlatformStore();
-  if (!allowed || !user) return null;
+  if (!user) return null;
 
   const requests = state.tripRequests
     .filter((r) => r.userId === user.id)

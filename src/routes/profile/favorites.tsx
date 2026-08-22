@@ -2,10 +2,10 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 
 import { DashShell } from "@/components/dash/dash-shell";
 import { profileNav } from "@/components/dash/nav-items";
+import { TouristAccountGate } from "@/components/site/tourist-account-gate";
 import { TourCard } from "@/components/tours/tour-card";
 import { Button } from "@/components/ui/button";
 import { getTour } from "@/data/demo";
-import { useRequireAuth } from "@/lib/platform/auth";
 import { useTourState } from "@/lib/tour-state";
 
 export const Route = createFileRoute("/profile/favorites")({
@@ -14,9 +14,19 @@ export const Route = createFileRoute("/profile/favorites")({
 });
 
 function FavoritesProfilePage() {
-  const { allowed } = useRequireAuth(["TOURIST", "PREMIUM_TOURIST"]);
+  return (
+    <TouristAccountGate
+      kind="generic"
+      title="Избранное после входа — или на этом устройстве"
+      description="Без аккаунта сохранённые туры уже есть в разделе «Избранное». Войдите, чтобы синхронизировать между устройствами."
+    >
+      <FavoritesContent />
+    </TouristAccountGate>
+  );
+}
+
+function FavoritesContent() {
   const { favorites } = useTourState();
-  if (!allowed) return null;
   const tours = favorites.map((id) => getTour(id)).filter(Boolean);
 
   return (
@@ -31,10 +41,8 @@ function FavoritesProfilePage() {
           </Button>
         </div>
       ) : (
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {tours.map((tour) =>
-            tour ? <TourCard key={tour.id} tour={tour} layout="grid" /> : null,
-          )}
+        <div className="space-y-4">
+          {tours.map((tour) => (tour ? <TourCard key={tour.id} tour={tour} /> : null))}
         </div>
       )}
     </DashShell>

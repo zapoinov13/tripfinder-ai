@@ -2,8 +2,9 @@ import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 
 import { DashShell } from "@/components/dash/dash-shell";
 import { profileNav } from "@/components/dash/nav-items";
+import { TouristAccountGate } from "@/components/site/tourist-account-gate";
 import { Button } from "@/components/ui/button";
-import { useAuth, useRequireAuth } from "@/lib/platform/auth";
+import { useAuth } from "@/lib/platform/auth";
 import { usePlatformStore } from "@/lib/platform/hooks";
 
 export const Route = createFileRoute("/profile/ai")({
@@ -12,11 +13,18 @@ export const Route = createFileRoute("/profile/ai")({
 });
 
 function AiHistoryPage() {
-  const { allowed } = useRequireAuth(["TOURIST", "PREMIUM_TOURIST"]);
+  return (
+    <TouristAccountGate kind="generic" title="История AI-поиска — после входа">
+      <AiHistoryContent />
+    </TouristAccountGate>
+  );
+}
+
+function AiHistoryContent() {
   const { user } = useAuth();
   const state = usePlatformStore();
   const navigate = useNavigate();
-  if (!allowed || !user) return null;
+  if (!user) return null;
 
   const items = state.aiSearches.filter((a) => a.userId === user.id);
 

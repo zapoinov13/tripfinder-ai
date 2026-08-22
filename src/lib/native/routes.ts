@@ -5,6 +5,7 @@ const TAB_BAR_HIDDEN_PREFIXES = [
   "/admin",
   "/operator",
   "/company-signup",
+  "/for-companies",
 ] as const;
 
 /** Dashboard areas use their own navigation chrome. */

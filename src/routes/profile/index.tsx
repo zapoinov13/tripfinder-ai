@@ -2,20 +2,21 @@ import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 
 import { DashShell } from "@/components/dash/dash-shell";
 import { profileNav } from "@/components/dash/nav-items";
+import { TouristAccountGate } from "@/components/site/tourist-account-gate";
 import { TourCard } from "@/components/tours/tour-card";
 import { Button } from "@/components/ui/button";
 import { formatPrice, getHotel, getTour } from "@/data/demo";
-import { useAuth, useRequireAuth } from "@/lib/platform/auth";
+import { useAuth } from "@/lib/platform/auth";
 import { usePlatformStore } from "@/lib/platform/hooks";
 import { useTourState } from "@/lib/tour-state";
 
 export const Route = createFileRoute("/profile/")({
   head: () => ({
     meta: [
-      { title: "Личный кабинет путешественника · TourGo" },
+      { title: "Профиль · TourGo" },
       {
         name: "description",
-        content: "Избранные туры, история поиска, заявки и настройки Premium-подписки.",
+        content: "Заявки, поездки, избранное и настройки аккаунта туриста.",
       },
     ],
   }),
@@ -23,19 +24,20 @@ export const Route = createFileRoute("/profile/")({
 });
 
 function ProfilePage() {
-  const { allowed } = useRequireAuth(["TOURIST", "PREMIUM_TOURIST"]);
+  return (
+    <TouristAccountGate kind="profile">
+      <ProfileContent />
+    </TouristAccountGate>
+  );
+}
+
+function ProfileContent() {
   const { user, isPremium, purchasePremium, logout } = useAuth();
   const state = usePlatformStore();
   const { favorites, priceAlerts } = useTourState();
   const navigate = useNavigate();
 
-  if (!allowed || !user) {
-    return (
-      <div className="grid min-h-screen place-items-center text-sm text-muted-foreground">
-        Перенаправление…
-      </div>
-    );
-  }
+  if (!user) return null;
 
   const favTours = favorites
     .map((id) => getTour(id))
