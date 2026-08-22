@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Inbox, Send, X } from "lucide-react";
+import { Check, Inbox, Send, Star, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
@@ -20,11 +20,12 @@ import { Label } from "@/components/ui/label";
 import { MoneyInput } from "@/components/ui/money-input";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { formatPrice, getHotel } from "@/data/demo";
+import { formatPrice, getHotel, hotels, type Hotel } from "@/data/demo";
 import { useAuth, useRequireAuth } from "@/lib/platform/auth";
 import { usePlatformStore } from "@/lib/platform/hooks";
 import { mealPlainLabel, peopleLabel, declineRequest, sendOffer } from "@/lib/platform/requests";
 import type { TripRequest } from "@/lib/platform/types";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/operator/requests")({
   head: () => ({ meta: [{ title: "Заявки туристов · TourGo" }] }),
@@ -33,6 +34,52 @@ export const Route = createFileRoute("/operator/requests")({
 
 const fmtDate = (iso: string) =>
   new Date(iso).toLocaleDateString("ru-RU", { day: "numeric", month: "long" });
+
+const OFFER_INCLUDE_OPTIONS = [
+  { key: "stay", label: "Проживание" },
+  { key: "flight", label: "Перелёт", offerField: "flightIncluded" as const },
+  { key: "meal", label: "Питание" },
+  { key: "transfer", label: "Трансфер", offerField: "transferIncluded" as const },
+  { key: "insurance", label: "Страховка", offerField: "insuranceIncluded" as const },
+  { key: "visa", label: "Визовая поддержка" },
+  { key: "excursions", label: "Экскурсии" },
+] as const;
+
+const DEFAULT_INCLUDED: Record<(typeof OFFER_INCLUDE_OPTIONS)[number]["key"], boolean> = {
+  stay: true,
+  flight: true,
+  meal: true,
+  transfer: true,
+  insurance: true,
+  visa: false,
+  excursions: false,
+};
+
+function buildIncludesText(included: Record<(typeof OFFER_INCLUDE_OPTIONS)[number]["key"], boolean>) {
+  return OFFER_INCLUDE_OPTIONS.filter((item) => included[item.key])
+    .map((item) => item.label)
+    .join(", ");
+}
+
+function hotelOptionsForOffer(
+  orgId: string,
+  destinationId: string,
+  platformHotels: Hotel[],
+  tourHotelIds: string[],
+) {
+  const map = new Map<string, Hotel>();
+  for (const id of tourHotelIds) {
+    const hotel = getHotel(id);
+    if (hotel) map.set(hotel.id, hotel);
+  }
+  for (const hotel of hotels.filter((h) => h.destinationId === destinationId)) {
+    map.set(hotel.id, hotel);
+  }
+  for (const hotel of platformHotels) {
+    if (hotel.destinationId === destinationId) map.set(hotel.id, hotel);
+  }
+  return [...map.values()].sort((a, b) => b.rating - a.rating || a.name.localeCompare(b.name, "ru"));
+}
 
 function OperatorRequestsPage() {
   const { allowed } = useRequireAuth(["OPERATOR_ADMIN", "OPERATOR_MANAGER"]);
@@ -148,45 +195,77 @@ function OfferDialog({
     .filter((t) => t.operatorOrgId === orgId && t.status === "active")
     .slice(0, 40);
 
-  const [hotelName, setHotelName] = useState("");
+  const tourHotelIds = useMemo(
+    () => myTours.map((t) => t.hotelId).filter(Boolean),
+    [myTours],
+  );
+  const hotelOptions = useMemo(
+    () => hotelOptionsForOffer(orgId, request.destinationId, state.hotels ?? [], tourHotelIds),
+    [orgId, request.destinationId, state.hotels, tourHotelIds],
+  );
+
+  const [selectedHotelIds, setSelectedHotelIds] = useState<string[]>([]);
+  const [customHotel, setCustomHotel] = useState("");
   const [price, setPrice] = useState(request.budget);
   const [nights, setNights] = useState(7);
   const [meal, setMeal] = useState("Всё включено");
-  const [flight, setFlight] = useState(true);
-  const [transfer, setTransfer] = useState(true);
-  const [insurance, setInsurance] = useState(true);
-  const [includes, setIncludes] = useState("Перелёт, проживание, питание, страховка");
+  const [included, setIncluded] = useState(DEFAULT_INCLUDED);
   const [comment, setComment] = useState("");
   const [tourId, setTourId] = useState("");
+
+  const toggleHotel = (hotelId: string) => {
+    setSelectedHotelIds((prev) =>
+      prev.includes(hotelId) ? prev.filter((id) => id !== hotelId) : [...prev, hotelId],
+    );
+  };
 
   const pickTour = (id: string) => {
     setTourId(id);
     const tour = state.tours.find((t) => t.id === id);
-    if (!tour) return;
+    if (!tour) {
+      setSelectedHotelIds([]);
+      return;
+    }
     const hotel = getHotel(tour.hotelId);
-    setHotelName(hotel?.name ?? "");
+    setSelectedHotelIds(hotel?.id ? [hotel.id] : []);
+    setCustomHotel("");
     setPrice(tour.price);
     setNights(tour.nights);
     setMeal(mealPlainLabel(tour.mealCode));
+    setIncluded({
+      ...DEFAULT_INCLUDED,
+      flight: tour.flightIncluded ?? true,
+      transfer: Boolean(tour.transfer),
+      insurance: tour.insuranceIncluded ?? true,
+    });
+  };
+
+  const hotelLabel = () => {
+    const names = [
+      ...selectedHotelIds.map((id) => getHotel(id).name),
+      customHotel.trim(),
+    ].filter(Boolean);
+    return names.join(", ");
   };
 
   const submit = () => {
-    if (!hotelName.trim()) {
-      toast.error("Укажите отель: турист сравнивает предложения по отелю и цене");
+    const hotelName = hotelLabel();
+    if (!hotelName) {
+      toast.error("Выберите хотя бы один отель из списка или укажите название вручную");
       return;
     }
     sendOffer({
       requestId: request.id,
       organizationId: orgId,
       ...(tourId ? { tourId } : {}),
-      hotelName: hotelName.trim(),
+      hotelName,
       nights,
       meal,
-      flightIncluded: flight,
-      transferIncluded: transfer,
-      insuranceIncluded: insurance,
+      flightIncluded: included.flight,
+      transferIncluded: included.transfer,
+      insuranceIncluded: included.insurance,
       price,
-      includes,
+      includes: buildIncludesText(included),
       comment,
       ...(actorId ? { actorId } : {}),
     });
@@ -226,17 +305,101 @@ function OfferDialog({
             </select>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-3">
+            <div className="flex flex-wrap items-end justify-between gap-2">
+              <div>
+                <Label>Отели</Label>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  Можно выбрать несколько вариантов для туриста
+                </p>
+              </div>
+              {selectedHotelIds.length > 0 ? (
+                <span className="text-xs font-medium text-primary">
+                  Выбрано: {selectedHotelIds.length}
+                </span>
+              ) : null}
+            </div>
+
+            {selectedHotelIds.length > 0 ? (
+              <div className="flex flex-wrap gap-2">
+                {selectedHotelIds.map((id) => {
+                  const hotel = getHotel(id);
+                  return (
+                    <Badge key={id} variant="secondary" className="gap-1 pr-1.5">
+                      {hotel.name}
+                      <button
+                        type="button"
+                        className="rounded-full p-0.5 hover:bg-background/80"
+                        aria-label={`Убрать ${hotel.name}`}
+                        onClick={() => toggleHotel(id)}
+                      >
+                        <X className="size-3" />
+                      </button>
+                    </Badge>
+                  );
+                })}
+              </div>
+            ) : null}
+
+            <div className="max-h-44 space-y-1.5 overflow-y-auto rounded-xl border border-border p-2">
+              {hotelOptions.length > 0 ? (
+                hotelOptions.map((hotel) => {
+                  const active = selectedHotelIds.includes(hotel.id);
+                  return (
+                    <button
+                      key={hotel.id}
+                      type="button"
+                      onClick={() => toggleHotel(hotel.id)}
+                      className={cn(
+                        "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition-colors",
+                        active
+                          ? "bg-primary/10 ring-1 ring-primary/20"
+                          : "hover:bg-secondary/80",
+                      )}
+                    >
+                      <span
+                        className={cn(
+                          "grid size-5 shrink-0 place-items-center rounded-md border",
+                          active
+                            ? "border-primary bg-primary text-primary-foreground"
+                            : "border-border bg-background",
+                        )}
+                      >
+                        {active ? <Check className="size-3.5" /> : null}
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block font-medium">{hotel.name}</span>
+                        <span className="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                          <span className="inline-flex items-center gap-0.5">
+                            <Star className="size-3 fill-premium text-premium" />
+                            {hotel.stars} · {hotel.rating}
+                          </span>
+                          {hotel.city}
+                        </span>
+                      </span>
+                    </button>
+                  );
+                })
+              ) : (
+                <p className="px-2 py-6 text-center text-sm text-muted-foreground">
+                  Нет отелей в каталоге для этого направления. Укажите название ниже.
+                </p>
+              )}
+            </div>
+
             <div className="space-y-2">
-              <Label htmlFor="offer-hotel">Отель</Label>
+              <Label htmlFor="offer-custom-hotel">Другой отель</Label>
               <Input
-                id="offer-hotel"
-                value={hotelName}
-                onChange={(e) => setHotelName(e.target.value)}
-                placeholder="Rixos Premium Dubai"
+                id="offer-custom-hotel"
+                value={customHotel}
+                onChange={(e) => setCustomHotel(e.target.value)}
+                placeholder="Если нужного отеля нет в списке"
               />
             </div>
-            <div className="space-y-2">
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-3">
+            <div className="space-y-2 sm:col-span-1">
               <Label htmlFor="offer-price">Цена, ₸</Label>
               <MoneyInput id="offer-price" value={price} onChange={setPrice} />
             </div>
@@ -273,19 +436,26 @@ function OfferDialog({
             </div>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-3">
-            <Toggle label="Перелёт включён" value={flight} onChange={setFlight} />
-            <Toggle label="Трансфер включён" value={transfer} onChange={setTransfer} />
-            <Toggle label="Страховка включена" value={insurance} onChange={setInsurance} />
-          </div>
-
           <div className="space-y-2">
-            <Label htmlFor="offer-includes">Что входит</Label>
-            <Input
-              id="offer-includes"
-              value={includes}
-              onChange={(e) => setIncludes(e.target.value)}
-            />
+            <Label>Что входит</Label>
+            <p className="text-xs text-muted-foreground">
+              Отметьте, что входит в цену. Турист увидит это в предложении.
+            </p>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {OFFER_INCLUDE_OPTIONS.map((item) => (
+                <Toggle
+                  key={item.key}
+                  label={item.label}
+                  value={included[item.key]}
+                  onChange={(next) => setIncluded((prev) => ({ ...prev, [item.key]: next }))}
+                />
+              ))}
+            </div>
+            {buildIncludesText(included) ? (
+              <p className="rounded-xl bg-secondary/50 px-3 py-2 text-xs text-muted-foreground">
+                В предложении: {buildIncludesText(included)}
+              </p>
+            ) : null}
           </div>
 
           <div className="space-y-2">

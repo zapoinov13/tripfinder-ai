@@ -339,6 +339,11 @@ export type CompanyReview = {
   rating: number;
   text: string;
   createdAt: string;
+  /** Публичный ответ турфирмы на отзыв. */
+  reply?: string;
+  replyAt?: string;
+  replyByUserId?: string;
+  replyByName?: string;
 };
 
 export type PlatformConfig = {

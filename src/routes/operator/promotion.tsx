@@ -1,17 +1,34 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { Check, Home, Megaphone, Sparkles, Star, TrendingUp } from "lucide-react";
-import { useMemo, useState } from "react";
+import {
+  Check,
+  Home,
+  Megaphone,
+  Sparkles,
+  Star,
+  TrendingUp,
+  Wallet,
+  Zap,
+} from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
-import { DashShell } from "@/components/dash/dash-shell";
+import { DashShell, KpiCard } from "@/components/dash/dash-shell";
 import { useOperatorNav } from "@/components/dash/nav-items";
 import { Button } from "@/components/ui/button";
 import { formatPrice, nightsLabel, tourCover } from "@/data/demo";
-import { mockPaymentProvider } from "@/lib/platform/adapters";
 import { useAuth, useRequireAuth } from "@/lib/platform/auth";
-import { appendAudit, getHotel, trackEvent } from "@/lib/platform/catalog";
+import { getHotel } from "@/lib/platform/catalog";
 import { usePlatformStore } from "@/lib/platform/hooks";
-import { nowIso, setState, uid } from "@/lib/platform/store";
+import {
+  calcPromotionPrice,
+  cancelPromotion,
+  expireStalePromotions,
+  getActiveOrgPromotions,
+  getPromotionPrices,
+  promotionCatalogMeta,
+  purchasePromotion,
+  topUpPromotionBalance,
+} from "@/lib/platform/promotions";
 import type { PromotionType } from "@/lib/platform/types";
 import { cn } from "@/lib/utils";
 
@@ -35,10 +52,7 @@ const catalog: Array<{
     badge: "Хит",
     where: "Выдача поиска",
     forWhom: "Если тур уже опубликован и нужно больше просмотров.",
-    gets: [
-      "Тур поднимается выше обычных предложений",
-      "На карточке появляется отметка «Хит»",
-    ],
+    gets: ["Тур поднимается выше обычных", "На карточке отметка «Хит»"],
     icon: TrendingUp,
   },
   {
@@ -47,22 +61,16 @@ const catalog: Array<{
     badge: "Выгодная цена",
     where: "Начало выдачи",
     forWhom: "Для сильных цен, которые хотите показать первыми.",
-    gets: [
-      "Тур ближе к началу результатов",
-      "Отметка «Выгодная цена» на карточке",
-    ],
+    gets: ["Тур ближе к началу результатов", "Отметка «Выгодная цена»"],
     icon: Star,
   },
   {
     type: "PREMIUM_PLACEMENT",
     title: "Приоритет в фильтрах",
     badge: "Выгодная цена",
-    where: "Поиск по стране, датам и питанию",
-    forWhom: "Когда турист уже выбирает направление, а вам нужно быть рядом.",
-    gets: [
-      "Тур держится выше похожих предложений",
-      "Та же заметная отметка на карточке",
-    ],
+    where: "Поиск по стране и датам",
+    forWhom: "Когда турист уже выбирает направление.",
+    gets: ["Тур держится выше похожих", "Заметная отметка на карточке"],
     icon: Sparkles,
   },
   {
@@ -70,23 +78,17 @@ const catalog: Array<{
     title: "Рекомендуем",
     badge: "Рекомендуем",
     where: "Поиск и подборки",
-    forWhom: "Если хотите, чтобы турист выбрал именно вашу компанию.",
-    gets: [
-      "Отметка «Рекомендуем»",
-      "Выше в выдаче, чем обычные туры",
-    ],
+    forWhom: "Чтобы турист выбрал именно вашу компанию.",
+    gets: ["Отметка «Рекомендуем»", "Выше в выдаче"],
     icon: Megaphone,
   },
   {
     type: "HOME_FEATURE",
     title: "На главной",
     badge: "Рекомендуем",
-    where: "Главная страница TourGo и поиск",
+    where: "Главная TourGo",
     forWhom: "Максимум показов: новый тур, сезон, акция.",
-    gets: [
-      "Карточка на главной странице",
-      "Отметка «Рекомендуем» в поиске",
-    ],
+    gets: ["Карточка на главной", "Отметка в поиске"],
     icon: Home,
   },
 ];
@@ -95,12 +97,8 @@ const dayOptions = [
   { value: "3", label: "3 дня", hint: "Проверить эффект" },
   { value: "7", label: "7 дней", hint: "Обычный срок" },
   { value: "14", label: "14 дней", hint: "На пик сезона" },
-  { value: "30", label: "30 дней", hint: "Держать тур в топе" },
+  { value: "30", label: "30 дней", hint: "Держать в топе" },
 ];
-
-function weekPrice(prices: Record<PromotionType, number>, type: PromotionType, days: number) {
-  return Math.round((prices[type] * (days / 7)) / 1000) * 1000;
-}
 
 function OperatorPromotionPage() {
   const { allowed } = useRequireAuth(["OPERATOR_ADMIN", "OPERATOR_MANAGER"]);
@@ -110,86 +108,67 @@ function OperatorPromotionPage() {
   const [tourId, setTourId] = useState("");
   const [type, setType] = useState<PromotionType>("BOOST");
   const [days, setDays] = useState("7");
+  const [payFromBalance, setPayFromBalance] = useState(true);
+  const [buying, setBuying] = useState(false);
+
+  useEffect(() => {
+    expireStalePromotions();
+  }, [state.promotions.length]);
+
+  const tours = useMemo(
+    () =>
+      organization
+        ? state.tours.filter((t) => t.operatorOrgId === organization.id && t.status === "active")
+        : [],
+    [organization, state.tours],
+  );
+
+  const prices = useMemo(() => getPromotionPrices(), [state.config.promotionPrices]);
+  const active = useMemo(
+    () => (organization ? getActiveOrgPromotions(organization.id) : []),
+    [organization, state.promotions],
+  );
+
   if (!allowed || !organization || !user) return null;
 
-  const tours = state.tours.filter(
-    (t) => t.operatorOrgId === organization.id && t.status === "active",
-  );
   const selected = catalog.find((p) => p.type === type)!;
   const daysCount = Number(days);
-  const price = weekPrice(state.config.promotionPrices, type, daysCount);
+  const price = calcPromotionPrice(type, daysCount);
   const chosenTour = tours.find((t) => t.id === tourId);
-
-  const mine = useMemo(
-    () => state.promotions.filter((p) => p.organizationId === organization.id),
-    [state.promotions, organization.id],
-  );
-  const active = mine.filter((p) => p.status === "ACTIVE" && new Date(p.expiresAt).getTime() > Date.now());
+  const canAfford = organization.promotionBalance >= price;
 
   const buy = async () => {
     if (!tourId) {
       toast.error("Сначала выберите тур");
       return;
     }
-    const payment = await mockPaymentProvider.createPayment({
-      amount: price,
-      currency: "KZT",
-      type: "promotion",
-      metadata: { tourId, type, days },
-    });
-    const started = nowIso();
-    const expires = new Date(Date.now() + daysCount * 86400000).toISOString();
-    setState((s) => ({
-      ...s,
-      promotions: [
-        {
-          id: uid(),
-          organizationId: organization.id,
-          tourOfferId: tourId,
-          type,
-          durationDays: daysCount,
-          price,
-          currency: "KZT",
-          status: "ACTIVE",
-          startedAt: started,
-          expiresAt: expires,
-        },
-        ...s.promotions,
-      ],
-      payments: [
-        {
-          id: uid(),
-          userId: user.id,
-          organizationId: organization.id,
-          amount: price,
-          currency: "KZT",
-          type: "promotion",
-          provider: "mock",
-          providerPaymentId: payment.providerPaymentId,
-          status: "paid",
-          createdAt: nowIso(),
-          metadata: { tourId, type },
-        },
-        ...s.payments,
-      ],
-      tours: s.tours.map((t) => {
-        if (t.id !== tourId) return t;
-        const tags = new Set(t.tags);
-        if (type === "SPONSORED" || type === "HOME_FEATURE") tags.add("sponsored");
-        if (type === "PREMIUM_PLACEMENT" || type === "FEATURED") tags.add("premium");
-        if (type === "BOOST") tags.add("best");
-        return { ...t, tags: Array.from(tags) as typeof t.tags };
-      }),
-    }));
-    appendAudit({
-      actorId: user.id,
-      action: "promotion_purchased",
-      entityType: "promotion",
-      entityId: tourId,
-      meta: { type, days },
-    });
-    trackEvent("PROMOTION_PURCHASED", user.id, { type, tourId });
-    toast.success("Продвижение включено. Туристы уже видят отметку на карточке.");
+    if (payFromBalance && !canAfford) {
+      toast.error("Недостаточно средств на балансе продвижения");
+      return;
+    }
+
+    setBuying(true);
+    try {
+      const result = await purchasePromotion({
+        organizationId: organization.id,
+        userId: user.id,
+        tourId,
+        type,
+        days: daysCount,
+        payFromBalance,
+      });
+      if (!result.ok) {
+        toast.error(result.reason);
+        return;
+      }
+      toast.success(
+        result.paidFromBalance
+          ? "Продвижение включено. Списано с баланса."
+          : "Продвижение включено. Туристы уже видят отметку.",
+      );
+    } finally {
+      setBuying(false);
+    }
   };
 
   return (
@@ -197,27 +176,47 @@ function OperatorPromotionPage() {
       brand={organization.name}
       items={nav}
       title="Продвижение"
-      subtitle="Платите за конкретный тур и срок. Турист видит отметку на карточке и чаще открывает её."
+      subtitle="Оплатите с баланса или картой. Отметка появится на карточке тура в поиске и на главной."
+      actions={
+        <Button variant="outline" size="sm" asChild>
+          <Link to="/operator/billing">Пополнить баланс</Link>
+        </Button>
+      }
     >
-      <div className="mb-6 rounded-2xl border border-border bg-card p-5 text-sm leading-relaxed text-muted-foreground">
-        Обычный тур виден в поиске. Продвижение ставит его выше и добавляет отметку: «Хит»,
-        «Выгодная цена» или «Рекомендуем». Чем сильнее пакет, тем больше показов.
+      <div className="grid gap-3 sm:grid-cols-3">
+        <KpiCard
+          label="Баланс продвижения"
+          value={formatPrice(organization.promotionBalance)}
+          hint="списывается при включении"
+          emphasis={organization.promotionBalance < price}
+        />
+        <KpiCard label="Активных кампаний" value={String(active.length)} hint="сейчас работают" />
+        <KpiCard
+          label="Стоимость выбранного"
+          value={formatPrice(price)}
+          hint={`${selected.title} · ${daysCount} дн.`}
+        />
       </div>
 
-      <h2 className="font-display text-lg font-semibold">Что за что</h2>
-      <p className="mt-1 text-sm text-muted-foreground">Выберите пакет, затем тур и срок.</p>
+      <div className="mt-6 rounded-2xl border border-border bg-card p-5 text-sm leading-relaxed text-muted-foreground">
+        Обычный тур виден в поиске. Продвижение поднимает его выше и добавляет отметку: «Хит»,
+        «Выгодная цена» или «Рекомендуем». Пакет «На главной» показывает тур на главной странице
+        TourGo.
+      </div>
+
+      <h2 className="mt-8 font-display text-lg font-semibold">Выберите пакет</h2>
       <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {catalog.map((item) => {
           const on = item.type === type;
           const Icon = item.icon;
-          const weekly = state.config.promotionPrices[item.type];
+          const weekly = prices[item.type];
           return (
             <button
               key={item.type}
               type="button"
               onClick={() => setType(item.type)}
               className={cn(
-                "surface-card p-5 text-left transition-colors",
+                "surface-card p-5 text-left transition-all",
                 on ? "border-primary ring-2 ring-primary/20" : "hover:border-primary/40",
               )}
             >
@@ -241,19 +240,19 @@ function OperatorPromotionPage() {
               <div className="mt-4 flex flex-wrap items-center gap-2 text-[11px]">
                 <span className="rounded-full bg-secondary px-2.5 py-1 font-medium">{item.where}</span>
                 <span className="rounded-full bg-premium/20 px-2.5 py-1 font-semibold text-ink">
-                  Отметка: {item.badge}
+                  {item.badge}
                 </span>
               </div>
               <p className="mt-4 font-display text-lg font-semibold">
                 {formatPrice(weekly)}
-                <span className="ml-1 text-sm font-normal text-muted-foreground">за 7 дней</span>
+                <span className="ml-1 text-sm font-normal text-muted-foreground">/ 7 дней</span>
               </p>
             </button>
           );
         })}
       </div>
 
-      <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+      <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
         <section className="surface-card space-y-5 p-6">
           <div>
             <h2 className="font-display text-lg font-semibold">Какой тур продвигать</h2>
@@ -273,6 +272,7 @@ function OperatorPromotionPage() {
               {tours.slice(0, 12).map((t) => {
                 const hotel = getHotel(t.hotelId);
                 const on = t.id === tourId;
+                const tourActive = active.filter((p) => p.tourOfferId === t.id);
                 return (
                   <button
                     key={t.id}
@@ -289,6 +289,12 @@ function OperatorPromotionPage() {
                       <p className="mt-0.5 text-xs text-muted-foreground">
                         {nightsLabel(t.nights)} · {t.meal} · {formatPrice(t.price)}
                       </p>
+                      {tourActive.length > 0 ? (
+                        <p className="mt-1.5 inline-flex items-center gap-1 text-[11px] font-medium text-success">
+                          <Zap className="size-3" />
+                          Продвигается · {tourActive.length}
+                        </p>
+                      ) : null}
                     </div>
                   </button>
                 );
@@ -341,15 +347,74 @@ function OperatorPromotionPage() {
               <span className="font-medium">{selected.badge}</span>
             </li>
           </ul>
+
           <p className="border-t border-border pt-4 font-display text-2xl font-semibold">
             {formatPrice(price)}
           </p>
-          <p className="text-xs text-muted-foreground">
-            Деньги идут за показы карточки. Турист платит компании за сам тур.
-          </p>
-          <Button className="w-full" disabled={!tourId} onClick={() => void buy()}>
-            Включить продвижение
+
+          <div className="space-y-2">
+            <button
+              type="button"
+              onClick={() => setPayFromBalance(true)}
+              className={cn(
+                "flex w-full items-center gap-3 rounded-xl border px-3 py-3 text-left text-sm transition-colors",
+                payFromBalance ? "border-primary bg-primary-soft" : "border-border hover:border-primary/40",
+              )}
+            >
+              <Wallet className="size-4 shrink-0 text-primary" />
+              <span>
+                <span className="font-medium">С баланса</span>
+                <span className="mt-0.5 block text-xs text-muted-foreground">
+                  {formatPrice(organization.promotionBalance)} доступно
+                </span>
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setPayFromBalance(false)}
+              className={cn(
+                "flex w-full items-center gap-3 rounded-xl border px-3 py-3 text-left text-sm transition-colors",
+                !payFromBalance ? "border-primary bg-primary-soft" : "border-border hover:border-primary/40",
+              )}
+            >
+              <span className="grid size-4 shrink-0 place-items-center rounded bg-secondary text-[10px] font-bold">
+                ₸
+              </span>
+              <span>
+                <span className="font-medium">Картой (демо)</span>
+                <span className="mt-0.5 block text-xs text-muted-foreground">Мгновенная оплата</span>
+              </span>
+            </button>
+          </div>
+
+          {payFromBalance && !canAfford ? (
+            <p className="text-xs text-premium">
+              Не хватает {formatPrice(price - organization.promotionBalance)}. Пополните баланс или
+              оплатите картой.
+            </p>
+          ) : null}
+
+          <Button
+            className="w-full"
+            disabled={!tourId || buying || (payFromBalance && !canAfford)}
+            onClick={() => void buy()}
+          >
+            {buying ? "Подключаем…" : "Включить продвижение"}
           </Button>
+
+          {import.meta.env.DEV ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-full text-xs"
+              onClick={() => {
+                topUpPromotionBalance(organization.id, 100_000);
+                toast.success("Баланс пополнен на 100 000 ₸ (демо)");
+              }}
+            >
+              +100 000 ₸ для теста
+            </Button>
+          ) : null}
         </aside>
       </div>
 
@@ -357,14 +422,14 @@ function OperatorPromotionPage() {
         <h2 className="font-display text-lg font-semibold">Сейчас работает</h2>
         {active.length === 0 ? (
           <p className="mt-3 text-sm text-muted-foreground">
-            Активного продвижения нет. Выберите пакет выше, и отметка появится на карточке тура.
+            Активного продвижения нет. Выберите пакет, тур и нажмите «Включить продвижение».
           </p>
         ) : (
           <ul className="mt-4 grid gap-3 md:grid-cols-2">
             {active.map((p) => {
               const tour = state.tours.find((t) => t.id === p.tourOfferId);
               const hotel = tour ? getHotel(tour.hotelId) : null;
-              const pack = catalog.find((c) => c.type === p.type);
+              const pack = promotionCatalogMeta[p.type];
               const left = Math.max(
                 0,
                 Math.ceil((new Date(p.expiresAt).getTime() - Date.now()) / 86400000),
@@ -378,14 +443,26 @@ function OperatorPromotionPage() {
                       className="size-16 shrink-0 rounded-xl object-cover"
                     />
                   ) : null}
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <p className="truncate font-medium">{tour?.title || hotel?.name || "Тур"}</p>
                     <p className="mt-0.5 text-sm text-muted-foreground">
-                      {pack?.title} · отметка «{pack?.badge}»
+                      {pack.title} · «{pack.badge}»
                     </p>
                     <p className="mt-1 text-xs text-muted-foreground">
                       Ещё {left} дн. · {formatPrice(p.price)}
                     </p>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="mt-2 h-8 px-2 text-xs"
+                      onClick={() => {
+                        if (cancelPromotion({ promotionId: p.id, organizationId: organization.id, actorId: user.id })) {
+                          toast.success("Продвижение остановлено");
+                        }
+                      }}
+                    >
+                      Остановить
+                    </Button>
                   </div>
                 </li>
               );

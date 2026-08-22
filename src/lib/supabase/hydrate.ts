@@ -417,6 +417,10 @@ async function loadUserData(userId: string): Promise<UserDataResult> {
             rating: num(r["rating"], 5),
             text: str(r["text"]),
             createdAt: str(r["created_at"]),
+            ...(r["reply"] ? { reply: str(r["reply"]) } : {}),
+            ...(r["reply_at"] ? { replyAt: str(r["reply_at"]) } : {}),
+            ...(r["reply_by_user_id"] ? { replyByUserId: str(r["reply_by_user_id"]) } : {}),
+            ...(r["reply_by_name"] ? { replyByName: str(r["reply_by_name"]) } : {}),
           })),
         };
       }

@@ -58,7 +58,7 @@ type AuthCtx = {
 };
 
 const AuthContext = createContext<AuthCtx | null>(null);
-/** Минимум, чтобы splash не мигал; максимум — не держим экран дольше. */
+/** Минимум, чтобы splash не мигал; максимум не держим экран дольше. */
 const SPLASH_MIN_MS = 350;
 const SPLASH_MAX_MS = 900;
 const AUTH_SESSION_TIMEOUT_MS = 1200;

@@ -243,6 +243,17 @@ function CompanyPage() {
                       ))}
                     </div>
                     <p className="mt-2 text-sm">{r.text}</p>
+                    {r.reply ? (
+                      <div className="mt-4 rounded-2xl border border-border bg-card px-4 py-3">
+                        <p className="text-xs font-semibold uppercase tracking-wide text-primary">
+                          Ответ компании
+                        </p>
+                        <p className="mt-2 text-sm leading-relaxed">{r.reply}</p>
+                        {r.replyByName ? (
+                          <p className="mt-2 text-xs text-muted-foreground">{r.replyByName}</p>
+                        ) : null}
+                      </div>
+                    ) : null}
                   </article>
                 ))}
               </div>

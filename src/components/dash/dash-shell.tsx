@@ -4,6 +4,7 @@ import type { ComponentType, ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { cn } from "@/lib/utils";
 
 export type DashItem = {
   label: string;
@@ -98,12 +99,31 @@ export function DashShell({
   );
 }
 
-export function KpiCard({ label, value, hint }: { label: string; value: string; hint?: string }) {
+export function KpiCard({
+  label,
+  value,
+  hint,
+  emphasis,
+}: {
+  label: string;
+  value: string;
+  hint?: string;
+  emphasis?: boolean;
+}) {
   return (
-    <div className="surface-card p-5">
+    <div
+      className={cn(
+        "surface-card p-5",
+        emphasis && "border-primary/30 bg-primary/[0.03] ring-1 ring-primary/15",
+      )}
+    >
       <p className="text-sm text-muted-foreground">{label}</p>
-      <p className="mt-2 font-display text-2xl font-semibold">{value}</p>
-      {hint ? <p className="mt-1 text-xs text-success">{hint}</p> : null}
+      <p className="mt-2 font-display text-2xl font-semibold tabular-nums">{value}</p>
+      {hint ? (
+        <p className={cn("mt-1 text-xs", emphasis ? "font-medium text-primary" : "text-success")}>
+          {hint}
+        </p>
+      ) : null}
     </div>
   );
 }

@@ -13,10 +13,12 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as AiSearchRouteImport } from './routes/ai-search'
 import { Route as AssistanceRouteImport } from './routes/assistance'
+import { Route as Assistance2RouteImport } from './routes/assistance 2'
 import { Route as CompanySignupRouteImport } from './routes/company-signup'
 import { Route as CompareRouteImport } from './routes/compare'
 import { Route as DestinationsRouteImport } from './routes/destinations'
 import { Route as ExcursionsRouteImport } from './routes/excursions'
+import { Route as Excursions2RouteImport } from './routes/excursions 2'
 import { Route as ExperiencesRouteImport } from './routes/experiences'
 import { Route as FavoritesRouteImport } from './routes/favorites'
 import { Route as ForCompaniesRouteImport } from './routes/for-companies'
@@ -30,6 +32,7 @@ import { Route as RegistrationRouteImport } from './routes/registration'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as AdminAiKeysRouteImport } from './routes/admin/ai-keys'
+import { Route as AdminAiKeys2RouteImport } from './routes/admin/ai-keys 2'
 import { Route as AdminAnalyticsRouteImport } from './routes/admin/analytics'
 import { Route as AdminApiMonitoringRouteImport } from './routes/admin/api-monitoring'
 import { Route as AdminAuditLogsRouteImport } from './routes/admin/audit-logs'
@@ -87,6 +90,11 @@ const AssistanceRoute = AssistanceRouteImport.update({
   path: '/assistance',
   getParentRoute: () => rootRouteImport,
 } as any)
+const Assistance2Route = Assistance2RouteImport.update({
+  id: '/assistance 2',
+  path: '/assistance 2',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CompanySignupRoute = CompanySignupRouteImport.update({
   id: '/company-signup',
   path: '/company-signup',
@@ -105,6 +113,11 @@ const DestinationsRoute = DestinationsRouteImport.update({
 const ExcursionsRoute = ExcursionsRouteImport.update({
   id: '/excursions',
   path: '/excursions',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const Excursions2Route = Excursions2RouteImport.update({
+  id: '/excursions 2',
+  path: '/excursions 2',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ExperiencesRoute = ExperiencesRouteImport.update({
@@ -170,6 +183,11 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
 const AdminAiKeysRoute = AdminAiKeysRouteImport.update({
   id: '/admin/ai-keys',
   path: '/admin/ai-keys',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminAiKeys2Route = AdminAiKeys2RouteImport.update({
+  id: '/admin/ai-keys 2',
+  path: '/admin/ai-keys 2',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminAnalyticsRoute = AdminAnalyticsRouteImport.update({
@@ -360,10 +378,12 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/ai-search': typeof AiSearchRoute
   '/assistance': typeof AssistanceRoute
+  '/assistance 2': typeof Assistance2Route
   '/company-signup': typeof CompanySignupRoute
   '/compare': typeof CompareRoute
   '/destinations': typeof DestinationsRoute
   '/excursions': typeof ExcursionsRoute
+  '/excursions 2': typeof Excursions2Route
   '/experiences': typeof ExperiencesRoute
   '/favorites': typeof FavoritesRoute
   '/for-companies': typeof ForCompaniesRoute
@@ -375,6 +395,7 @@ export interface FileRoutesByFullPath {
   '/registration': typeof RegistrationRoute
   '/search': typeof SearchRoute
   '/admin/ai-keys': typeof AdminAiKeysRoute
+  '/admin/ai-keys 2': typeof AdminAiKeys2Route
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/api-monitoring': typeof AdminApiMonitoringRoute
   '/admin/audit-logs': typeof AdminAuditLogsRoute
@@ -418,10 +439,12 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/ai-search': typeof AiSearchRoute
   '/assistance': typeof AssistanceRoute
+  '/assistance 2': typeof Assistance2Route
   '/company-signup': typeof CompanySignupRoute
   '/compare': typeof CompareRoute
   '/destinations': typeof DestinationsRoute
   '/excursions': typeof ExcursionsRoute
+  '/excursions 2': typeof Excursions2Route
   '/experiences': typeof ExperiencesRoute
   '/favorites': typeof FavoritesRoute
   '/for-companies': typeof ForCompaniesRoute
@@ -433,6 +456,7 @@ export interface FileRoutesByTo {
   '/registration': typeof RegistrationRoute
   '/search': typeof SearchRoute
   '/admin/ai-keys': typeof AdminAiKeysRoute
+  '/admin/ai-keys 2': typeof AdminAiKeys2Route
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/api-monitoring': typeof AdminApiMonitoringRoute
   '/admin/audit-logs': typeof AdminAuditLogsRoute
@@ -478,10 +502,12 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/ai-search': typeof AiSearchRoute
   '/assistance': typeof AssistanceRoute
+  '/assistance 2': typeof Assistance2Route
   '/company-signup': typeof CompanySignupRoute
   '/compare': typeof CompareRoute
   '/destinations': typeof DestinationsRoute
   '/excursions': typeof ExcursionsRoute
+  '/excursions 2': typeof Excursions2Route
   '/experiences': typeof ExperiencesRoute
   '/favorites': typeof FavoritesRoute
   '/for-companies': typeof ForCompaniesRoute
@@ -493,6 +519,7 @@ export interface FileRoutesById {
   '/registration': typeof RegistrationRoute
   '/search': typeof SearchRoute
   '/admin/ai-keys': typeof AdminAiKeysRoute
+  '/admin/ai-keys 2': typeof AdminAiKeys2Route
   '/admin/analytics': typeof AdminAnalyticsRoute
   '/admin/api-monitoring': typeof AdminApiMonitoringRoute
   '/admin/audit-logs': typeof AdminAuditLogsRoute
@@ -539,10 +566,12 @@ export interface FileRouteTypes {
     | '/about'
     | '/ai-search'
     | '/assistance'
+    | '/assistance 2'
     | '/company-signup'
     | '/compare'
     | '/destinations'
     | '/excursions'
+    | '/excursions 2'
     | '/experiences'
     | '/favorites'
     | '/for-companies'
@@ -554,6 +583,7 @@ export interface FileRouteTypes {
     | '/registration'
     | '/search'
     | '/admin/ai-keys'
+    | '/admin/ai-keys 2'
     | '/admin/analytics'
     | '/admin/api-monitoring'
     | '/admin/audit-logs'
@@ -597,10 +627,12 @@ export interface FileRouteTypes {
     | '/about'
     | '/ai-search'
     | '/assistance'
+    | '/assistance 2'
     | '/company-signup'
     | '/compare'
     | '/destinations'
     | '/excursions'
+    | '/excursions 2'
     | '/experiences'
     | '/favorites'
     | '/for-companies'
@@ -612,6 +644,7 @@ export interface FileRouteTypes {
     | '/registration'
     | '/search'
     | '/admin/ai-keys'
+    | '/admin/ai-keys 2'
     | '/admin/analytics'
     | '/admin/api-monitoring'
     | '/admin/audit-logs'
@@ -656,10 +689,12 @@ export interface FileRouteTypes {
     | '/about'
     | '/ai-search'
     | '/assistance'
+    | '/assistance 2'
     | '/company-signup'
     | '/compare'
     | '/destinations'
     | '/excursions'
+    | '/excursions 2'
     | '/experiences'
     | '/favorites'
     | '/for-companies'
@@ -671,6 +706,7 @@ export interface FileRouteTypes {
     | '/registration'
     | '/search'
     | '/admin/ai-keys'
+    | '/admin/ai-keys 2'
     | '/admin/analytics'
     | '/admin/api-monitoring'
     | '/admin/audit-logs'
@@ -716,10 +752,12 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   AiSearchRoute: typeof AiSearchRoute
   AssistanceRoute: typeof AssistanceRoute
+  Assistance2Route: typeof Assistance2Route
   CompanySignupRoute: typeof CompanySignupRoute
   CompareRoute: typeof CompareRoute
   DestinationsRoute: typeof DestinationsRoute
   ExcursionsRoute: typeof ExcursionsRoute
+  Excursions2Route: typeof Excursions2Route
   ExperiencesRoute: typeof ExperiencesRoute
   FavoritesRoute: typeof FavoritesRoute
   ForCompaniesRoute: typeof ForCompaniesRoute
@@ -731,6 +769,7 @@ export interface RootRouteChildren {
   RegistrationRoute: typeof RegistrationRoute
   SearchRoute: typeof SearchRoute
   AdminAiKeysRoute: typeof AdminAiKeysRoute
+  AdminAiKeys2Route: typeof AdminAiKeys2Route
   AdminAnalyticsRoute: typeof AdminAnalyticsRoute
   AdminApiMonitoringRoute: typeof AdminApiMonitoringRoute
   AdminAuditLogsRoute: typeof AdminAuditLogsRoute
@@ -793,6 +832,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AssistanceRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/assistance 2': {
+      id: '/assistance 2'
+      path: '/assistance 2'
+      fullPath: '/assistance 2'
+      preLoaderRoute: typeof Assistance2RouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/company-signup': {
       id: '/company-signup'
       path: '/company-signup'
@@ -819,6 +865,13 @@ declare module '@tanstack/react-router' {
       path: '/excursions'
       fullPath: '/excursions'
       preLoaderRoute: typeof ExcursionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/excursions 2': {
+      id: '/excursions 2'
+      path: '/excursions 2'
+      fullPath: '/excursions 2'
+      preLoaderRoute: typeof Excursions2RouteImport
       parentRoute: typeof rootRouteImport
     }
     '/experiences': {
@@ -910,6 +963,13 @@ declare module '@tanstack/react-router' {
       path: '/admin/ai-keys'
       fullPath: '/admin/ai-keys'
       preLoaderRoute: typeof AdminAiKeysRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/ai-keys 2': {
+      id: '/admin/ai-keys 2'
+      path: '/admin/ai-keys 2'
+      fullPath: '/admin/ai-keys 2'
+      preLoaderRoute: typeof AdminAiKeys2RouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/analytics': {
@@ -1197,10 +1257,12 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   AiSearchRoute: AiSearchRoute,
   AssistanceRoute: AssistanceRoute,
+  Assistance2Route: Assistance2Route,
   CompanySignupRoute: CompanySignupRoute,
   CompareRoute: CompareRoute,
   DestinationsRoute: DestinationsRoute,
   ExcursionsRoute: ExcursionsRoute,
+  Excursions2Route: Excursions2Route,
   ExperiencesRoute: ExperiencesRoute,
   FavoritesRoute: FavoritesRoute,
   ForCompaniesRoute: ForCompaniesRoute,
@@ -1212,6 +1274,7 @@ const rootRouteChildren: RootRouteChildren = {
   RegistrationRoute: RegistrationRoute,
   SearchRoute: SearchRoute,
   AdminAiKeysRoute: AdminAiKeysRoute,
+  AdminAiKeys2Route: AdminAiKeys2Route,
   AdminAnalyticsRoute: AdminAnalyticsRoute,
   AdminApiMonitoringRoute: AdminApiMonitoringRoute,
   AdminAuditLogsRoute: AdminAuditLogsRoute,

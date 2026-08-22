@@ -1,14 +1,27 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import {
   BadgeCheck,
+  Briefcase,
+  Building2,
+  Camera,
+  Check,
   ExternalLink,
+  Globe,
   ImagePlus,
+  Instagram,
+  Mail,
+  MessageCircle,
+  Phone,
+  Send,
+  ShieldCheck,
   Trash2,
+  Users,
   Video,
 } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useRef, useState, type ComponentType, type ReactNode } from "react";
 import { toast } from "sonner";
 
+import { TabPills } from "@/components/admin";
 import { DashShell } from "@/components/dash/dash-shell";
 import { useOperatorNav } from "@/components/dash/nav-items";
 import {
@@ -46,6 +59,18 @@ export const Route = createFileRoute("/operator/company")({
 const MAX_PHOTOS = 12;
 const MAX_VIDEOS = 3;
 
+type SectionId = "face" | "contacts" | "services" | "media" | "verification" | "team";
+
+const sections: { id: SectionId; label: string; icon: ComponentType<{ className?: string }> }[] =
+  [
+    { id: "face", label: "Лицо", icon: Building2 },
+    { id: "contacts", label: "Контакты", icon: Phone },
+    { id: "services", label: "Услуги", icon: Briefcase },
+    { id: "media", label: "Медиа", icon: Camera },
+    { id: "verification", label: "Проверка", icon: ShieldCheck },
+    { id: "team", label: "Команда", icon: Users },
+  ];
+
 function OperatorCompanyPage() {
   const { allowed } = useRequireAuth(["OPERATOR_ADMIN", "OPERATOR_MANAGER"]);
   const { user, organization } = useAuth();
@@ -53,6 +78,8 @@ function OperatorCompanyPage() {
   const nav = useOperatorNav(organization?.id);
   const [draft, setDraft] = useState<Organization | null>(null);
   const [managerEmail, setManagerEmail] = useState("");
+  const [activeSection, setActiveSection] = useState<SectionId>("face");
+  const sectionRefs = useRef<Partial<Record<SectionId, HTMLElement | null>>>({});
   const form = draft ?? organization;
   if (!allowed || !organization || !user || !form) return null;
   const setForm = setDraft;
@@ -64,15 +91,21 @@ function OperatorCompanyPage() {
   const videos = form.videos ?? [];
   const verified = organization.status === "APPROVED";
 
-  const checks = [
-    { ok: Boolean(form.logoUrl), label: "Логотип" },
-    { ok: Boolean(form.coverUrl), label: "Обложка" },
-    { ok: Boolean(form.about?.trim()), label: "Описание" },
-    { ok: photos.length > 0, label: "Фото" },
-    { ok: Boolean(form.phone || form.whatsapp), label: "Телефон" },
-    { ok: verified, label: "Знак проверки" },
-  ];
+  const checks = useMemo(
+    () => [
+      { ok: Boolean(form.logoUrl), label: "Логотип", section: "face" as const },
+      { ok: Boolean(form.coverUrl), label: "Обложка", section: "face" as const },
+      { ok: Boolean(form.about?.trim()), label: "Описание", section: "face" as const },
+      { ok: photos.length > 0, label: "Фото", section: "media" as const },
+      { ok: Boolean(form.phone || form.whatsapp), label: "Телефон", section: "contacts" as const },
+      { ok: verified, label: "Знак проверки", section: "verification" as const },
+    ],
+    [form, photos.length, verified],
+  );
+
   const ready = checks.filter((c) => c.ok).length;
+  const progress = Math.round((ready / checks.length) * 100);
+  const nextCheck = checks.find((c) => !c.ok);
 
   const toggleList = (
     key: "services" | "countries" | "clientCountries" | "languages",
@@ -90,12 +123,17 @@ function OperatorCompanyPage() {
     toast.success("Страница обновлена. Так её видят туристы.");
   };
 
+  const jumpTo = (id: SectionId) => {
+    setActiveSection(id);
+    sectionRefs.current[id]?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   return (
     <DashShell
       brand={organization.name}
       items={nav}
       title="Страница компании"
-      subtitle="Заполните карточку один раз: турист видит её в заявках и в поиске."
+      subtitle="Публичная визитка: турист видит её в заявках, поиске и при выборе предложения."
       actions={
         <div className="flex flex-wrap items-center gap-2">
           <Button variant="outline" size="sm" asChild>
@@ -110,85 +148,119 @@ function OperatorCompanyPage() {
         </div>
       }
     >
-      <div className="mb-5 flex flex-wrap items-center gap-2">
-        {verified ? (
-          <Badge className="border-0 bg-success/12 text-success">
-            <BadgeCheck className="mr-1 size-3.5" />
-            Компания проверена
-          </Badge>
-        ) : (
-          <Badge className="border-0 bg-premium/15 text-premium">Знак ещё не получен</Badge>
-        )}
-        <span className="text-sm text-muted-foreground">
-          Заполнено {ready} из {checks.length}
-        </span>
-        {checks.map((item) => (
-          <span
-            key={item.label}
-            className={cn(
-              "rounded-full px-2.5 py-1 text-[11px] font-medium",
-              item.ok ? "bg-success/12 text-success" : "bg-secondary text-muted-foreground",
-            )}
-          >
-            {item.ok ? "✓ " : ""}
-            {item.label}
-          </span>
-        ))}
-      </div>
-
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_300px]">
-        <div className="space-y-6">
-          <section className="surface-card space-y-4 p-6">
-            <div>
-              <h2 className="font-display text-lg font-semibold">Лицо компании</h2>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Обложка и логотип. Это первое, что видит турист.
-              </p>
-            </div>
-            <CoverField
-              value={form.coverUrl ?? ""}
-              disabled={readOnly}
-              onChange={(coverUrl) => setForm({ ...form, coverUrl })}
-            />
-            <div className="flex flex-col gap-4 sm:flex-row">
-              <LogoField
-                value={form.logoUrl ?? ""}
-                name={form.name}
-                disabled={readOnly}
-                onChange={(logoUrl) => setForm({ ...form, logoUrl })}
-              />
-              <div className="grid min-w-0 flex-1 gap-4 sm:grid-cols-2">
-                <Field
-                  id="company-name"
-                  label="Название"
-                  value={form.name}
-                  disabled={readOnly}
-                  onChange={(name) => setForm({ ...form, name })}
-                />
-                <Field
-                  id="company-city"
-                  label="Город офиса"
-                  value={form.city}
-                  disabled={readOnly}
-                  onChange={(city) => setForm({ ...form, city })}
-                />
-                <Field
-                  id="company-country"
-                  label="Страна"
-                  value={form.country}
-                  disabled={readOnly}
-                  onChange={(country) => setForm({ ...form, country })}
-                />
-                <Field
-                  id="company-person"
-                  label="С кем говорит турист"
-                  value={form.contactPerson}
-                  disabled={readOnly}
-                  onChange={(contactPerson) => setForm({ ...form, contactPerson })}
-                />
+      <div className="surface-card overflow-hidden">
+        <div className="relative bg-[linear-gradient(135deg,oklch(0.97_0.02_25),oklch(0.96_0.03_250))] p-5 md:p-6">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="flex min-w-0 items-center gap-4">
+              <ProgressRing value={progress} />
+              <div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <h2 className="font-display text-lg font-semibold">Готовность страницы</h2>
+                  {verified ? (
+                    <Badge className="border-0 bg-success/12 text-success">
+                      <BadgeCheck className="mr-1 size-3.5" />
+                      Проверена
+                    </Badge>
+                  ) : (
+                    <Badge className="border-0 bg-premium/15 text-premium">Без знака проверки</Badge>
+                  )}
+                </div>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Заполнено {ready} из {checks.length} · {progress}%
+                </p>
+                {nextCheck ? (
+                  <button
+                    type="button"
+                    onClick={() => jumpTo(nextCheck.section)}
+                    className="mt-2 text-sm font-medium text-primary hover:underline"
+                  >
+                    Следующий шаг: {nextCheck.label}
+                  </button>
+                ) : (
+                  <p className="mt-2 text-sm font-medium text-success">Страница полностью заполнена</p>
+                )}
               </div>
             </div>
+            {!readOnly ? (
+              <Button size="sm" onClick={save}>
+                Сохранить изменения
+              </Button>
+            ) : null}
+          </div>
+          <div className="mt-4 flex flex-wrap gap-2">
+            {checks.map((item) => (
+              <button
+                key={item.label}
+                type="button"
+                onClick={() => jumpTo(item.section)}
+                className={cn(
+                  "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors",
+                  item.ok
+                    ? "bg-success/12 text-success"
+                    : "bg-card/80 text-muted-foreground hover:bg-card hover:text-foreground",
+                )}
+              >
+                {item.ok ? <Check className="size-3" /> : null}
+                {item.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-5 overflow-x-auto pb-1">
+        <TabPills
+          value={activeSection}
+          onChange={(v) => jumpTo(v as SectionId)}
+          items={sections.map((s) => ({ value: s.id, label: s.label }))}
+        />
+      </div>
+
+      <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="space-y-6">
+          <ProfileSection
+            ref={(el) => {
+              sectionRefs.current.face = el;
+            }}
+            id="face"
+            icon={Building2}
+            title="Лицо компании"
+            description="Обложка, логотип и текст. Первое впечатление туриста."
+          >
+            <HeroEditor
+              form={form}
+              disabled={readOnly}
+              onChange={setForm}
+            />
             <div className="grid gap-4 sm:grid-cols-2">
+              <Field
+                id="company-name"
+                label="Название"
+                value={form.name}
+                disabled={readOnly}
+                onChange={(name) => setForm({ ...form, name })}
+              />
+              <Field
+                id="company-city"
+                label="Город офиса"
+                value={form.city}
+                disabled={readOnly}
+                onChange={(city) => setForm({ ...form, city })}
+              />
+              <Field
+                id="company-country"
+                label="Страна"
+                value={form.country}
+                disabled={readOnly}
+                onChange={(country) => setForm({ ...form, country })}
+              />
+              <Field
+                id="company-person"
+                label="С кем говорит турист"
+                value={form.contactPerson}
+                disabled={readOnly}
+                onChange={(contactPerson) => setForm({ ...form, contactPerson })}
+              />
               <Field
                 id="company-legal"
                 label="Юридическое название"
@@ -213,36 +285,50 @@ function OperatorCompanyPage() {
                 disabled={readOnly}
                 onChange={(e) => setForm({ ...form, about: e.target.value })}
                 placeholder="Работаем в Дубае с 2018 года. Семейные поездки, экскурсии, трансферы."
+                className="min-h-[120px] resize-y"
               />
-            </div>
-          </section>
-
-          <section className="surface-card space-y-4 p-6">
-            <div>
-              <h2 className="font-display text-lg font-semibold">Контакты</h2>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Турист напишет сюда, если выберет вас.
+              <p className="text-xs text-muted-foreground">
+                2–3 предложения: опыт, направления, чем вы отличаетесь.
               </p>
             </div>
+          </ProfileSection>
+
+          <ProfileSection
+            ref={(el) => {
+              sectionRefs.current.contacts = el;
+            }}
+            id="contacts"
+            icon={Phone}
+            title="Контакты"
+            description="Турист напишет сюда, если выберет ваше предложение."
+          >
             <div className="grid gap-4 sm:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="company-phone">Телефон</Label>
+              <ContactField
+                id="company-phone"
+                label="Телефон"
+                icon={Phone}
+                disabled={readOnly}
+              >
                 <PhoneInput
                   id="company-phone"
                   value={form.phone}
                   disabled={readOnly}
                   onChange={(phone) => setForm({ ...form, phone })}
                 />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="company-wa">WhatsApp</Label>
+              </ContactField>
+              <ContactField
+                id="company-wa"
+                label="WhatsApp"
+                icon={MessageCircle}
+                disabled={readOnly}
+              >
                 <PhoneInput
                   id="company-wa"
                   value={form.whatsapp ?? ""}
                   disabled={readOnly}
                   onChange={(whatsapp) => setForm({ ...form, whatsapp })}
                 />
-              </div>
+              </ContactField>
               <Field
                 id="company-site"
                 label="Сайт"
@@ -275,13 +361,17 @@ function OperatorCompanyPage() {
                 onChange={(email) => setForm({ ...form, email })}
               />
             </div>
-          </section>
+          </ProfileSection>
 
-          <section className="surface-card space-y-5 p-6">
-            <div>
-              <h2 className="font-display text-lg font-semibold">Чем занимаетесь</h2>
-              <p className="mt-1 text-sm text-muted-foreground">Можно выбрать несколько.</p>
-            </div>
+          <ProfileSection
+            ref={(el) => {
+              sectionRefs.current.services = el;
+            }}
+            id="services"
+            icon={Briefcase}
+            title="Чем занимаетесь"
+            description="Помогает туристу понять, подходите ли вы под его запрос."
+          >
             <ChipGroup
               label="Услуги"
               options={companyServiceOptions}
@@ -310,15 +400,17 @@ function OperatorCompanyPage() {
               disabled={readOnly}
               onToggle={(v) => toggleList("languages", v)}
             />
-          </section>
+          </ProfileSection>
 
-          <section className="surface-card space-y-4 p-6">
-            <div>
-              <h2 className="font-display text-lg font-semibold">Фото и видео</h2>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Отели, экскурсии, офис. Турист выбирает глазами.
-              </p>
-            </div>
+          <ProfileSection
+            ref={(el) => {
+              sectionRefs.current.media = el;
+            }}
+            id="media"
+            icon={Camera}
+            title="Фото и видео"
+            description="Отели, экскурсии, офис. Турист выбирает глазами."
+          >
             <PhotoGrid
               photos={photos}
               disabled={readOnly}
@@ -329,9 +421,17 @@ function OperatorCompanyPage() {
               disabled={readOnly}
               onChange={(next) => setForm({ ...form, videos: next })}
             />
-          </section>
+          </ProfileSection>
 
-          <section className="surface-card space-y-4 p-6">
+          <ProfileSection
+            ref={(el) => {
+              sectionRefs.current.verification = el;
+            }}
+            id="verification"
+            icon={ShieldCheck}
+            title="Проверка компании"
+            description="Знак «Проверенная компания» повышает доверие и конверсию."
+          >
             <VerificationDocumentsPanel
               companyName={form.name}
               companySummary={[form.city, form.country, (form.services ?? []).join(", ")]
@@ -342,53 +442,70 @@ function OperatorCompanyPage() {
               showPreview={false}
               onChange={(next) => setForm({ ...form, verificationFiles: next })}
             />
-            <Button
-              variant="outline"
-              disabled={
-                readOnly ||
-                verified ||
-                !canSubmitVerification(verificationFiles) ||
-                verificationFiles.length === 0
-              }
-              onClick={() => {
-                if (!hasRequiredVerificationDocuments(verificationFiles)) {
-                  toast.error("Загрузите свидетельство о регистрации.");
-                  return;
+            <div className="flex flex-wrap items-center gap-3 pt-2">
+              <Button
+                variant="outline"
+                disabled={
+                  readOnly ||
+                  verified ||
+                  !canSubmitVerification(verificationFiles) ||
+                  verificationFiles.length === 0
                 }
-                submitForVerification(organization.id, verificationFiles);
-                toast.success("Документы отправлены на проверку. Обычно до 2 рабочих дней.");
-              }}
-            >
-              <BadgeCheck className="size-4" />
-              {verified ? "Проверка пройдена" : "Отправить на проверку"}
-            </Button>
-            {organization.verificationSubmittedAt && !verified ? (
-              <p className="text-xs text-muted-foreground">
-                Отправлено{" "}
-                {new Date(organization.verificationSubmittedAt).toLocaleString("ru-RU")}
-                {organization.documents?.length
-                  ? ` · ${organization.documents.join(", ")}`
-                  : ""}
-              </p>
-            ) : null}
-          </section>
+                onClick={() => {
+                  if (!hasRequiredVerificationDocuments(verificationFiles)) {
+                    toast.error("Загрузите свидетельство о регистрации.");
+                    return;
+                  }
+                  submitForVerification(organization.id, verificationFiles);
+                  toast.success("Документы отправлены на проверку. Обычно до 2 рабочих дней.");
+                }}
+              >
+                <BadgeCheck className="size-4" />
+                {verified ? "Проверка пройдена" : "Отправить на проверку"}
+              </Button>
+              {organization.verificationSubmittedAt && !verified ? (
+                <p className="text-xs text-muted-foreground">
+                  Отправлено{" "}
+                  {new Date(organization.verificationSubmittedAt).toLocaleString("ru-RU")}
+                </p>
+              ) : null}
+            </div>
+          </ProfileSection>
 
-          <section className="surface-card p-6">
-            <h2 className="font-display text-lg font-semibold">Команда</h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Менеджер видит заявки и отвечает туристам.
-            </p>
-            <ul className="mt-4 space-y-2 text-sm">
+          <ProfileSection
+            ref={(el) => {
+              sectionRefs.current.team = el;
+            }}
+            id="team"
+            icon={Users}
+            title="Команда"
+            description="Менеджер видит заявки и отвечает туристам."
+          >
+            <ul className="space-y-2">
               {members.map((m) => {
                 const u = state.users.find((x) => x.id === m.userId);
+                const initials = (u?.name ?? "?")
+                  .split(" ")
+                  .map((p) => p[0])
+                  .join("")
+                  .slice(0, 2)
+                  .toUpperCase();
                 return (
                   <li
                     key={m.id}
-                    className="flex items-center justify-between rounded-xl bg-secondary px-3 py-2"
+                    className="flex items-center justify-between gap-3 rounded-2xl border border-border bg-secondary/30 px-4 py-3"
                   >
-                    <span>
-                      {u?.name} · {m.role === "OPERATOR_ADMIN" ? "владелец" : "менеджер"}
-                    </span>
+                    <div className="flex min-w-0 items-center gap-3">
+                      <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary/10 font-display text-sm font-semibold text-primary">
+                        {initials}
+                      </span>
+                      <div className="min-w-0">
+                        <p className="truncate font-medium">{u?.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {m.role === "OPERATOR_ADMIN" ? "Владелец" : "Менеджер"} · {u?.email}
+                        </p>
+                      </div>
+                    </div>
                     {user.role === "OPERATOR_ADMIN" && m.role === "OPERATOR_MANAGER" ? (
                       <Button
                         size="sm"
@@ -409,13 +526,14 @@ function OperatorCompanyPage() {
               })}
             </ul>
             {user.role === "OPERATOR_ADMIN" ? (
-              <div className="mt-4 flex gap-2">
+              <div className="mt-4 flex flex-col gap-2 sm:flex-row">
                 <Input
                   placeholder="manager@company.kz"
                   value={managerEmail}
                   onChange={(e) => setManagerEmail(e.target.value)}
                 />
                 <Button
+                  className="shrink-0"
                   onClick={() => {
                     const email = managerEmail.trim().toLowerCase();
                     if (!email) return;
@@ -450,13 +568,13 @@ function OperatorCompanyPage() {
                     toast.success("Сотрудник добавлен");
                   }}
                 >
-                  Добавить
+                  Добавить менеджера
                 </Button>
               </div>
             ) : null}
-          </section>
+          </ProfileSection>
 
-          <div className="flex flex-wrap gap-3 pb-8">
+          <div className="flex flex-wrap gap-3 pb-4">
             <Button disabled={readOnly} onClick={save}>
               Сохранить страницу
             </Button>
@@ -474,61 +592,233 @@ function OperatorCompanyPage() {
   );
 }
 
-function CompanyPreview({ form, verified }: { form: Organization; verified: boolean }) {
+function ProgressRing({ value }: { value: number }) {
+  const r = 28;
+  const c = 2 * Math.PI * r;
+  const offset = c - (value / 100) * c;
+
   return (
-    <aside className="xl:sticky xl:top-24">
-      <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-        Как увидит турист
-      </p>
-      <article className="overflow-hidden rounded-2xl border border-border bg-card shadow-card">
-        <div className="relative h-28 bg-secondary">
-          {form.coverUrl ? (
-            <img src={form.coverUrl} alt="" className="size-full object-cover" />
-          ) : (
-            <div className="size-full bg-[linear-gradient(120deg,oklch(0.55_0.13_250),oklch(0.45_0.1_265))]" />
-          )}
+    <div className="relative grid size-[72px] place-items-center">
+      <svg className="-rotate-90" width="72" height="72" viewBox="0 0 72 72" aria-hidden>
+        <circle cx="36" cy="36" r={r} fill="none" stroke="currentColor" strokeWidth="6" className="text-secondary" />
+        <circle
+          cx="36"
+          cy="36"
+          r={r}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="6"
+          strokeLinecap="round"
+          strokeDasharray={c}
+          strokeDashoffset={offset}
+          className="text-primary transition-[stroke-dashoffset] duration-500"
+        />
+      </svg>
+      <span className="absolute font-display text-sm font-semibold tabular-nums">{value}%</span>
+    </div>
+  );
+}
+
+const ProfileSection = ({
+  id,
+  icon: Icon,
+  title,
+  description,
+  children,
+  ref,
+}: {
+  id: string;
+  icon: ComponentType<{ className?: string }>;
+  title: string;
+  description: string;
+  children: ReactNode;
+  ref?: (el: HTMLElement | null) => void;
+}) => (
+  <section
+    id={id}
+    ref={ref}
+    className="scroll-mt-28 surface-card overflow-hidden"
+  >
+    <div className="border-b border-border bg-secondary/20 px-5 py-4 md:px-6">
+      <div className="flex items-start gap-3">
+        <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
+          <Icon className="size-4" />
+        </span>
+        <div>
+          <h2 className="font-display text-lg font-semibold">{title}</h2>
+          <p className="mt-0.5 text-sm text-muted-foreground">{description}</p>
         </div>
-        <div className="space-y-3 p-4">
-          <div className="-mt-10 flex items-end gap-3">
+      </div>
+    </div>
+    <div className="space-y-5 p-5 md:p-6">{children}</div>
+  </section>
+);
+
+function HeroEditor({
+  form,
+  disabled,
+  onChange,
+}: {
+  form: Organization;
+  disabled: boolean;
+  onChange: (next: Organization) => void;
+}) {
+  return (
+    <div className="overflow-hidden rounded-2xl border border-border">
+      <CoverField
+        value={form.coverUrl ?? ""}
+        disabled={disabled}
+        onChange={(coverUrl) => onChange({ ...form, coverUrl })}
+      />
+      <div className="relative bg-card px-4 pb-4 pt-0 md:px-5 md:pb-5">
+        <div className="-mt-10 flex flex-wrap items-end gap-4">
+          <LogoField
+            value={form.logoUrl ?? ""}
+            name={form.name}
+            disabled={disabled}
+            onChange={(logoUrl) => onChange({ ...form, logoUrl })}
+          />
+          <div className="min-w-0 flex-1 pb-1">
+            <p className="font-display text-lg font-semibold leading-tight">
+              {form.name || "Название компании"}
+            </p>
+            <p className="text-sm text-muted-foreground">
+              {[form.city, form.country].filter(Boolean).join(", ") || "Город и страна"}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CompanyPreview({ form, verified }: { form: Organization; verified: boolean }) {
+  const wa = form.whatsapp?.replace(/\D/g, "") || form.phone?.replace(/\D/g, "");
+
+  return (
+    <aside className="xl:sticky xl:top-28 xl:self-start">
+      <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+        Превью для туриста
+      </p>
+      <div className="overflow-hidden rounded-[28px] border border-border bg-card shadow-[0_20px_50px_-20px_oklch(0.3_0.05_250/0.35)]">
+        <div className="relative">
+          {form.coverUrl ? (
+            <img src={form.coverUrl} alt="" className="h-32 w-full object-cover" />
+          ) : (
+            <div className="h-32 w-full bg-[linear-gradient(120deg,oklch(0.55_0.13_250),oklch(0.45_0.1_265))]" />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-ink/40 to-transparent" />
+        </div>
+
+        <div className="relative px-4 pb-5">
+          <div className="-mt-8 flex items-end gap-3">
             {form.logoUrl ? (
               <img
                 src={form.logoUrl}
                 alt=""
-                className="size-14 rounded-2xl border-2 border-card object-cover"
+                className="size-14 rounded-2xl border-2 border-card object-cover shadow-sm"
               />
             ) : (
-              <span className="grid size-14 place-items-center rounded-2xl border-2 border-card bg-primary/10 font-display text-sm font-semibold text-primary">
-                {form.name.slice(0, 2).toUpperCase()}
+              <span className="grid size-14 place-items-center rounded-2xl border-2 border-card bg-primary/10 font-display text-sm font-semibold text-primary shadow-sm">
+                {form.name.slice(0, 2).toUpperCase() || "TG"}
               </span>
             )}
             {verified ? (
-              <span className="mb-1 rounded-full bg-success/12 px-2 py-0.5 text-[10px] font-semibold text-success">
+              <Badge className="mb-1 border-0 bg-success/12 text-[10px] text-success">
+                <BadgeCheck className="mr-1 size-3" />
                 Проверена
-              </span>
+              </Badge>
             ) : null}
           </div>
-          <div>
-            <p className="font-display text-base font-semibold leading-snug">{form.name}</p>
-            <p className="text-xs text-muted-foreground">
-              {form.city}
-              {form.country ? `, ${form.country}` : ""}
-            </p>
-          </div>
+
+          <p className="mt-3 font-display text-base font-semibold leading-snug">{form.name}</p>
+          <p className="text-xs text-muted-foreground">
+            {form.city}
+            {form.country ? `, ${form.country}` : ""}
+          </p>
+
           {form.about ? (
-            <p className="line-clamp-3 text-xs text-muted-foreground">{form.about}</p>
+            <p className="mt-3 line-clamp-4 text-xs leading-relaxed text-muted-foreground">
+              {form.about}
+            </p>
           ) : (
-            <p className="text-xs text-muted-foreground">Добавьте короткое описание компании.</p>
+            <p className="mt-3 text-xs text-muted-foreground">Добавьте короткое описание.</p>
           )}
-          <div className="flex flex-wrap gap-1">
-            {(form.services ?? []).slice(0, 4).map((s) => (
-              <span key={s} className="rounded-full bg-secondary px-2 py-0.5 text-[10px]">
-                {s}
-              </span>
-            ))}
+
+          {(form.services ?? []).length > 0 ? (
+            <div className="mt-3 flex flex-wrap gap-1">
+              {(form.services ?? []).slice(0, 4).map((s) => (
+                <span key={s} className="rounded-full bg-secondary px-2 py-0.5 text-[10px]">
+                  {s}
+                </span>
+              ))}
+            </div>
+          ) : null}
+
+          {(form.photos ?? []).length > 0 ? (
+            <div className="mt-4 grid grid-cols-3 gap-1.5">
+              {(form.photos ?? []).slice(0, 3).map((src, i) => (
+                <img key={`${src.slice(0, 16)}-${i}`} src={src} alt="" className="aspect-square rounded-lg object-cover" />
+              ))}
+            </div>
+          ) : null}
+
+          <div className="mt-4 space-y-2 border-t border-border pt-4">
+            {form.phone ? (
+              <PreviewContact icon={Phone} label={form.phone} />
+            ) : null}
+            {wa ? <PreviewContact icon={MessageCircle} label="WhatsApp" /> : null}
+            {form.website ? <PreviewContact icon={Globe} label="Сайт" /> : null}
+            {form.instagram ? <PreviewContact icon={Instagram} label={form.instagram} /> : null}
+            {form.telegram ? <PreviewContact icon={Send} label="Telegram" /> : null}
+            {form.email ? <PreviewContact icon={Mail} label={form.email} /> : null}
           </div>
+
+          <Button size="sm" className="mt-4 w-full" disabled>
+            Оставить заявку
+          </Button>
         </div>
-      </article>
+      </div>
     </aside>
+  );
+}
+
+function PreviewContact({
+  icon: Icon,
+  label,
+}: {
+  icon: ComponentType<{ className?: string }>;
+  label: string;
+}) {
+  return (
+    <p className="flex items-center gap-2 text-xs text-muted-foreground">
+      <Icon className="size-3.5 shrink-0" />
+      <span className="truncate">{label}</span>
+    </p>
+  );
+}
+
+function ContactField({
+  id,
+  label,
+  icon: Icon,
+  disabled,
+  children,
+}: {
+  id: string;
+  label: string;
+  icon: ComponentType<{ className?: string }>;
+  disabled: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <div className="space-y-2">
+      <Label htmlFor={id} className="inline-flex items-center gap-1.5">
+        <Icon className="size-3.5 text-muted-foreground" />
+        {label}
+      </Label>
+      <div className={cn(disabled && "opacity-70")}>{children}</div>
+    </div>
   );
 }
 
@@ -582,28 +872,36 @@ function CoverField({
   return (
     <label
       className={cn(
-        "relative block overflow-hidden rounded-2xl border border-dashed border-border",
-        !disabled && "cursor-pointer hover:border-primary/50",
+        "group relative block",
+        !disabled && "cursor-pointer",
       )}
     >
       {value ? (
-        <img src={value} alt="" className="h-36 w-full object-cover md:h-44" />
+        <img src={value} alt="" className="h-40 w-full object-cover md:h-48" />
       ) : (
-        <div className="flex h-36 flex-col items-center justify-center gap-1 text-sm text-muted-foreground md:h-44">
-          <ImagePlus className="size-5" />
-          Обложка страницы
+        <div className="flex h-40 flex-col items-center justify-center gap-2 bg-[linear-gradient(120deg,oklch(0.55_0.13_250),oklch(0.45_0.1_265))] text-white/90 md:h-48">
+          <ImagePlus className="size-6" />
+          <span className="text-sm font-medium">Загрузить обложку</span>
+          <span className="text-xs text-white/70">Рекомендуем 1200×400 px</span>
         </div>
       )}
+      {!disabled ? (
+        <span className="absolute inset-0 flex items-center justify-center bg-ink/0 opacity-0 transition group-hover:bg-ink/35 group-hover:opacity-100">
+          <span className="rounded-full bg-card/95 px-4 py-2 text-sm font-medium shadow-sm">
+            {value ? "Сменить обложку" : "Выбрать файл"}
+          </span>
+        </span>
+      ) : null}
       {value && !disabled ? (
         <button
           type="button"
-          className="absolute right-2 top-2 grid size-8 place-items-center rounded-full bg-card/90"
+          className="absolute right-3 top-3 grid size-9 place-items-center rounded-full bg-card/95 shadow-sm"
           onClick={(e) => {
             e.preventDefault();
             onChange("");
           }}
         >
-          <Trash2 className="size-3.5" />
+          <Trash2 className="size-4" />
         </button>
       ) : null}
       <input
@@ -634,17 +932,22 @@ function LogoField({
   return (
     <label
       className={cn(
-        "relative grid size-24 shrink-0 place-items-center overflow-hidden rounded-2xl border border-dashed border-border",
-        !disabled && "cursor-pointer hover:border-primary/50",
+        "group relative grid size-20 shrink-0 place-items-center overflow-hidden rounded-2xl border-2 border-card bg-secondary shadow-md",
+        !disabled && "cursor-pointer",
       )}
     >
       {value ? (
         <img src={value} alt="" className="size-full object-cover" />
       ) : (
-        <span className="px-2 text-center text-[11px] text-muted-foreground">
-          {name.slice(0, 2).toUpperCase() || "Лого"}
+        <span className="font-display text-lg font-semibold text-primary">
+          {name.slice(0, 2).toUpperCase() || "TG"}
         </span>
       )}
+      {!disabled ? (
+        <span className="absolute inset-0 grid place-items-center bg-ink/0 text-[10px] font-medium text-white opacity-0 transition group-hover:bg-ink/45 group-hover:opacity-100">
+          Лого
+        </span>
+      ) : null}
       <input
         type="file"
         accept="image/*"
@@ -687,15 +990,21 @@ function PhotoGrid({
 
   return (
     <div className="space-y-3">
-      <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
         {photos.map((src, i) => (
-          <div key={`${src.slice(0, 20)}-${i}`} className="relative aspect-[4/3] overflow-hidden rounded-xl">
+          <div
+            key={`${src.slice(0, 20)}-${i}`}
+            className={cn(
+              "group relative overflow-hidden rounded-2xl",
+              i === 0 && photos.length > 1 ? "col-span-2 row-span-2 aspect-[4/3]" : "aspect-[4/3]",
+            )}
+          >
             <img src={src} alt="" className="size-full object-cover" />
             {!disabled ? (
               <button
                 type="button"
                 aria-label="Удалить фото"
-                className="absolute right-1.5 top-1.5 grid size-7 place-items-center rounded-full bg-card/90"
+                className="absolute right-2 top-2 grid size-8 place-items-center rounded-full bg-card/95 opacity-0 shadow-sm transition group-hover:opacity-100"
                 onClick={() => onChange(photos.filter((_, idx) => idx !== i))}
               >
                 <Trash2 className="size-3.5" />
@@ -704,9 +1013,10 @@ function PhotoGrid({
           </div>
         ))}
         {photos.length < MAX_PHOTOS && !disabled ? (
-          <label className="flex aspect-[4/3] cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border border-dashed border-border text-xs text-muted-foreground hover:border-primary/50">
-            <ImagePlus className="size-4" />
-            Фото
+          <label className="flex aspect-[4/3] cursor-pointer flex-col items-center justify-center gap-1.5 rounded-2xl border border-dashed border-border bg-secondary/20 text-xs text-muted-foreground transition hover:border-primary/50 hover:bg-secondary/40">
+            <ImagePlus className="size-5" />
+            Добавить фото
+            <span className="text-[10px]">{photos.length}/{MAX_PHOTOS}</span>
             <input
               type="file"
               accept="image/*"
@@ -724,7 +1034,7 @@ function PhotoGrid({
         <div className="flex gap-2">
           <Input
             value={url}
-            placeholder="Или ссылка на фото"
+            placeholder="Или вставьте ссылку на фото"
             onChange={(e) => setUrl(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter") {
@@ -777,16 +1087,19 @@ function VideoList({
   };
 
   return (
-    <div className="space-y-2">
-      <Label>Видео (YouTube)</Label>
+    <div className="space-y-3">
+      <Label className="inline-flex items-center gap-1.5">
+        <Video className="size-3.5 text-muted-foreground" />
+        Видео (YouTube)
+      </Label>
       {videos.map((src) => {
         const embed = youtubeEmbed(src);
         return (
-          <div key={src} className="overflow-hidden rounded-xl border border-border">
+          <div key={src} className="overflow-hidden rounded-2xl border border-border">
             {embed ? (
               <iframe title="Видео компании" src={embed} className="aspect-video w-full" allowFullScreen />
             ) : (
-              <a href={src} target="_blank" rel="noreferrer" className="flex items-center gap-2 px-3 py-2 text-sm">
+              <a href={src} target="_blank" rel="noreferrer" className="flex items-center gap-2 px-4 py-3 text-sm">
                 <Video className="size-4" />
                 {src}
               </a>
@@ -815,7 +1128,7 @@ function VideoList({
             }}
           />
           <Button type="button" variant="outline" onClick={add}>
-            Добавить видео
+            Добавить
           </Button>
         </div>
       ) : null}
@@ -849,12 +1162,13 @@ function ChipGroup({
               disabled={disabled}
               onClick={() => onToggle(option)}
               className={cn(
-                "rounded-full border px-3.5 py-1.5 text-sm transition-colors disabled:opacity-60",
+                "inline-flex items-center gap-1.5 rounded-full border px-3.5 py-2 text-sm transition-all disabled:opacity-60",
                 active
-                  ? "border-primary bg-primary-soft text-foreground"
-                  : "border-border bg-card text-muted-foreground hover:border-primary/40",
+                  ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                  : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground",
               )}
             >
+              {active ? <Check className="size-3.5" /> : null}
               {option}
             </button>
           );

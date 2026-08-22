@@ -8,21 +8,21 @@ import {
   YAxis,
 } from "recharts";
 
-const data = [
-  { month: "Янв", value: 5.2 },
-  { month: "Фев", value: 6.1 },
-  { month: "Мар", value: 7.4 },
-  { month: "Апр", value: 6.8 },
-  { month: "Май", value: 8.9 },
-  { month: "Июн", value: 10.2 },
-  { month: "Июл", value: 11.6 },
-  { month: "Авг", value: 12.4 },
-];
+export type SalesChartPoint = {
+  label: string;
+  value: number;
+};
 
-export function SalesChart() {
+export function SalesChart({ points }: { points: SalesChartPoint[] }) {
+  if (points.length === 0) return null;
+
+  const max = Math.max(...points.map((p) => p.value), 1);
+  const unit = max >= 1 ? "M" : "K";
+  const scale = max >= 1 ? 1_000_000 : 1_000;
+
   return (
     <ResponsiveContainer width="100%" height="100%">
-      <AreaChart data={data} margin={{ left: -20, right: 8, top: 8 }}>
+      <AreaChart data={points} margin={{ left: -16, right: 8, top: 8 }}>
         <defs>
           <linearGradient id="sales" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="var(--primary)" stopOpacity={0.35} />
@@ -30,10 +30,19 @@ export function SalesChart() {
           </linearGradient>
         </defs>
         <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-        <XAxis dataKey="month" tickLine={false} axisLine={false} fontSize={12} />
-        <YAxis tickLine={false} axisLine={false} fontSize={12} unit="M" />
+        <XAxis dataKey="label" tickLine={false} axisLine={false} fontSize={12} />
+        <YAxis
+          tickLine={false}
+          axisLine={false}
+          fontSize={12}
+          unit={unit}
+          tickFormatter={(v) => String(Math.round((v * scale) / (unit === "M" ? 1_000_000 : 1_000)))}
+        />
         <Tooltip
-          formatter={(value: number) => [`${value}M ₸`, "Продажи"]}
+          formatter={(value: number) => [
+            `${Math.round(value * scale).toLocaleString("ru-RU")} ₸`,
+            "Продажи",
+          ]}
           contentStyle={{
             borderRadius: 12,
             border: "1px solid var(--border)",

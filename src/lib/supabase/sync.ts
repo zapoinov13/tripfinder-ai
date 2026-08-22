@@ -296,10 +296,19 @@ const reviewRow = (r: CompanyReview) => ({
   rating: r.rating,
   text: r.text,
   created_at: r.createdAt,
+  reply: r.reply ?? null,
+  reply_at: r.replyAt ?? null,
+  reply_by_user_id: isUuid(r.replyByUserId) ? r.replyByUserId : null,
+  reply_by_name: r.replyByName ?? null,
 });
 
 const sameReview = (a: CompanyReview, b: CompanyReview) =>
-  a.rating === b.rating && a.text === b.text;
+  a.rating === b.rating &&
+  a.text === b.text &&
+  a.reply === b.reply &&
+  a.replyAt === b.replyAt &&
+  a.replyByUserId === b.replyByUserId &&
+  a.replyByName === b.replyByName;
 
 function collectOps(prev: PlatformState, next: PlatformState): Op[] {
   const sb = getSupabase();
@@ -611,6 +620,21 @@ function collectOps(prev: PlatformState, next: PlatformState): Op[] {
     ops.push(async () => {
       const { error } = await sb.from("company_reviews").insert(reviewRow(r));
       report("company_reviews.insert", error);
+    });
+  }
+  for (const r of reviews.updated) {
+    if (!isUuid(r.id)) continue;
+    ops.push(async () => {
+      const { error } = await sb
+        .from("company_reviews")
+        .update({
+          reply: r.reply ?? null,
+          reply_at: r.replyAt ?? null,
+          reply_by_user_id: isUuid(r.replyByUserId) ? r.replyByUserId : null,
+          reply_by_name: r.replyByName ?? null,
+        })
+        .eq("id", r.id);
+      report("company_reviews.update", error);
     });
   }
 

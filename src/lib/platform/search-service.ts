@@ -9,6 +9,7 @@ import {
 import type { Tour } from "@/data/demo";
 
 import { getActiveTours, getHotel, trackEvent } from "./catalog";
+import { expireStalePromotions } from "./promotions";
 import { getState } from "./store";
 import type { PlatformTour } from "./types";
 
@@ -38,6 +39,7 @@ export class SearchService {
     }
 
     // Expire promotions into tags
+    expireStalePromotions();
     const now = Date.now();
     const promos = getState().promotions.filter(
       (p) => p.status === "ACTIVE" && new Date(p.expiresAt).getTime() > now,

@@ -1,6 +1,6 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
-/** Единственный production-проект TourGo — все env должны указывать сюда. */
+/** Единственный production-проект TourGo, все env должны указывать сюда. */
 export const TOURGO_SUPABASE_PROJECT_ID = "mgyufoyornzbwvgdfojb";
 
 const url = import.meta.env.VITE_SUPABASE_URL as string | undefined;

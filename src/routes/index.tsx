@@ -107,7 +107,7 @@ function Index() {
               <br className="hidden sm:block" /> поехать?
             </h1>
             <p className="mt-3 max-w-xl text-base text-primary-foreground/90 md:mt-4 md:text-xl">
-              Несколько компаний на одну поездку. Цены рядом — вы выбираете.
+              Несколько компаний на одну поездку. Цены рядом. Вы выбираете.
             </p>
 
             <ul className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-[0.8rem] text-primary-foreground/85 md:mt-6 md:gap-x-6 md:text-sm">

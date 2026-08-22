@@ -230,3 +230,51 @@ export function addCompanyReview(input: {
 
   return review;
 }
+
+export function replyToCompanyReview(input: {
+  reviewId: string;
+  organizationId: string;
+  reply: string;
+  actorId: string;
+  actorName: string;
+}) {
+  const reply = input.reply.trim();
+  if (!reply) return null;
+
+  const existing = getState().companyReviews.find((r) => r.id === input.reviewId);
+  if (!existing || existing.organizationId !== input.organizationId) return null;
+
+  const replyAt = nowIso();
+  setState((s) => ({
+    ...s,
+    companyReviews: s.companyReviews.map((r) =>
+      r.id === input.reviewId
+        ? {
+            ...r,
+            reply,
+            replyAt,
+            replyByUserId: input.actorId,
+            replyByName: input.actorName,
+          }
+        : r,
+    ),
+  }));
+
+  pushNotification(
+    existing.userId,
+    "review_reply",
+    `${input.actorName} ответил на ваш отзыв`,
+    reply.slice(0, 120),
+    { reviewId: input.reviewId, organizationId: input.organizationId },
+  );
+
+  appendAudit({
+    actorId: input.actorId,
+    action: "company_review_replied",
+    entityType: "company_review",
+    entityId: input.reviewId,
+    meta: { organizationId: input.organizationId },
+  });
+
+  return getState().companyReviews.find((r) => r.id === input.reviewId) ?? null;
+}

@@ -1,33 +1,44 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import {
-  AlertTriangle,
-  CheckCircle2,
+  ArrowDownRight,
+  ArrowUpRight,
+  Clock,
   Eye,
   Heart,
   Inbox,
   Megaphone,
+  MessageCircle,
+  Minus,
   Star,
+  Target,
   TrendingUp,
+  Wallet,
 } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   Area,
   AreaChart,
   CartesianGrid,
+  Legend,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
 
-import { DashShell } from "@/components/dash/dash-shell";
+import { TabPills } from "@/components/admin";
+import { DashShell, KpiCard } from "@/components/dash/dash-shell";
 import { useOperatorNav } from "@/components/dash/nav-items";
 import { Button } from "@/components/ui/button";
 import { formatNumber, formatPrice, nightsLabel, tourCover } from "@/data/demo";
 import { useAuth, useRequireAuth } from "@/lib/platform/auth";
-import { getHotel } from "@/lib/platform/catalog";
+import {
+  computeOperatorAnalytics,
+  deltaLabel,
+  pct,
+  type AnalyticsPeriod,
+} from "@/lib/platform/operator-analytics";
 import { usePlatformStore } from "@/lib/platform/hooks";
-import { getCompanyRating } from "@/lib/platform/messages";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/operator/analytics")({
@@ -35,303 +46,297 @@ export const Route = createFileRoute("/operator/analytics")({
   component: OperatorAnalyticsPage,
 });
 
-const periods = [
-  { value: 7, label: "7 дней" },
-  { value: 30, label: "30 дней" },
-  { value: 0, label: "Всё время" },
-] as const;
-
-function inPeriod(iso: string, days: number) {
-  if (!days) return true;
-  return new Date(iso).getTime() >= Date.now() - days * 86400000;
-}
-
-function pct(part: number, whole: number) {
-  if (!whole) return "0%";
-  const value = (part / whole) * 100;
-  return `${value < 10 ? value.toFixed(1) : Math.round(value)}%`;
-}
-
-function lastDays(count: number) {
-  return Array.from({ length: count }, (_, i) => {
-    const d = new Date();
-    d.setHours(0, 0, 0, 0);
-    d.setDate(d.getDate() - (count - 1 - i));
-    return d;
-  });
-}
+type TourSort = "views" | "bookings" | "conversion";
 
 function OperatorAnalyticsPage() {
   const { allowed } = useRequireAuth(["OPERATOR_ADMIN", "OPERATOR_MANAGER"]);
   const { organization } = useAuth();
   const nav = useOperatorNav(organization?.id);
   const state = usePlatformStore();
-  const [days, setDays] = useState(30);
-  if (!allowed || !organization) return null;
+  const [period, setPeriod] = useState<AnalyticsPeriod>(30);
+  const [tourSort, setTourSort] = useState<TourSort>("views");
 
-  const orgId = organization.id;
-  const tours = state.tours.filter((t) => t.operatorOrgId === orgId);
-  const views = tours.reduce((s, t) => s + t.views, 0);
-  const catalogBookings = tours.reduce((s, t) => s + t.bookings, 0);
-  const favorites = state.favorites.filter((f) => tours.some((t) => t.id === f.tourId)).length;
-  const rating = getCompanyRating(orgId);
+  void state.analyticsEvents.length;
+  void state.requestOffers.length;
+  void state.bookings.length;
 
-  const myOffers = state.requestOffers.filter(
-    (o) => o.organizationId === orgId && inPeriod(o.createdAt, days),
+  const data = useMemo(
+    () => (organization ? computeOperatorAnalytics(organization.id, period) : null),
+    [
+      organization,
+      period,
+      state.analyticsEvents,
+      state.requestOffers,
+      state.bookings,
+      state.favorites,
+      state.payments,
+      state.promotions,
+      state.requestMessages,
+      state.tripRequests,
+      state.tours,
+      state.companyReviews,
+    ],
   );
-  const chosen = myOffers.filter((o) => o.status === "CHOSEN");
-  const answeredIds = new Set(
-    state.requestOffers.filter((o) => o.organizationId === orgId).map((o) => o.requestId),
-  );
-  const openRequests = state.tripRequests.filter(
-    (r) =>
-      r.status !== "CHOSEN" &&
-      r.status !== "CLOSED" &&
-      !r.declinedByOrgIds.includes(orgId) &&
-      !answeredIds.has(r.id) &&
-      inPeriod(r.createdAt, days || 3650),
-  );
-  const paid = state.bookings.filter(
-    (b) =>
-      b.organizationId === orgId &&
-      ["PAID", "CONFIRMED", "COMPLETED"].includes(b.status) &&
-      inPeriod(b.createdAt, days),
-  );
-  const revenue = paid.reduce((s, b) => s + b.price, 0);
-  const promoSpend = state.payments
-    .filter((p) => p.organizationId === orgId && p.type === "promotion" && p.status === "paid")
-    .reduce((s, p) => s + p.amount, 0);
-  const unread = state.requestMessages.filter(
-    (m) => m.organizationId === orgId && m.authorSide === "TOURIST" && !m.readByCompany,
-  ).length;
 
-  const ranked = [...tours]
-    .map((t) => {
-      const hotel = getHotel(t.hotelId);
-      const conversion = t.views ? t.bookings / t.views : 0;
-      return { tour: t, hotel, conversion };
-    })
-    .sort((a, b) => b.tour.views - a.tour.views);
+  if (!allowed || !organization || !data) return null;
 
-  const byCity = ranked.reduce<Record<string, { views: number; bookings: number }>>((acc, row) => {
-    const city = row.hotel.city || "Другое";
-    const cur = acc[city] ?? { views: 0, bookings: 0 };
-    acc[city] = {
-      views: cur.views + row.tour.views,
-      bookings: cur.bookings + row.tour.bookings,
-    };
-    return acc;
-  }, {});
-  const cities = Object.entries(byCity).sort((a, b) => b[1].views - a[1].views);
-  const cityMax = cities[0]?.[1].views || 1;
-
-  const chartDays = lastDays(days === 0 ? 14 : Math.min(days, 14));
-  const trend = chartDays.map((d) => {
-    const key = d.toISOString().slice(0, 10);
-    const offers = myOffers.filter((o) => o.createdAt.slice(0, 10) === key).length;
-    const picks = chosen.filter((o) => o.createdAt.slice(0, 10) === key).length;
-    const viewsDay = state.analyticsEvents.filter(
-      (e) =>
-        e.type === "TOUR_VIEWED" &&
-        e.createdAt.slice(0, 10) === key &&
-        tours.some((t) => t.id === e.payload?.["tourId"]),
-    ).length;
-    return {
-      day: d.toLocaleDateString("ru-RU", { day: "numeric", month: "short" }),
-      offers,
-      picks,
-      views: viewsDay,
-    };
+  const sortedTours = [...data.topTours].sort((a, b) => {
+    if (tourSort === "bookings") return b.bookings - a.bookings;
+    if (tourSort === "conversion") return b.conversion - a.conversion;
+    return b.views - a.views;
   });
-  const trendHasData = trend.some((p) => p.offers || p.picks || p.views);
 
-  const weak = ranked.find((r) => r.tour.views >= 800 && r.conversion < 0.004);
-  const strong = [...ranked].sort((a, b) => b.conversion - a.conversion)[0];
-  const insights = [
-    openRequests.length > 0
-      ? {
-          icon: Inbox,
-          tone: "warn" as const,
-          title: `${openRequests.length} заявок без ответа`,
-          text: "Турист уходит к той компании, которая пишет первой.",
-          to: "/operator/requests" as const,
-          cta: "Ответить",
-        }
-      : null,
-    unread > 0
-      ? {
-          icon: Inbox,
-          tone: "warn" as const,
-          title: `${unread} непрочитанных сообщений`,
-          text: "Откройте переписку, пока турист не выбрал другой вариант.",
-          to: "/operator/messages" as const,
-          cta: "Читать",
-        }
-      : null,
-    weak
-      ? {
-          icon: AlertTriangle,
-          tone: "warn" as const,
-          title: `${weak.tour.title || weak.hotel.name} смотрят, почти не бронируют`,
-          text: "Проверьте цену, питание и фото. Или поднимите другой тур, который уже продаётся.",
-          to: "/operator/tours" as const,
-          cta: "К турам",
-        }
-      : null,
-    strong && strong.tour.bookings > 0
-      ? {
-          icon: TrendingUp,
-          tone: "ok" as const,
-          title: `${strong.tour.title || strong.hotel.name} бронируют чаще всего`,
-          text: "Продвиньте этот тур: туристы уже ему доверяют.",
-          to: "/operator/promotion" as const,
-          cta: "Продвинуть",
-        }
-      : null,
-  ].filter(Boolean);
-
-  const funnel = [
-    { label: "Просмотры", value: views, hint: "открыли карточку тура" },
-    { label: "В избранном", value: favorites, hint: "сохранили себе" },
-    { label: "Ваши ответы", value: myOffers.length, hint: "предложения по заявкам" },
-    { label: "Вас выбрали", value: chosen.length, hint: "турист взял ваш вариант" },
-    { label: "Оплачено", value: paid.length || catalogBookings, hint: paid.length ? "через TourGo" : "брони в карточках" },
-  ];
+  const cityMax = data.cities[0]?.views || 1;
+  const trendHasData = data.trend.some((p) => p.views || p.offers || p.picks || p.revenue);
 
   return (
     <DashShell
       brand={organization.name}
       items={nav}
       title="Аналитика"
-      subtitle="Что смотрят, где теряются заявки и какие туры бронируют."
+      subtitle="Просмотры, заявки, конверсия и продажи за выбранный период."
+      actions={
+        <Button variant="outline" size="sm" asChild>
+          <Link to="/operator/promotion">
+            <Megaphone className="size-3.5" />
+            Продвижение
+          </Link>
+        </Button>
+      }
     >
-      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap gap-2">
-          {periods.map((p) => (
-            <button
-              key={p.value}
-              type="button"
-              onClick={() => setDays(p.value)}
+      <TabPills
+        value={String(period)}
+        onChange={(v) => setPeriod(Number(v) as AnalyticsPeriod)}
+        items={[
+          { value: "7", label: "7 дней" },
+          { value: "30", label: "30 дней" },
+          { value: "0", label: "Всё время" },
+        ]}
+      />
+
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <MetricCard
+          label="Просмотры туров"
+          value={formatNumber(data.views)}
+          delta={period === 0 ? null : deltaLabel(data.views, data.viewsPrev)}
+          up={data.views >= data.viewsPrev}
+          hint="открыли карточки"
+        />
+        <MetricCard
+          label="Ответы на заявки"
+          value={formatNumber(data.offersSent)}
+          delta={period === 0 ? null : deltaLabel(data.offersSent, data.offersSentPrev)}
+          up={data.offersSent >= data.offersSentPrev}
+          hint={`${pct(data.chosen, data.offersSent)} выбрали вас`}
+        />
+        <MetricCard
+          label="Выручка"
+          value={data.paidBookings > 0 ? formatPrice(data.revenue) : "—"}
+          delta={period === 0 ? null : deltaLabel(data.revenue, data.revenuePrev)}
+          up={data.revenue >= data.revenuePrev}
+          hint={data.paidBookings > 0 ? `${data.paidBookings} оплат` : "оплат пока нет"}
+        />
+        <MetricCard
+          label="Конверсия ответов"
+          value={data.offersSent ? `${Math.round(data.winRate)}%` : "—"}
+          delta={null}
+          up={data.winRate >= 25}
+          hint={`${data.chosen} из ${data.offersSent} предложений`}
+          emphasis={data.openRequests > 0}
+        />
+      </div>
+
+      <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <KpiCard label="Заявки без ответа" value={String(data.openRequests)} hint="можно забрать сейчас" emphasis={data.openRequests > 0} />
+        <KpiCard label="Непрочитанные" value={String(data.unreadMessages)} hint="сообщения туристов" />
+        <KpiCard
+          label="Среднее время ответа"
+          value={data.avgResponseHours !== null ? `${data.avgResponseHours} ч` : "—"}
+          hint="от заявки до предложения"
+        />
+        <KpiCard
+          label="Рейтинг компании"
+          value={data.rating ? `${data.rating.average} ★` : "—"}
+          hint={data.rating ? `${data.rating.count} отзывов` : "отзывов пока нет"}
+        />
+      </div>
+
+      {data.insights.length > 0 ? (
+        <div className="mt-6 grid gap-3 md:grid-cols-2">
+          {data.insights.map((item) => (
+            <div
+              key={item.title}
               className={cn(
-                "rounded-full border px-3.5 py-1.5 text-sm",
-                days === p.value
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "border-border bg-card text-muted-foreground hover:border-primary/40",
+                "flex items-start gap-3 rounded-2xl border p-4",
+                item.tone === "warn" && "border-premium/40 bg-premium/10",
+                item.tone === "ok" && "border-success/30 bg-success/5",
+                item.tone === "info" && "border-primary/25 bg-primary/[0.04]",
               )}
             >
-              {p.label}
-            </button>
-          ))}
-        </div>
-        {rating ? (
-          <p className="flex items-center gap-1.5 text-sm text-muted-foreground">
-            <Star className="size-3.5 fill-premium text-premium" />
-            {rating.average} из 5 · {rating.count} отзывов
-          </p>
-        ) : null}
-      </div>
-
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Stat
-          icon={Eye}
-          label="Просмотры туров"
-          value={formatNumber(views)}
-          hint="Сколько раз открыли ваши карточки"
-        />
-        <Stat
-          icon={Inbox}
-          label="Заявки без ответа"
-          value={formatNumber(openRequests.length)}
-          hint="Их ещё можно забрать"
-          warn={openRequests.length > 0}
-        />
-        <Stat
-          icon={CheckCircle2}
-          label="Вас выбрали"
-          value={formatNumber(chosen.length)}
-          hint={`${pct(chosen.length, myOffers.length)} от ваших предложений`}
-        />
-        <Stat
-          icon={Heart}
-          label="Брони и продажи"
-          value={paid.length ? formatPrice(revenue) : formatNumber(catalogBookings)}
-          hint={paid.length ? "Оплачено через TourGo" : "Брони в карточках туров"}
-        />
-      </div>
-
-      {insights.length > 0 ? (
-        <div className="mt-6 grid gap-3 md:grid-cols-2">
-          {insights.map((item) =>
-            item ? (
-              <div
-                key={item.title}
-                className={cn(
-                  "flex items-start gap-3 rounded-2xl border p-4",
-                  item.tone === "warn"
-                    ? "border-premium/40 bg-premium/10"
-                    : "border-success/30 bg-success/5",
-                )}
-              >
-                <item.icon
-                  className={cn(
-                    "mt-0.5 size-5 shrink-0",
-                    item.tone === "warn" ? "text-premium" : "text-success",
-                  )}
-                />
-                <div className="min-w-0 flex-1">
-                  <p className="font-medium">{item.title}</p>
-                  <p className="mt-1 text-sm text-muted-foreground">{item.text}</p>
-                </div>
-                <Button size="sm" variant="outline" asChild>
-                  <Link to={item.to}>{item.cta}</Link>
-                </Button>
+              <div className="min-w-0 flex-1">
+                <p className="font-medium">{item.title}</p>
+                <p className="mt-1 text-sm text-muted-foreground">{item.text}</p>
               </div>
-            ) : null,
-          )}
+              <Button size="sm" variant="outline" asChild>
+                <Link to={item.to}>{item.cta}</Link>
+              </Button>
+            </div>
+          ))}
         </div>
       ) : null}
 
+      <section className="surface-card mt-6 overflow-hidden">
+        <div className="border-b border-border bg-secondary/20 px-5 py-4 md:px-6">
+          <h2 className="font-display text-lg font-semibold">Динамика за период</h2>
+          <p className="mt-0.5 text-sm text-muted-foreground">
+            Просмотры, ответы на заявки, выбор туриста и выручка по дням.
+          </p>
+        </div>
+        <div className="p-5 md:p-6">
+          {trendHasData ? (
+            <div className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={data.trend} margin={{ left: -8, right: 8, top: 8 }}>
+                  <defs>
+                    <linearGradient id="an-views" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="var(--muted-foreground)" stopOpacity={0.2} />
+                      <stop offset="100%" stopColor="var(--muted-foreground)" stopOpacity={0} />
+                    </linearGradient>
+                    <linearGradient id="an-offers" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="var(--primary)" stopOpacity={0.35} />
+                      <stop offset="100%" stopColor="var(--primary)" stopOpacity={0} />
+                    </linearGradient>
+                    <linearGradient id="an-picks" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="var(--success)" stopOpacity={0.3} />
+                      <stop offset="100%" stopColor="var(--success)" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+                  <XAxis dataKey="day" tickLine={false} axisLine={false} fontSize={12} />
+                  <YAxis allowDecimals={false} tickLine={false} axisLine={false} fontSize={12} />
+                  <Tooltip
+                    formatter={(value, name) => {
+                      const labels: Record<string, string> = {
+                        views: "Просмотры",
+                        offers: "Ответы",
+                        picks: "Выбрали вас",
+                        revenue: "Выручка",
+                      };
+                      const v = Number(value);
+                      return [
+                        name === "revenue" ? formatPrice(v) : formatNumber(v),
+                        labels[String(name)] ?? String(name),
+                      ];
+                    }}
+                    contentStyle={{
+                      borderRadius: 12,
+                      border: "1px solid var(--border)",
+                      fontSize: 12,
+                    }}
+                  />
+                  <Legend
+                    formatter={(value) =>
+                      ({
+                        views: "Просмотры",
+                        offers: "Ответы",
+                        picks: "Выбрали",
+                        revenue: "Выручка",
+                      })[value] ?? value
+                    }
+                  />
+                  <Area type="monotone" dataKey="views" stroke="var(--muted-foreground)" strokeWidth={1.5} fill="url(#an-views)" />
+                  <Area type="monotone" dataKey="offers" stroke="var(--primary)" strokeWidth={2.5} fill="url(#an-offers)" />
+                  <Area type="monotone" dataKey="picks" stroke="var(--success)" strokeWidth={2} fill="url(#an-picks)" />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <Eye className="size-10 text-muted-foreground" />
+              <p className="mt-4 font-medium">За этот период событий пока мало</p>
+              <p className="mt-1 max-w-md text-sm text-muted-foreground">
+                Опубликуйте туры, ответьте на заявки и включите продвижение — график заполнится
+                автоматически.
+              </p>
+              <div className="mt-4 flex flex-wrap justify-center gap-2">
+                <Button size="sm" asChild>
+                  <Link to="/operator/tours">Мои туры</Link>
+                </Button>
+                <Button size="sm" variant="outline" asChild>
+                  <Link to="/operator/requests">Заявки</Link>
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+      </section>
+
       <section className="surface-card mt-6 p-6">
-        <h2 className="font-display text-lg font-semibold">Воронка</h2>
+        <h2 className="font-display text-lg font-semibold">Воронка туриста</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Где турист отваливается. Чем короче шаг к следующему, тем лучше.
+          Где теряется интерес. Цель — сократить путь от просмотра до оплаты.
         </p>
-        <div className="mt-5 grid gap-3 sm:grid-cols-5">
-          {funnel.map((step, i) => {
-            const prev = funnel[i - 1]?.value ?? step.value;
+        <div className="mt-6 grid gap-2 lg:grid-cols-5">
+          {data.funnel.map((step, i) => {
+            const prev = data.funnel[i - 1]?.value ?? step.value;
+            const drop = i > 0 && prev > 0 ? Math.round((1 - step.value / prev) * 100) : 0;
             return (
-              <div key={step.label} className="rounded-2xl bg-secondary/60 p-4">
-                <p className="text-xs text-muted-foreground">{step.label}</p>
-                <p className="mt-1 font-display text-2xl font-semibold">{formatNumber(step.value)}</p>
-                <p className="mt-1 text-[11px] text-muted-foreground">
-                  {i === 0 ? step.hint : `${pct(step.value, prev)} от прошлого шага`}
-                </p>
+              <div key={step.label} className="relative">
+                {i > 0 ? (
+                  <span className="absolute -left-1 top-1/2 hidden h-px w-2 -translate-y-1/2 bg-border lg:block" />
+                ) : null}
+                <div className="rounded-2xl border border-border bg-secondary/30 p-4">
+                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                    {step.label}
+                  </p>
+                  <p className="mt-2 font-display text-2xl font-semibold tabular-nums">
+                    {formatNumber(step.value)}
+                  </p>
+                  <p className="mt-1 text-[11px] text-muted-foreground">{step.hint}</p>
+                  {i > 0 && drop > 0 ? (
+                    <p className="mt-2 text-[11px] font-medium text-premium">−{drop}% от шага выше</p>
+                  ) : null}
+                </div>
               </div>
             );
           })}
         </div>
       </section>
 
-      <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
-        <section className="surface-card p-6">
-          <h2 className="font-display text-lg font-semibold">Какие туры работают</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Просмотры показывают интерес. Брони показывают, что цена и условия заходят.
-          </p>
-          {ranked.length === 0 ? (
-            <p className="mt-6 text-sm text-muted-foreground">
-              Пока нет туров. Опубликуйте карточку, и здесь появятся цифры.
+      <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
+        <section className="surface-card overflow-hidden">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border bg-secondary/20 px-5 py-4 md:px-6">
+            <div>
+              <h2 className="font-display text-lg font-semibold">Топ туров</h2>
+              <p className="mt-0.5 text-sm text-muted-foreground">Что смотрят и что бронируют.</p>
+            </div>
+            <TabPills
+              value={tourSort}
+              onChange={(v) => setTourSort(v as TourSort)}
+              items={[
+                { value: "views", label: "Просмотры" },
+                { value: "bookings", label: "Брони" },
+                { value: "conversion", label: "Конверсия" },
+              ]}
+            />
+          </div>
+          {sortedTours.length === 0 ? (
+            <p className="p-6 text-sm text-muted-foreground">
+              Опубликуйте тур — здесь появятся цифры.
             </p>
           ) : (
-            <ul className="mt-5 space-y-4">
-              {ranked.slice(0, 8).map((row) => {
-                const maxViews = ranked[0]?.tour.views || 1;
+            <ul className="divide-y divide-border">
+              {sortedTours.slice(0, 8).map((row, index) => {
+                const maxViews = sortedTours[0]?.views || 1;
                 return (
-                  <li key={row.tour.id} className="flex gap-3">
+                  <li key={row.tour.id} className="flex gap-4 p-5">
+                    <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-secondary text-sm font-semibold tabular-nums">
+                      {index + 1}
+                    </span>
                     <img
                       src={tourCover(row.tour, row.hotel)}
                       alt=""
-                      className="size-14 shrink-0 rounded-xl object-cover"
+                      className="size-16 shrink-0 rounded-xl object-cover"
                     />
                     <div className="min-w-0 flex-1">
                       <div className="flex items-start justify-between gap-3">
@@ -341,18 +346,22 @@ function OperatorAnalyticsPage() {
                             {row.hotel.city} · {nightsLabel(row.tour.nights)} · {row.tour.meal}
                           </p>
                         </div>
-                        <p className="shrink-0 text-sm font-semibold">{formatPrice(row.tour.price)}</p>
+                        <p className="shrink-0 font-semibold tabular-nums">{formatPrice(row.tour.price)}</p>
                       </div>
-                      <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-secondary">
+                      <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-secondary">
                         <div
-                          className="h-full rounded-full bg-primary"
-                          style={{ width: `${Math.max(6, (row.tour.views / maxViews) * 100)}%` }}
+                          className="h-full rounded-full bg-primary transition-all"
+                          style={{ width: `${Math.max(8, (row.views / maxViews) * 100)}%` }}
                         />
                       </div>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        {formatNumber(row.tour.views)} просмотров · {formatNumber(row.tour.bookings)}{" "}
-                        броней · конверсия {pct(row.tour.bookings, row.tour.views)}
-                      </p>
+                      <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                        <span className="inline-flex items-center gap-1">
+                          <Eye className="size-3" />
+                          {formatNumber(row.views)}
+                        </span>
+                        <span>{formatNumber(row.bookings)} броней</span>
+                        <span>{pct(row.bookings, row.views)} конверсия</span>
+                      </div>
                     </div>
                   </li>
                 );
@@ -363,24 +372,24 @@ function OperatorAnalyticsPage() {
 
         <div className="space-y-6">
           <section className="surface-card p-6">
-            <h2 className="font-display text-lg font-semibold">Куда едут</h2>
-            <p className="mt-1 text-sm text-muted-foreground">По просмотрам ваших туров.</p>
-            {cities.length === 0 ? (
+            <h2 className="font-display text-lg font-semibold">Направления</h2>
+            <p className="mt-1 text-sm text-muted-foreground">Интерес по городам назначения.</p>
+            {data.cities.length === 0 ? (
               <p className="mt-4 text-sm text-muted-foreground">Появится после публикации туров.</p>
             ) : (
-              <ul className="mt-4 space-y-3">
-                {cities.slice(0, 6).map(([city, stat]) => (
-                  <li key={city}>
-                    <div className="mb-1 flex justify-between text-sm">
-                      <span>{city}</span>
+              <ul className="mt-4 space-y-4">
+                {data.cities.slice(0, 6).map((row) => (
+                  <li key={row.city}>
+                    <div className="mb-1.5 flex justify-between text-sm">
+                      <span className="font-medium">{row.city}</span>
                       <span className="text-muted-foreground">
-                        {formatNumber(stat.views)} · {formatNumber(stat.bookings)} броней
+                        {formatNumber(row.views)} · {formatNumber(row.bookings)} броней
                       </span>
                     </div>
                     <div className="h-2 overflow-hidden rounded-full bg-secondary">
                       <div
-                        className="h-full rounded-full bg-accent"
-                        style={{ width: `${Math.max(8, (stat.views / cityMax) * 100)}%` }}
+                        className="h-full rounded-full bg-accent transition-all"
+                        style={{ width: `${Math.max(8, (row.views / cityMax) * 100)}%` }}
                       />
                     </div>
                   </li>
@@ -390,120 +399,127 @@ function OperatorAnalyticsPage() {
           </section>
 
           <section className="surface-card p-6">
-            <h2 className="font-display text-lg font-semibold">Заявки и продвижение</h2>
+            <h2 className="font-display text-lg font-semibold">Заявки и маркетинг</h2>
             <ul className="mt-4 space-y-3 text-sm">
-              <li className="flex justify-between gap-3">
-                <span className="text-muted-foreground">Ответили на заявки</span>
-                <span className="font-medium">{formatNumber(myOffers.length)}</span>
+              <li className="flex items-center justify-between gap-3">
+                <span className="inline-flex items-center gap-2 text-muted-foreground">
+                  <Inbox className="size-4" />
+                  Ответили на заявки
+                </span>
+                <span className="font-semibold tabular-nums">{formatNumber(data.offersSent)}</span>
               </li>
-              <li className="flex justify-between gap-3">
-                <span className="text-muted-foreground">Турист выбрал вас</span>
-                <span className="font-medium">{formatNumber(chosen.length)}</span>
+              <li className="flex items-center justify-between gap-3">
+                <span className="inline-flex items-center gap-2 text-muted-foreground">
+                  <Target className="size-4" />
+                  Турист выбрал вас
+                </span>
+                <span className="font-semibold tabular-nums">{formatNumber(data.chosen)}</span>
               </li>
-              <li className="flex justify-between gap-3">
-                <span className="text-muted-foreground">Конверсия ответов</span>
-                <span className="font-medium">{pct(chosen.length, myOffers.length)}</span>
+              <li className="flex items-center justify-between gap-3">
+                <span className="inline-flex items-center gap-2 text-muted-foreground">
+                  <TrendingUp className="size-4" />
+                  Не выбрали
+                </span>
+                <span className="font-semibold tabular-nums">{formatNumber(data.declined)}</span>
               </li>
-              <li className="flex justify-between gap-3">
-                <span className="text-muted-foreground">Потрачено на продвижение</span>
-                <span className="font-medium">{formatPrice(promoSpend)}</span>
+              <li className="flex items-center justify-between gap-3">
+                <span className="inline-flex items-center gap-2 text-muted-foreground">
+                  <Heart className="size-4" />
+                  В избранном
+                </span>
+                <span className="font-semibold tabular-nums">{formatNumber(data.favorites)}</span>
               </li>
+              <li className="flex items-center justify-between gap-3">
+                <span className="inline-flex items-center gap-2 text-muted-foreground">
+                  <Wallet className="size-4" />
+                  Потрачено на продвижение
+                </span>
+                <span className="font-semibold tabular-nums">{formatPrice(data.promoSpend)}</span>
+              </li>
+              <li className="flex items-center justify-between gap-3">
+                <span className="inline-flex items-center gap-2 text-muted-foreground">
+                  <Megaphone className="size-4" />
+                  Активных кампаний
+                </span>
+                <span className="font-semibold tabular-nums">{data.activePromos}</span>
+              </li>
+              {data.avgResponseHours !== null ? (
+                <li className="flex items-center justify-between gap-3">
+                  <span className="inline-flex items-center gap-2 text-muted-foreground">
+                    <Clock className="size-4" />
+                    Среднее время ответа
+                  </span>
+                  <span className="font-semibold tabular-nums">{data.avgResponseHours} ч</span>
+                </li>
+              ) : null}
             </ul>
             <div className="mt-5 flex flex-wrap gap-2">
               <Button size="sm" asChild>
                 <Link to="/operator/requests">Заявки</Link>
               </Button>
               <Button size="sm" variant="outline" asChild>
-                <Link to="/operator/promotion">
-                  <Megaphone className="size-3.5" />
-                  Продвижение
+                <Link to="/operator/messages">
+                  <MessageCircle className="size-3.5" />
+                  Сообщения
+                </Link>
+              </Button>
+              <Button size="sm" variant="outline" asChild>
+                <Link to="/operator/reviews">
+                  <Star className="size-3.5" />
+                  Отзывы
                 </Link>
               </Button>
             </div>
           </section>
         </div>
       </div>
-
-      {trendHasData ? (
-        <section className="surface-card mt-6 p-6">
-          <h2 className="font-display text-lg font-semibold">По дням</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Просмотры страниц, ваши ответы на заявки и сколько раз вас выбрали.
-          </p>
-          <div className="mt-6 h-72">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={trend} margin={{ left: -12, right: 8, top: 8 }}>
-                <defs>
-                  <linearGradient id="an-offers" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="var(--primary)" stopOpacity={0.35} />
-                    <stop offset="100%" stopColor="var(--primary)" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-                <XAxis dataKey="day" tickLine={false} axisLine={false} fontSize={12} />
-                <YAxis allowDecimals={false} tickLine={false} axisLine={false} fontSize={12} />
-                <Tooltip
-                  formatter={(value, name) => [
-                    formatNumber(Number(value)),
-                    name === "offers" ? "Ответы" : name === "picks" ? "Выбрали вас" : "Просмотры",
-                  ]}
-                  contentStyle={{
-                    borderRadius: 12,
-                    border: "1px solid var(--border)",
-                    fontSize: 12,
-                  }}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="views"
-                  stroke="var(--muted-foreground)"
-                  strokeWidth={1.5}
-                  fill="transparent"
-                />
-                <Area
-                  type="monotone"
-                  dataKey="offers"
-                  stroke="var(--primary)"
-                  strokeWidth={2.5}
-                  fill="url(#an-offers)"
-                />
-                <Area
-                  type="monotone"
-                  dataKey="picks"
-                  stroke="var(--accent)"
-                  strokeWidth={2}
-                  fill="transparent"
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </section>
-      ) : null}
     </DashShell>
   );
 }
 
-function Stat({
-  icon: Icon,
+function MetricCard({
   label,
   value,
+  delta,
+  up,
   hint,
-  warn,
+  emphasis,
 }: {
-  icon: typeof Eye;
   label: string;
   value: string;
+  delta: string | null;
+  up: boolean;
   hint: string;
-  warn?: boolean;
+  emphasis?: boolean;
 }) {
   return (
-    <div className="surface-card p-5">
-      <p className="flex items-center gap-2 text-sm text-muted-foreground">
-        <Icon className="size-4" />
-        {label}
-      </p>
-      <p className="mt-2 font-display text-2xl font-semibold">{value}</p>
-      <p className={cn("mt-1 text-xs", warn ? "text-premium" : "text-muted-foreground")}>{hint}</p>
+    <div
+      className={cn(
+        "surface-card p-5",
+        emphasis && "border-primary/30 bg-primary/[0.03] ring-1 ring-primary/15",
+      )}
+    >
+      <p className="text-sm text-muted-foreground">{label}</p>
+      <div className="mt-2 flex items-end justify-between gap-2">
+        <p className="font-display text-2xl font-semibold tabular-nums">{value}</p>
+        {delta ? (
+          <span
+            className={cn(
+              "inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-xs font-semibold",
+              up ? "bg-success/12 text-success" : "bg-premium/12 text-premium",
+            )}
+          >
+            {up ? <ArrowUpRight className="size-3" /> : <ArrowDownRight className="size-3" />}
+            {delta}
+          </span>
+        ) : (
+          <span className="inline-flex items-center gap-0.5 text-xs text-muted-foreground">
+            <Minus className="size-3" />
+            за период
+          </span>
+        )}
+      </div>
+      <p className="mt-1 text-xs text-muted-foreground">{hint}</p>
     </div>
   );
 }
