@@ -10,6 +10,7 @@ import {
 import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 
+import { AppSplash } from "@/components/site/app-splash";
 import { rolePermissions, type Role } from "@/lib/platform-contracts";
 import { getSupabase, isSupabaseConfigured } from "@/lib/supabase/client";
 import { hydrateUserDataFromSupabase } from "@/lib/supabase/hydrate";
@@ -57,7 +58,10 @@ type AuthCtx = {
 };
 
 const AuthContext = createContext<AuthCtx | null>(null);
-const SUPABASE_BOOTSTRAP_TIMEOUT_MS = 2500;
+/** Минимум, чтобы splash не мигал; максимум — не держим экран дольше. */
+const SPLASH_MIN_MS = 350;
+const SPLASH_MAX_MS = 900;
+const AUTH_SESSION_TIMEOUT_MS = 1200;
 
 function upsertLocalUser(profile: {
   id: string;
@@ -111,7 +115,8 @@ async function fetchProfile(userId: string) {
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const state = usePlatformStore();
-  const [bootstrapping, setBootstrapping] = useState(isSupabaseConfigured);
+  const [splashVisible, setSplashVisible] = useState(isSupabaseConfigured);
+  const [splashFading, setSplashFading] = useState(false);
   const user = state.session
     ? (state.users.find((u) => u.id === state.session!.userId) ?? null)
     : null;
@@ -121,24 +126,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const sb = getSupabase();
-    if (!sb) {
-      setBootstrapping(false);
-      return;
-    }
+    if (!sb) return;
 
     startPlatformSync();
 
     let mounted = true;
-    let bootstrapped = false;
-    const finishBootstrap = () => {
-      if (!mounted || bootstrapped) return;
-      bootstrapped = true;
-      setBootstrapping(false);
+    let dismissed = false;
+    const splashStart = Date.now();
+
+    const dismissSplash = () => {
+      if (!mounted || dismissed) return;
+      dismissed = true;
+      const wait = Math.max(0, SPLASH_MIN_MS - (Date.now() - splashStart));
+      window.setTimeout(() => {
+        if (!mounted) return;
+        setSplashFading(true);
+        window.setTimeout(() => {
+          if (mounted) setSplashVisible(false);
+        }, 450);
+      }, wait);
     };
-    const bootstrapTimeout = window.setTimeout(() => {
-      console.warn("[supabase] auth bootstrap timed out, continuing with local catalog");
-      finishBootstrap();
-    }, SUPABASE_BOOTSTRAP_TIMEOUT_MS);
+
+    const splashTimeout = window.setTimeout(() => {
+      console.warn("[supabase] session check slow, showing app with local catalog");
+      dismissSplash();
+    }, SPLASH_MAX_MS);
 
     const syncSession = async (userId: string | undefined) => {
       if (!userId) {
@@ -168,11 +180,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     };
 
-    sb.auth.getSession().then(({ data }) => {
-      void syncSession(data.session?.user.id).finally(() => {
-        window.clearTimeout(bootstrapTimeout);
-        finishBootstrap();
-      });
+    const sessionPromise = Promise.race([
+      sb.auth.getSession(),
+      new Promise<Awaited<ReturnType<typeof sb.auth.getSession>>>((resolve) => {
+        window.setTimeout(
+          () => resolve({ data: { session: null }, error: null }),
+          AUTH_SESSION_TIMEOUT_MS,
+        );
+      }),
+    ]);
+
+    void sessionPromise.then(({ data }) => {
+      window.clearTimeout(splashTimeout);
+      dismissSplash();
+      void syncSession(data.session?.user.id);
     });
 
     const { data: sub } = sb.auth.onAuthStateChange((_event, session) => {
@@ -181,7 +202,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     return () => {
       mounted = false;
-      window.clearTimeout(bootstrapTimeout);
+      window.clearTimeout(splashTimeout);
       sub.subscription.unsubscribe();
     };
   }, []);
@@ -578,15 +599,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [user, organization, login, logout, registerTourist, registerOperator, purchasePremium],
   );
 
-  if (bootstrapping) {
-    return (
-      <div className="grid min-h-screen place-items-center text-sm text-muted-foreground">
-        Подключение к Supabase…
-      </div>
-    );
-  }
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+      {splashVisible ? <AppSplash fading={splashFading} /> : null}
+    </AuthContext.Provider>
+  );
 }
 
 export function useAuth() {

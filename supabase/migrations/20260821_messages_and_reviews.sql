@@ -43,19 +43,19 @@ alter table public.company_reviews enable row level security;
 -- Переписку видят только её участники: автор заявки и сотрудники турфирмы.
 drop policy if exists request_messages_read on public.request_messages;
 create policy request_messages_read on public.request_messages for select using (
-  user_id = auth.uid() or organization_id = public.my_org_id() or public.is_platform_admin()
+  user_id = auth.uid() or organization_id = private.my_org_id() or private.is_platform_admin()
 );
 
 drop policy if exists request_messages_insert on public.request_messages;
 create policy request_messages_insert on public.request_messages for insert with check (
   (author_side = 'TOURIST' and user_id = auth.uid())
-  or (author_side = 'COMPANY' and organization_id = public.my_org_id())
-  or public.is_platform_admin()
+  or (author_side = 'COMPANY' and organization_id = private.my_org_id())
+  or private.is_platform_admin()
 );
 
 drop policy if exists request_messages_update on public.request_messages;
 create policy request_messages_update on public.request_messages for update using (
-  user_id = auth.uid() or organization_id = public.my_org_id() or public.is_platform_admin()
+  user_id = auth.uid() or organization_id = private.my_org_id() or private.is_platform_admin()
 );
 
 -- Отзывы читают все: турист выбирает компанию по рейтингу.
@@ -69,5 +69,5 @@ create policy company_reviews_insert on public.company_reviews for insert with c
 
 drop policy if exists company_reviews_update on public.company_reviews;
 create policy company_reviews_update on public.company_reviews for update using (
-  user_id = auth.uid() or public.is_platform_admin()
+  user_id = auth.uid() or private.is_platform_admin()
 );

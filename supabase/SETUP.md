@@ -14,6 +14,8 @@
 
 Ошибка `already exists` при Run нормальна: иди к следующему файлу.
 
+**Если база уже частично залита** — не гоняй все 16 файлов с нуля. Выполни только недостающие шаги из таблицы (обычно **11 → 16**).
+
 ## Порядок SQL (строго сверху вниз)
 
 | # | Файл | Зачем |
@@ -37,13 +39,50 @@
 
 Если база уже частично залита: достаточно проверить, что шаги **11–16** точно выполнены. Шаги 1–10 можно прогнать повторно.
 
-## Env в Lovable и Vercel
+### Частые ошибки
+
+| Ошибка | Причина | Что сделать |
+|--------|---------|-------------|
+| `function public.is_platform_admin() does not exist` | Шаг 3 перенёс хелперы в `private` | Перезапусти **11** `requests_and_offers.sql` (исправлен: использует `private.*`) |
+| `column "whatsapp" does not exist` | Шаг 13 до шага 11 | Сначала **11**, потом **13** `public_company_page.sql` |
+| `relation "public.trip_requests" does not exist` | Шаг 11 не выполнился | Сначала почини **11**, потом **12** |
+| `duplicate key … users_email_partial_key` | `zapoinov@bk.ru` уже есть в Auth | Перезапусти **14** `seed.sql` — подхватит существующего пользователя |
+
+## Env в Lovable
+
+**Secrets — не сюда.** Cloud → Secrets принимает только backend-ключи (`OPENAI_API_KEY`, `STRIPE_SECRET_KEY`).  
+Имена `VITE_*` и `SUPABASE_*` Lovable **запрещает** в Secrets — отсюда ваша ошибка.
+
+### Способ 1 — подключить ваш Supabase (рекомендуется)
+
+1. Lovable → проект **Voyage Finder** → **Cloud** (или **More → Cloud**)
+2. **Already have a Supabase project? Connect it here**
+3. Выберите организацию Supabase → проект **`mgyufoyornzbwvgdfojb`**
+4. **Connect** → **Publish**
+
+Lovable сам пропишет `VITE_SUPABASE_*` и server env. SQL вы уже залили в этот проект — повторно не нужно.
+
+### Способ 2 — файл `.env` в редакторе кода
+
+Если connector не используете: в Lovable открой **Code** → файл **`.env`** (не Secrets!) и вставь:
 
 ```
 VITE_SUPABASE_URL=https://mgyufoyornzbwvgdfojb.supabase.co
-VITE_SUPABASE_PUBLISHABLE_KEY=<publishable key из .env / Supabase API>
+VITE_SUPABASE_PUBLISHABLE_KEY=<publishable key из Supabase API>
 VITE_SUPABASE_PROJECT_ID=mgyufoyornzbwvgdfojb
+SUPABASE_URL=https://mgyufoyornzbwvgdfojb.supabase.co
+SUPABASE_PUBLISHABLE_KEY=<тот же publishable key>
 ```
+
+Publishable key: [Supabase → Settings → API](https://supabase.com/dashboard/project/mgyufoyornzbwvgdfojb/settings/api).
+
+После сохранения — **Publish**.
+
+### Vercel (если деплоите отдельно)
+
+Project Settings → **Environment Variables** — там можно добавить и `VITE_*`, и остальное.
+
+Локально: `.env` и `.env.local` → **`mgyufoyornzbwvgdfojb`** (не `hpernnwfdlpfaaphofmg`).
 
 Service role на фронт не класть.
 

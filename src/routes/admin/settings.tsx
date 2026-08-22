@@ -41,7 +41,7 @@ function AdminSettingsPage() {
             </div>
             <div className="flex justify-between gap-4">
               <dt className="text-muted-foreground">Хранилище</dt>
-              <dd className="font-medium">tourgo:platform-v1</dd>
+              <dd className="font-medium">tourgo:dubai-platform-v2</dd>
             </div>
           </dl>
           <p className="text-xs text-muted-foreground">

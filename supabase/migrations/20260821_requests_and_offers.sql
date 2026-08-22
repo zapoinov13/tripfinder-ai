@@ -1,7 +1,26 @@
 /**
  * Заявки туристов и предложения турфирм.
  * Применять в Supabase Dashboard → SQL Editor после foundation-миграции.
+ * RLS-хелперы живут в private (шаг 3); дублируем здесь для идемпотентности.
  */
+create schema if not exists private;
+revoke all on schema private from anon, authenticated;
+
+create or replace function private.is_platform_admin()
+returns boolean language sql stable security definer set search_path = public as $$
+  select exists (
+    select 1 from public.profiles
+    where id = auth.uid() and role in ('PLATFORM_ADMIN','PLATFORM_MANAGER') and status = 'active'
+  );
+$$;
+
+create or replace function private.my_org_id()
+returns uuid language sql stable security definer set search_path = public as $$
+  select organization_id from public.profiles where id = auth.uid();
+$$;
+
+grant usage on schema private to anon, authenticated, service_role;
+grant execute on function private.is_platform_admin(), private.my_org_id() to anon, authenticated, service_role;
 
 create table if not exists public.trip_requests (
   id uuid primary key default gen_random_uuid(),
@@ -74,9 +93,9 @@ alter table public.request_offers enable row level security;
 drop policy if exists trip_requests_read on public.trip_requests;
 create policy trip_requests_read on public.trip_requests for select using (
   user_id = auth.uid()
-  or public.is_platform_admin()
+  or private.is_platform_admin()
   or (
-    public.my_org_id() is not null
+    private.my_org_id() is not null
     and status in ('NEW', 'IN_REVIEW', 'OFFERS_RECEIVED')
   )
 );
@@ -86,14 +105,14 @@ create policy trip_requests_insert on public.trip_requests for insert with check
 
 drop policy if exists trip_requests_update on public.trip_requests;
 create policy trip_requests_update on public.trip_requests for update using (
-  user_id = auth.uid() or public.is_platform_admin() or public.my_org_id() is not null
+  user_id = auth.uid() or private.is_platform_admin() or private.my_org_id() is not null
 );
 
 -- Предложения: видит автор заявки, турфирма-автор предложения и админ.
 drop policy if exists request_offers_read on public.request_offers;
 create policy request_offers_read on public.request_offers for select using (
-  public.is_platform_admin()
-  or organization_id = public.my_org_id()
+  private.is_platform_admin()
+  or organization_id = private.my_org_id()
   or exists (
     select 1 from public.trip_requests r
     where r.id = request_offers.request_id and r.user_id = auth.uid()
@@ -102,13 +121,13 @@ create policy request_offers_read on public.request_offers for select using (
 
 drop policy if exists request_offers_insert on public.request_offers;
 create policy request_offers_insert on public.request_offers for insert with check (
-  organization_id = public.my_org_id() or public.is_platform_admin()
+  organization_id = private.my_org_id() or private.is_platform_admin()
 );
 
 drop policy if exists request_offers_update on public.request_offers;
 create policy request_offers_update on public.request_offers for update using (
-  public.is_platform_admin()
-  or organization_id = public.my_org_id()
+  private.is_platform_admin()
+  or organization_id = private.my_org_id()
   or exists (
     select 1 from public.trip_requests r
     where r.id = request_offers.request_id and r.user_id = auth.uid()
