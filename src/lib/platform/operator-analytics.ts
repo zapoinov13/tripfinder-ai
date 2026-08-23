@@ -192,7 +192,7 @@ export function computeOperatorAnalytics(orgId: string, period: AnalyticsPeriod)
   const reviews = getCompanyReviews(orgId);
   const unrepliedReviews = reviews.filter((r) => !r.reply?.trim()).length;
 
-  const topTours = [..tours]
+  const topTours = [...tours]
     .map((tour) => {
       const hotel = getHotel(tour.hotelId);
       const tourViews = countViews(new Set([tour.id]), start, end) || tour.views;
@@ -208,7 +208,7 @@ export function computeOperatorAnalytics(orgId: string, period: AnalyticsPeriod)
     return acc;
   }, {});
   const cities = Object.entries(byCity)
-    .map(([city, stat]) => ({ city, ..stat }))
+    .map(([city, stat]) => ({ city, ...stat }))
     .sort((a, b) => b.views - a.views);
 
   const chartDays = lastDays(period === 0 ? 14 : Math.min(period, 14));
@@ -233,7 +233,7 @@ export function computeOperatorAnalytics(orgId: string, period: AnalyticsPeriod)
   });
 
   const weak = topTours.find((r) => r.views >= 50 && r.conversion < 0.02);
-  const strong = [..topTours].sort((a, b) => b.conversion - a.conversion)[0];
+  const strong = [...topTours].sort((a, b) => b.conversion - a.conversion)[0];
 
   const insights: OperatorAnalytics["insights"] = [];
   if (openRequests > 0) {

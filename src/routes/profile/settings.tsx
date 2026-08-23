@@ -74,10 +74,10 @@ function SettingsContent() {
           <Button
             onClick={() => {
               setState((s) => ({
-                ..s,
+                ...s,
                 users: s.users.map((u) =>
                   u.id === user.id
-                    ? { ..u, name: name.trim() || u.name, city: city.trim() || u.city }
+                    ? { ...u, name: name.trim() || u.name, city: city.trim() || u.city }
                     : u,
                 ),
               }));

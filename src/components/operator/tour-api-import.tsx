@@ -68,13 +68,13 @@ export function TourApiImportPanel({ orgId }: { orgId: string }) {
         currency: "KZT" as const,
         syncIntervalMin: 60,
         status: "connected" as const,
-        ..(existing?.lastSyncAt ? { lastSyncAt: existing.lastSyncAt } : {}),
+        ...(existing?.lastSyncAt ? { lastSyncAt: existing.lastSyncAt } : {}),
       };
       return {
-        ..s,
+        ...s,
         apiConnections: existing
           ? s.apiConnections.map((c) => (c.id === existing.id ? next : c))
-          : [..s.apiConnections, next],
+          : [...s.apiConnections, next],
       };
     });
     appendAudit({

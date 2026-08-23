@@ -20,11 +20,11 @@ type Search = { kind?: TripRequestKind; destination?: string; from?: string; cit
 
 export const Route = createFileRoute("/request/")({
   validateSearch: (search: Record<string, unknown>): Search => ({
-    ..(search["kind"] === "assistance" ? { kind: "assistance" as const } : {}),
-    ..(typeof search["destination"] === "string" ? { destination: search["destination"] } : {}),
-    ..(typeof search["from"] === "string" ? { from: search["from"] } : {}),
-    ..(typeof search["city"] === "string" ? { city: search["city"] } : {}),
-    ..(typeof search["wish"] === "string" ? { wish: search["wish"] } : {}),
+    ...(search["kind"] === "assistance" ? { kind: "assistance" as const } : {}),
+    ...(typeof search["destination"] === "string" ? { destination: search["destination"] } : {}),
+    ...(typeof search["from"] === "string" ? { from: search["from"] } : {}),
+    ...(typeof search["city"] === "string" ? { city: search["city"] } : {}),
+    ...(typeof search["wish"] === "string" ? { wish: search["wish"] } : {}),
   }),
   head: () => ({
     meta: [

@@ -74,10 +74,10 @@ function extractTitle(text: string): string | undefined {
 }
 
 function extractDates(text: string): { start?: string; end?: string } {
-  const iso = [..text.matchAll(/(\d{4}-\d{2}-\d{2})/g)].map((m) => m[1]!);
-  if (iso.length >= 2) return { start: iso[0], end: iso[1] };
-  if (iso.length === 1) return { start: iso[0] };
-  const ru = [..text.matchAll(/(\d{1,2})[./](\d{1,2})[./](\d{2,4})/g)];
+  const iso = [...text.matchAll(/(\d{4}-\d{2}-\d{2})/g)].map((m) => m[1]!);
+  if (iso.length >= 2) return { start: iso[0]!, end: iso[1]! };
+  if (iso.length === 1) return { start: iso[0]! };
+  const ru = [...text.matchAll(/(\d{1,2})[./](\d{1,2})[./](\d{2,4})/g)];
   if (ru.length >= 1) {
     const toIso = (m: RegExpMatchArray) => {
       const d = Number(m[1]);
@@ -88,13 +88,13 @@ function extractDates(text: string): { start?: string; end?: string } {
     };
     const start = toIso(ru[0]!);
     const end = ru[1] ? toIso(ru[1]) : undefined;
-    return { start, end };
+    return { start, ...(end ? { end } : {}) };
   }
   return {};
 }
 
 function extractUrls(text: string): string[] {
-  return [..text.matchAll(/https?:\/\/[^\s<>"')\]]+/gi)].map((m) => m[0]!);
+  return [...text.matchAll(/https?:\/\/[^\s<>"')\]]+/gi)].map((m) => m[0]!);
 }
 
 /**
@@ -135,16 +135,16 @@ export function draftFromUrl(url: string): { draft: TourDraft; fields: string[] 
   })();
 
   const next: TourDraft = {
-    ..draft,
+    ...draft,
     nights,
     dateEnd: new Date(new Date(draft.dateStart).getTime() + nights * 86400000)
       .toISOString()
       .slice(0, 10),
     sourceUrl: url,
-    ..(price ? { price } : {}),
-    ..(meal ? { mealCode: meal } : {}),
-    ..(fromCity ? { fromCity } : {}),
-    ..(slugTitle ? { title: slugTitle, hotelName: draft.customHotel ? slugTitle : draft.hotelName } : {}),
+    ...(price ? { price } : {}),
+    ...(meal ? { mealCode: meal } : {}),
+    ...(fromCity ? { fromCity } : {}),
+    ...(slugTitle ? { title: slugTitle, hotelName: draft.customHotel ? slugTitle : draft.hotelName } : {}),
   };
 
   fields.push("направление", "даты", "питание", "цена");
@@ -192,21 +192,21 @@ export function draftFromTelegram(input: {
     new Date(new Date(start).getTime() + nights * 86400000).toISOString().slice(0, 10);
 
   const next: TourDraft = {
-    ..draft,
+    ...draft,
     nights,
     dateStart: start,
     dateEnd: end,
     mealCode: meal,
     description: text.slice(0, 2000),
-    sourceUrl: sourceLink,
-    ..(price ? { price } : {}),
-    ..(fromCity ? { fromCity } : {}),
-    ..(hotel
+    ...(sourceLink ? { sourceUrl: sourceLink } : {}),
+    ...(price ? { price } : {}),
+    ...(fromCity ? { fromCity } : {}),
+    ...(hotel
       ? { hotelName: hotel, customHotel: true, title: title || hotel }
       : title
         ? { title }
         : {}),
-    ..(photoUrls.length ? { photos: photoUrls.slice(0, 8) } : {}),
+    ...(photoUrls.length ? { photos: photoUrls.slice(0, 8) } : {}),
   };
 
   fields.push("описание", "даты", "питание");

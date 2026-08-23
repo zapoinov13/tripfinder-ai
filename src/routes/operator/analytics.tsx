@@ -80,7 +80,7 @@ function OperatorAnalyticsPage() {
 
   if (!allowed || !organization || !data) return null;
 
-  const sortedTours = [..data.topTours].sort((a, b) => {
+  const sortedTours = [...data.topTours].sort((a, b) => {
     if (tourSort === "bookings") return b.bookings - a.bookings;
     if (tourSort === "conversion") return b.conversion - a.conversion;
     return b.views - a.views;
@@ -236,12 +236,14 @@ function OperatorAnalyticsPage() {
                   />
                   <Legend
                     formatter={(value) =>
-                      ({
-                        views: "Просмотры",
-                        offers: "Ответы",
-                        picks: "Выбрали",
-                        revenue: "Выручка",
-                      })[value] ?? value
+                      (
+                        {
+                          views: "Просмотры",
+                          offers: "Ответы",
+                          picks: "Выбрали",
+                          revenue: "Выручка",
+                        } as Record<string, string>
+                      )[String(value)] ?? value
                     }
                   />
                   <Area type="monotone" dataKey="views" stroke="var(--muted-foreground)" strokeWidth={1.5} fill="url(#an-views)" />

@@ -55,7 +55,7 @@ export const Route = createFileRoute("/")({
 function destPhoto(id: string, index = 0) {
   const dest = destinations.find((d) => d.id === id);
   if (!dest) return heroImage;
-  const local = [dest.image, ..(dest.photos ?? [])].filter(
+  const local = [dest.image, ...(dest.photos ?? [])].filter(
     (src) => src && !src.includes("images.unsplash.com"),
   );
   return local[index] ?? local[0] ?? dest.image ?? heroImage;

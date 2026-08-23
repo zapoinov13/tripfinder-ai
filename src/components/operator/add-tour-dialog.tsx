@@ -70,12 +70,12 @@ export function AddTourDialog({
   const destinationHotels = hotels.filter((h) => h.destinationId === draft.destinationId);
   const dest = destinations.find((d) => d.id === draft.destinationId);
 
-  const patch = (next: Partial<TourDraft>) => setDraft((prev) => ({ ..prev, ..next }));
+  const patch = (next: Partial<TourDraft>) => setDraft((prev) => ({ ...prev, ...next }));
 
   const changeDestination = (destinationId: string) => {
     const first = hotels.find((h) => h.destinationId === destinationId);
     if (first && !draft.customHotel) {
-      setDraft(applyHotelToDraft({ ..draft, destinationId }, first));
+      setDraft(applyHotelToDraft({ ...draft, destinationId }, first));
       return;
     }
     const nextDest = destinations.find((d) => d.id === destinationId);
@@ -100,7 +100,7 @@ export function AddTourDialog({
   const loadFromTelegram = () => {
     const result = draftFromTelegram({
       text: telegramText.trim(),
-      sourceLink: telegramLink.trim() || undefined,
+      ...(telegramLink.trim() ? { sourceLink: telegramLink.trim() } : {}),
     });
     if (result.warnings.includes("Вставьте текст поста или описание тура") && !telegramText.trim()) {
       toast.error("Вставьте текст поста или описание");
@@ -511,7 +511,7 @@ function TourDraftForm({
                     onPatch({
                       amenities: on
                         ? draft.amenities.filter((a) => a !== key)
-                        : [..draft.amenities, key],
+                        : [...draft.amenities, key],
                     })
                   }
                   className={cn(
@@ -640,7 +640,7 @@ function TourDraftForm({
                 checked={draft.extras[item.key]}
                 onCheckedChange={(v) =>
                   onPatch({
-                    extras: { ..draft.extras, [item.key]: v } as Record<ExtraIncludeKey, boolean>,
+                    extras: { ...draft.extras, [item.key]: v } as Record<ExtraIncludeKey, boolean>,
                   })
                 }
               />
@@ -736,8 +736,8 @@ function PhotoVideoFields({
       return;
     }
     try {
-      const next = await Promise.all([..files].slice(0, room).map((file) => readImageFile(file)));
-      onPatch({ photos: [..draft.photos, ..next] });
+      const next = await Promise.all([...files].slice(0, room).map((file) => readImageFile(file)));
+      onPatch({ photos: [...draft.photos, ...next] });
     } catch {
       toast.error("Не удалось загрузить фото");
     }
@@ -750,7 +750,7 @@ function PhotoVideoFields({
       toast.error(`Можно загрузить до ${MAX_PHOTOS} фото`);
       return;
     }
-    onPatch({ photos: [..draft.photos, value] });
+    onPatch({ photos: [...draft.photos, value] });
     setPhotoUrl("");
   };
 
@@ -761,7 +761,7 @@ function PhotoVideoFields({
       toast.error(`Можно добавить до ${MAX_VIDEOS} видео`);
       return;
     }
-    onPatch({ videos: [..draft.videos, value] });
+    onPatch({ videos: [...draft.videos, value] });
     setVideoUrl("");
   };
 

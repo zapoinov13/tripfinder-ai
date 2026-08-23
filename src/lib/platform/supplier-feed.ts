@@ -113,24 +113,80 @@ function asBool(v: unknown): boolean | undefined {
 
 function normalizeItem(raw: unknown, fallbackCurrency: Currency): SupplierFeedItem | null {
   if (!isRecord(raw)) return null;
-  const external_id = asString(raw.external_id) ?? asString(raw.externalId) ?? asString(raw.id);
-  const title = asString(raw.title) ?? asString(raw.name);
-  const hotel_name =
-    asString(raw.hotel_name) ?? asString(raw.hotelName) ?? asString(raw.hotel) ?? title;
-  const price = asNumber(raw.price);
+  const rec: Record<string, unknown> = raw;
+  const s = (...keys: string[]) => {
+    for (const k of keys) {
+      const v = asString(rec[k]);
+      if (v !== undefined) return v;
+    }
+    return undefined;
+  };
+  const n = (...keys: string[]) => {
+    for (const k of keys) {
+      const v = asNumber(rec[k]);
+      if (v !== undefined) return v;
+    }
+    return undefined;
+  };
+  const a = (...keys: string[]) => {
+    for (const k of keys) {
+      const v = asStringArray(rec[k]);
+      if (v !== undefined) return v;
+    }
+    return undefined;
+  };
+  const b = (...keys: string[]) => {
+    for (const k of keys) {
+      const v = asBool(rec[k]);
+      if (v !== undefined) return v;
+    }
+    return undefined;
+  };
+
+  const external_id = s("external_id", "externalId", "id");
+  const title = s("title", "name");
+  const hotel_name = s("hotel_name", "hotelName", "hotel") ?? title;
+  const price = n("price");
   if (!external_id || !title || !hotel_name || price === undefined || price <= 0) return null;
 
-  const currencyRaw = (asString(raw.currency) ?? fallbackCurrency).toUpperCase();
+  const currencyRaw = (s("currency") ?? fallbackCurrency).toUpperCase();
   const currency: Currency =
     currencyRaw === "USD" || currencyRaw === "EUR" || currencyRaw === "KZT"
       ? currencyRaw
       : fallbackCurrency;
 
-  const statusRaw = (asString(raw.status) ?? "active").toLowerCase();
+  const statusRaw = (s("status") ?? "active").toLowerCase();
   const status: SupplierFeedItem["status"] =
     statusRaw === "archived" || statusRaw === "draft" || statusRaw === "active"
       ? statusRaw
       : "active";
+
+  const optional: Record<string, unknown> = {
+    destination: s("destination"),
+    country: s("country"),
+    city: s("city"),
+    from_city: s("from_city", "fromCity", "from"),
+    nights: n("nights"),
+    meal: s("meal", "meal_code", "mealCode"),
+    room_type: s("room_type", "roomType"),
+    date_start: s("date_start", "dateStart", "departure"),
+    date_end: s("date_end", "dateEnd"),
+    availability: n("availability", "seats"),
+    old_price: n("old_price", "oldPrice"),
+    description: s("description"),
+    photos: a("photos", "images"),
+    videos: a("videos"),
+    includes: a("includes"),
+    excludes: a("excludes"),
+    flight: b("flight", "flight_included"),
+    transfer: b("transfer"),
+    insurance: b("insurance"),
+    visa: b("visa"),
+    hot_deal: b("hot_deal", "hotDeal"),
+  };
+  for (const key of Object.keys(optional)) {
+    if (optional[key] === undefined) delete optional[key];
+  }
 
   return {
     external_id,
@@ -138,30 +194,11 @@ function normalizeItem(raw: unknown, fallbackCurrency: Currency): SupplierFeedIt
     hotel_name,
     price,
     currency,
-    destination: asString(raw.destination),
-    country: asString(raw.country),
-    city: asString(raw.city),
-    from_city: asString(raw.from_city) ?? asString(raw.fromCity) ?? asString(raw.from),
-    nights: asNumber(raw.nights),
-    meal: asString(raw.meal) ?? asString(raw.meal_code) ?? asString(raw.mealCode),
-    room_type: asString(raw.room_type) ?? asString(raw.roomType),
-    date_start: asString(raw.date_start) ?? asString(raw.dateStart) ?? asString(raw.departure),
-    date_end: asString(raw.date_end) ?? asString(raw.dateEnd),
-    availability: asNumber(raw.availability) ?? asNumber(raw.seats),
     status,
-    old_price: asNumber(raw.old_price) ?? asNumber(raw.oldPrice),
-    description: asString(raw.description),
-    photos: asStringArray(raw.photos) ?? asStringArray(raw.images),
-    videos: asStringArray(raw.videos),
-    includes: asStringArray(raw.includes),
-    excludes: asStringArray(raw.excludes),
-    flight: asBool(raw.flight) ?? asBool(raw.flight_included),
-    transfer: asBool(raw.transfer),
-    insurance: asBool(raw.insurance),
-    visa: asBool(raw.visa),
-    hot_deal: asBool(raw.hot_deal) ?? asBool(raw.hotDeal),
-  };
+    ...optional,
+  } as SupplierFeedItem;
 }
+
 
 /** Parse JSON feed (object with tours[] or bare array). */
 export function parseSupplierFeed(input: unknown): {
@@ -176,12 +213,13 @@ export function parseSupplierFeed(input: unknown): {
   if (Array.isArray(input)) {
     toursRaw = input;
   } else if (isRecord(input)) {
-    const cur = asString(input.currency)?.toUpperCase();
+    const rec: Record<string, unknown> = input;
+    const cur = asString(rec["currency"])?.toUpperCase();
     if (cur === "USD" || cur === "EUR" || cur === "KZT") currency = cur;
-    updated_at = asString(input.updated_at) ?? asString(input.updatedAt);
-    if (Array.isArray(input.tours)) toursRaw = input.tours;
-    else if (Array.isArray(input.items)) toursRaw = input.items;
-    else if (Array.isArray(input.data)) toursRaw = input.data;
+    updated_at = asString(rec["updated_at"]) ?? asString(rec["updatedAt"]);
+    if (Array.isArray(rec["tours"])) toursRaw = rec["tours"];
+    else if (Array.isArray(rec["items"])) toursRaw = rec["items"];
+    else if (Array.isArray(rec["data"])) toursRaw = rec["data"];
     else errors.push("В JSON нет массива tours / items / data");
   } else {
     errors.push("Ожидался JSON-объект или массив туров");
@@ -198,7 +236,7 @@ export function parseSupplierFeed(input: unknown): {
   });
 
   return {
-    doc: { version: 1, currency, ..(updated_at ? { updated_at } : {}), tours },
+    doc: { version: 1, currency, ...(updated_at ? { updated_at } : {}), tours },
     errors,
   };
 }
@@ -250,7 +288,7 @@ function toPlatformTour(
     mealCode,
     meal: mealLabel(mealCode),
     price: item.price,
-    ..(item.old_price && item.old_price > item.price
+    ...(item.old_price && item.old_price > item.price
       ? { oldPrice: item.old_price }
       : existing?.oldPrice
         ? { oldPrice: existing.oldPrice }
@@ -297,7 +335,7 @@ export function applySupplierFeed(orgId: string, doc: SupplierFeedDocument): Fee
   const skipped = 0;
   const errors: string[] = [];
   const seen = new Set<string>();
-  const nextTours = [..state.tours];
+  const nextTours = [...state.tours];
   const hotelPatches: { id: string; name: string; destinationId: string; image?: string }[] = [];
 
   for (const item of doc.tours) {
@@ -317,21 +355,22 @@ export function applySupplierFeed(orgId: string, doc: SupplierFeedDocument): Fee
       nextTours.unshift(tour);
       imported += 1;
     }
+    const hotelImage = tour.photos?.[0];
     hotelPatches.push({
       id: tour.hotelId,
       name: item.hotel_name,
       destinationId: resolveDestinationId(item),
-      image: tour.photos[0],
+      ...(hotelImage ? { image: hotelImage } : {}),
     });
   }
 
   setState((s) => {
-    let hotels = [..s.hotels];
+    let hotels = [...s.hotels];
     for (const patch of hotelPatches) {
       const dest = destinations.find((d) => d.id === patch.destinationId) ?? destinations[0]!;
       const hi = hotels.findIndex((h) => h.id === patch.id);
       if (hi >= 0) {
-        hotels[hi] = { ..hotels[hi]!, name: patch.name, image: patch.image || hotels[hi]!.image };
+        hotels[hi] = { ...hotels[hi]!, name: patch.name, image: patch.image || hotels[hi]!.image };
       } else {
         hotels = [
           {
@@ -350,11 +389,11 @@ export function applySupplierFeed(orgId: string, doc: SupplierFeedDocument): Fee
             amenities: [],
             image: patch.image || dest.image,
           },
-          ..hotels,
+          ...hotels,
         ];
       }
     }
-    return { ..s, tours: nextTours, hotels };
+    return { ...s, tours: nextTours, hotels };
   });
 
   appendAudit({

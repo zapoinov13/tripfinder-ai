@@ -43,7 +43,7 @@ export function TouristAccountGate({
   }
 
   if (!isAuthenticated || !user) {
-    return <GuestAccountScreen kind={kind} title={title} description={description} />;
+    return <GuestAccountScreen kind={kind} {...(title !== undefined ? { title } : {})} {...(description !== undefined ? { description } : {})} />;
   }
 
   const touristRoles: Role[] = ["TOURIST", "PREMIUM_TOURIST"];
@@ -173,9 +173,7 @@ function GuestAccountScreen({
               <li key={item.to}>
                 <Link
                   to={item.to}
-                  search={
-                    item.to === "/search" || item.to === "/request" ? ({} as never) : undefined
-                  }
+                  search={{} as never}
                   className={cn(
                     "surface-card flex h-full flex-col items-start gap-2 p-4 transition-colors hover:border-primary/40",
                   )}

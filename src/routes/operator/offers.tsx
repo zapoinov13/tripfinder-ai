@@ -169,7 +169,10 @@ function OperatorOffersPage() {
                 <OfferCard
                   key={offer.id}
                   offer={offer}
-                  request={state.tripRequests.find((r) => r.id === offer.requestId)}
+                  {...(() => {
+                    const req = state.tripRequests.find((r) => r.id === offer.requestId);
+                    return req ? { request: req } : {};
+                  })()}
                   hasMessages={state.requestMessages.some(
                     (m) => m.requestId === offer.requestId && m.organizationId === organization.id,
                   )}

@@ -44,9 +44,9 @@ function NotificationsPage() {
                 onClick={() => {
                   if (!user) return;
                   setState((s) => ({
-                    ..s,
+                    ...s,
                     notifications: s.notifications.map((n) =>
-                      n.userId === user.id ? { ..n, read: true } : n,
+                      n.userId === user.id ? { ...n, read: true } : n,
                     ),
                   }));
                 }}
