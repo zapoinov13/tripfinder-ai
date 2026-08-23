@@ -55,7 +55,7 @@ function CompanyPage() {
   const photos = company.photos ?? [];
   const videos = company.videos ?? [];
   const verified = company.status === "APPROVED";
-  const wa = company.whatsapp?.replace(/\D/g, "") || company.phone.replace(/\D/g, "");
+  const wa = company.whatsapp?.replace(/\D/g, "") || company.phone?.replace(/\D/g, "") || "";
 
   return (
     <SiteLayout>

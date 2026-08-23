@@ -10,17 +10,30 @@ export async function assertPlatformAdmin(supabase: SupabaseClient, userId: stri
 }
 
 export async function readSettings(): Promise<AiSettings & { updatedAt: string | null }> {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { data } = await supabaseAdmin.from("ai_settings").select("*").eq("id", 1).maybeSingle();
-  return {
-    provider: ((data?.provider as AiProvider) ?? "lovable") as AiProvider,
-    model: data?.model || "openai/gpt-5.6-sol",
-    baseUrl: data?.base_url ?? "",
-    apiKey: data?.api_key ?? "",
-    enabled: data?.enabled ?? false,
-    systemPrompt: data?.system_prompt || DEFAULT_SYSTEM_PROMPT,
-    updatedAt: data?.updated_at ?? null,
-  };
+  try {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data } = await supabaseAdmin.from("ai_settings").select("*").eq("id", 1).maybeSingle();
+    return {
+      provider: ((data?.provider as AiProvider) ?? "lovable") as AiProvider,
+      model: data?.model || "openai/gpt-5.6-sol",
+      baseUrl: data?.base_url ?? "",
+      apiKey: data?.api_key ?? "",
+      enabled: data?.enabled ?? false,
+      systemPrompt: data?.system_prompt || DEFAULT_SYSTEM_PROMPT,
+      updatedAt: data?.updated_at ?? null,
+    };
+  } catch (err) {
+    console.warn("[ai-settings] using defaults", err);
+    return {
+      provider: "lovable",
+      model: "openai/gpt-5.6-sol",
+      baseUrl: "",
+      apiKey: "",
+      enabled: false,
+      systemPrompt: DEFAULT_SYSTEM_PROMPT,
+      updatedAt: null,
+    };
+  }
 }
 
 export async function writeSettings(input: {
