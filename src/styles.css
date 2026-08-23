@@ -1,5 +1,6 @@
 @import "tailwindcss" source(none);
-@source "./src";
+/* styles.css уже в src/ — сканируем текущую папку, не src/src */
+@source ".";
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
