@@ -14,6 +14,7 @@ import {
 import { getState, nowIso, setState, uid } from "./store";
 import type { PlatformTour } from "./types";
 import { resolveSupabaseConfig } from "@/lib/supabase/config";
+import { getSupabase } from "@/lib/supabase/client";
 
 export class MockOperatorAdapter implements TourOperatorAdapter {
   constructor(private organizationId: string) {}
@@ -218,14 +219,18 @@ async function fetchSupplierFeed(
       ? `${window.location.origin}${endpoint}`
       : endpoint;
 
-  const { url: base, publishableKey: anon } = resolveSupabaseConfig();
+  const { url: base } = resolveSupabaseConfig();
+  const sb = getSupabase();
+  const session = sb ? (await sb.auth.getSession()).data.session : null;
+  const accessToken = session?.access_token;
 
-  if (base && anon && /^https?:\/\//i.test(resolved)) {
+  if (base && accessToken && /^https?:\/\//i.test(resolved)) {
     try {
+      const { publishableKey: anon } = resolveSupabaseConfig();
       const res = await fetch(`${base}/functions/v1/sync-supplier-feed`, {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${anon}`,
+          Authorization: `Bearer ${accessToken}`,
           apikey: anon,
           "Content-Type": "application/json",
         },

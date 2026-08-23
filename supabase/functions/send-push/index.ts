@@ -113,6 +113,12 @@ Deno.serve(async (req) => {
       if (error) throw error;
       targetUserIds = (profiles ?? []).map((p) => p.id);
     } else if (payload.userId) {
+      if (payload.userId !== user.id && !isPlatformAdmin) {
+        return new Response(JSON.stringify({ error: "Forbidden" }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
       targetUserIds = [payload.userId];
     } else {
       return new Response(JSON.stringify({ error: "userId or broadcast required" }), {

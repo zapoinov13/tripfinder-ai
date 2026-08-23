@@ -219,6 +219,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         password,
       });
       if (error || !data.user) {
+        if (!import.meta.env.DEV) {
+          return { ok: false, error: error?.message ?? "Неверный email или пароль" };
+        }
         const local = getState().users.find(
           (u) => u.email.toLowerCase() === email.trim().toLowerCase(),
         );
@@ -266,6 +269,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       trackEvent("LOGIN", data.user.id);
       toast.success("Вход через Supabase");
       return { ok: true };
+    }
+
+    if (!sb) {
+      if (!import.meta.env.DEV) {
+        return { ok: false, error: "Вход временно недоступен. Попробуйте позже." };
+      }
     }
 
     const found = getState().users.find(
@@ -668,24 +677,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }));
 
     if (sb) {
-      await sb.from("profiles").update({ role: "PREMIUM_TOURIST" }).eq("id", current);
-      await sb.from("subscriptions").insert({
-        user_id: current,
-        plan_id: "premium-monthly",
-        status: "active",
-        started_at: nowIso(),
-        expires_at: new Date(Date.now() + 30 * 86400000).toISOString(),
-        auto_renew: true,
-      });
-      await sb.from("payments").insert({
-        user_id: current,
-        amount: config.premiumMonthlyPrice,
-        currency: config.premiumCurrency,
-        type: "premium_subscription",
-        provider: "mock",
-        provider_payment_id: uid(),
-        status: "paid",
-      });
+      try {
+        const { activatePremiumSubscription } = await import("@/lib/premium.functions");
+        await activatePremiumSubscription();
+      } catch (err) {
+        console.warn("[premium] server activation failed", err);
+        return { ok: false, error: "Не удалось активировать Premium" };
+      }
     }
 
     pushNotification(
