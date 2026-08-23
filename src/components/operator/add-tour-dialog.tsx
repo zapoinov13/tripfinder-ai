@@ -100,7 +100,7 @@ export function AddTourDialog({
   const loadFromTelegram = () => {
     const result = draftFromTelegram({
       text: telegramText.trim(),
-      sourceLink: telegramLink.trim() || undefined,
+      ...(telegramLink.trim() ? { sourceLink: telegramLink.trim() } : {}),
     });
     if (result.warnings.includes("Вставьте текст поста или описание тура") && !telegramText.trim()) {
       toast.error("Вставьте текст поста или описание");

@@ -1,4 +1,4 @@
-import type { Router } from "@tanstack/react-router";
+import type { AnyRouter } from "@tanstack/react-router";
 
 import { isNativeApp } from "@/lib/native/app";
 
@@ -20,7 +20,7 @@ function normalizeDeepLink(raw: string): string | null {
   }
 }
 
-export async function bindNativeDeepLinks(router: Router) {
+export async function bindNativeDeepLinks(router: AnyRouter) {
   if (!isNativeApp()) return () => {};
 
   try {

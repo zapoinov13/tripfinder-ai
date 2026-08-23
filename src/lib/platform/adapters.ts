@@ -218,7 +218,7 @@ async function fetchSupplierFeed(
       : endpoint;
 
   const base = import.meta.env.VITE_SUPABASE_URL as string | undefined;
-  const anon = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
+  const anon = import.meta.env["VITE_SUPABASE_ANON_KEY"] as string | undefined;
 
   if (base && anon && /^https?:\/\//i.test(resolved)) {
     try {
@@ -242,9 +242,9 @@ async function fetchSupplierFeed(
   }
 
   const headers: Record<string, string> = { Accept: "application/json" };
-  if (authType === "bearer" && apiKey) headers.Authorization = `Bearer ${apiKey}`;
+  if (authType === "bearer" && apiKey) headers["Authorization"] = `Bearer ${apiKey}`;
   else if (authType === "basic" && apiKey) {
-    headers.Authorization = `Basic ${btoa(`${apiKey}:${secret}`)}`;
+    headers["Authorization"] = `Basic ${btoa(`${apiKey}:${secret}`)}`;
   } else if (apiKey) {
     headers["X-Api-Key"] = apiKey;
     if (secret) headers["X-Api-Secret"] = secret;

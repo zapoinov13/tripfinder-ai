@@ -75,7 +75,7 @@ export function AppTabBar() {
             <Link
               key={tab.to}
               to={tab.to}
-              search={tab.to === "/search" ? ({} as never) : undefined}
+              search={{} as never}
               className={cn(
                 "flex min-h-[3.5rem] flex-col items-center justify-center gap-0.5 px-1 py-2 text-[11px] font-medium transition-colors active:opacity-70",
                 active ? "text-primary" : "text-muted-foreground",
