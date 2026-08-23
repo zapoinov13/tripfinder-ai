@@ -409,10 +409,10 @@ function ExcursionsPage() {
                   <Link
                     to="/request"
                     search={{
-                      kind: "assistance",
-                      destination: dest?.id,
+                      kind: "assistance" as const,
+                      ...(dest?.id ? { destination: dest.id } : {}),
                       city,
-                      wish: query || undefined,
+                      ...(query ? { wish: query } : {}),
                     }}
                   >
                     Оставить заявку

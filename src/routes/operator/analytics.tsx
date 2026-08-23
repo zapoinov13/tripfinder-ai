@@ -236,12 +236,14 @@ function OperatorAnalyticsPage() {
                   />
                   <Legend
                     formatter={(value) =>
-                      ({
-                        views: "Просмотры",
-                        offers: "Ответы",
-                        picks: "Выбрали",
-                        revenue: "Выручка",
-                      })[value] ?? value
+                      (
+                        {
+                          views: "Просмотры",
+                          offers: "Ответы",
+                          picks: "Выбрали",
+                          revenue: "Выручка",
+                        } as Record<string, string>
+                      )[String(value)] ?? value
                     }
                   />
                   <Area type="monotone" dataKey="views" stroke="var(--muted-foreground)" strokeWidth={1.5} fill="url(#an-views)" />

@@ -154,18 +154,21 @@ function OperatorDashboard() {
       hint: `${active.length} активных`,
       to: "/operator/tours",
       icon: Luggage,
+      highlight: false,
     },
     {
       label: "Компания",
       hint: verified ? "Проверена" : "Профиль",
       to: "/operator/company",
       icon: Building2,
+      highlight: false,
     },
     {
       label: "Продвижение",
       hint: formatPrice(organization.promotionBalance),
       to: "/operator/promotion",
       icon: Megaphone,
+      highlight: false,
     },
   ] as const;
 
