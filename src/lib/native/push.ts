@@ -20,6 +20,10 @@ async function saveDeviceToken(token: string, platform: "ios" | "android") {
   }
 
   const sb = getSupabase();
+  if (!sb) {
+    localStorage.setItem("tourgo.push.token", token);
+    return;
+  }
   const {
     data: { user },
   } = await sb.auth.getUser();

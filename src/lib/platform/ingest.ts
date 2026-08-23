@@ -75,8 +75,8 @@ function extractTitle(text: string): string | undefined {
 
 function extractDates(text: string): { start?: string; end?: string } {
   const iso = [...text.matchAll(/(\d{4}-\d{2}-\d{2})/g)].map((m) => m[1]!);
-  if (iso.length >= 2) return { start: iso[0], end: iso[1] };
-  if (iso.length === 1) return { start: iso[0] };
+  if (iso.length >= 2) return { start: iso[0]!, end: iso[1]! };
+  if (iso.length === 1) return { start: iso[0]! };
   const ru = [...text.matchAll(/(\d{1,2})[./](\d{1,2})[./](\d{2,4})/g)];
   if (ru.length >= 1) {
     const toIso = (m: RegExpMatchArray) => {
@@ -88,7 +88,7 @@ function extractDates(text: string): { start?: string; end?: string } {
     };
     const start = toIso(ru[0]!);
     const end = ru[1] ? toIso(ru[1]) : undefined;
-    return { start, end };
+    return { start, ...(end ? { end } : {}) };
   }
   return {};
 }
@@ -198,7 +198,7 @@ export function draftFromTelegram(input: {
     dateEnd: end,
     mealCode: meal,
     description: text.slice(0, 2000),
-    sourceUrl: sourceLink,
+    ...(sourceLink ? { sourceUrl: sourceLink } : {}),
     ...(price ? { price } : {}),
     ...(fromCity ? { fromCity } : {}),
     ...(hotel

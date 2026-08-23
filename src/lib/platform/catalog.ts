@@ -69,7 +69,7 @@ export function pushNotification(
     title,
     body,
     type,
-    data: payload,
+    ...(payload ? { data: payload } : {}),
   });
   return n;
 }

@@ -12,6 +12,7 @@ export async function dispatchPushNotification(input: PushPayload) {
   if (!isSupabaseConfigured) return { ok: false, skipped: true };
 
   const sb = getSupabase();
+  if (!sb) return { ok: false, skipped: true };
   const {
     data: { session },
   } = await sb.auth.getSession();
@@ -56,6 +57,7 @@ export async function dispatchPushBroadcast(input: {
   if (!isSupabaseConfigured) return { ok: false, error: "Supabase не настроен" };
 
   const sb = getSupabase();
+  if (!sb) return { ok: false, error: "Supabase не настроен" };
   const {
     data: { session },
   } = await sb.auth.getSession();
