@@ -13,6 +13,7 @@ import {
 } from "./supplier-feed";
 import { getState, nowIso, setState, uid } from "./store";
 import type { PlatformTour } from "./types";
+import { resolveSupabaseConfig } from "@/lib/supabase/config";
 
 export class MockOperatorAdapter implements TourOperatorAdapter {
   constructor(private organizationId: string) {}
@@ -217,8 +218,7 @@ async function fetchSupplierFeed(
       ? `${window.location.origin}${endpoint}`
       : endpoint;
 
-  const base = import.meta.env.VITE_SUPABASE_URL as string | undefined;
-  const anon = import.meta.env["VITE_SUPABASE_ANON_KEY"] as string | undefined;
+  const { url: base, publishableKey: anon } = resolveSupabaseConfig();
 
   if (base && anon && /^https?:\/\//i.test(resolved)) {
     try {

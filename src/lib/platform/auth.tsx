@@ -13,7 +13,7 @@ import { toast } from "sonner";
 import { AppSplash } from "@/components/site/app-splash";
 import { authorizeAppleSignIn, type AppleAuthResult } from "@/lib/native/apple-auth";
 import { rolePermissions, type Role } from "@/lib/platform-contracts";
-import { getSupabase, isSupabaseConfigured } from "@/lib/supabase/client";
+import { getSupabase, getSupabasePublicConfig, isSupabaseConfigured } from "@/lib/supabase/client";
 import { hydrateUserDataFromSupabase } from "@/lib/supabase/hydrate";
 import { startPlatformSync } from "@/lib/supabase/sync";
 import { appendAudit, pushNotification, trackEvent } from "./catalog";
@@ -355,8 +355,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       let remoteDeleted = false;
       if (session?.access_token) {
-        const baseUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;
-        const apiKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined;
+        const { url: baseUrl, publishableKey: apiKey } = getSupabasePublicConfig();
         if (baseUrl && apiKey) {
           try {
             const res = await fetch(`${baseUrl}/functions/v1/delete-account`, {

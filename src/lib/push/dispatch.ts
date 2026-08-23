@@ -1,4 +1,4 @@
-import { getSupabase, isSupabaseConfigured } from "@/lib/supabase/client";
+import { getSupabase, getSupabasePublicConfig, isSupabaseConfigured } from "@/lib/supabase/client";
 
 type PushPayload = {
   userId: string;
@@ -18,8 +18,7 @@ export async function dispatchPushNotification(input: PushPayload) {
   } = await sb.auth.getSession();
   if (!session?.access_token) return { ok: false, skipped: true };
 
-  const baseUrl = import.meta.env.VITE_SUPABASE_URL as string;
-  const apiKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
+  const { url: baseUrl, publishableKey: apiKey } = getSupabasePublicConfig();
 
   try {
     const res = await fetch(`${baseUrl}/functions/v1/send-push`, {
@@ -63,8 +62,7 @@ export async function dispatchPushBroadcast(input: {
   } = await sb.auth.getSession();
   if (!session?.access_token) return { ok: false, error: "Нужен вход" };
 
-  const baseUrl = import.meta.env.VITE_SUPABASE_URL as string;
-  const apiKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
+  const { url: baseUrl, publishableKey: apiKey } = getSupabasePublicConfig();
 
   const res = await fetch(`${baseUrl}/functions/v1/send-push`, {
     method: "POST",

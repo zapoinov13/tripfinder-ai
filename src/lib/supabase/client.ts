@@ -1,22 +1,19 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
-/** Единственный production-проект TourGo, все env должны указывать сюда. */
-export const TOURGO_SUPABASE_PROJECT_ID = "mgyufoyornzbwvgdfojb";
+import {
+  TOURGO_SUPABASE_PROJECT_ID,
+  resolveSupabaseConfig,
+} from "@/lib/supabase/config";
 
-const url = import.meta.env.VITE_SUPABASE_URL as string | undefined;
-const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined;
-const projectId = import.meta.env["VITE_SUPABASE_PROJECT_ID"] as string | undefined;
+export { TOURGO_SUPABASE_PROJECT_ID } from "@/lib/supabase/config";
 
-export const isSupabaseConfigured = Boolean(url && key);
+const resolved = resolveSupabaseConfig();
 
-if (
-  import.meta.env.DEV &&
-  isSupabaseConfigured &&
-  projectId &&
-  projectId !== TOURGO_SUPABASE_PROJECT_ID
-) {
+export const isSupabaseConfigured = Boolean(resolved.url && resolved.publishableKey);
+
+if (import.meta.env.DEV && resolved.source === "tourgo-fallback") {
   console.warn(
-    `[supabase] VITE_SUPABASE_PROJECT_ID=${projectId}, expected ${TOURGO_SUPABASE_PROJECT_ID}. Tours may be empty.`,
+    `[supabase] Using TourGo fallback (${TOURGO_SUPABASE_PROJECT_ID}). Set VITE_SUPABASE_* to this project in Lovable/Vercel.`,
   );
 }
 
@@ -25,7 +22,7 @@ let client: SupabaseClient | null = null;
 export function getSupabase(): SupabaseClient | null {
   if (!isSupabaseConfigured) return null;
   if (!client) {
-    client = createClient(url!, key!, {
+    client = createClient(resolved.url, resolved.publishableKey, {
       auth: {
         persistSession: true,
         autoRefreshToken: true,
@@ -34,4 +31,8 @@ export function getSupabase(): SupabaseClient | null {
     });
   }
   return client;
+}
+
+export function getSupabasePublicConfig() {
+  return resolved;
 }

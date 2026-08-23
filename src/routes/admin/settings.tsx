@@ -7,7 +7,7 @@ import { useAdminNav } from "@/components/dash/nav-items";
 import { Button } from "@/components/ui/button";
 import { appendAudit } from "@/lib/platform/catalog";
 import { useAuth, useRequireAuth } from "@/lib/platform/auth";
-import { isSupabaseConfigured } from "@/lib/supabase/client";
+import { isSupabaseConfigured, getSupabasePublicConfig } from "@/lib/supabase/client";
 import { resetPlatformStore } from "@/lib/platform/store";
 
 export const Route = createFileRoute("/admin/settings")({
@@ -21,7 +21,7 @@ function AdminSettingsPage() {
   const nav = useAdminNav();
   if (!allowed || !user) return null;
 
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;
+  const { url: supabaseUrl, projectId, source } = getSupabasePublicConfig();
 
   return (
     <DashShell brand="TourGo Админ" items={nav} title="Настройки" subtitle="Система и доступ">
@@ -37,7 +37,15 @@ function AdminSettingsPage() {
             </div>
             <div className="flex justify-between gap-4">
               <dt className="text-muted-foreground">URL</dt>
-              <dd className="truncate text-right font-mono text-xs">{supabaseUrl ?? "нет"}</dd>
+              <dd className="truncate text-right font-mono text-xs">{supabaseUrl}</dd>
+            </div>
+            <div className="flex justify-between gap-4">
+              <dt className="text-muted-foreground">Project</dt>
+              <dd className="font-mono text-xs">{projectId}</dd>
+            </div>
+            <div className="flex justify-between gap-4">
+              <dt className="text-muted-foreground">Источник</dt>
+              <dd className="font-medium">{source === "env" ? "env" : "TourGo fallback"}</dd>
             </div>
             <div className="flex justify-between gap-4">
               <dt className="text-muted-foreground">Хранилище</dt>
