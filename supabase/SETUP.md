@@ -37,11 +37,47 @@
 | 15 | `supabase/seed_catalog.sql` | направления, отели, туры |
 | 16 | `supabase/seed_companies.sql` | ещё 3 проверенные турфирмы |
 | 17 | `supabase/migrations/20260822_device_tokens.sql` | push-токены (идемпотентно) |
+| 18 | `supabase/migrations/20260822_review_replies.sql` | ответы на отзывы |
+| 19 | `supabase/migrations/20260823_organizations_public_safe.sql` | скрыть phone/whatsapp от anon |
+| 20 | `supabase/migrations/20260823_protect_profiles_self_escalation.sql` | **блок смены role/status самим пользователем** |
 
-## Edge Function. удаление аккаунта (App Store)
+## Edge Functions — деплой через Supabase Dashboard
+
+CLI с этой машины к проекту `mgyufoyornzbwvgdfojb` не привязан → деплой только через Dashboard.
+
+**Открыть:** [Edge Functions](https://supabase.com/dashboard/project/mgyufoyornzbwvgdfojb/functions)
+
+Для каждой функции: **Deploy a new function** (или открыть существующую → **Edit** → вставить код из репозитория → **Deploy**).
+
+| Функция | Файл в репо | Зачем |
+|---------|-------------|--------|
+| `sync-supplier-feed` | `supabase/functions/sync-supplier-feed/index.ts` | импорт feed операторов (JWT + anti-SSRF) |
+| `send-push` | `supabase/functions/send-push/index.ts` | push только себе / admin broadcast |
+| `delete-account` | `supabase/functions/delete-account/index.ts` | удаление аккаунта (App Store) |
+
+**Secrets** (Dashboard → [Project Settings → Edge Functions → Secrets](https://supabase.com/dashboard/project/mgyufoyornzbwvgdfojb/settings/functions)):
+
+- `SUPABASE_URL` — уже есть автоматически
+- `SUPABASE_ANON_KEY` — уже есть
+- `SUPABASE_SERVICE_ROLE_KEY` — **добавить** (Settings → API → service_role)
+- `FCM_SERVER_KEY` — опционально, для реальных push на Android
+
+**Проверка SQL (триггер безопасности):** [SQL Editor](https://supabase.com/dashboard/project/mgyufoyornzbwvgdfojb/sql/new)
+
+```sql
+SELECT tgname
+FROM pg_trigger t
+JOIN pg_class c ON c.oid = t.tgrelid
+WHERE c.relname = 'profiles' AND NOT t.tgisinternal;
+```
+
+Должна быть строка `protect_profile_self_update`.
+
+## Edge Function — CLI (если есть доступ к проекту)
 
 ```bash
-# Локально с Supabase CLI (или Dashboard → Edge Functions → deploy)
+supabase functions deploy sync-supplier-feed --project-ref mgyufoyornzbwvgdfojb
+supabase functions deploy send-push --project-ref mgyufoyornzbwvgdfojb
 supabase functions deploy delete-account --project-ref mgyufoyornzbwvgdfojb
 ```
 
@@ -102,6 +138,14 @@ Publishable key: [Supabase → Settings → API](https://supabase.com/dashboard/
 ### Vercel (если деплоите отдельно)
 
 Project Settings → **Environment Variables**. там можно добавить и `VITE_*`, и остальное.
+
+**Обязательно для Premium и admin AI на сервере:**
+
+| Variable | Environments |
+|----------|----------------|
+| `SUPABASE_SERVICE_ROLE_KEY` | Production, Preview, Development |
+
+Без него `activatePremiumSubscription` и server-side admin операции не работают (клиент не может менять `role` — это правильно).
 
 Локально: `.env` и `.env.local` → **`mgyufoyornzbwvgdfojb`** (не `hpernnwfdlpfaaphofmg`).
 
