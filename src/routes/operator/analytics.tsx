@@ -80,7 +80,7 @@ function OperatorAnalyticsPage() {
 
   if (!allowed || !organization || !data) return null;
 
-  const sortedTours = [..data.topTours].sort((a, b) => {
+  const sortedTours = [...data.topTours].sort((a, b) => {
     if (tourSort === "bookings") return b.bookings - a.bookings;
     if (tourSort === "conversion") return b.conversion - a.conversion;
     return b.views - a.views;

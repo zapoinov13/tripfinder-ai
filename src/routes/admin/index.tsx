@@ -46,22 +46,22 @@ function AdminDashboard() {
   const connErrors = state.apiConnections.filter((c) => c.status === "error");
 
   const attention: Array<{ title: string; detail: string; to: string }> = [
-    ..pendingOps.map((o) => ({
+    ...pendingOps.map((o) => ({
       title: "Оператор ждёт одобрения",
       detail: o.name,
       to: "/admin/operators",
     })),
-    ..connErrors.map((c) => ({
+    ...connErrors.map((c) => ({
       title: "Ошибка API-подключения",
       detail: orgName(c.organizationId),
       to: "/admin/api-monitoring",
     })),
-    ..apiErrors.slice(0, 3).map((l) => ({
+    ...apiErrors.slice(0, 3).map((l) => ({
       title: "Ошибка синхронизации",
       detail: l.message,
       to: "/admin/api-monitoring",
     })),
-    ..failedPayments.slice(0, 3).map((p) => ({
+    ...failedPayments.slice(0, 3).map((p) => ({
       title: "Неудачный платёж",
       detail: formatPrice(p.amount),
       to: "/admin/payments",

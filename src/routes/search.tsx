@@ -148,7 +148,7 @@ function Filters({ params, update }: { params: SearchParams; update: Update }) {
 
   const toggle = (key: keyof SearchParams, value: string | number) => {
     const current = params[key] as Array<string | number>;
-    const next = current.includes(value) ? current.filter((v) => v !== value) : [..current, value];
+    const next = current.includes(value) ? current.filter((v) => v !== value) : [...current, value];
     update({ [key]: next } as Partial<SearchParams>);
   };
 
@@ -349,7 +349,7 @@ function ToursSearchBar({ params, update }: { params: SearchParams; update: Upda
       <SelectField
         label="Откуда"
         value={params.from}
-        options={[{ value: "", label: "Любой город" }, ..originCities.map((c) => ({ value: c, label: c }))]}
+        options={[{ value: "", label: "Любой город" }, ...originCities.map((c) => ({ value: c, label: c }))]}
         onChange={(from) => update({ from })}
       />
       <SelectField
@@ -357,7 +357,7 @@ function ToursSearchBar({ params, update }: { params: SearchParams; update: Upda
         value={params.destination}
         options={[
           { value: "", label: "Все страны" },
-          ..destinations.map((d) => ({ value: d.id, label: `${d.flag} ${d.country}` })),
+          ...destinations.map((d) => ({ value: d.id, label: `${d.flag} ${d.country}` })),
         ]}
         onChange={(destination) => update({ destination, city: "" })}
       />
@@ -493,7 +493,7 @@ function SearchPage() {
   const [layout, setLayout] = useState<LayoutMode>("grid");
 
   const update: Update = (patch) => {
-    navigate({ search: ((prev: SearchParams) => ({ ..prev, ..patch })) as never });
+    navigate({ search: ((prev: SearchParams) => ({ ...prev, ...patch })) as never });
   };
 
   const results = useMemo(() => searchService.search(params as Record<string, unknown>), [params]);
@@ -539,10 +539,10 @@ function SearchPage() {
     if (/5\s*зв|пять зв/.test(text)) patch.stars = [5];
     if (/рейтинг|отзыв/.test(text)) patch.sort = "rating";
     if (/премиум|premium|выгодн/.test(text))
-      patch.offers = Array.from(new Set([..params.offers, "premium"]));
-    if (/горящ/.test(text)) patch.offers = Array.from(new Set([..params.offers, "hot"]));
+      patch.offers = Array.from(new Set([...params.offers, "premium"]));
+    if (/горящ/.test(text)) patch.offers = Array.from(new Set([...params.offers, "hot"]));
     if (/центр|инфраструкт/.test(text))
-      patch.amenities = Array.from(new Set([..params.amenities, "Wi-Fi"]));
+      patch.amenities = Array.from(new Set([...params.amenities, "Wi-Fi"]));
     if (/2\s*(?:дня|дней|ночи|ночей)\s*(?:дольше|больше)/.test(text)) patch.nights = ["8-14"];
     if (Object.keys(patch).length > 0) update(patch);
     setRefinement("");
@@ -559,7 +559,7 @@ function SearchPage() {
       patch: {
         offers: params.offers.includes("hot")
           ? params.offers.filter((o) => o !== "hot")
-          : [..params.offers, "hot"],
+          : [...params.offers, "hot"],
       },
     },
     {
@@ -569,7 +569,7 @@ function SearchPage() {
         meals:
           params.meals.includes("AI") && params.meals.includes("UAI")
             ? params.meals.filter((m) => m !== "AI" && m !== "UAI")
-            : Array.from(new Set([..params.meals, "AI", "UAI"])),
+            : Array.from(new Set([...params.meals, "AI", "UAI"])),
       },
     },
     {
@@ -578,7 +578,7 @@ function SearchPage() {
       patch: {
         stars: params.stars.includes(5)
           ? params.stars.filter((s) => s !== 5)
-          : [..params.stars, 5],
+          : [...params.stars, 5],
       },
     },
     {
@@ -587,7 +587,7 @@ function SearchPage() {
       patch: {
         nights: params.nights.includes("4-7")
           ? params.nights.filter((n) => n !== "4-7")
-          : [..params.nights, "4-7"],
+          : [...params.nights, "4-7"],
       },
     },
     {

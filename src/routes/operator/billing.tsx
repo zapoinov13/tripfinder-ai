@@ -101,9 +101,9 @@ function OperatorBillingPage() {
       metadata: { plan: code },
     });
     setState((s) => ({
-      ..s,
+      ...s,
       organizations: s.organizations.map((o) =>
-        o.id === organization.id ? { ..o, planCode: code } : o,
+        o.id === organization.id ? { ...o, planCode: code } : o,
       ),
       payments: [
         {
@@ -119,7 +119,7 @@ function OperatorBillingPage() {
           createdAt: nowIso(),
           metadata: { plan: code },
         },
-        ..s.payments,
+        ...s.payments,
       ],
       subscriptions: [
         {
@@ -132,7 +132,7 @@ function OperatorBillingPage() {
           autoRenew: true,
           providerSubscriptionId: payment.providerPaymentId,
         },
-        ..s.subscriptions.filter((item) => item.organizationId !== organization.id),
+        ...s.subscriptions.filter((item) => item.organizationId !== organization.id),
       ],
     }));
     appendAudit({
