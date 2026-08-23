@@ -1,5 +1,11 @@
 import { destinations, mealOptions, resortsByDestination } from "@/data/demo";
-import { PRICE_MAX, PRICE_MIN, type SearchParams, toSearchLink } from "@/lib/search";
+import {
+  PRICE_MAX,
+  PRICE_MIN,
+  resolveDestinationId,
+  type SearchParams,
+  toSearchLink,
+} from "@/lib/search";
 
 export type ParsedTravelQuery = {
   originalQuery: string;
@@ -22,34 +28,79 @@ export type AiChip = {
   value: string;
 };
 
+/** Дополнительные синонимы для голосового и свободного ввода. */
+const extraDestinationAliases: Record<string, string[]> = {
+  uae: [
+    "дубай",
+    "dubai",
+    "оаэ",
+    "uae",
+    "эмират",
+    "абу даби",
+    "abu dhabi",
+    "jbr",
+    "marina",
+    "марина",
+    "шарджа",
+    "фуджейра",
+  ],
+  turkey: ["турци", "turkey", "antalya", "антalya", "алания", "белек", "кемер"],
+  thailand: ["тайланд", "thailand", "пхукет", "phuket", "паттайя", "samui", "самуи"],
+  egypt: ["египет", "egypt", "хургада", "hurghada", "шарм", "sharm"],
+  maldives: ["мальдив", "maldives", "атолл"],
+  vietnam: ["вьетнам", "vietnam", "нячанг", "nha trang", "фукуок"],
+  georgia: ["грузи", "georgia", "батumi", "тбилиси"],
+  qatar: ["кatar", "катар", "doha", "доха"],
+  srilanka: ["шри-ланка", "шри ланка", "srilanka", "цейлон"],
+  indonesia: ["бали", "bali", "индонез", "indonesia"],
+};
+
 const destinationAliases: Array<{ id: string; aliases: string[] }> = destinations.map((d) => ({
   id: d.id,
   aliases: [
     d.country.toLowerCase(),
     d.city.toLowerCase(),
     ...(resortsByDestination[d.id] ?? []).map((r) => r.name.toLowerCase()),
+    ...(extraDestinationAliases[d.id] ?? []),
   ],
 }));
 
 const preferenceMap: Array<{ key: string; label: string; matches: string[] }> = [
-  { key: "near_sea", label: "Рядом с морем", matches: ["море", "пляж", "берег", "первая линия"] },
-  { key: "family_friendly", label: "Для семьи", matches: ["сем", "реб", "дет"] },
+  { key: "near_sea", label: "Рядом с морем", matches: ["море", "пляж", "берег", "первая линия", "у воды"] },
+  { key: "family_friendly", label: "Для семьи", matches: ["сем", "реб", "дет", "kids"] },
   {
     key: "infrastructure_nearby",
     label: "Инфраструктура рядом",
-    matches: ["инфраструкт", "центр", "рядом"],
+    matches: ["инфраструкт", "центр", "рядом", "wifi", "wi-fi"],
   },
-  { key: "pool", label: "Бассейн", matches: ["бассейн"] },
+  { key: "pool", label: "Бассейн", matches: ["бассейн", "pool"] },
   { key: "spa", label: "SPA", matches: ["spa", "спа"] },
-  { key: "quiet_area", label: "Тихий район", matches: ["тихий", "спокой"] },
+  { key: "quiet_area", label: "Тихий район", matches: ["тихий", "спокой", "без шума"] },
   { key: "yacht", label: "Яхта", matches: ["яхт", "marina", "марина"] },
   { key: "desert_safari", label: "Сафари", matches: ["сафари", "пустын"] },
   { key: "tickets", label: "Билеты", matches: ["burj", "бурдж", "билеты", "аквапарк"] },
   { key: "russian_support", label: "Русскоязычная поддержка", matches: ["русск", "снг"] },
+  { key: "transfer", label: "Трансфер", matches: ["трансфер", "transfer"] },
+  { key: "premium", label: "Премиум", matches: ["премиум", "premium", "люкс", "luxury", "5 зв", "пять зв"] },
+  { key: "hot", label: "Горящие", matches: ["горящ", "last minute", "скидк"] },
 ];
 
+const preferenceToAmenities: Record<string, string[]> = {
+  near_sea: ["Beach"],
+  pool: ["Pool"],
+  spa: ["Spa"],
+  family_friendly: ["Kids Club"],
+  infrastructure_nearby: ["Wi-Fi"],
+  transfer: ["Transfer"],
+};
+
+const preferenceToOffers: Record<string, string[]> = {
+  premium: ["premium"],
+  hot: ["hot"],
+};
+
 const mealAliases = [
-  { code: "AI", matches: ["all inclusive", "всё включено", "все включено", "олл"] },
+  { code: "AI", matches: ["all inclusive", "всё включено", "все включено", "олл", "all inclusive"] },
   { code: "UAI", matches: ["ultra", "ультра"] },
   { code: "BB", matches: ["завтрак"] },
   { code: "HB", matches: ["полупансион"] },
@@ -80,13 +131,13 @@ const parseAges = (query: string) =>
 const findDestination = (query: string) => {
   const normalized = query.toLowerCase();
   const hit = destinationAliases.find((d) => d.aliases.some((alias) => normalized.includes(alias)));
-  if (!hit) return { destination: "dubai-beach", city: "JBR" };
+  if (!hit) return { destination: "", city: "" };
 
   const destination = destinations.find((d) => d.id === hit.id)!;
   const resort = (resortsByDestination[hit.id] ?? []).find((r) =>
     normalized.includes(r.name.toLowerCase()),
   );
-  return { destination: hit.id, city: resort?.name ?? destination.city };
+  return { destination: hit.id, city: resort?.name ?? "" };
 };
 
 export function parseTravelQuery(query: string): ParsedTravelQuery {
@@ -111,7 +162,7 @@ export function parseTravelQuery(query: string): ParsedTravelQuery {
     .map((p) => p.key);
 
   return {
-    originalQuery: query,
+    originalQuery: query.trim(),
     origin: normalized.includes("ташкент")
       ? "Ташкент"
       : normalized.includes("бишкек")
@@ -124,7 +175,9 @@ export function parseTravelQuery(query: string): ParsedTravelQuery {
               ? "Астана"
               : normalized.includes("шымкент")
                 ? "Шымкент"
-                : "Алматы",
+                : normalized.includes("акtau") || normalized.includes("актау")
+                  ? "Актау"
+                  : "Алматы",
     destination,
     city,
     adults,
@@ -138,10 +191,31 @@ export function parseTravelQuery(query: string): ParsedTravelQuery {
   };
 }
 
+export function preferencesToFilters(preferences: string[]) {
+  const amenities = new Set<string>();
+  const offers = new Set<string>();
+  const stars: number[] = [];
+
+  for (const pref of preferences) {
+    for (const amenity of preferenceToAmenities[pref] ?? []) amenities.add(amenity);
+    for (const offer of preferenceToOffers[pref] ?? []) offers.add(offer);
+    if (pref === "premium") stars.push(5);
+  }
+
+  return {
+    amenities: Array.from(amenities),
+    offers: Array.from(offers),
+    stars,
+  };
+}
+
 export function parsedQueryToSearch(parsed: ParsedTravelQuery) {
+  const { amenities, offers, stars } = preferencesToFilters(parsed.preferences);
+
   return toSearchLink({
+    q: parsed.originalQuery,
     from: parsed.origin,
-    destination: parsed.destination,
+    destination: resolveDestinationId(parsed.destination),
     city: parsed.city,
     adults: parsed.adults,
     children: parsed.children,
@@ -149,10 +223,55 @@ export function parsedQueryToSearch(parsed: ParsedTravelQuery) {
     priceMin: PRICE_MIN,
     priceMax: parsed.budgetMax,
     meals: parsed.meals,
-    nights: parsed.duration <= 7 ? ["4-7"] : parsed.duration <= 14 ? ["8-14"] : ["14+"],
-    amenities: parsed.preferences.includes("near_sea") ? ["Beach"] : [],
+    nights:
+      parsed.duration <= 3
+        ? ["1-3"]
+        : parsed.duration <= 7
+          ? ["4-7"]
+          : parsed.duration <= 14
+            ? ["8-14"]
+            : ["14+"],
+    amenities,
+    offers,
+    stars,
     sort: "match",
   } satisfies Partial<SearchParams>);
+}
+
+export function mergeParsedIntoSearchParams(
+  current: SearchParams,
+  parsed: ParsedTravelQuery,
+): Partial<SearchParams> {
+  const pref = preferencesToFilters(parsed.preferences);
+  const nights =
+    parsed.duration <= 3
+      ? ["1-3"]
+      : parsed.duration <= 7
+        ? ["4-7"]
+        : parsed.duration <= 14
+          ? ["8-14"]
+          : ["14+"];
+
+  return {
+    q: parsed.originalQuery || current.q,
+    from: parsed.origin || current.from,
+    destination: parsed.destination
+      ? resolveDestinationId(parsed.destination)
+      : current.destination,
+    city: parsed.city || current.city,
+    adults: parsed.adults || current.adults,
+    children: parsed.children ?? current.children,
+    childAges: parsed.childAges.slice(0, parsed.children),
+    priceMax: Math.min(current.priceMax, parsed.budgetMax),
+    meals: parsed.meals.length ? parsed.meals : current.meals,
+    nights: parsed.duration ? nights : current.nights,
+    amenities: Array.from(new Set([...current.amenities, ...pref.amenities])),
+    offers: Array.from(new Set([...current.offers, ...pref.offers])),
+    stars: pref.stars.length
+      ? Array.from(new Set([...current.stars, ...pref.stars]))
+      : current.stars,
+    sort: "match",
+  };
 }
 
 export function buildAiChips(parsed: ParsedTravelQuery): AiChip[] {
@@ -195,17 +314,19 @@ export function buildAiChips(parsed: ParsedTravelQuery): AiChip[] {
 
 export function applyAiRefinement(parsed: ParsedTravelQuery, message: string): ParsedTravelQuery {
   const normalized = message.toLowerCase();
+  const extraPrefs = preferenceMap
+    .filter((p) => p.matches.some((match) => normalized.includes(match)))
+    .map((p) => p.key);
+
   return {
     ...parsed,
+    originalQuery: `${parsed.originalQuery} ${message}`.trim(),
     budgetMax: /дешев/.test(normalized)
       ? Math.max(PRICE_MIN, Math.round(parsed.budgetMax * 0.85))
       : parsed.budgetMax,
-    meals: /5\s*зв|пять зв/.test(normalized) ? parsed.meals : parsed.meals,
     duration: /2\s*(?:дня|дней|ночи|ночей)\s*(?:дольше|больше)/.test(normalized)
       ? parsed.duration + 2
       : parsed.duration,
-    preferences: /центр/.test(normalized)
-      ? Array.from(new Set([...parsed.preferences, "infrastructure_nearby"]))
-      : parsed.preferences,
+    preferences: Array.from(new Set([...parsed.preferences, ...extraPrefs])),
   };
 }

@@ -11,7 +11,8 @@ import {
   Users,
 } from "lucide-react";
 import type { DateRange } from "react-day-picker";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { DateRangePicker, parseIsoDate, toIsoDate } from "@/components/ui/date-picker";
@@ -203,7 +204,14 @@ export function SearchPanel({
   const [aiQuery, setAiQuery] = useState(initialAiQuery);
   const [parsedAi, setParsedAi] = useState<ParsedTravelQuery | null>(null);
   const [recording, setRecording] = useState(false);
+  const voiceSession = useRef<{ stop: () => Promise<string> } | null>(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    return () => {
+      void voiceSession.current?.stop();
+    };
+  }, []);
 
   useEffect(() => {
     if (initialAiQuery) setAiQuery(initialAiQuery);
@@ -250,8 +258,8 @@ export function SearchPanel({
     setParsedAi(parsed);
   };
 
-  const goAiSearch = () => {
-    const parsed = parsedAi ?? parseTravelQuery(aiQuery);
+  const goAiSearch = (parsed = parsedAi ?? parseTravelQuery(aiQuery)) => {
+    if (!parsed.originalQuery.trim()) return;
     const userId = getState().session?.userId;
     const params = {
       ...parsedQueryToSearch(parsed),
@@ -264,13 +272,27 @@ export function SearchPanel({
   };
 
   const runVoiceSearch = async () => {
+    if (recording) {
+      setRecording(false);
+      const text = (await voiceSession.current?.stop())?.trim() ?? aiQuery.trim();
+      voiceSession.current = null;
+      if (!text) return;
+      setAiQuery(text);
+      const parsed = parseTravelQuery(text);
+      setParsedAi(parsed);
+      goAiSearch(parsed);
+      return;
+    }
+
     setRecording(true);
     try {
-      const transcript = await speechService.start();
-      setAiQuery(transcript.text);
-      parseAi(transcript.text);
-    } finally {
+      voiceSession.current = speechService.listen((spoken) => {
+        setAiQuery(spoken);
+        setParsedAi(null);
+      });
+    } catch {
       setRecording(false);
+      toast.error("Не удалось включить микрофон. Разрешите доступ в браузере.");
     }
   };
 
@@ -533,7 +555,7 @@ export function SearchPanel({
                 onClick={runVoiceSearch}
               >
                 <Mic className="size-4" />
-                {recording ? "Слушаем…" : "Голосом"}
+                {recording ? "Остановить и искать" : "Голосом"}
               </Button>
               <Button
                 size="lg"
@@ -661,7 +683,7 @@ export function SearchPanel({
                 в TourGo.
               </p>
 
-              <Button size="lg" className="mt-4 w-full rounded-2xl" onClick={goAiSearch}>
+              <Button size="lg" className="mt-4 w-full rounded-2xl" onClick={() => goAiSearch()}>
                 <Search className="size-4" />
                 Найти туры
               </Button>

@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/select";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Slider } from "@/components/ui/slider";
-import { Textarea } from "@/components/ui/textarea";
+import { VoiceTextarea } from "@/components/ui/voice-textarea";
 import {
   AMENITIES,
   amenityLabels,
@@ -40,7 +40,8 @@ import {
   type OfferCategory,
 } from "@/data/demo";
 import { useAuth } from "@/lib/platform/auth";
-import { searchService } from "@/lib/platform/search-service";
+import { useTourSearch, searchService } from "@/lib/platform/search-service";
+import { mergeParsedIntoSearchParams, parseTravelQuery } from "@/lib/ai-search";
 import {
   guestsSummary,
   originCities,
@@ -341,7 +342,8 @@ function ToursSearchBar({ params, update }: { params: SearchParams; update: Upda
   }, [params.q]);
 
   const commitQuery = () => {
-    if (query.trim() !== params.q) update({ q: query.trim() });
+    const next = query.trim();
+    if (next !== params.q) update({ q: next, sort: next ? "match" : params.sort });
   };
 
   return (
@@ -402,8 +404,8 @@ function ToursSearchBar({ params, update }: { params: SearchParams; update: Upda
           onKeyDown={(e) => {
             if (e.key === "Enter") commitQuery();
           }}
-          placeholder="Отель или город"
-          className="h-[3.25rem] rounded-2xl border-border bg-card pl-10 text-sm shadow-none"
+          placeholder="Отель, город или запрос"
+          className="h-[3.25rem] rounded-2xl border-border bg-card pl-10 pr-12 text-sm shadow-none"
         />
       </div>
     </div>
@@ -496,7 +498,7 @@ function SearchPage() {
     navigate({ search: ((prev: SearchParams) => ({ ...prev, ...patch })) as never });
   };
 
-  const results = useMemo(() => searchService.search(params as Record<string, unknown>), [params]);
+  const results = useTourSearch(params as Record<string, unknown>);
   const cheapest = useMemo(
     () =>
       results.reduce<number | null>(
@@ -532,19 +534,10 @@ function SearchPage() {
     });
 
   const applyRefinement = () => {
-    const text = refinement.toLowerCase();
-    const patch: Partial<SearchParams> = {};
-    if (/дешев/.test(text))
-      patch.priceMax = Math.max(PRICE_MIN, Math.round(params.priceMax * 0.85));
-    if (/5\s*зв|пять зв/.test(text)) patch.stars = [5];
-    if (/рейтинг|отзыв/.test(text)) patch.sort = "rating";
-    if (/премиум|premium|выгодн/.test(text))
-      patch.offers = Array.from(new Set([...params.offers, "premium"]));
-    if (/горящ/.test(text)) patch.offers = Array.from(new Set([...params.offers, "hot"]));
-    if (/центр|инфраструкт/.test(text))
-      patch.amenities = Array.from(new Set([...params.amenities, "Wi-Fi"]));
-    if (/2\s*(?:дня|дней|ночи|ночей)\s*(?:дольше|больше)/.test(text)) patch.nights = ["8-14"];
-    if (Object.keys(patch).length > 0) update(patch);
+    const text = refinement.trim();
+    if (!text) return;
+    const parsed = parseTravelQuery(text);
+    update(mergeParsedIntoSearchParams(params, parsed));
     setRefinement("");
   };
 
@@ -811,10 +804,10 @@ function SearchPage() {
             </button>
             {showAi ? (
               <div className="gradient-ai mt-3 rounded-3xl p-4">
-                <Textarea
+                <VoiceTextarea
                   value={refinement}
-                  onChange={(e) => setRefinement(e.target.value)}
-                  placeholder="Например: покажи дешевле, только 5 звёзд, ближе к морю"
+                  onChange={setRefinement}
+                  placeholder="Например: Дубай, 5 звёзд, all inclusive, у моря, до 1,5 млн"
                   className="min-h-20 border-primary-foreground/20 bg-primary-foreground/10 text-primary-foreground placeholder:text-primary-foreground/65"
                 />
                 <Button
@@ -823,7 +816,7 @@ function SearchPage() {
                   onClick={applyRefinement}
                   disabled={!refinement.trim()}
                 >
-                  Применить
+                  Применить к поиску
                 </Button>
               </div>
             ) : null}

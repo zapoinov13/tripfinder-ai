@@ -6,10 +6,32 @@
 // You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
+const capacitorSsrExternals = [
+  "@capacitor/core",
+  "@capacitor/app",
+  "@capacitor/network",
+  "@capacitor/push-notifications",
+  "@capacitor/splash-screen",
+  "@capacitor/status-bar",
+  "@capacitor/keyboard",
+  "@capacitor-community/apple-sign-in",
+];
+
 export default defineConfig({
   tanstackStart: {
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
     // nitro/vite builds from this
     server: { entry: "server" },
+  },
+  vite: {
+    // Capacitor plugins touch `document` at module load — keep them out of the SSR bundle.
+    ssr: {
+      external: capacitorSsrExternals,
+    },
+    build: {
+      rollupOptions: {
+        external: capacitorSsrExternals,
+      },
+    },
   },
 });

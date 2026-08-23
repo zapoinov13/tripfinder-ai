@@ -1,5 +1,105 @@
-import { destinations, tours, type OfferCategory, type Tour } from "@/data/demo";
+import { destinations, getOperator, tours, type OfferCategory, type Tour } from "@/data/demo";
 import { getHotel } from "@/lib/platform/catalog";
+
+/** Старые id из AI/seed → актуальные id каталога. */
+const LEGACY_DESTINATION_IDS: Record<string, string> = {
+  "dubai-beach": "uae",
+  "dubai-city": "uae",
+};
+
+export function resolveDestinationId(id: string) {
+  return LEGACY_DESTINATION_IDS[id] ?? id;
+}
+
+export function normalizeSearchText(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/ё/g, "е")
+    .replace(/[^\p{L}\p{N}\s-]/gu, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function tokenizeQuery(query: string) {
+  return normalizeSearchText(query)
+    .split(/\s+/)
+    .filter((token) => token.length >= 2);
+}
+
+export function buildTourSearchHaystack(tour: Tour, hotel = getHotel(tour.hotelId)) {
+  const operator = getOperator(tour.operatorId);
+  const destination = destinations.find((d) => d.id === hotel.destinationId);
+  return normalizeSearchText(
+    [
+      tour.title,
+      tour.description,
+      tour.meal,
+      tour.from,
+      "roomType" in tour ? tour.roomType : "",
+      tour.offerCategory,
+      hotel.name,
+      hotel.city,
+      hotel.country,
+      hotel.district,
+      destination?.country,
+      destination?.city,
+      operator?.name,
+      tour.tags.join(" "),
+      tour.includes?.join(" "),
+      tour.transfer ? "трансфер transfer" : "",
+    ]
+      .filter(Boolean)
+      .join(" "),
+  );
+}
+
+export function matchesTextQuery(haystack: string, query: string) {
+  const q = normalizeSearchText(query);
+  if (!q) return true;
+  const hay = haystack || normalizeSearchText(haystack);
+  if (hay.includes(q)) return true;
+  const tokens = tokenizeQuery(q);
+  if (!tokens.length) return true;
+  return tokens.every((token) => hay.includes(token));
+}
+
+/** 0–100: насколько тур подходит текстовому запросу. */
+export function textRelevanceScore(haystack: string, query: string) {
+  const q = normalizeSearchText(query);
+  if (!q) return 0;
+  const hay = haystack || normalizeSearchText(haystack);
+  if (hay.startsWith(q)) return 100;
+  if (hay.includes(q)) return 85;
+  const tokens = tokenizeQuery(q);
+  if (!tokens.length) return 0;
+  let matched = 0;
+  for (const token of tokens) {
+    if (hay.includes(token)) matched += 1;
+  }
+  if (matched === tokens.length) return 55 + Math.min(30, matched * 8);
+  if (matched > 0) return matched * 12;
+  return 0;
+}
+
+function matchesCityFilter(
+  hotel: ReturnType<typeof getHotel>,
+  city: string,
+  destinationId: string,
+) {
+  if (!city) return true;
+  const needle = normalizeSearchText(city);
+  const fields = [
+    hotel.city,
+    hotel.district,
+    hotel.name,
+    hotel.country,
+    destinations.find((d) => d.id === destinationId)?.city,
+    destinations.find((d) => d.id === destinationId)?.country,
+  ]
+    .filter(Boolean)
+    .map((v) => normalizeSearchText(String(v)));
+  return fields.some((field) => field.includes(needle) || needle.includes(field));
+}
 
 export const originCities = [
   "Алматы",
@@ -98,25 +198,33 @@ const nightsInBucket = (n: number, bucket: string) => {
 };
 
 export function filterTours(params: SearchParams, source: Tour[] = tours): Tour[] {
+  const destinationId = params.destination ? resolveDestinationId(params.destination) : "";
+
   return source.filter((tour) => {
     const hotel = getHotel(tour.hotelId);
     if (params.from && tour.from !== params.from) return false;
-    if (params.destination && hotel.destinationId !== params.destination) return false;
-    if (params.city && hotel.city !== params.city) return false;
+    if (destinationId && hotel.destinationId !== destinationId) return false;
+    if (!matchesCityFilter(hotel, params.city, hotel.destinationId)) return false;
     if (params.category && tour.offerCategory !== params.category) return false;
-    if (params.q.trim()) {
-      const q = params.q.trim().toLowerCase();
-      const hay =
-        `${tour.title ?? ""} ${hotel.name} ${hotel.city} ${hotel.country} ${hotel.district} ${tour.meal} ${tour.description ?? ""}`.toLowerCase();
-      if (!hay.includes(q)) return false;
+    if (params.q.trim() && !matchesTextQuery(buildTourSearchHaystack(tour, hotel), params.q.trim())) {
+      return false;
     }
+    if (params.adults > 0 && tour.adults > 0 && tour.adults < params.adults) return false;
+    if (params.children > 0 && tour.children >= 0 && tour.children < params.children) return false;
     if (tour.price < params.priceMin || tour.price > params.priceMax) return false;
     if (params.meals.length && !params.meals.includes(tour.mealCode)) return false;
     if (params.nights.length && !params.nights.some((b) => nightsInBucket(tour.nights, b)))
       return false;
     if (params.stars.length && !params.stars.includes(hotel.stars)) return false;
-    if (params.amenities.length && !params.amenities.every((a) => hotel.amenities.includes(a)))
+    if (
+      params.amenities.length &&
+      !params.amenities.every((a) => {
+        if (a === "Transfer") return tour.transfer || hotel.amenities.includes(a);
+        return hotel.amenities.includes(a);
+      })
+    ) {
       return false;
+    }
     if (params.rating && hotel.rating < params.rating) return false;
     if (params.offers.length && !params.offers.some((o) => tour.tags.includes(o as never)))
       return false;
