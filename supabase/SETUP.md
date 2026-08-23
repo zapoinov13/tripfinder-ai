@@ -141,11 +141,14 @@ Project Settings → **Environment Variables**. там можно добавит
 
 **Обязательно для Premium и admin AI на сервере:**
 
-| Variable | Environments |
-|----------|----------------|
-| `SUPABASE_SERVICE_ROLE_KEY` | Production, Preview, Development |
+| Где | Variable | Environments |
+|-----|----------|----------------|
+| **Vercel** | `SUPABASE_SERVICE_ROLE_KEY` | Production, Preview, Development |
+| **Lovable Secrets** | `TOURGO_SERVICE_ROLE_KEY` | (Lovable запрещает имена с префиксом `SUPABASE_`) |
 
-Без него `activatePremiumSubscription` и server-side admin операции не работают (клиент не может менять `role` — это правильно).
+Значение одно и то же: service_role из [Settings → API](https://supabase.com/dashboard/project/mgyufoyornzbwvgdfojb/settings/api).
+
+Без ключа `activatePremiumSubscription` и server-side admin операции не работают (клиент не может менять `role` — это правильно).
 
 Локально: `.env` и `.env.local` → **`mgyufoyornzbwvgdfojb`** (не `hpernnwfdlpfaaphofmg`).
 
