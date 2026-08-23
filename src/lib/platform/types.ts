@@ -145,7 +145,7 @@ export type Payment = {
   amount: number;
   currency: Currency;
   type: PaymentType;
-  provider: "mock";
+  provider: "mock" | "balance";
   providerPaymentId: string;
   status: PaymentStatus;
   metadata?: Record<string, unknown>;

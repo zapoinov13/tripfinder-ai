@@ -213,12 +213,13 @@ export function parseSupplierFeed(input: unknown): {
   if (Array.isArray(input)) {
     toursRaw = input;
   } else if (isRecord(input)) {
-    const cur = asString(input.currency)?.toUpperCase();
+    const rec: Record<string, unknown> = input;
+    const cur = asString(rec["currency"])?.toUpperCase();
     if (cur === "USD" || cur === "EUR" || cur === "KZT") currency = cur;
-    updated_at = asString(input.updated_at) ?? asString(input.updatedAt);
-    if (Array.isArray(input.tours)) toursRaw = input.tours;
-    else if (Array.isArray(input.items)) toursRaw = input.items;
-    else if (Array.isArray(input.data)) toursRaw = input.data;
+    updated_at = asString(rec["updated_at"]) ?? asString(rec["updatedAt"]);
+    if (Array.isArray(rec["tours"])) toursRaw = rec["tours"];
+    else if (Array.isArray(rec["items"])) toursRaw = rec["items"];
+    else if (Array.isArray(rec["data"])) toursRaw = rec["data"];
     else errors.push("В JSON нет массива tours / items / data");
   } else {
     errors.push("Ожидался JSON-объект или массив туров");
@@ -354,11 +355,12 @@ export function applySupplierFeed(orgId: string, doc: SupplierFeedDocument): Fee
       nextTours.unshift(tour);
       imported += 1;
     }
+    const hotelImage = tour.photos?.[0];
     hotelPatches.push({
       id: tour.hotelId,
       name: item.hotel_name,
       destinationId: resolveDestinationId(item),
-      image: tour.photos[0],
+      ...(hotelImage ? { image: hotelImage } : {}),
     });
   }
 
