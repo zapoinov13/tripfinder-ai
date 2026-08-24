@@ -176,7 +176,7 @@ function Index() {
           action={
             <Button variant="outline" asChild>
               <Link to="/search" search={{ offers: "hot" } as never}>
-                Все горящие
+                Смотреть остальные
                 <ArrowRight className="size-4" />
               </Link>
             </Button>
@@ -191,6 +191,7 @@ function Index() {
             <TourCard key={tour.id} tour={tour} layout="grid" />
           ))}
         </div>
+        <SeeRestLink to="/search" search={{ offers: "hot" }} label="Смотреть остальные горящие туры" />
       </section>
 
       <section className="container-page mt-16 md:mt-24">
@@ -200,7 +201,7 @@ function Index() {
           action={
             <Button variant="outline" asChild>
               <Link to="/excursions">
-                Все экскурсии
+                Смотреть остальные
                 <ArrowRight className="size-4" />
               </Link>
             </Button>
@@ -225,6 +226,7 @@ function Index() {
             </Link>
           ))}
         </div>
+        <SeeRestLink to="/excursions" label="Смотреть остальные экскурсии" />
       </section>
 
       <section className="container-page mt-16 mb-10 md:mt-24">
@@ -262,7 +264,28 @@ function SectionHead({
         </h2>
         {subtitle ? <p className="mt-2 max-w-xl text-base leading-relaxed text-foreground/70">{subtitle}</p> : null}
       </div>
-      {action ? <div className="hidden md:block">{action}</div> : null}
+      {action ? <div className="hidden shrink-0 md:block">{action}</div> : null}
+    </div>
+  );
+}
+
+function SeeRestLink({
+  to,
+  search,
+  label,
+}: {
+  to: "/excursions" | "/search" | "/destinations";
+  search?: Record<string, string>;
+  label: string;
+}) {
+  return (
+    <div className="mt-6 flex justify-center md:mt-8">
+      <Button variant="outline" size="lg" className="w-full sm:w-auto" asChild>
+        <Link to={to} search={(search ?? {}) as never}>
+          {label}
+          <ArrowRight className="size-4" />
+        </Link>
+      </Button>
     </div>
   );
 }
