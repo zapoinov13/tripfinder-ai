@@ -28,5 +28,5 @@ export function useShowAppTabBar() {
 
 export function useAppTabBarPaddingClass() {
   const show = useShowAppTabBar();
-  return show ? "pb-[calc(5.25rem+env(safe-area-inset-bottom))] md:pb-0" : "";
+  return show ? "pb-[calc(5.75rem+env(safe-area-inset-bottom))] md:pb-0" : "";
 }

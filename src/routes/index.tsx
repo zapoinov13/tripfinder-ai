@@ -61,7 +61,7 @@ function Index() {
           Всё для путешествия в одном месте
         </p>
 
-        <div className="mt-5 max-w-2xl md:mt-6">
+        <div className="mt-5 hidden max-w-2xl md:mt-6 md:block">
           <AiIntentBar />
         </div>
 

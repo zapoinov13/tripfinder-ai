@@ -23,5 +23,5 @@ export function isDashboardPath(pathname: string): boolean {
 }
 
 export function appTabBarPaddingClass(show: boolean): string {
-  return show ? "pb-[calc(5.25rem+env(safe-area-inset-bottom))] md:pb-0" : "";
+  return show ? "pb-[calc(5.75rem+env(safe-area-inset-bottom))] md:pb-0" : "";
 }
