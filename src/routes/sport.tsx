@@ -45,11 +45,11 @@ export const Route = createFileRoute("/sport")({
   component: SportPage,
 });
 
+const EMPTY_SPORTS: ReturnType<typeof listPublishedSports> = [];
+
 function usePublishedSports() {
   return useSyncExternalStore(subscribeSportListings, listPublishedSports, () => EMPTY_SPORTS);
 }
-
-const EMPTY_SPORTS: ReturnType<typeof listPublishedSports> = [];
 
 function SportPage() {
   const params = Route.useSearch();

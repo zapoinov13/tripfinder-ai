@@ -45,6 +45,8 @@ function kindLabel(vertical: VerticalId, kind: string) {
   return carClassLabel(kind);
 }
 
+const EMPTY_ITEMS: ReturnType<typeof listOrgVertical> = [];
+
 function OperatorServicesPage() {
   const { allowed } = useRequireAuth(["OPERATOR_ADMIN", "OPERATOR_MANAGER"]);
   const { organization } = useAuth();
@@ -55,8 +57,8 @@ function OperatorServicesPage() {
   const [, bump] = useState(0);
   const items = useSyncExternalStore(
     subscribeVerticalListings,
-    () => (organization ? listOrgVertical(organization.id, tab) : []),
-    () => [],
+    () => (organization ? listOrgVertical(organization.id, tab) : EMPTY_ITEMS),
+    () => EMPTY_ITEMS,
   );
 
   if (!allowed || !organization) return null;
