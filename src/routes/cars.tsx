@@ -59,11 +59,13 @@ export const Route = createFileRoute("/cars")({
   component: CarsPage,
 });
 
+const EMPTY_LISTINGS: VerticalListing[] = [];
+
 function usePublishedCars() {
   return useSyncExternalStore(
     subscribeVerticalListings,
     () => listPublishedVertical("car"),
-    () => [] as VerticalListing[],
+    () => EMPTY_LISTINGS,
   );
 }
 

@@ -63,11 +63,13 @@ export const Route = createFileRoute("/stays")({
   component: StaysPage,
 });
 
+const EMPTY_LISTINGS: VerticalListing[] = [];
+
 function usePublishedStays() {
   return useSyncExternalStore(
     subscribeVerticalListings,
     () => listPublishedVertical("stay"),
-    () => [] as VerticalListing[],
+    () => EMPTY_LISTINGS,
   );
 }
 

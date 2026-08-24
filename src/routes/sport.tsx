@@ -46,8 +46,10 @@ export const Route = createFileRoute("/sport")({
 });
 
 function usePublishedSports() {
-  return useSyncExternalStore(subscribeSportListings, listPublishedSports, () => []);
+  return useSyncExternalStore(subscribeSportListings, listPublishedSports, () => EMPTY_SPORTS);
 }
+
+const EMPTY_SPORTS: ReturnType<typeof listPublishedSports> = [];
 
 function SportPage() {
   const params = Route.useSearch();

@@ -2,6 +2,7 @@ import type { VerticalId, VerticalOfferDraft } from "./service-ingest";
 
 const KEY = "tourgo:vertical-listings-v1";
 const LEGACY_SPORT_KEY = "tourgo:sport-listings-v1";
+const EMPTY: VerticalListing[] = [];
 
 export type VerticalListing = VerticalOfferDraft & {
   id: string;
@@ -13,6 +14,11 @@ export type VerticalListing = VerticalOfferDraft & {
 
 type Listener = () => void;
 const listeners = new Set<Listener>();
+
+/** Cached snapshots so useSyncExternalStore getSnapshot stays referentially stable. */
+let cachedAll: VerticalListing[] | null = null;
+const cachedPublished = new Map<VerticalId, VerticalListing[]>();
+const cachedOrg = new Map<string, VerticalListing[]>();
 
 function canUseStorage() {
   return typeof window !== "undefined" && typeof localStorage !== "undefined";
@@ -48,19 +54,32 @@ function migrateLegacySports(): VerticalListing[] {
   }
 }
 
+function invalidateCaches() {
+  cachedAll = null;
+  cachedPublished.clear();
+  cachedOrg.clear();
+}
+
 function readAll(): VerticalListing[] {
-  if (!canUseStorage()) return [];
+  if (!canUseStorage()) return EMPTY;
+  if (cachedAll) return cachedAll;
   try {
     const raw = localStorage.getItem(KEY);
     if (raw) {
       const parsed = JSON.parse(raw) as VerticalListing[];
-      return Array.isArray(parsed) ? parsed : [];
+      cachedAll = Array.isArray(parsed) ? parsed : EMPTY;
+      return cachedAll;
     }
     const legacy = migrateLegacySports();
-    if (legacy.length) writeAll(legacy);
-    return legacy;
+    if (legacy.length) {
+      writeAll(legacy);
+      return cachedAll ?? legacy;
+    }
+    cachedAll = EMPTY;
+    return cachedAll;
   } catch {
-    return [];
+    cachedAll = EMPTY;
+    return cachedAll;
   }
 }
 
@@ -71,22 +90,38 @@ function writeAll(next: VerticalListing[]) {
   } catch {
     /* ignore */
   }
+  cachedAll = next;
+  cachedPublished.clear();
+  cachedOrg.clear();
   listeners.forEach((l) => l());
 }
 
 export function subscribeVerticalListings(onChange: Listener) {
   listeners.add(onChange);
-  return () => listeners.delete(onChange);
+  return () => {
+    listeners.delete(onChange);
+  };
 }
 
 export function listPublishedVertical(vertical: VerticalId): VerticalListing[] {
-  return readAll().filter((x) => x.vertical === vertical && x.status === "published");
+  const hit = cachedPublished.get(vertical);
+  if (hit) return hit;
+  const next = readAll().filter((x) => x.vertical === vertical && x.status === "published");
+  const stable = next.length ? next : EMPTY;
+  cachedPublished.set(vertical, stable);
+  return stable;
 }
 
 export function listOrgVertical(organizationId: string, vertical?: VerticalId): VerticalListing[] {
-  return readAll().filter(
+  const key = `${organizationId}:${vertical ?? "*"}`;
+  const hit = cachedOrg.get(key);
+  if (hit) return hit;
+  const next = readAll().filter(
     (x) => x.organizationId === organizationId && (!vertical || x.vertical === vertical),
   );
+  const stable = next.length ? next : EMPTY;
+  cachedOrg.set(key, stable);
+  return stable;
 }
 
 export function publishVerticalListing(input: {
@@ -125,7 +160,19 @@ export function listOrgSports(organizationId: string) {
 export function publishSportListing(input: {
   organizationId: string;
   companyName: string;
-  draft: { name: string; city: string; destinationId: string; kind: string; price: number; area: string; slot?: string; detail?: string; sourceUrl: string; about: string; photos: string[] };
+  draft: {
+    name: string;
+    city: string;
+    destinationId: string;
+    kind: string;
+    price: number;
+    area: string;
+    slot?: string;
+    detail?: string;
+    sourceUrl: string;
+    about: string;
+    photos: string[];
+  };
 }) {
   return publishVerticalListing({
     organizationId: input.organizationId,
@@ -146,3 +193,8 @@ export function publishSportListing(input: {
   });
 }
 export const hideSportListing = hideVerticalListing;
+
+/** For tests / HMR */
+export function __resetVerticalListingCaches() {
+  invalidateCaches();
+}
