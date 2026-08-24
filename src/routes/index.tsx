@@ -2,6 +2,7 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import { ArrowRight, Building2, Flame, ShieldCheck, Sparkles, Wallet } from "lucide-react";
 import type { ReactNode } from "react";
 
+import heroImage from "@/assets/hero.jpg";
 import { AiIntentBar } from "@/components/site/ai-intent-bar";
 import { SiteLayout } from "@/components/site/site-layout";
 import {
@@ -16,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { destinations, hotTours } from "@/data/demo";
 import { getFeaturedExcursions } from "@/data/excursions";
 import { b2bNav, travelScenarios } from "@/data/scenarios";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
