@@ -36,7 +36,7 @@ function createSupabaseFetch(supabaseKey: string): typeof fetch {
 function createSupabaseAdminClient() {
   const resolved = resolveSupabaseConfig();
   const SUPABASE_URL = process.env["SUPABASE_URL"] ?? resolved.url;
-  // Lovable Secrets forbid the SUPABASE_ prefix — use TOURGO_SERVICE_ROLE_KEY there.
+  // Lovable Secrets forbid the SUPABASE_ prefix: use TOURGO_SERVICE_ROLE_KEY there.
   const SUPABASE_SERVICE_ROLE_KEY =
     process.env["SUPABASE_SERVICE_ROLE_KEY"] ?? process.env["TOURGO_SERVICE_ROLE_KEY"];
 

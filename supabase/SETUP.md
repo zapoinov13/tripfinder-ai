@@ -41,7 +41,7 @@
 | 19 | `supabase/migrations/20260823_organizations_public_safe.sql` | скрыть phone/whatsapp от anon |
 | 20 | `supabase/migrations/20260823_protect_profiles_self_escalation.sql` | **блок смены role/status самим пользователем** |
 
-## Edge Functions — деплой через Supabase Dashboard
+## Edge Functions: деплой через Supabase Dashboard
 
 CLI с этой машины к проекту `mgyufoyornzbwvgdfojb` не привязан → деплой только через Dashboard.
 
@@ -57,10 +57,10 @@ CLI с этой машины к проекту `mgyufoyornzbwvgdfojb` не пр�
 
 **Secrets** (Dashboard → [Project Settings → Edge Functions → Secrets](https://supabase.com/dashboard/project/mgyufoyornzbwvgdfojb/settings/functions)):
 
-- `SUPABASE_URL` — уже есть автоматически
-- `SUPABASE_ANON_KEY` — уже есть
-- `SUPABASE_SERVICE_ROLE_KEY` — **добавить** (Settings → API → service_role)
-- `FCM_SERVER_KEY` — опционально, для реальных push на Android
+- `SUPABASE_URL`: уже есть автоматически
+- `SUPABASE_ANON_KEY`: уже есть
+- `SUPABASE_SERVICE_ROLE_KEY`: **добавить** (Settings → API → service_role)
+- `FCM_SERVER_KEY`: опционально, для реальных push на Android
 
 **Проверка SQL (триггер безопасности):** [SQL Editor](https://supabase.com/dashboard/project/mgyufoyornzbwvgdfojb/sql/new)
 
@@ -73,7 +73,7 @@ WHERE c.relname = 'profiles' AND NOT t.tgisinternal;
 
 Должна быть строка `protect_profile_self_update`.
 
-## Edge Function — CLI (если есть доступ к проекту)
+## Edge Function: CLI (если есть доступ к проекту)
 
 ```bash
 supabase functions deploy sync-supplier-feed --project-ref mgyufoyornzbwvgdfojb
@@ -148,7 +148,7 @@ Project Settings → **Environment Variables**. там можно добавит
 
 Значение одно и то же: service_role из [Settings → API](https://supabase.com/dashboard/project/mgyufoyornzbwvgdfojb/settings/api).
 
-Без ключа `activatePremiumSubscription` и server-side admin операции не работают (клиент не может менять `role` — это правильно).
+Без ключа `activatePremiumSubscription` и server-side admin операции не работают (клиент не может менять `role`, это правильно).
 
 Локально: `.env` и `.env.local` → **`mgyufoyornzbwvgdfojb`** (не `hpernnwfdlpfaaphofmg`).
 

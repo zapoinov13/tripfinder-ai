@@ -35,7 +35,7 @@ const how = [
   {
     icon: Sparkles,
     title: "Выберите, что нужно",
-    text: "Тур, экскурсия, жильё, авто, спорт или помощь. Поиск — уже внутри раздела.",
+    text: "Тур, экскурсия, жильё, авто, спорт или помощь. Поиск уже внутри раздела.",
   },
   {
     icon: Wallet,
@@ -45,7 +45,7 @@ const how = [
   {
     icon: ShieldCheck,
     title: "Платите компании напрямую",
-    text: "TourGo не продаёт поездку за агентство. Договор и оплата — у выбранной фирмы.",
+    text: "TourGo не продаёт поездку за агентство. Договор и оплата у выбранной фирмы.",
   },
 ];
 
@@ -59,7 +59,7 @@ function Index() {
           Всё для путешествия в одном месте
         </h1>
         <p className="mt-2 max-w-xl text-base leading-snug text-foreground/70 md:mt-3 md:text-xl md:leading-relaxed">
-          Туры, экскурсии, жильё, авто и помощь — сравните цены компаний
+          Туры, экскурсии, жильё, авто и помощь: сравните цены компаний
         </p>
 
         <div className="mt-5 hidden max-w-2xl md:mt-6 md:block">
@@ -116,7 +116,7 @@ function Index() {
       <section className="container-page mt-6 md:mt-10">
         <SectionHead
           title="Куда едут чаще всего"
-          subtitle="Откройте страну — внутри туры от разных компаний"
+          subtitle="Откройте страну: внутри туры от разных компаний"
           action={
             <Button variant="outline" asChild>
               <Link to="/destinations">
@@ -198,7 +198,7 @@ function Index() {
       <section className="container-page mt-16 md:mt-24">
         <SectionHead
           title="Экскурсии и развлечения"
-          subtitle="Сафари, яхты, парки — когда вы уже на месте"
+          subtitle="Сафари, яхты, парки, когда вы уже на месте"
           action={
             <Button variant="outline" asChild>
               <Link to="/excursions">

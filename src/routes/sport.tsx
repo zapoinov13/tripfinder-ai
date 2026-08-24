@@ -140,7 +140,7 @@ function SportPage() {
         </div>
         {list.length === 0 ? (
           <div className="surface-card mt-8 p-6 text-center">
-            <p className="text-foreground/70">Пока нет слотов в витрине. Опишите, чем хотите заняться — компании ответят.</p>
+            <p className="text-foreground/70">Пока нет слотов в витрине. Опишите, чем хотите заняться, компании ответят.</p>
             <Button className="mt-4" asChild>
               <Link to="/request" search={requestFor(params.q || "Нужна спортивная активность")}>
                 Оставить заявку

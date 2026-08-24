@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-/** Premium activation via service role — users cannot change role directly in profiles. */
+/** Premium activation via service role: users cannot change role directly in profiles. */
 export const activatePremiumSubscription = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {

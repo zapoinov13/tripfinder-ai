@@ -118,7 +118,7 @@ function StaysPage() {
           </label>
           <DateRangePicker
             variant="field"
-            label="Заезд — выезд"
+            label="Заезд и выезд"
             from={params.checkIn ?? ""}
             to={params.checkOut ?? ""}
             onChange={(next) => update({ checkIn: next.from, checkOut: next.to })}
@@ -204,7 +204,7 @@ function StaysPage() {
         </div>
         {list.length === 0 ? (
           <div className="surface-card mt-8 p-6 text-center">
-            <p className="text-foreground/70">По этому запросу пока нет карточек. Оставьте заявку — компании пришлют варианты.</p>
+            <p className="text-foreground/70">По этому запросу пока нет карточек. Оставьте заявку, компании пришлют варианты.</p>
             <Button className="mt-4" asChild>
               <Link to="/request" search={requestFor(params.q || city || "Нужно жильё")}>
                 Оставить заявку

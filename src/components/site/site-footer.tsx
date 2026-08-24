@@ -43,7 +43,7 @@ export function SiteFooter() {
               <span className="font-display text-xl font-semibold tracking-tight">TourGo</span>
             </Link>
             <p className="mt-4 text-sm text-primary-foreground/70 md:text-base">
-              Туры, экскурсии, жильё, авто, спорт и помощь в поездке — в одном месте. Платите
+              Туры, экскурсии, жильё, авто, спорт и помощь в поездке в одном месте. Платите
               напрямую выбранной компании.
             </p>
           </div>

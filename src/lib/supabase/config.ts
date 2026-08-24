@@ -4,7 +4,7 @@ export const TOURGO_SUPABASE_URL = "https://mgyufoyornzbwvgdfojb.supabase.co";
 export const TOURGO_SUPABASE_PUBLISHABLE_KEY =
   "sb_publishable_cykIutJS18rku4zxUBMkLw_LqXt9hag";
 
-/** Встроенная пустая БД Lovable — не использовать для каталога TourGo. */
+/** Встроенная пустая БД Lovable: не использовать для каталога TourGo. */
 const LOVABLE_BUILTIN_PROJECT_ID = "hpernnwfdlpfaaphofmg";
 
 export type ResolvedSupabaseConfig = {

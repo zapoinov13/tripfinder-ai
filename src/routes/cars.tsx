@@ -59,7 +59,7 @@ function CarsPage() {
 
   const useLocation = () => {
     if (!navigator.geolocation) {
-      setGeoHint("Геолокация недоступна — выберите страну вручную");
+      setGeoHint("Геолокация недоступна, выберите страну вручную");
       return;
     }
     navigator.geolocation.getCurrentPosition(
@@ -67,7 +67,7 @@ function CarsPage() {
         setGeoHint("Определили регион. Проверьте город и даты.");
         update({ destination: "uae", city: "Дубай" });
       },
-      () => setGeoHint("Не удалось определить место — выберите страну"),
+      () => setGeoHint("Не удалось определить место, выберите страну"),
     );
   };
 
@@ -141,7 +141,7 @@ function CarsPage() {
         >
           <DateRangePicker
             variant="field"
-            label="Получение — возврат"
+            label="Получение и возврат"
             from={params.pickup ?? ""}
             to={params.dropoff ?? ""}
             onChange={(next) => update({ pickup: next.from, dropoff: next.to })}

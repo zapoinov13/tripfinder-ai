@@ -27,7 +27,7 @@ export const Route = createFileRoute("/ai-search")({
   head: () => ({
     meta: [
       { title: "Поиск · TourGo" },
-      { name: "description", content: "Расскажите, что нужно — откроем нужный раздел." },
+      { name: "description", content: "Расскажите, что нужно, и откроем нужный раздел." },
     ],
   }),
   component: AiSearchPage,

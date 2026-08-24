@@ -182,7 +182,7 @@ function ForCompaniesPage() {
         <section>
           <h2 className="font-display text-2xl font-semibold md:text-3xl">Какие услуги вы предлагаете?</h2>
           <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-            Если вы называете цену за тур, экскурсию, жильё, авто или помощь на месте — отметьте
+            Если вы называете цену за тур, экскурсию, жильё, авто или помощь на месте, отметьте
             свои услуги и получайте заявки.
           </p>
           <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
