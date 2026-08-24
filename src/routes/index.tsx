@@ -139,8 +139,8 @@ function Index() {
           <div id="search" className="animate-fade-up animation-delay-150 scroll-mt-28">
             <SearchPanel tone="hero" />
             <div className="mt-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-              <p className="text-sm text-primary-foreground/85">
-                Не хотите листать каталог?{" "}
+              <p className="whitespace-pre-line text-sm text-primary-foreground/85">
+                Не хотите листать каталог?{"\u00A0"}
                 <Link
                   to="/request"
                   search={{}}
