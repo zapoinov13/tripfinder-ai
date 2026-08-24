@@ -1,3 +1,4 @@
+import React from "react";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import {
   ArrowRight,
@@ -224,7 +225,7 @@ function Index() {
 
       <section className="container-page mt-16 md:mt-24">
         <SectionHead
-          title="Горящие туры: успейте на скидку"
+          title={"Горящие туры\nуспейте на скидку"}
           subtitle="Вылеты в ближайшие даты: компании уже снизили цену"
           action={
             <Button variant="outline" asChild>
@@ -717,7 +718,7 @@ function SectionHead({
   return (
     <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-4">
       <div className="min-w-0">
-        <h2 className={cn("font-display text-2xl font-semibold tracking-tight md:text-3xl")}>
+        <h2 className={cn("whitespace-pre-line font-display text-2xl font-semibold tracking-tight md:text-3xl")}>
           {title}
         </h2>
         {subtitle ? <p className="mt-2 max-w-2xl text-muted-foreground">{subtitle}</p> : null}
