@@ -23,7 +23,8 @@ export const Route = createFileRoute("/")({
       { title: "TourGo: туры, экскурсии, жильё, авто и помощь в поездке" },
       {
         name: "description",
-        content: "Всё для путешествия в одном месте. Выберите, что нужно — и ищите внутри раздела.",
+        content:
+          "Всё для путешествия в одном месте. Сравните предложения компаний и выберите выгоднее.",
       },
     ],
   }),
@@ -55,10 +56,10 @@ function Index() {
     <SiteLayout>
       <section className="container-page py-6 md:py-14">
         <h1 className="font-display text-[1.75rem] font-semibold leading-tight tracking-tight sm:text-4xl md:text-6xl">
-          Что вам нужно?
+          Всё для путешествия в одном месте
         </h1>
         <p className="mt-2 max-w-xl text-base leading-snug text-foreground/70 md:mt-3 md:text-xl md:leading-relaxed">
-          Всё для путешествия в одном месте
+          Туры, экскурсии, жильё, авто и помощь — сравните цены компаний
         </p>
 
         <div className="mt-5 hidden max-w-2xl md:mt-6 md:block">
