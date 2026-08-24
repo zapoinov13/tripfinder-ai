@@ -187,20 +187,16 @@ function emptyDraft(vertical: VerticalId, destinationId = "uae"): VerticalOfferD
   };
 }
 
-function baseParse(input: { url: string; text?: string }, vertical: VerticalId, fallbackTitle: string) {
+function baseParse(input: { url: string; text?: string }, fallbackTitle: string) {
   const url = input.url.trim();
   const text = (input.text ?? "").trim();
   const warnings: string[] = [];
   const fields: string[] = [];
 
   if (!url && !text) {
-    return {
-      draft: emptyDraft(vertical),
-      fields,
-      warnings: ["Вставьте ссылку на Instagram или сайт и описание"],
-      sourceKind: "website" as const,
-    };
+    warnings.push("Вставьте ссылку на Instagram или сайт и описание");
   }
+
 
   const sourceKind = isInstagram(url) ? ("instagram" as const) : ("website" as const);
   const blob = `${url}\n${text}`;
@@ -242,7 +238,7 @@ export function draftVerticalFromLink(input: {
   const { vertical } = input;
   const fallback =
     vertical === "sport" ? "Спортивная услуга" : vertical === "stay" ? "Жильё" : "Авто";
-  const parsed = baseParse(input, vertical, fallback);
+  const parsed = baseParse(input, fallback);
   if (parsed.warnings[0]?.startsWith("Вставьте") && !input.url.trim() && !(input.text ?? "").trim()) {
     return {
       draft: emptyDraft(vertical),
