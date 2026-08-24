@@ -88,10 +88,13 @@ supabase functions deploy delete-account --project-ref mgyufoyornzbwvgdfojb
 ```bash
 SUPABASE_URL=https://mgyufoyornzbwvgdfojb.supabase.co \
 SUPABASE_SERVICE_ROLE_KEY=<service role> \
+REVIEW_PASSWORD=<пароль демо-аккаунтов, >= 12 символов> \
 npm run review:users
 ```
 
-Создаёт `tourist@test.tourgo.app` и `operator@test.tourgo.app` / `Test1234!`
+Создаёт `tourist@test.tourgo.app` и `operator@test.tourgo.app` с паролем
+из `REVIEW_PASSWORD`. Этот же пароль впишите в `store/review-notes.txt`
+перед отправкой в стор — в репозитории он не хранится.
 
 
 Если база уже частично залита: достаточно проверить, что шаги **11–16** точно выполнены. Шаги 1–10 можно прогнать повторно.
@@ -103,7 +106,7 @@ npm run review:users
 | `function public.is_platform_admin() does not exist` | Шаг 3 перенёс хелперы в `private` | Перезапусти **11** `requests_and_offers.sql` (исправлен: использует `private.*`) |
 | `column "whatsapp" does not exist` | Шаг 13 до шага 11 | Сначала **11**, потом **13** `public_company_page.sql` |
 | `relation "public.trip_requests" does not exist` | Шаг 11 не выполнился | Сначала почини **11**, потом **12** |
-| `duplicate key … users_email_partial_key` | `zapoinov@bk.ru` уже есть в Auth | Перезапусти **14** `seed.sql`. подхватит существующего пользователя |
+| `duplicate key … users_email_partial_key` | пользователь уже есть в Auth | Перезапусти **14** `seed.sql`. подхватит существующего пользователя |
 
 ## Env в Lovable
 
@@ -156,9 +159,24 @@ Service role на фронт не класть.
 
 ## Логины после seed.sql
 
-- Админ: `zapoinov@bk.ru` / `zapoinov@bk.ru`
-- Турист: `tourist@tourgo.demo` / `demo1234`
-- Турфирма: `operator@tourgo.demo` / `demo1234`
+Перед запуском `seed.sql` задайте пароль демо-пользователей:
+
+```sql
+set tourgo.demo_password = 'минимум-12-символов';
+```
+
+- Турист: `tourist@tourgo.demo` / `$tourgo.demo_password`
+- Турфирма: `operator@tourgo.demo` / `$tourgo.demo_password`
+
+Владельца платформы `seed.sql` больше не создаёт — заведите его отдельно,
+паролем из менеджера паролей:
+
+```bash
+OWNER_EMAIL=<ваш email> OWNER_PASSWORD=<пароль> npm run ensure:admin
+```
+
+Демо-пользователи с ролью `PLATFORM_ADMIN` (`admin@tourgo.demo`) нужны только
+для локального стенда. На боевом проекте их заводить не надо.
 
 ## Security
 

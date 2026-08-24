@@ -48,5 +48,5 @@ npm run cap:ios
 ## Админ
 
 - URL: https://tripfinder-ai.vercel.app/admin
-- Login: `zapoinov@bk.ru` / `zapoinov@bk.ru`
-- Создать/обновить: `npm run ensure:admin` (нужен service role)
+- Login: аккаунт владельца платформы (пароль в вашем менеджере паролей, в репозитории не хранится)
+- Создать/обновить: `OWNER_EMAIL=... OWNER_PASSWORD=... npm run ensure:admin` (нужен service role)

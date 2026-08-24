@@ -10,8 +10,10 @@ How to test:
 4. Sign in with test accounts below to see profile, trips, messages
 
 Test accounts (email + password):
-- Tourist:  tourist@test.tourgo.app  /  Test1234!
-- Operator: operator@test.tourgo.app /  Test1234!
+- Tourist:  tourist@test.tourgo.app  /  <REVIEW_PASSWORD>
+- Operator: operator@test.tourgo.app /  <REVIEW_PASSWORD>
+  (подставьте пароль, заданный при запуске npm run review:users —
+   он не хранится в репозитории)
 
 Notes:
 - TourGo does NOT sell tours. Users compare offers and pay the travel agency directly.

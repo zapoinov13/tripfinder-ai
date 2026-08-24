@@ -5,6 +5,7 @@
 import { chromium } from "playwright";
 
 const BASE = process.env.SMOKE_URL ?? "https://tripfinder-ai.vercel.app";
+const REVIEW_PASSWORD = process.env.REVIEW_PASSWORD ?? "";
 
 const publicRoutes = [
   "/",
@@ -96,7 +97,7 @@ async function checkRoute(page, path) {
 async function testLogin(page) {
   await page.goto(`${BASE}/login`, { waitUntil: "networkidle", timeout: 45000 });
   await page.fill("#email", "tourist@test.tourgo.app");
-  await page.fill("#password", "Test1234!");
+  await page.fill("#password", REVIEW_PASSWORD);
   await page.getByRole("button", { name: /Войти/i }).click();
   await page.waitForTimeout(2500);
 

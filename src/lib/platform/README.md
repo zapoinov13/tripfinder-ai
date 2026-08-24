@@ -4,7 +4,8 @@ TourGo MVP runs without Supabase. All domain data is in `localStorage` (`tourgo:
 
 ## Demo accounts
 
-Password for all: `demo1234`
+Password for all: `demo1234` (только локальный демо-стор; вход по нему
+работает исключительно в dev-сборке — в проде фолбэк отключён)
 
 | Email | Role |
 |-------|------|
@@ -14,7 +15,6 @@ Password for all: `demo1234`
 | manager@tourgo.demo | OPERATOR_MANAGER |
 | pending@tourgo.demo | OPERATOR_ADMIN (pending org) |
 | admin@tourgo.demo | PLATFORM_ADMIN |
-| zapoinov@bk.ru | PLATFORM_ADMIN |
 
 ## Swap to Supabase later
 

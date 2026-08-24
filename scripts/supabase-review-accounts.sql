@@ -1,9 +1,10 @@
 -- Review accounts for App Store / Google Play
--- Password: Test1234!
+-- Пароль задаётся переменной REVIEW_PASSWORD и в репозитории не хранится.
 --
 -- Preferred: run from terminal (creates Auth + profiles automatically):
 --   SUPABASE_URL=https://mgyufoyornzbwvgdfojb.supabase.co \
 --   SUPABASE_SERVICE_ROLE_KEY=<service role> \
+--   REVIEW_PASSWORD='<пароль, >= 12 символов>' \
 --   npm run review:users
 --
 -- Manual fallback: Dashboard → Authentication → Users → Add user, then:

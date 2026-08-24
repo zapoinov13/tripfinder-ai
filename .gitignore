@@ -17,6 +17,21 @@ dist-ssr
 *.local
 .env
 .env.local
+.env.*.local
+.env.production
+.env.development
+
+# Ключи подписи и конфиги сторов: в репозиторий не кладём
+*.keystore
+*.jks
+*.p12
+*.p8
+*.mobileprovision
+*.cer
+android/key.properties
+android/app/google-services.json
+ios/App/App/GoogleService-Info.plist
+service-account*.json
 
 # Wrangler / Cloudflare
 .wrangler/

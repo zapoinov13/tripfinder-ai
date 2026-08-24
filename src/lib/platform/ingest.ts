@@ -53,13 +53,13 @@ function extractMeal(text: string): MealCode | undefined {
 }
 
 function extractFromCity(text: string): string | undefined {
-  const m = text.match(/(?:вылет|из|from)\s*[:\-]?\s*(Алматы|Астана|Шымкент|Актау|Атырау|Москва|Ташкент)/i);
+  const m = text.match(/(?:вылет|из|from)\s*[:-]?\s*(Алматы|Астана|Шымкент|Актау|Атырау|Москва|Ташкент)/i);
   return m?.[1];
 }
 
 function extractHotel(text: string): string | undefined {
   const m =
-    text.match(/(?:отель|hotel)\s*[:\-]?\s*([^\n,·|]{3,60})/i) ||
+    text.match(/(?:отель|hotel)\s*[:-]?\s*([^\n,·|]{3,60})/i) ||
     text.match(/\b([A-Z][A-Za-z0-9 &''-]{2,40}\s(?:Hotel|Resort|Spa|Palace|Inn))\b/);
   return m?.[1]?.trim();
 }

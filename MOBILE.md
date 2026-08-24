@@ -71,9 +71,10 @@ npm run cap:ios
 
 | Роль | Email | Пароль |
 |------|-------|--------|
-| Турист | tourist@test.tourgo.app | Test1234! |
-| Турфирма | operator@test.tourgo.app | Test1234! |
+| Турист | tourist@test.tourgo.app | `$REVIEW_PASSWORD` |
+| Турфирма | operator@test.tourgo.app | `$REVIEW_PASSWORD` |
 
+Пароль задаётся при `REVIEW_PASSWORD=... npm run review:users` и в репозитории не хранится.
 Аккаунты уже в demo-seed. работают без Supabase. Для production Supabase см. `scripts/supabase-review-accounts.sql`.
 
 ## Apple Sign-In

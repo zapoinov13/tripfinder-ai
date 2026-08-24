@@ -81,6 +81,27 @@ function OperatorCompanyPage() {
   const [activeSection, setActiveSection] = useState<SectionId>("face");
   const sectionRefs = useRef<Partial<Record<SectionId, HTMLElement | null>>>({});
   const form = draft ?? organization;
+
+  // Хуки обязаны выполняться до любого раннего return: организация приезжает
+  // асинхронно, и хук после return менял их количество между рендерами.
+  const photoCount = (form?.photos ?? []).length;
+  const verified = organization?.status === "APPROVED";
+  const checks = useMemo(
+    () => [
+      { ok: Boolean(form?.logoUrl), label: "Логотип", section: "face" as const },
+      { ok: Boolean(form?.coverUrl), label: "Обложка", section: "face" as const },
+      { ok: Boolean(form?.about?.trim()), label: "Описание", section: "face" as const },
+      { ok: photoCount > 0, label: "Фото", section: "media" as const },
+      {
+        ok: Boolean(form?.phone || form?.whatsapp),
+        label: "Телефон",
+        section: "contacts" as const,
+      },
+      { ok: Boolean(verified), label: "Знак проверки", section: "verification" as const },
+    ],
+    [form, photoCount, verified],
+  );
+
   if (!allowed || !organization || !user || !form) return null;
   const setForm = setDraft;
 
@@ -89,19 +110,6 @@ function OperatorCompanyPage() {
   const verificationFiles = form.verificationFiles ?? [];
   const photos = form.photos ?? [];
   const videos = form.videos ?? [];
-  const verified = organization.status === "APPROVED";
-
-  const checks = useMemo(
-    () => [
-      { ok: Boolean(form.logoUrl), label: "Логотип", section: "face" as const },
-      { ok: Boolean(form.coverUrl), label: "Обложка", section: "face" as const },
-      { ok: Boolean(form.about?.trim()), label: "Описание", section: "face" as const },
-      { ok: photos.length > 0, label: "Фото", section: "media" as const },
-      { ok: Boolean(form.phone || form.whatsapp), label: "Телефон", section: "contacts" as const },
-      { ok: verified, label: "Знак проверки", section: "verification" as const },
-    ],
-    [form, photos.length, verified],
-  );
 
   const ready = checks.filter((c) => c.ok).length;
   const progress = Math.round((ready / checks.length) * 100);

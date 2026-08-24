@@ -81,5 +81,15 @@
 	<array>
 		<string>remote-notification</string>
 	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>Камера нужна, чтобы сфотографировать документы компании и фото объектов прямо в приложении.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Доступ к фото нужен, чтобы загрузить логотип, обложку и снимки туров из галереи.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Разрешите сохранять подтверждения бронирований и ваучеры в галерею.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Микрофон нужен для голосового поиска тура.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Распознавание речи превращает ваш голосовой запрос в параметры поиска тура.</string>
 </dict>
 </plist>
