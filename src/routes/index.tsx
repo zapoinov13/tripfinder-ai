@@ -532,7 +532,6 @@ function Index() {
       </section>
       </>
       ) : null}
->>>>>>> a100eda53b157acf5843a87aa14f7335edee429d
     </SiteLayout>
   );
 }
