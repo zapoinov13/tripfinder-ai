@@ -14,8 +14,10 @@ export type TravelScenario = {
   id: TravelScenarioId;
   to: "/search" | "/excursions" | "/stays" | "/cars" | "/sport" | "/assistance";
   title: string;
+  shortTitle?: string;
   navTitle: string;
   hint: string;
+  shortHint: string;
   icon: LucideIcon;
 };
 
@@ -26,6 +28,7 @@ export const travelScenarios: TravelScenario[] = [
     title: "Туры",
     navTitle: "Туры",
     hint: "Пакетные туры",
+    shortHint: "Пакетные туры",
     icon: Globe2,
   },
   {
@@ -34,6 +37,7 @@ export const travelScenarios: TravelScenario[] = [
     title: "Экскурсии",
     navTitle: "Экскурсии",
     hint: "Развлечения, билеты, сафари, яхты",
+    shortHint: "Сафари и билеты",
     icon: Ticket,
   },
   {
@@ -42,14 +46,17 @@ export const travelScenarios: TravelScenario[] = [
     title: "Жильё",
     navTitle: "Жильё",
     hint: "Отели, квартиры, виллы",
+    shortHint: "Отели и виллы",
     icon: Home,
   },
   {
     id: "cars",
     to: "/cars",
     title: "Аренда авто",
+    shortTitle: "Авто",
     navTitle: "Авто",
     hint: "Машины без водителя",
+    shortHint: "Без водителя",
     icon: CarFront,
   },
   {
@@ -58,14 +65,17 @@ export const travelScenarios: TravelScenario[] = [
     title: "Спорт",
     navTitle: "Спорт",
     hint: "Залы, тренировки, активности",
+    shortHint: "Залы и падел",
     icon: Dumbbell,
   },
   {
     id: "help",
     to: "/assistance",
     title: "Помощь в поездке",
+    shortTitle: "Помощь",
     navTitle: "Помощь",
     hint: "Водитель, гид, бронь и другие задачи",
+    shortHint: "Водитель и гид",
     icon: LifeBuoy,
   },
 ];

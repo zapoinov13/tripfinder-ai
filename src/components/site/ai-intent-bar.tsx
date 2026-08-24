@@ -38,7 +38,7 @@ export function AiIntentBar({ tone = "light" }: { tone?: "light" | "onDark" }) {
   return (
     <form
       className={cn(
-        "flex items-center gap-2 rounded-2xl border p-1.5 shadow-sm",
+        "flex h-12 items-center gap-1 rounded-2xl border pl-3 pr-1 shadow-sm",
         tone === "onDark"
           ? "border-primary-foreground/20 bg-primary-foreground/10 backdrop-blur-md"
           : "border-border bg-card",
@@ -50,16 +50,16 @@ export function AiIntentBar({ tone = "light" }: { tone?: "light" | "onDark" }) {
     >
       <Sparkles
         className={cn(
-          "ml-2 size-4 shrink-0",
+          "size-4 shrink-0",
           tone === "onDark" ? "text-primary-foreground" : "text-ai",
         )}
       />
       <Input
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="✨ Просто расскажите, что вам нужно"
+        placeholder="Расскажите, что нужно"
         className={cn(
-          "h-11 border-0 bg-transparent shadow-none focus-visible:ring-0",
+          "h-11 min-w-0 flex-1 border-0 bg-transparent px-2 text-[15px] shadow-none placeholder:truncate focus-visible:ring-0",
           tone === "onDark" &&
             "text-primary-foreground placeholder:text-primary-foreground/70",
         )}
@@ -69,7 +69,7 @@ export function AiIntentBar({ tone = "light" }: { tone?: "light" | "onDark" }) {
         size="icon"
         variant="ghost"
         className={cn(
-          "size-10",
+          "size-10 shrink-0",
           listening && "text-primary",
           tone === "onDark" && "text-primary-foreground hover:bg-primary-foreground/12",
         )}
