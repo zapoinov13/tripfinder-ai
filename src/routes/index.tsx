@@ -145,7 +145,7 @@ function Index() {
                   search={{}}
                   className="font-semibold text-primary-foreground underline underline-offset-4"
                 >
-                  Оставьте заявку, турфирмы пришлют цены сами
+                  {"\n"}Оставьте заявку, турфирмы пришлют цены сами
                 </Link>
               </p>
               <div className="-mx-4 flex snap-x gap-2 overflow-x-auto px-4 pb-1 md:mx-0 md:px-0">
