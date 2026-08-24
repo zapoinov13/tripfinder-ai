@@ -54,19 +54,66 @@ function Index() {
 
   return (
     <SiteLayout>
-      <section className="container-page py-6 md:py-14">
-        <h1 className="font-display text-[1.75rem] font-semibold leading-tight tracking-tight sm:text-4xl md:text-6xl">
-          Сравните цены и купите выгоднее
-        </h1>
-        <p className="mt-2 max-w-xl text-base leading-snug text-foreground/70 md:mt-3 md:text-xl md:leading-relaxed">
-          Туры, экскурсии, жильё, авто и помощь от разных компаний. Платите напрямую.
-        </p>
+      <section className="container-page pt-3 md:py-14">
+        <div className="relative overflow-hidden rounded-[1.75rem] md:rounded-[2.5rem]">
+          <img
+            src={heroImage}
+            alt="Пляж и курорт: подбор туров на TourGo"
+            className="h-[24rem] w-full object-cover sm:h-[26rem] md:h-[32rem]"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/55 to-ink/10" />
 
-        <div className="mt-5 hidden max-w-2xl md:mt-6 md:block">
-          <AiIntentBar />
+          <div className="absolute inset-x-0 bottom-0 flex flex-col gap-3 p-5 text-primary-foreground md:gap-5 md:p-10">
+            <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-primary-foreground/15 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] backdrop-blur-md md:text-xs">
+              <ShieldCheck className="size-3.5" aria-hidden />
+              Проверенные турфирмы
+            </span>
+
+            <h1 className="font-display text-[2rem] font-semibold leading-[1.05] tracking-tight sm:text-5xl md:text-6xl">
+              Сравните цены
+              <br />и купите выгоднее
+            </h1>
+
+            <p className="max-w-md text-[15px] leading-snug text-primary-foreground/80 md:text-xl md:leading-relaxed">
+              Туры, экскурсии, жильё, авто и помощь от разных компаний. Платите напрямую.
+            </p>
+
+            <Link
+              to="/ai-search"
+              search={{} as never}
+              className="mt-1 flex items-center gap-3 rounded-2xl bg-background/95 p-3 text-left shadow-lg backdrop-blur-md active:scale-[0.99] md:hidden"
+            >
+              <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground">
+                <Sparkles className="size-5" aria-hidden />
+              </span>
+              <span className="min-w-0">
+                <span className="block text-sm font-semibold text-foreground">Куда хотите поехать?</span>
+                <span className="block truncate text-xs text-foreground/60">
+                  Опишите отдых — подберём за секунды
+                </span>
+              </span>
+              <ArrowRight className="ml-auto size-4 shrink-0 text-foreground/50" aria-hidden />
+            </Link>
+
+            <div className="hidden max-w-2xl md:block">
+              <AiIntentBar tone="onDark" />
+            </div>
+          </div>
         </div>
 
-        <div className="mt-5 grid auto-rows-fr grid-cols-2 items-stretch gap-2.5 md:mt-10 md:grid-cols-3 md:gap-4">
+        <div className="mt-3 grid grid-cols-3 gap-2 md:mt-6 md:gap-4">
+          {facts.map((fact) => (
+            <div
+              key={fact.label}
+              className="surface-card px-2 py-2.5 text-center md:px-4 md:py-4"
+            >
+              <p className="font-display text-lg font-semibold leading-none md:text-3xl">{fact.value}</p>
+              <p className="mt-1 text-[11px] leading-tight text-foreground/60 md:text-sm">{fact.label}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-4 grid auto-rows-fr grid-cols-2 items-stretch gap-2.5 md:mt-10 md:grid-cols-3 md:gap-4">
           {travelScenarios.map((item) => (
             <Link
               key={item.id}
@@ -92,6 +139,7 @@ function Index() {
             </Link>
           ))}
         </div>
+
 
         <Link
           to={b2bNav.to}
