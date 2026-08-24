@@ -1172,7 +1172,20 @@ export type Database = {
       }
     }
     Functions: {
-      [_ in never]: never
+      consume_ai_quota: {
+        Args: {
+          p_bucket: string
+          p_chars: number
+          p_max_requests: number
+          p_max_chars: number
+          p_window_seconds: number
+        }
+        Returns: boolean
+      }
+      prune_ai_rate_limits: {
+        Args: Record<string, never>
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

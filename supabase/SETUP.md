@@ -60,7 +60,7 @@ CLI с этой машины к проекту `mgyufoyornzbwvgdfojb` не пр�
 - `SUPABASE_URL` — уже есть автоматически
 - `SUPABASE_ANON_KEY` — уже есть
 - `SUPABASE_SERVICE_ROLE_KEY` — **добавить** (Settings → API → service_role)
-- `FCM_SERVER_KEY` — опционально, для реальных push на Android
+- `FCM_SERVICE_ACCOUNT_JSON` — опционально, для реальных push (JSON сервисного аккаунта Firebase, FCM HTTP v1)
 
 **Проверка SQL (триггер безопасности):** [SQL Editor](https://supabase.com/dashboard/project/mgyufoyornzbwvgdfojb/sql/new)
 
