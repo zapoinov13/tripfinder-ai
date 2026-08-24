@@ -14,7 +14,7 @@ import {
   Ticket,
   X,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { PhotoCount } from "@/components/media/photo-gallery";
 import {
@@ -46,10 +46,12 @@ import {
   getExcursionStats,
   getFeaturedExcursions,
   sortExcursions,
+  excursions,
   type Excursion,
   type ExcursionCategory,
   type ExcursionSort,
 } from "@/data/excursions";
+import { placeFromQuery } from "@/lib/scenario-router";
 import { cn } from "@/lib/utils";
 
 type Search = { destination?: string; city?: string; q?: string };
@@ -137,12 +139,33 @@ function ExcursionsPage() {
   const [sort, setSort] = useState<ExcursionSort>("recommended");
   const [selected, setSelected] = useState<Excursion | null>(null);
 
+  useEffect(() => {
+    setQuery(search.q ?? "");
+  }, [search.q]);
+
+  useEffect(() => {
+    if (destination || !search.q) return;
+    const place = placeFromQuery(search.q);
+    if (!place.destination) return;
+    void navigate({
+      search: {
+        destination: place.destination,
+        ...(place.city ? { city: place.city } : {}),
+        q: search.q,
+      },
+    });
+  }, [destination, search.q, navigate]);
+
   const countries = getExcursionCountries();
   const dest = destinations.find((d) => d.id === destination);
   const cities = destination ? getExcursionCities(destination) : [];
   const cityOk = Boolean(city && cities.some((c) => c.city === city));
   const list = cityOk ? getCityExcursions(destination, city) : [];
 
+  const queryHits = useMemo(
+    () => (query ? sortExcursions(filterExcursions(excursions, query, category), sort) : []),
+    [query, category, sort],
+  );
   const visible = useMemo(
     () => sortExcursions(filterExcursions(list, query, category), sort),
     [list, query, category, sort],
@@ -150,12 +173,12 @@ function ExcursionsPage() {
 
   const go = (patch: Partial<Search>) => {
     setCategory("Все");
-    setQuery("");
     setSort("recommended");
     void navigate({
       search: {
         ...(patch.destination ? { destination: patch.destination } : {}),
         ...(patch.city ? { city: patch.city } : {}),
+        ...(query ? { q: query } : {}),
       },
     });
   };
@@ -282,6 +305,16 @@ function ExcursionsPage() {
 
         {step === 1 ? (
           <>
+            {queryHits.length ? (
+              <section className="mb-10">
+                <h2 className="font-display text-xl font-semibold">Под ваш запрос</h2>
+                <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {queryHits.slice(0, 6).map((e) => (
+                    <FeaturedCard key={e.id} excursion={e} onOpen={() => setSelected(e)} />
+                  ))}
+                </div>
+              </section>
+            ) : null}
             <section className="mb-10">
               <div className="flex items-end justify-between gap-4">
                 <div>

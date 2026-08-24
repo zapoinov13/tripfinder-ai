@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Search } from "lucide-react";
 import { useState } from "react";
 
@@ -9,7 +9,15 @@ import { resortsByDestination } from "@/data/demo";
 import { carClasses, cars, formatKzt, popularCarCountries } from "@/data/scenario-catalog";
 import { cn } from "@/lib/utils";
 
-type Search = { destination?: string; city?: string; klass?: string; q?: string };
+type Search = {
+  destination?: string;
+  city?: string;
+  klass?: string;
+  q?: string;
+  pickup?: string;
+  dropoff?: string;
+  age?: string;
+};
 
 export const Route = createFileRoute("/cars")({
   validateSearch: (search: Record<string, unknown>): Search => ({
@@ -17,6 +25,9 @@ export const Route = createFileRoute("/cars")({
     ...(typeof search["city"] === "string" ? { city: search["city"] } : {}),
     ...(typeof search["klass"] === "string" ? { klass: search["klass"] } : {}),
     ...(typeof search["q"] === "string" ? { q: search["q"] } : {}),
+    ...(typeof search["pickup"] === "string" ? { pickup: search["pickup"] } : {}),
+    ...(typeof search["dropoff"] === "string" ? { dropoff: search["dropoff"] } : {}),
+    ...(typeof search["age"] === "string" ? { age: search["age"] } : {}),
   }),
   head: () => ({
     meta: [
@@ -30,14 +41,19 @@ export const Route = createFileRoute("/cars")({
 function CarsPage() {
   const params = Route.useSearch();
   const navigate = useNavigate({ from: "/cars" });
-  const update = (patch: Search) => navigate({ search: { ...params, ...patch } as never });
+  const update = (patch: Search) => void navigate({ search: { ...params, ...patch } as never });
   const [geoHint, setGeoHint] = useState("");
+  const [age, setAge] = useState(params.age ?? "25");
 
   const cities = params.destination ? (resortsByDestination[params.destination] ?? []) : [];
+  const needle = (params.q ?? "").toLowerCase();
   const list = cars.filter((item) => {
     if (params.destination && item.destinationId !== params.destination) return false;
     if (params.city && item.city !== params.city) return false;
     if (params.klass && item.klass !== params.klass) return false;
+    if (!params.destination && !params.city && !params.klass && needle) {
+      return `${item.name} ${item.city} ${item.klass}`.toLowerCase().includes(needle);
+    }
     return true;
   });
 
@@ -54,6 +70,13 @@ function CarsPage() {
       () => setGeoHint("Не удалось определить место — выберите страну"),
     );
   };
+
+  const requestFor = (wish: string) => ({
+    kind: "assistance" as const,
+    ...(params.destination ? { destination: params.destination } : {}),
+    ...(params.city ? { city: params.city } : {}),
+    wish,
+  });
 
   return (
     <SiteLayout>
@@ -108,8 +131,21 @@ function CarsPage() {
           </div>
         ) : null}
 
-        <div className="surface-card mt-8 grid gap-3 p-4 md:grid-cols-2">
-          <DateRangePicker variant="field" label="Получение — возврат" from="" to="" onChange={() => undefined} />
+        <form
+          className="surface-card mt-8 grid gap-3 p-4 md:grid-cols-[1fr_10rem_auto] md:items-end"
+          onSubmit={(e) => {
+            e.preventDefault();
+            update({ age });
+            document.getElementById("cars-results")?.scrollIntoView({ behavior: "smooth" });
+          }}
+        >
+          <DateRangePicker
+            variant="field"
+            label="Получение — возврат"
+            from={params.pickup ?? ""}
+            to={params.dropoff ?? ""}
+            onChange={(next) => update({ pickup: next.from, dropoff: next.to })}
+          />
           <label className="block">
             <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               Возраст водителя
@@ -117,15 +153,16 @@ function CarsPage() {
             <input
               type="number"
               min={18}
-              defaultValue={25}
+              value={age}
+              onChange={(e) => setAge(e.target.value)}
               className="h-12 w-full rounded-2xl border border-border bg-background px-3 text-sm"
             />
           </label>
-        </div>
-        <Button className="mt-4" size="lg">
-          <Search className="size-4" />
-          Найти авто
-        </Button>
+          <Button type="submit" size="lg" className="h-12">
+            <Search className="size-4" />
+            Найти авто
+          </Button>
+        </form>
 
         <div className="mt-8 flex flex-wrap gap-2">
           {carClasses.map((klass) => (
@@ -143,9 +180,9 @@ function CarsPage() {
           ))}
         </div>
 
-        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div id="cars-results" className="mt-8 grid scroll-mt-28 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {list.map((item) => (
-            <article key={item.id} className="surface-card p-5">
+            <article key={item.id} className="surface-card flex flex-col p-5">
               <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                 {item.city}
               </p>
@@ -156,9 +193,24 @@ function CarsPage() {
               <p className="mt-4 font-display text-lg font-semibold">
                 {formatKzt(item.price)} <span className="text-sm font-medium text-foreground/60">/ день</span>
               </p>
+              <Button className="mt-4" asChild>
+                <Link to="/request" search={requestFor(`Аренда ${item.name} в ${item.city}, без водителя`)}>
+                  Запросить авто
+                </Link>
+              </Button>
             </article>
           ))}
         </div>
+        {list.length === 0 ? (
+          <div className="surface-card mt-8 p-6 text-center">
+            <p className="text-foreground/70">В этом городе пока нет машин в витрине. Компании пришлют варианты по заявке.</p>
+            <Button className="mt-4" asChild>
+              <Link to="/request" search={requestFor(params.q || "Нужна аренда авто без водителя")}>
+                Оставить заявку
+              </Link>
+            </Button>
+          </div>
+        ) : null}
       </div>
     </SiteLayout>
   );

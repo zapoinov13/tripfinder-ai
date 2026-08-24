@@ -227,15 +227,37 @@ export const sports = [
     area: "Санур",
     slot: "2 погружения",
   },
+  {
+    id: "stay-7",
+    name: "Pera Palace Hotel",
+    city: "Стамбул",
+    destinationId: "turkey",
+    area: "Таксим",
+    kind: "hotel",
+    price: 41000,
+    rating: 8.9,
+    nightsHint: "за ночь",
+  },
+  {
+    id: "stay-8",
+    name: "Tbilisi Old Town Flat",
+    city: "Тбилиси",
+    destinationId: "georgia",
+    area: "Ваке",
+    kind: "flat",
+    price: 18000,
+    rating: 8.6,
+    nightsHint: "за ночь",
+  },
 ];
 
 export const popularStayCities = [
-  { name: "Dubai", destinationId: "uae" },
-  { name: "Istanbul", destinationId: "turkey" },
-  { name: "Phuket", destinationId: "thailand" },
-  { name: "Bali", destinationId: "indonesia" },
-  { name: "Bangkok", destinationId: "thailand" },
-  { name: "Tbilisi", destinationId: "georgia" },
+  { name: "Dubai", city: "Дубай", destinationId: "uae" },
+  { name: "Istanbul", city: "Стамбул", destinationId: "turkey" },
+  { name: "Phuket", city: "Пхукет", destinationId: "thailand" },
+  { name: "Bali", city: "Бали", destinationId: "indonesia" },
+  { name: "Bangkok", city: "Бангкок", destinationId: "thailand" },
+  { name: "Tbilisi", city: "Тбилиси", destinationId: "georgia" },
 ];
 
 export const popularCarCountries = destinations.filter((d) =>

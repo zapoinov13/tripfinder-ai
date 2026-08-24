@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { MapPin } from "lucide-react";
 import { useState } from "react";
 
@@ -29,12 +29,20 @@ export const Route = createFileRoute("/sport")({
 function SportPage() {
   const params = Route.useSearch();
   const navigate = useNavigate({ from: "/sport" });
-  const update = (patch: Search) => navigate({ search: { ...params, ...patch } as never });
+  const update = (patch: Search) => void navigate({ search: { ...params, ...patch } as never });
   const [geoHint, setGeoHint] = useState("");
 
+  const needle = (params.q ?? "").toLowerCase();
   const list = sports.filter((item) => {
     if (params.destination && item.destinationId !== params.destination) return false;
     if (params.kind && item.kind !== params.kind) return false;
+    if (params.city && item.city !== params.city && item.area !== params.city) return false;
+    if (!params.kind && needle) {
+      return (
+        `${item.name} ${item.city} ${item.kind} ${item.area}`.toLowerCase().includes(needle) ||
+        sportKinds.some((kind) => needle.includes(kind.id) && item.kind === kind.id)
+      );
+    }
     return true;
   });
 
@@ -51,6 +59,13 @@ function SportPage() {
       () => setGeoHint("Не удалось определить место"),
     );
   };
+
+  const requestFor = (wish: string) => ({
+    kind: "assistance" as const,
+    ...(params.destination ? { destination: params.destination } : {}),
+    ...(params.city ? { city: params.city } : {}),
+    wish,
+  });
 
   return (
     <SiteLayout>
@@ -108,16 +123,31 @@ function SportPage() {
 
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {list.map((item) => (
-            <article key={item.id} className="surface-card p-5">
+            <article key={item.id} className="surface-card flex flex-col p-5">
               <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                 {item.city} · {item.area}
               </p>
               <h3 className="mt-2 font-display text-xl font-semibold">{item.name}</h3>
               <p className="mt-2 text-sm text-foreground/70">{item.slot}</p>
               <p className="mt-4 font-display text-lg font-semibold">{formatKzt(item.price)}</p>
+              <Button className="mt-4" asChild>
+                <Link to="/request" search={requestFor(`${item.name}, ${item.city}`)}>
+                  Забронировать
+                </Link>
+              </Button>
             </article>
           ))}
         </div>
+        {list.length === 0 ? (
+          <div className="surface-card mt-8 p-6 text-center">
+            <p className="text-foreground/70">Пока нет слотов в витрине. Опишите, чем хотите заняться — компании ответят.</p>
+            <Button className="mt-4" asChild>
+              <Link to="/request" search={requestFor(params.q || "Нужна спортивная активность")}>
+                Оставить заявку
+              </Link>
+            </Button>
+          </div>
+        ) : null}
       </div>
     </SiteLayout>
   );
