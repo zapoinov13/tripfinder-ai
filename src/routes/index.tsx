@@ -53,64 +53,68 @@ function Index() {
 
   return (
     <SiteLayout>
-      <section className="container-page py-6 md:py-14">
-        <h1 className="font-display text-[1.75rem] font-semibold leading-tight tracking-tight sm:text-4xl md:text-6xl">
-          Что вам нужно?
-        </h1>
-        <p className="mt-2 max-w-xl text-base leading-snug text-foreground/70 md:mt-3 md:text-xl md:leading-relaxed">
-          Всё для путешествия в одном месте
-        </p>
+      {/* Full-bleed тёплый градиент за hero: фирменный тон вместо плоского фона. */}
+      <div className="bg-gradient-to-b from-primary-soft/70 via-primary-soft/25 to-transparent">
+        <section className="container-page py-6 md:py-14">
+          <h1 className="font-display text-[1.75rem] font-semibold leading-tight tracking-tight sm:text-4xl md:text-6xl">
+            Что вам нужно?
+          </h1>
+          <p className="mt-2 max-w-xl text-base leading-snug text-foreground/70 md:mt-3 md:text-xl md:leading-relaxed">
+            Всё для путешествия в одном месте
+          </p>
 
-        <div className="mt-5 hidden max-w-2xl md:mt-6 md:block">
-          <AiIntentBar />
-        </div>
+          {/* AI-подбор — главный вход, виден и на телефоне. */}
+          <div className="mt-4 max-w-2xl md:mt-6">
+            <AiIntentBar />
+          </div>
 
-        <div className="mt-5 grid auto-rows-fr grid-cols-2 items-stretch gap-2.5 md:mt-10 md:grid-cols-3 md:gap-4">
-          {travelScenarios.map((item) => (
-            <Link
-              key={item.id}
-              to={item.to}
-              search={{} as never}
-              className="surface-card flex h-full min-h-[8.25rem] flex-col items-center justify-center gap-2 p-3 text-center md:min-h-[11.5rem] md:items-start md:justify-between md:p-6 md:text-left md:transition-transform md:hover:-translate-y-1"
-            >
-              <span className="grid size-11 place-items-center rounded-2xl bg-primary-soft text-primary md:size-14">
-                <item.icon className="size-5 md:size-7" />
+          <div className="mt-4 grid auto-rows-fr grid-cols-2 items-stretch gap-2.5 md:mt-10 md:grid-cols-3 md:gap-4">
+            {travelScenarios.map((item) => (
+              <Link
+                key={item.id}
+                to={item.to}
+                search={{} as never}
+                className="surface-card flex h-full items-center gap-2.5 px-3 py-3.5 md:min-h-[11.5rem] md:flex-col md:items-start md:justify-between md:gap-3 md:p-6 md:transition-transform md:hover:-translate-y-1"
+              >
+                <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary-soft text-primary md:size-14 md:rounded-2xl">
+                  <item.icon className="size-[18px] md:size-7" />
+                </span>
+                <span className="min-w-0 w-full">
+                  <span className="block font-display text-[1.05rem] font-semibold leading-tight md:hidden">
+                    {item.shortTitle ?? item.title}
+                  </span>
+                  <span className="hidden font-display text-2xl font-semibold leading-snug md:block">
+                    {item.title}
+                  </span>
+                  <span className="mt-0.5 line-clamp-2 block text-xs leading-tight text-foreground/60 md:mt-1 md:line-clamp-none md:text-base md:leading-relaxed">
+                    <span className="md:hidden">{item.shortHint}</span>
+                    <span className="hidden md:inline">{item.hint}</span>
+                  </span>
+                </span>
+              </Link>
+            ))}
+          </div>
+
+          <Link
+            to={b2bNav.to}
+            className="mt-4 flex items-center justify-between gap-3 rounded-2xl bg-ink px-4 py-4 text-primary-foreground md:mt-8 md:rounded-[1.75rem] md:gap-4 md:px-8 md:py-6"
+          >
+            <span className="min-w-0">
+              <span className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-primary-foreground/70 md:text-sm">
+                <Building2 className="size-3.5 md:size-4" />
+                {b2bNav.title}
               </span>
-              <span className="min-w-0 w-full">
-                <span className="block font-display text-[1.05rem] font-semibold leading-tight md:hidden">
-                  {item.shortTitle ?? item.title}
-                </span>
-                <span className="hidden font-display text-2xl font-semibold leading-snug md:block">
-                  {item.title}
-                </span>
-                <span className="mt-0.5 block truncate text-[13px] leading-tight text-foreground/60 md:mt-1 md:text-base md:leading-relaxed md:whitespace-normal">
-                  <span className="md:hidden">{item.shortHint}</span>
-                  <span className="hidden md:inline">{item.hint}</span>
-                </span>
+              <span className="mt-1 block font-display text-base font-semibold leading-snug md:mt-2 md:text-2xl">
+                Вы туристическая компания?
               </span>
-            </Link>
-          ))}
-        </div>
-
-        <Link
-          to={b2bNav.to}
-          className="mt-4 flex items-center justify-between gap-3 rounded-2xl bg-ink px-4 py-4 text-primary-foreground md:mt-8 md:rounded-[1.75rem] md:gap-4 md:px-8 md:py-6"
-        >
-          <span className="min-w-0">
-            <span className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-primary-foreground/70 md:text-sm">
-              <Building2 className="size-3.5 md:size-4" />
-              {b2bNav.title}
+              <span className="mt-1 hidden text-sm leading-relaxed text-primary-foreground/80 md:block md:text-base">
+                {b2bNav.hint}
+              </span>
             </span>
-            <span className="mt-1 block font-display text-base font-semibold leading-snug md:mt-2 md:text-2xl">
-              Вы туристическая компания?
-            </span>
-            <span className="mt-1 hidden text-sm leading-relaxed text-primary-foreground/80 md:block md:text-base">
-              {b2bNav.hint}
-            </span>
-          </span>
-          <ArrowRight className="size-5 shrink-0 md:size-6" />
-        </Link>
-      </section>
+            <ArrowRight className="size-5 shrink-0 md:size-6" />
+          </Link>
+        </section>
+      </div>
 
       <section className="container-page mt-6 md:mt-10">
         <SectionHead
