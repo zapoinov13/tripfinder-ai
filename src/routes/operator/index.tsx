@@ -27,6 +27,7 @@ import {
 import { formatNumber, formatPrice, getHotel } from "@/data/demo";
 import { useAuth, useRequireAuth } from "@/lib/platform/auth";
 import { usePlatformStore } from "@/lib/platform/hooks";
+import { listOrgSports } from "@/lib/platform/sport-listings";
 import type { Booking, Organization } from "@/lib/platform/types";
 import { cn } from "@/lib/utils";
 
@@ -66,7 +67,12 @@ function buildSalesPoints(bookings: Booking[]): SalesChartPoint[] {
     }));
 }
 
-function setupSteps(org: Organization, openRequests: number, activeTours: number) {
+function setupSteps(
+  org: Organization,
+  openRequests: number,
+  activeTours: number,
+  sportCount: number,
+) {
   const needsDocs =
     org.status === "PENDING_APPROVAL" &&
     !org.verificationSubmittedAt &&
@@ -95,6 +101,17 @@ function setupSteps(org: Organization, openRequests: number, activeTours: number
       to: "/operator/tours",
       cta: "Добавить",
     },
+    ...(org.services?.includes("Спорт")
+      ? [
+          {
+            done: sportCount > 0,
+            title: "Добавить спорт из Instagram или сайта",
+            text: "Ссылка + текст bio: карточка появится в разделе Спорт.",
+            to: "/operator/services",
+            cta: "Добавить",
+          },
+        ]
+      : []),
     {
       done: openRequests === 0,
       title: "Ответить на заявки туристов",
@@ -137,7 +154,8 @@ function OperatorDashboard() {
   const verified = organization.status === "APPROVED";
   const pendingVerification = organization.status === "PENDING_APPROVAL";
   const salesPoints = buildSalesPoints(bookings);
-  const steps = setupSteps(organization, openRequests, active.length);
+  const sportCount = listOrgSports(organization.id).filter((s) => s.status === "published").length;
+  const steps = setupSteps(organization, openRequests, active.length, sportCount);
   const pendingSteps = steps.filter((step) => !step.done);
   const topTours = [...orgTours].sort((a, b) => b.bookings - a.bookings).slice(0, 6);
 

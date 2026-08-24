@@ -61,6 +61,7 @@ import { Route as OperatorOffersRouteImport } from './routes/operator/offers'
 import { Route as OperatorPromotionRouteImport } from './routes/operator/promotion'
 import { Route as OperatorRequestsRouteImport } from './routes/operator/requests'
 import { Route as OperatorReviewsRouteImport } from './routes/operator/reviews'
+import { Route as OperatorServicesRouteImport } from './routes/operator/services'
 import { Route as OperatorSettingsRouteImport } from './routes/operator/settings'
 import { Route as OperatorToursRouteImport } from './routes/operator/tours'
 import { Route as ProfileIndexRouteImport } from './routes/profile/index'
@@ -335,6 +336,11 @@ const OperatorReviewsRoute = OperatorReviewsRouteImport.update({
   path: '/operator/reviews',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OperatorServicesRoute = OperatorServicesRouteImport.update({
+  id: '/operator/services',
+  path: '/operator/services',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const OperatorSettingsRoute = OperatorSettingsRouteImport.update({
   id: '/operator/settings',
   path: '/operator/settings',
@@ -447,6 +453,7 @@ export interface FileRoutesByFullPath {
   '/operator/promotion': typeof OperatorPromotionRoute
   '/operator/requests': typeof OperatorRequestsRoute
   '/operator/reviews': typeof OperatorReviewsRoute
+  '/operator/services': typeof OperatorServicesRoute
   '/operator/settings': typeof OperatorSettingsRoute
   '/operator/tours': typeof OperatorToursRoute
   '/profile/ai': typeof ProfileAiRoute
@@ -512,6 +519,7 @@ export interface FileRoutesByTo {
   '/operator/promotion': typeof OperatorPromotionRoute
   '/operator/requests': typeof OperatorRequestsRoute
   '/operator/reviews': typeof OperatorReviewsRoute
+  '/operator/services': typeof OperatorServicesRoute
   '/operator/settings': typeof OperatorSettingsRoute
   '/operator/tours': typeof OperatorToursRoute
   '/profile/ai': typeof ProfileAiRoute
@@ -579,6 +587,7 @@ export interface FileRoutesById {
   '/operator/promotion': typeof OperatorPromotionRoute
   '/operator/requests': typeof OperatorRequestsRoute
   '/operator/reviews': typeof OperatorReviewsRoute
+  '/operator/services': typeof OperatorServicesRoute
   '/operator/settings': typeof OperatorSettingsRoute
   '/operator/tours': typeof OperatorToursRoute
   '/profile/ai': typeof ProfileAiRoute
@@ -647,6 +656,7 @@ export interface FileRouteTypes {
     | '/operator/promotion'
     | '/operator/requests'
     | '/operator/reviews'
+    | '/operator/services'
     | '/operator/settings'
     | '/operator/tours'
     | '/profile/ai'
@@ -712,6 +722,7 @@ export interface FileRouteTypes {
     | '/operator/promotion'
     | '/operator/requests'
     | '/operator/reviews'
+    | '/operator/services'
     | '/operator/settings'
     | '/operator/tours'
     | '/profile/ai'
@@ -778,6 +789,7 @@ export interface FileRouteTypes {
     | '/operator/promotion'
     | '/operator/requests'
     | '/operator/reviews'
+    | '/operator/services'
     | '/operator/settings'
     | '/operator/tours'
     | '/profile/ai'
@@ -845,6 +857,7 @@ export interface RootRouteChildren {
   OperatorPromotionRoute: typeof OperatorPromotionRoute
   OperatorRequestsRoute: typeof OperatorRequestsRoute
   OperatorReviewsRoute: typeof OperatorReviewsRoute
+  OperatorServicesRoute: typeof OperatorServicesRoute
   OperatorSettingsRoute: typeof OperatorSettingsRoute
   OperatorToursRoute: typeof OperatorToursRoute
   RequestRequestIdRoute: typeof RequestRequestIdRoute
@@ -1220,6 +1233,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OperatorReviewsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/operator/services': {
+      id: '/operator/services'
+      path: '/operator/services'
+      fullPath: '/operator/services'
+      preLoaderRoute: typeof OperatorServicesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/operator/settings': {
       id: '/operator/settings'
       path: '/operator/settings'
@@ -1382,6 +1402,7 @@ const rootRouteChildren: RootRouteChildren = {
   OperatorPromotionRoute: OperatorPromotionRoute,
   OperatorRequestsRoute: OperatorRequestsRoute,
   OperatorReviewsRoute: OperatorReviewsRoute,
+  OperatorServicesRoute: OperatorServicesRoute,
   OperatorSettingsRoute: OperatorSettingsRoute,
   OperatorToursRoute: OperatorToursRoute,
   RequestRequestIdRoute: RequestRequestIdRoute,

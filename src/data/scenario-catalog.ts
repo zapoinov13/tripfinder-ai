@@ -166,90 +166,16 @@ export const sportKinds = [
   { id: "coach", label: "Персональный тренер", emoji: "👤" },
 ] as const;
 
-export const sports = [
-  {
-    id: "sp-1",
-    name: "Padel Court JLT",
-    city: "Дубай",
-    destinationId: "uae",
-    kind: "padel",
-    price: 12000,
-    area: "JLT",
-    slot: "сегодня 19:00",
-  },
-  {
-    id: "sp-2",
-    name: "Equinox DIFC",
-    city: "Дубай",
-    destinationId: "uae",
-    kind: "gym",
-    price: 18000,
-    area: "DIFC",
-    slot: "дневной абонемент",
-  },
-  {
-    id: "sp-3",
-    name: "Yoga on the Beach",
-    city: "Дубай",
-    destinationId: "uae",
-    kind: "yoga",
-    price: 9000,
-    area: "JBR",
-    slot: "завтра 07:30",
-  },
-  {
-    id: "sp-4",
-    name: "Coach Arman · силовая",
-    city: "Дубай",
-    destinationId: "uae",
-    kind: "coach",
-    price: 25000,
-    area: "Marina",
-    slot: "персонально 60 мин",
-  },
-  {
-    id: "sp-5",
-    name: "Kite Beach Surf",
-    city: "Дубай",
-    destinationId: "uae",
-    kind: "surf",
-    price: 22000,
-    area: "Kite Beach",
-    slot: "урок 90 мин",
-  },
-  {
-    id: "sp-6",
-    name: "Bali Dive Center",
-    city: "Бали",
-    destinationId: "indonesia",
-    kind: "dive",
-    price: 28000,
-    area: "Санур",
-    slot: "2 погружения",
-  },
-  {
-    id: "stay-7",
-    name: "Pera Palace Hotel",
-    city: "Стамбул",
-    destinationId: "turkey",
-    area: "Таксим",
-    kind: "hotel",
-    price: 41000,
-    rating: 8.9,
-    nightsHint: "за ночь",
-  },
-  {
-    id: "stay-8",
-    name: "Tbilisi Old Town Flat",
-    city: "Тбилиси",
-    destinationId: "georgia",
-    area: "Ваке",
-    kind: "flat",
-    price: 18000,
-    rating: 8.6,
-    nightsHint: "за ночь",
-  },
-];
+export const sports: {
+  id: string;
+  name: string;
+  city: string;
+  destinationId: string;
+  kind: string;
+  price: number;
+  area: string;
+  slot: string;
+}[] = [];
 
 export const popularStayCities = [
   { name: "Dubai", city: "Дубай", destinationId: "uae" },
