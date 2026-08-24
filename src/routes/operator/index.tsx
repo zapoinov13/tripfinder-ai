@@ -27,7 +27,7 @@ import {
 import { formatNumber, formatPrice, getHotel } from "@/data/demo";
 import { useAuth, useRequireAuth } from "@/lib/platform/auth";
 import { usePlatformStore } from "@/lib/platform/hooks";
-import { listOrgSports } from "@/lib/platform/sport-listings";
+import { listOrgVertical } from "@/lib/platform/vertical-listings";
 import type { Booking, Organization } from "@/lib/platform/types";
 import { cn } from "@/lib/utils";
 
@@ -101,12 +101,14 @@ function setupSteps(
       to: "/operator/tours",
       cta: "Добавить",
     },
-    ...(org.services?.includes("Спорт")
+    ...(org.services?.includes("Спорт") ||
+    org.services?.includes("Отели") ||
+    org.services?.includes("Аренда авто")
       ? [
           {
             done: sportCount > 0,
-            title: "Добавить спорт из Instagram или сайта",
-            text: "Ссылка + текст bio: карточка появится в разделе Спорт.",
+            title: "Добавить услугу из Instagram или сайта",
+            text: "Жильё, авто или спорт: ссылка + текст bio, затем публикация в витрине.",
             to: "/operator/services",
             cta: "Добавить",
           },
@@ -154,7 +156,7 @@ function OperatorDashboard() {
   const verified = organization.status === "APPROVED";
   const pendingVerification = organization.status === "PENDING_APPROVAL";
   const salesPoints = buildSalesPoints(bookings);
-  const sportCount = listOrgSports(organization.id).filter((s) => s.status === "published").length;
+  const sportCount = listOrgVertical(organization.id).filter((s) => s.status === "published").length;
   const steps = setupSteps(organization, openRequests, active.length, sportCount);
   const pendingSteps = steps.filter((step) => !step.done);
   const topTours = [...orgTours].sort((a, b) => b.bookings - a.bookings).slice(0, 6);

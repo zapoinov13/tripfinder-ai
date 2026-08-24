@@ -1,17 +1,29 @@
 import { destinations } from "@/data/demo";
-import { sportKinds } from "@/data/scenario-catalog";
+import { carClasses, sportKinds, stayKinds } from "@/data/scenario-catalog";
 
-export type SportOfferDraft = {
+export type VerticalId = "sport" | "stay" | "car";
+
+export type VerticalOfferDraft = {
+  vertical: VerticalId;
   name: string;
   city: string;
   destinationId: string;
+  /** sport kind / stay kind / car class */
   kind: string;
   price: number;
   area: string;
-  slot: string;
+  /** sport slot / stay hint / car gearbox+deposit */
+  detail: string;
   sourceUrl: string;
   about: string;
   photos: string[];
+  seats?: number;
+  rating?: number;
+};
+
+/** @deprecated use VerticalOfferDraft */
+export type SportOfferDraft = Omit<VerticalOfferDraft, "vertical" | "detail" | "seats" | "rating"> & {
+  slot: string;
 };
 
 function guessDestination(text: string): string {
@@ -36,7 +48,7 @@ function guessDestination(text: string): string {
 
 function extractPrice(text: string): number {
   const patterns = [
-    /(?:цена|price|от|абонемент)\s*[:=]?\s*([\d\s]{3,12})\s*(?:тг|₸|kzt|тенге|aed|\$)?/i,
+    /(?:цена|price|от|абонемент|\/\s*ночь|\/\s*день)\s*[:=]?\s*([\d\s]{3,12})\s*(?:тг|₸|kzt|тенге|aed|\$)?/i,
     /([\d\s]{4,10})\s*(?:тг|₸|kzt|тенге)/i,
     /([\d\s]{2,6})\s*(?:aed|дирхам)/i,
     /\$\s*([\d\s]{2,6})/i,
@@ -52,7 +64,7 @@ function extractPrice(text: string): number {
   return 0;
 }
 
-function extractKind(text: string): string {
+function extractSportKind(text: string): string {
   const lower = text.toLowerCase();
   const map: Array<[string, string[]]> = [
     ["padel", ["padel", "падел"]],
@@ -72,7 +84,29 @@ function extractKind(text: string): string {
   return sportKinds[0]?.id ?? "gym";
 }
 
-function extractTitle(text: string, url: string): string {
+function extractStayKind(text: string): string {
+  const lower = text.toLowerCase();
+  if (/villa|вилл/.test(lower)) return "villa";
+  if (/apartment|апартамент/.test(lower)) return "apartment";
+  if (/flat|квартир/.test(lower)) return "flat";
+  if (/house|дом\b|дома/.test(lower)) return "house";
+  if (/hotel|отел|resort|рикс|rixos/.test(lower)) return "hotel";
+  return stayKinds[0]?.id ?? "hotel";
+}
+
+function extractCarClass(text: string): string {
+  const lower = text.toLowerCase();
+  if (/cabrio|кабрио/.test(lower)) return "cabrio";
+  if (/minivan|минив|staria/.test(lower)) return "minivan";
+  if (/suv|patrol|джип/.test(lower)) return "suv";
+  if (/sport|спорткар|ferrari|lamborghini/.test(lower)) return "sport";
+  if (/premium|mercedes|bmw|lexus/.test(lower)) return "premium";
+  if (/comfort|камри|camry/.test(lower)) return "comfort";
+  if (/eco|yaris|spark|эконом/.test(lower)) return "eco";
+  return carClasses[0]?.id ?? "eco";
+}
+
+function extractTitle(text: string, url: string, fallback: string): string {
   const lines = text
     .split(/\n+/)
     .map((l) => l.trim())
@@ -87,13 +121,13 @@ function extractTitle(text: string, url: string): string {
       .trim()
       .slice(0, 80);
   } catch {
-    return "Спортивная услуга";
+    return fallback;
   }
 }
 
 function extractArea(text: string): string {
   const m = text.match(
-    /\b(JLT|JBR|DIFC|Marina|Downtown|Palm|Kite Beach|Таксим|Ваке|Санур|Семиньяк|Убуд)\b/i,
+    /\b(JLT|JBR|DIFC|Marina|Downtown|Palm|Kite Beach|Таксим|Ваке|Санур|Семиньяк|Убуд|Business Bay)\b/i,
   );
   return m?.[1] ?? "";
 }
@@ -106,6 +140,24 @@ function extractSlot(text: string): string {
   return m?.[1] ?? "";
 }
 
+function extractSeats(text: string): number {
+  const m = text.match(/(\d)\s*мест/i);
+  if (m?.[1]) return Number(m[1]);
+  return 5;
+}
+
+function extractGearbox(text: string): string {
+  const lower = text.toLowerCase();
+  if (/механ|manual/.test(lower)) return "механика";
+  return "автомат";
+}
+
+function extractDeposit(text: string): string {
+  const lower = text.toLowerCase();
+  if (/без депозит/.test(lower)) return "без депозита";
+  return "с депозитом";
+}
+
 function extractUrls(text: string): string[] {
   return [...text.matchAll(/https?:\/\/[^\s<>"')\]]+/gi)].map((m) => m[0]!);
 }
@@ -114,31 +166,28 @@ function isInstagram(url: string) {
   return /instagram\.com|instagr\.am/i.test(url);
 }
 
-function emptyDraft(destinationId = "uae"): SportOfferDraft {
+function emptyDraft(vertical: VerticalId, destinationId = "uae"): VerticalOfferDraft {
   const dest = destinations.find((d) => d.id === destinationId) ?? destinations[0]!;
+  const kind =
+    vertical === "sport" ? "gym" : vertical === "stay" ? "hotel" : "eco";
   return {
+    vertical,
     name: "",
     city: dest.city,
     destinationId: dest.id,
-    kind: "gym",
+    kind,
     price: 0,
     area: "",
-    slot: "",
+    detail: vertical === "stay" ? "за ночь" : vertical === "car" ? "автомат · с депозитом" : "",
     sourceUrl: "",
     about: "",
     photos: [],
+    ...(vertical === "car" ? { seats: 5 } : {}),
+    ...(vertical === "stay" ? { rating: 0 } : {}),
   };
 }
 
-/**
- * Собирает черновик спортивной услуги из ссылки Instagram/сайта и вставленного текста.
- * Полный автоскрейп Instagram без Meta API недоступен с клиента: берём URL + bio/пост
- * (или HTML сайта через будущий серверный proxy) и заполняем поля для проверки оператором.
- */
-export function draftSportFromLink(input: {
-  url: string;
-  text?: string;
-}): { draft: SportOfferDraft; fields: string[]; warnings: string[]; sourceKind: "instagram" | "website" } {
+function baseParse(input: { url: string; text?: string }, vertical: VerticalId, fallbackTitle: string) {
   const url = input.url.trim();
   const text = (input.text ?? "").trim();
   const warnings: string[] = [];
@@ -146,52 +195,133 @@ export function draftSportFromLink(input: {
 
   if (!url && !text) {
     return {
-      draft: emptyDraft(),
-      fields: [],
-      warnings: ["Вставьте ссылку на Instagram или сайт и описание услуги"],
-      sourceKind: "website",
+      draft: emptyDraft(vertical),
+      fields,
+      warnings: ["Вставьте ссылку на Instagram или сайт и описание"],
+      sourceKind: "website" as const,
     };
   }
 
-  const sourceKind = isInstagram(url) ? "instagram" : "website";
+  const sourceKind = isInstagram(url) ? ("instagram" as const) : ("website" as const);
   const blob = `${url}\n${text}`;
   const destinationId = guessDestination(blob);
   const dest = destinations.find((d) => d.id === destinationId) ?? destinations[0]!;
   const photos = extractUrls(blob).filter((u) => /\.(jpe?g|png|webp|gif)(\?|$)/i.test(u)).slice(0, 8);
-  const name = extractTitle(text || url, url);
-  const kind = extractKind(blob);
+  const name = extractTitle(text || url, url, fallbackTitle);
   const price = extractPrice(blob);
   const area = extractArea(blob);
-  const slot = extractSlot(blob);
 
   if (sourceKind === "instagram") {
     warnings.push(
-      "Instagram не отдаёт профиль напрямую в браузер. Вставьте bio или текст поста рядом со ссылкой: так TourGo заполнит карточку.",
+      "Instagram не отдаёт профиль напрямую в браузер. Вставьте bio или текст поста рядом со ссылкой.",
     );
   } else if (url && !text) {
     warnings.push(
-      "По ссылке пока читаем адрес и название. Для точной цены и описания вставьте текст со страницы.",
+      "По ссылке пока читаем адрес и название. Для точной цены вставьте текст со страницы.",
     );
   }
 
-  fields.push("направление", "название", "тип");
+  fields.push("направление", "название");
   if (price) fields.push("цена");
   if (area) fields.push("район");
-  if (slot) fields.push("слот");
   if (photos.length) fields.push("фото");
 
+  return { url, text, blob, destinationId, dest, photos, name, price, area, fields, warnings, sourceKind };
+}
+
+export function draftVerticalFromLink(input: {
+  vertical: VerticalId;
+  url: string;
+  text?: string;
+}): {
+  draft: VerticalOfferDraft;
+  fields: string[];
+  warnings: string[];
+  sourceKind: "instagram" | "website";
+} {
+  const { vertical } = input;
+  const fallback =
+    vertical === "sport" ? "Спортивная услуга" : vertical === "stay" ? "Жильё" : "Авто";
+  const parsed = baseParse(input, vertical, fallback);
+  if (parsed.warnings[0]?.startsWith("Вставьте") && !input.url.trim() && !(input.text ?? "").trim()) {
+    return {
+      draft: emptyDraft(vertical),
+      fields: [],
+      warnings: parsed.warnings,
+      sourceKind: "website",
+    };
+  }
+
+  const { dest, photos, name, price, area, fields, warnings, sourceKind, text, url, blob } = parsed;
+
+  if (vertical === "sport") {
+    const kind = extractSportKind(blob);
+    const detail = extractSlot(blob);
+    fields.push("тип");
+    if (detail) fields.push("слот");
+    return {
+      draft: {
+        vertical,
+        name,
+        city: dest.city,
+        destinationId: dest.id,
+        kind,
+        price,
+        area,
+        detail,
+        sourceUrl: url,
+        about: text.slice(0, 800),
+        photos,
+      },
+      fields,
+      warnings,
+      sourceKind,
+    };
+  }
+
+  if (vertical === "stay") {
+    const kind = extractStayKind(blob);
+    fields.push("тип");
+    return {
+      draft: {
+        vertical,
+        name,
+        city: dest.city,
+        destinationId: dest.id,
+        kind,
+        price,
+        area,
+        detail: "за ночь",
+        sourceUrl: url,
+        about: text.slice(0, 800),
+        photos,
+        rating: 0,
+      },
+      fields,
+      warnings,
+      sourceKind,
+    };
+  }
+
+  const kind = extractCarClass(blob);
+  const seats = extractSeats(blob);
+  const gearbox = extractGearbox(blob);
+  const deposit = extractDeposit(blob);
+  fields.push("класс");
   return {
     draft: {
+      vertical,
       name,
       city: dest.city,
       destinationId: dest.id,
       kind,
       price,
-      area,
-      slot,
+      area: "",
+      detail: `${gearbox} · ${deposit}`,
       sourceUrl: url,
       about: text.slice(0, 800),
       photos,
+      seats,
     },
     fields,
     warnings,
@@ -199,6 +329,29 @@ export function draftSportFromLink(input: {
   };
 }
 
+export function draftSportFromLink(input: { url: string; text?: string }) {
+  const result = draftVerticalFromLink({ ...input, vertical: "sport" });
+  const { detail, seats: _s, rating: _r, vertical: _v, ...rest } = result.draft;
+  return {
+    ...result,
+    draft: { ...rest, slot: detail } satisfies SportOfferDraft,
+  };
+}
+
 export function sportKindLabel(kind: string) {
   return sportKinds.find((k) => k.id === kind)?.label ?? kind;
+}
+
+export function stayKindLabel(kind: string) {
+  return stayKinds.find((k) => k.id === kind)?.label ?? kind;
+}
+
+export function carClassLabel(kind: string) {
+  return carClasses.find((k) => k.id === kind)?.label ?? kind;
+}
+
+export function verticalLabel(vertical: VerticalId) {
+  if (vertical === "sport") return "Спорт";
+  if (vertical === "stay") return "Жильё";
+  return "Авто";
 }

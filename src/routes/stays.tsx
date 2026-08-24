@@ -1,6 +1,6 @@
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
-import { MapPin, Search } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Building2, MapPin, Search } from "lucide-react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 
 import { SiteLayout } from "@/components/site/site-layout";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,11 @@ import {
   stayKinds,
   stays,
 } from "@/data/scenario-catalog";
+import {
+  listPublishedVertical,
+  subscribeVerticalListings,
+  type VerticalListing,
+} from "@/lib/platform/vertical-listings";
 import { cn } from "@/lib/utils";
 
 type Search = {
@@ -22,6 +27,19 @@ type Search = {
   q?: string;
   checkIn?: string;
   checkOut?: string;
+};
+
+type StayCard = {
+  id: string;
+  name: string;
+  city: string;
+  destinationId: string;
+  area: string;
+  kind: string;
+  price: number;
+  rating: number;
+  nightsHint: string;
+  companyName?: string;
 };
 
 export const Route = createFileRoute("/stays")({
@@ -36,34 +54,63 @@ export const Route = createFileRoute("/stays")({
   head: () => ({
     meta: [
       { title: "Жильё: отели, квартиры и виллы · TourGo" },
-      { name: "description", content: "Где хотите остановиться? Отели, апартаменты, квартиры и виллы." },
+      {
+        name: "description",
+        content: "Отели, апартаменты и виллы от компаний. Сравните цены и запросите предложение.",
+      },
     ],
   }),
   component: StaysPage,
 });
 
+function usePublishedStays() {
+  return useSyncExternalStore(
+    subscribeVerticalListings,
+    () => listPublishedVertical("stay"),
+    () => [] as VerticalListing[],
+  );
+}
+
 function StaysPage() {
   const params = Route.useSearch();
   const navigate = useNavigate({ from: "/stays" });
-  const update = (patch: Search) =>
-    void navigate({ search: { ...params, ...patch } as never });
+  const update = (patch: Search) => void navigate({ search: { ...params, ...patch } as never });
   const [city, setCity] = useState(params.city ?? params.q ?? "");
+  const published = usePublishedStays();
 
   useEffect(() => {
     setCity(params.city ?? "");
   }, [params.city]);
 
-  const list = stays.filter((item) => {
+  const catalog: StayCard[] = [
+    ...published.map((item) => ({
+      id: item.id,
+      name: item.name,
+      city: item.city,
+      destinationId: item.destinationId,
+      area: item.area,
+      kind: item.kind,
+      price: item.price,
+      rating: item.rating ?? 0,
+      nightsHint: item.detail || "за ночь",
+      companyName: item.companyName,
+    })),
+    ...stays,
+  ];
+
+  const list = catalog.filter((item) => {
     if (params.destination && item.destinationId !== params.destination) return false;
     if (params.kind && item.kind !== params.kind) return false;
     const needle = (params.city || city || "").trim().toLowerCase();
     if (!needle) return true;
-    return `${item.city} ${item.area} ${item.name}`.toLowerCase().includes(needle)
-      || popularStayCities.some(
+    return (
+      `${item.city} ${item.area} ${item.name} ${item.companyName ?? ""}`.toLowerCase().includes(needle) ||
+      popularStayCities.some(
         (place) =>
           place.city.toLowerCase() === item.city.toLowerCase() &&
           (place.name.toLowerCase() === needle || place.city.toLowerCase() === needle),
-      );
+      )
+    );
   });
 
   const dest = destinations.find((d) => d.id === params.destination);
@@ -82,7 +129,9 @@ function StaysPage() {
     <SiteLayout>
       <div className="container-page py-8 md:py-12">
         <p className="text-sm font-medium text-primary">Жильё</p>
-        <h1 className="mt-1 font-display text-3xl font-semibold md:text-5xl">Где хотите остановиться?</h1>
+        <h1 className="mt-1 font-display text-3xl font-semibold md:text-5xl">
+          Где хотите остановиться?
+        </h1>
         <form
           className="surface-card mt-6 grid gap-3 p-3 md:grid-cols-[1.2fr_1fr_auto] md:items-end"
           onSubmit={(e) => {
@@ -182,36 +231,70 @@ function StaysPage() {
           </div>
         ) : null}
 
-        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {list.map((item) => (
-            <article key={item.id} className="surface-card flex flex-col p-5">
-              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                {item.area} · {item.city}
-              </p>
-              <h3 className="mt-2 font-display text-xl font-semibold">{item.name}</h3>
-              <p className="mt-2 text-sm text-foreground/70">Рейтинг {item.rating}</p>
-              <p className="mt-4 font-display text-lg font-semibold">
-                {formatKzt(item.price)}{" "}
-                <span className="text-sm font-medium text-foreground/60">{item.nightsHint}</span>
+        {list.length > 0 ? (
+          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {list.map((item) => (
+              <article key={item.id} className="surface-card flex flex-col p-5">
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  {item.area ? `${item.area} · ` : ""}
+                  {item.city}
+                </p>
+                <h3 className="mt-2 font-display text-xl font-semibold">{item.name}</h3>
+                {item.companyName ? (
+                  <p className="mt-1 text-sm text-foreground/60">{item.companyName}</p>
+                ) : null}
+                {item.rating > 0 ? (
+                  <p className="mt-2 text-sm text-foreground/70">Рейтинг {item.rating}</p>
+                ) : null}
+                {item.price > 0 ? (
+                  <p className="mt-4 font-display text-lg font-semibold">
+                    {formatKzt(item.price)}{" "}
+                    <span className="text-sm font-medium text-foreground/60">{item.nightsHint}</span>
+                  </p>
+                ) : (
+                  <p className="mt-4 text-sm text-foreground/60">Цена по запросу</p>
+                )}
+                <Button className="mt-4" asChild>
+                  <Link to="/request" search={requestFor(`${item.name}, ${item.city}`)}>
+                    Запросить цену
+                  </Link>
+                </Button>
+              </article>
+            ))}
+          </div>
+        ) : (
+          <div className="surface-card mt-8 grid gap-6 p-6 md:grid-cols-2 md:p-8">
+            <div>
+              <h2 className="font-display text-xl font-semibold">Пока пусто в витрине</h2>
+              <p className="mt-2 text-sm leading-relaxed text-foreground/70">
+                Компании могут регистрироваться и добавлять отели, квартиры и виллы. Оставьте
+                заявку, если нужно жильё прямо сейчас.
               </p>
               <Button className="mt-4" asChild>
-                <Link to="/request" search={requestFor(`${item.name}, ${item.city}`)}>
-                  Запросить цену
+                <Link to="/request" search={requestFor(params.q || city || "Нужно жильё")}>
+                  Оставить заявку
                 </Link>
               </Button>
-            </article>
-          ))}
-        </div>
-        {list.length === 0 ? (
-          <div className="surface-card mt-8 p-6 text-center">
-            <p className="text-foreground/70">По этому запросу пока нет карточек. Оставьте заявку, компании пришлют варианты.</p>
-            <Button className="mt-4" asChild>
-              <Link to="/request" search={requestFor(params.q || city || "Нужно жильё")}>
-                Оставить заявку
-              </Link>
-            </Button>
+            </div>
+            <div className="rounded-2xl bg-ink p-5 text-primary-foreground md:p-6">
+              <p className="inline-flex items-center gap-2 text-sm font-semibold text-primary-foreground/70">
+                <Building2 className="size-4" />
+                Для компаний
+              </p>
+              <h3 className="mt-2 font-display text-xl font-semibold">Разместите жильё на TourGo</h3>
+              <p className="mt-2 text-sm leading-relaxed text-primary-foreground/80">
+                Зарегистрируйте компанию, отметьте «Отели» и добавьте карточку из Instagram или
+                сайта.
+              </p>
+              <Button
+                className="mt-4 bg-primary-foreground text-ink hover:bg-primary-foreground/90"
+                asChild
+              >
+                <Link to="/company-signup">Добавить компанию</Link>
+              </Button>
+            </div>
           </div>
-        ) : null}
+        )}
       </div>
     </SiteLayout>
   );

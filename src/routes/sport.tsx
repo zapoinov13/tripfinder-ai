@@ -9,7 +9,6 @@ import { formatKzt, sportKinds, sports } from "@/data/scenario-catalog";
 import {
   listPublishedSports,
   subscribeSportListings,
-  type SportListing,
 } from "@/lib/platform/sport-listings";
 import { cn } from "@/lib/utils";
 
@@ -47,7 +46,7 @@ export const Route = createFileRoute("/sport")({
 });
 
 function usePublishedSports() {
-  return useSyncExternalStore(subscribeSportListings, listPublishedSports, () => [] as SportListing[]);
+  return useSyncExternalStore(subscribeSportListings, listPublishedSports, () => []);
 }
 
 function SportPage() {
@@ -66,7 +65,7 @@ function SportPage() {
       kind: item.kind,
       price: item.price,
       area: item.area,
-      slot: item.slot,
+      slot: item.detail,
       companyName: item.companyName,
     })),
     ...sports,

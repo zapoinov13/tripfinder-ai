@@ -16,74 +16,17 @@ export const stayAreas: Record<string, string[]> = {
   georgia: ["Старый Батуми", "Ваке", "Гудаури"],
 };
 
-export const stays = [
-  {
-    id: "stay-1",
-    name: "Rixos Premium Dubai JBR",
-    city: "Дубай",
-    destinationId: "uae",
-    area: "JBR",
-    kind: "hotel",
-    price: 89000,
-    rating: 9.4,
-    nightsHint: "за ночь",
-  },
-  {
-    id: "stay-2",
-    name: "Marina Gate Apartments",
-    city: "Дубай",
-    destinationId: "uae",
-    area: "Dubai Marina",
-    kind: "apartment",
-    price: 54000,
-    rating: 8.9,
-    nightsHint: "за ночь",
-  },
-  {
-    id: "stay-3",
-    name: "Palm Villa 4BR",
-    city: "Дубай",
-    destinationId: "uae",
-    area: "Palm Jumeirah",
-    kind: "villa",
-    price: 210000,
-    rating: 9.1,
-    nightsHint: "за ночь",
-  },
-  {
-    id: "stay-4",
-    name: "Address Downtown",
-    city: "Дубай",
-    destinationId: "uae",
-    area: "Downtown",
-    kind: "hotel",
-    price: 76000,
-    rating: 9.2,
-    nightsHint: "за ночь",
-  },
-  {
-    id: "stay-5",
-    name: "Phuket Beach Villa",
-    city: "Пхукет",
-    destinationId: "thailand",
-    area: "Камала",
-    kind: "villa",
-    price: 48000,
-    rating: 8.8,
-    nightsHint: "за ночь",
-  },
-  {
-    id: "stay-6",
-    name: "Seminyak House",
-    city: "Бали",
-    destinationId: "indonesia",
-    area: "Семиньяк",
-    kind: "house",
-    price: 36000,
-    rating: 8.7,
-    nightsHint: "за ночь",
-  },
-];
+export const stays: {
+  id: string;
+  name: string;
+  city: string;
+  destinationId: string;
+  area: string;
+  kind: string;
+  price: number;
+  rating: number;
+  nightsHint: string;
+}[] = [];
 
 export const carClasses = [
   { id: "eco", label: "Эконом" },
@@ -95,63 +38,17 @@ export const carClasses = [
   { id: "minivan", label: "Минивэн" },
 ] as const;
 
-export const cars = [
-  {
-    id: "car-1",
-    name: "Toyota Yaris",
-    city: "Дубай",
-    destinationId: "uae",
-    klass: "eco",
-    price: 18000,
-    seats: 5,
-    gearbox: "автомат",
-    deposit: "с депозитом",
-  },
-  {
-    id: "car-2",
-    name: "Nissan Patrol",
-    city: "Дубай",
-    destinationId: "uae",
-    klass: "suv",
-    price: 42000,
-    seats: 7,
-    gearbox: "автомат",
-    deposit: "с депозитом",
-  },
-  {
-    id: "car-3",
-    name: "Mercedes C-Class Cabrio",
-    city: "Дубай",
-    destinationId: "uae",
-    klass: "cabrio",
-    price: 68000,
-    seats: 4,
-    gearbox: "автомат",
-    deposit: "с депозитом",
-  },
-  {
-    id: "car-4",
-    name: "BMW 5 Series",
-    city: "Абу-Даби",
-    destinationId: "uae",
-    klass: "premium",
-    price: 59000,
-    seats: 5,
-    gearbox: "автомат",
-    deposit: "без депозита",
-  },
-  {
-    id: "car-5",
-    name: "Hyundai Staria",
-    city: "Анталия",
-    destinationId: "turkey",
-    klass: "minivan",
-    price: 31000,
-    seats: 8,
-    gearbox: "автомат",
-    deposit: "с депозитом",
-  },
-];
+export const cars: {
+  id: string;
+  name: string;
+  city: string;
+  destinationId: string;
+  klass: string;
+  price: number;
+  seats: number;
+  gearbox: string;
+  deposit: string;
+}[] = [];
 
 export const sportKinds = [
   { id: "gym", label: "Тренажёрные залы", emoji: "🏋️" },

@@ -33,7 +33,7 @@ const operatorNavBase: DashItem[] = [
   { label: "Заявки", to: "/operator/requests", icon: Inbox },
   { label: "Предложения", to: "/operator/offers", icon: HandCoins },
   { label: "Туры", to: "/operator/tours", icon: Luggage },
-  { label: "Спорт", to: "/operator/services", icon: Dumbbell },
+  { label: "Услуги", to: "/operator/services", icon: Dumbbell },
   { label: "Сообщения", to: "/operator/messages", icon: MessageSquare },
   { label: "Брони", to: "/operator/bookings", icon: Ticket },
   { label: "Компания", to: "/operator/company", icon: Building },
