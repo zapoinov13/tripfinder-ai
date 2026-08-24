@@ -477,8 +477,8 @@ function Index() {
           <p className="text-sm font-semibold tracking-[0.14em] text-primary uppercase">
             Почему TourGo
           </p>
-          <h2 className="mt-3 max-w-3xl font-display text-3xl font-semibold leading-snug tracking-tight md:text-5xl md:leading-[1.12]">
-            Хватит собирать отпуск в десяти WhatsApp
+          <h2 className="mt-3 max-w-3xl whitespace-pre-line font-display text-3xl font-semibold leading-snug tracking-tight md:text-5xl md:leading-[1.12]">
+            Хватит собирать отпуск{"\u00A0"}{"\n"}в разных приложениях
           </h2>
           <p className="mt-5 max-w-2xl text-lg leading-relaxed text-foreground/70 md:text-xl md:leading-relaxed">
             Раньше вы писали знакомым агентам и ждали скрины прайсов. Здесь все ответы в одном
