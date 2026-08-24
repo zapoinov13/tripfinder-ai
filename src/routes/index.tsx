@@ -719,12 +719,7 @@ function SectionHead({
     <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-4">
       <div className="min-w-0">
         <h2 className={cn("whitespace-pre-line font-display text-2xl font-semibold tracking-tight md:text-3xl")}>
-          {title.split("\n").map((line, i) => (
-            <React.Fragment key={i}>
-              {line}
-              {i < title.split("\n").length - 1 && <br />}
-            </React.Fragment>
-          ))}
+          {title}
         </h2>
         {subtitle ? <p className="mt-2 max-w-2xl text-muted-foreground">{subtitle}</p> : null}
       </div>
