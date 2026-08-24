@@ -1,14 +1,11 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import {
   BadgeCheck,
-  LifeBuoy,
   Mail,
-  MapPinned,
-  Palmtree,
   Scale,
   ShieldCheck,
-  Sparkles,
   Users,
+  Sparkles,
 } from "lucide-react";
 
 import { FaqSection } from "@/components/site/faq-section";
@@ -16,6 +13,7 @@ import { SiteLayout } from "@/components/site/site-layout";
 import { SUPPORT_EMAIL, SUPPORT_MAILTO } from "@/lib/contact";
 import { Button } from "@/components/ui/button";
 import { destinations, heroImage } from "@/data/demo";
+import { travelScenarios } from "@/data/scenarios";
 
 export const Route = createFileRoute("/about")({
   head: () => ({
@@ -24,33 +22,12 @@ export const Route = createFileRoute("/about")({
       {
         name: "description",
         content:
-          "TourGo: витрина туров от разных компаний. Смотрите каталог или оставьте одну заявку, сравните цены и оплатите напрямую выбранной турфирме.",
+          "TourGo: туры, экскурсии, жильё, авто, спорт и помощь в поездке. Сравниваете предложения компаний и платите напрямую.",
       },
     ],
   }),
   component: AboutPage,
 });
-
-const paths = [
-  {
-    to: "/search" as const,
-    icon: Palmtree,
-    title: "Найти тур в каталоге",
-    text: "Страна, даты, отель и цена от разных компаний. Сравнили и написали выбранной фирме.",
-  },
-  {
-    to: "/excursions" as const,
-    icon: MapPinned,
-    title: "Экскурсии и развлечения",
-    text: "Сафари, яхты, обзор города, парки. Цены от местных компаний рядом, без торга в чатах.",
-  },
-  {
-    to: "/assistance" as const,
-    icon: LifeBuoy,
-    title: "Уже в поездке?",
-    text: "Нужна машина, гид или билеты на сегодня: компании в городе пришлют цены быстро.",
-  },
-];
 
 const steps = [
   {
@@ -83,17 +60,15 @@ function AboutPage() {
             Что такое TourGo
           </p>
           <h1 className="mt-4 max-w-3xl font-display text-3xl font-semibold leading-tight text-primary-foreground md:text-5xl">
-            Витрина туров от разных компаний: вы сравниваете и покупаете у лучшей
+            Витрина для всей поездки: вы сравниваете и покупаете у компании
           </h1>
           <p className="mt-3 max-w-xl text-sm text-primary-foreground/80 md:text-base">
-            Мы не турагентство и не продаём поездки сами. Собираем предложения турфирм в одном месте:
-            каталог, заявка или помощь уже на месте. Платите напрямую выбранной компании.
+            Мы не турагентство и не продаём поездки сами. Шесть разделов: туры, экскурсии, жильё,
+            авто, спорт и помощь в поездке. Платите напрямую выбранной компании.
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
             <Button size="lg" asChild>
-              <Link to="/search" search={{} as never}>
-                Смотреть туры
-              </Link>
+              <Link to="/">Выбрать раздел</Link>
             </Button>
             <Button
               size="lg"
@@ -126,14 +101,14 @@ function AboutPage() {
 
       <div className="container-page py-10 md:py-14">
         <section>
-          <h2 className="font-display text-2xl font-semibold md:text-3xl">С чего начать</h2>
+          <h2 className="font-display text-2xl font-semibold md:text-3xl">Шесть разделов</h2>
           <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-            Три понятных сценария без отраслевого жаргона и лишних шагов.
+            Сначала выбираете, что нужно. Поиск и фильтры — уже внутри раздела.
           </p>
-          <div className="mt-6 grid gap-4 md:grid-cols-3">
-            {paths.map((item) => (
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+            {travelScenarios.map((item) => (
               <Link
-                key={item.title}
+                key={item.id}
                 to={item.to}
                 search={{} as never}
                 className="hover-lift surface-card flex flex-col p-6"
@@ -142,7 +117,7 @@ function AboutPage() {
                   <item.icon className="size-5" />
                 </span>
                 <h3 className="mt-4 font-display text-lg font-semibold">{item.title}</h3>
-                <p className="mt-2 flex-1 text-sm text-muted-foreground">{item.text}</p>
+                <p className="mt-2 flex-1 text-sm text-muted-foreground">{item.hint}</p>
                 <span className="mt-4 text-sm font-semibold text-primary">Открыть</span>
               </Link>
             ))}

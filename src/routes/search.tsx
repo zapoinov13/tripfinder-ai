@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import {
   Check,
   LayoutGrid,
@@ -36,8 +36,6 @@ import {
   destinations,
   formatPrice,
   mealOptions,
-  offerCategoryLabels,
-  type OfferCategory,
 } from "@/data/demo";
 import { useAuth } from "@/lib/platform/auth";
 import { useTourSearch, searchService } from "@/lib/platform/search-service";
@@ -55,15 +53,47 @@ import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/search")({
   validateSearch: validateSearchParams,
+  beforeLoad: ({ search }) => {
+    if (search.category === "hotel") {
+      throw redirect({
+        to: "/stays",
+        search: {
+          ...(search.destination ? { destination: search.destination } : {}),
+          ...(search.city ? { city: search.city } : {}),
+          ...(search.q ? { q: search.q } : {}),
+        },
+      });
+    }
+    if (search.category === "excursion") {
+      throw redirect({
+        to: "/excursions",
+        search: {
+          ...(search.destination ? { destination: search.destination } : {}),
+          ...(search.city ? { city: search.city } : {}),
+          ...(search.q ? { q: search.q } : {}),
+        },
+      });
+    }
+    if (search.category === "transfer") {
+      throw redirect({
+        to: "/assistance",
+        search: {
+          ...(search.destination ? { destination: search.destination } : {}),
+          ...(search.city ? { city: search.city } : {}),
+          ...(search.q ? { wish: search.q } : {}),
+        },
+      });
+    }
+  },
   head: () => ({
     meta: [
-      { title: "Каталог туров: цены от разных компаний · TourGo" },
+      { title: "Туры: куда хотите поехать · TourGo" },
       {
         name: "description",
         content:
           "Сравнивайте туры: страна, даты, отель и цена от проверенных турфирм. Выбираете лучшее. Платите компании напрямую.",
       },
-      { property: "og:title", content: "Каталог туров: цены от разных компаний · TourGo" },
+      { property: "og:title", content: "Туры: куда хотите поехать · TourGo" },
       {
         property: "og:description",
         content: "Фильтры по стране, датам, питанию и бюджету. Несколько компаний в одной витрине.",
@@ -86,13 +116,6 @@ const offerOptions = [
   { value: "hot", label: "Горящие" },
   { value: "premium", label: "Выгодная цена" },
   { value: "sponsored", label: "Рекомендуем" },
-];
-const categoryTabs: Array<{ value: "" | OfferCategory; label: string }> = [
-  { value: "", label: "Все" },
-  { value: "tour", label: "Туры" },
-  { value: "hotel", label: "Отели" },
-  { value: "excursion", label: "Экскурсии" },
-  { value: "transfer", label: "Трансферы" },
 ];
 const sortOptions: Array<{ value: SortKey; label: string }> = [
   { value: "recommended", label: "Сначала выгодные" },
@@ -425,10 +448,10 @@ function activeFilterChips(params: SearchParams) {
       clear: { destination: "", city: "" },
     });
   }
-  if (params.category) {
+  if (params.category && params.category !== "tour") {
     chips.push({
       key: "category",
-      label: offerCategoryLabels[params.category],
+      label: params.category,
       clear: { category: "" },
     });
   }
@@ -520,10 +543,6 @@ function SearchPage() {
 
   const chips = activeFilterChips(params);
   const extraFilters = filterCount(params);
-  const heading = params.destination
-    ? `Туры в ${destinations.find((d) => d.id === params.destination)?.country ?? "выбранную страну"}`
-    : "Туры";
-
   const reset = () =>
     navigate({
       search: {
@@ -541,13 +560,13 @@ function SearchPage() {
     setRefinement("");
   };
 
-  const quickFilters: Array<{
+  const storyChips: Array<{
     label: string;
     active: boolean;
     patch: Partial<SearchParams>;
   }> = [
     {
-      label: "Горящие",
+      label: "Горящие туры",
       active: params.offers.includes("hot"),
       patch: {
         offers: params.offers.includes("hot")
@@ -556,7 +575,16 @@ function SearchPage() {
       },
     },
     {
-      label: "All Inclusive",
+      label: "Семейный отдых",
+      active: params.amenities.includes("Kids Club"),
+      patch: {
+        amenities: params.amenities.includes("Kids Club")
+          ? params.amenities.filter((a) => a !== "Kids Club")
+          : [...params.amenities, "Kids Club"],
+      },
+    },
+    {
+      label: "Всё включено",
       active: params.meals.includes("AI") && params.meals.includes("UAI"),
       patch: {
         meals:
@@ -566,25 +594,26 @@ function SearchPage() {
       },
     },
     {
-      label: "5 звёзд",
-      active: params.stars.includes(5),
+      label: "Отдых у моря",
+      active: params.amenities.includes("Beach"),
       patch: {
-        stars: params.stars.includes(5)
-          ? params.stars.filter((s) => s !== 5)
-          : [...params.stars, 5],
+        amenities: params.amenities.includes("Beach")
+          ? params.amenities.filter((a) => a !== "Beach")
+          : [...params.amenities, "Beach"],
       },
     },
     {
-      label: "7 ночей",
-      active: params.nights.includes("4-7"),
+      label: "Премиум",
+      active: params.offers.includes("premium") || params.stars.includes(5),
       patch: {
-        nights: params.nights.includes("4-7")
-          ? params.nights.filter((n) => n !== "4-7")
-          : [...params.nights, "4-7"],
+        offers: params.offers.includes("premium")
+          ? params.offers.filter((o) => o !== "premium")
+          : [...params.offers, "premium"],
+        stars: params.stars.includes(5) ? params.stars.filter((s) => s !== 5) : [...params.stars, 5],
       },
     },
     {
-      label: "До 1 200 000 ₸",
+      label: "Бюджетные туры",
       active: params.priceMax === 1_200_000,
       patch: { priceMax: params.priceMax === 1_200_000 ? PRICE_MAX : 1_200_000 },
     },
@@ -594,10 +623,12 @@ function SearchPage() {
     <SiteLayout>
       <div className="border-b border-border/70 bg-secondary/25">
         <div className="container-page py-6 md:py-8">
-          <p className="text-sm font-medium text-primary">Каталог</p>
-          <h1 className="mt-1 font-display text-3xl font-semibold md:text-4xl">{heading}</h1>
-          <p className="mt-2 max-w-2xl text-sm text-muted-foreground md:text-base">
-            Сравните отели, питание и цену. Выберите тур и напишите компании напрямую.
+          <p className="text-sm font-medium text-primary">Туры</p>
+          <h1 className="mt-1 font-display text-3xl font-semibold md:text-4xl">
+            Куда хотите поехать?
+          </h1>
+          <p className="mt-2 max-w-2xl text-base leading-relaxed text-foreground/70">
+            Ищите через поля или выберите страну ниже. Внутри — туры разных компаний.
           </p>
         </div>
       </div>
@@ -653,26 +684,8 @@ function SearchPage() {
           })}
         </div>
 
-        <div className="mt-5 flex flex-wrap items-center gap-2">
-          {categoryTabs.map((tab) => (
-            <button
-              key={tab.value || "all"}
-              type="button"
-              onClick={() => update({ category: tab.value })}
-              className={cn(
-                "rounded-full px-4 py-2 text-sm font-semibold transition-colors",
-                params.category === tab.value
-                  ? "bg-ink text-primary-foreground"
-                  : "bg-secondary text-foreground hover:bg-secondary/70",
-              )}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-
         <div className="mt-4 flex flex-wrap gap-2">
-          {quickFilters.map((item) => (
+          {storyChips.map((item) => (
             <button
               key={item.label}
               type="button"

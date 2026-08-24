@@ -1,36 +1,14 @@
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { Heart, LogOut, Menu, Plane, User, Bell } from "lucide-react";
-import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { b2bNav, travelScenarios } from "@/data/scenarios";
 import { useAuth } from "@/lib/platform/auth";
 import { cn } from "@/lib/utils";
 
-const nav: Array<{ label: string; to: string; exact?: boolean }> = [
-  { label: "Главная", to: "/", exact: true },
-  { label: "Туры", to: "/search" },
-  { label: "Направления", to: "/destinations" },
-  { label: "Заявка", to: "/request" },
-];
-
 export function SiteHeader({ compact = false }: { compact?: boolean }) {
   const { user, isAuthenticated, logout } = useAuth();
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const isHome = pathname === "/" && !compact;
-  const [scrolled, setScrolled] = useState(false);
-  const overlay = isHome && !scrolled;
-
-  useEffect(() => {
-    if (!isHome) {
-      setScrolled(false);
-      return;
-    }
-    const onScroll = () => setScrolled(window.scrollY > 16);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, [isHome]);
 
   const accountTo = !isAuthenticated
     ? "/login"
@@ -43,10 +21,7 @@ export function SiteHeader({ compact = false }: { compact?: boolean }) {
   return (
     <header
       className={cn(
-        "sticky top-0 z-40 transition-colors duration-300 native-app:pt-[env(safe-area-inset-top)]",
-        compact || !overlay
-          ? "border-b border-border/70 bg-background/85 backdrop-blur-xl"
-          : "border-b border-transparent bg-transparent",
+        "sticky top-0 z-40 border-b border-border/70 bg-background/85 backdrop-blur-xl transition-colors duration-300 native-app:pt-[env(safe-area-inset-top)]",
       )}
     >
       <div className="container-page grid h-16 grid-cols-[minmax(0,1fr)_auto] items-center gap-4 md:h-[72px] md:grid-cols-[auto_1fr_auto]">
@@ -55,93 +30,46 @@ export function SiteHeader({ compact = false }: { compact?: boolean }) {
             <Plane className="size-4" />
           </span>
           <span
-            className={cn(
-              "truncate font-display text-lg font-semibold tracking-tight",
-              overlay && "text-primary-foreground",
-            )}
+            className="truncate font-display text-lg font-semibold tracking-tight"
           >
             TourGo
           </span>
         </Link>
 
         <nav className="hidden items-center justify-center gap-0.5 md:flex">
-          {nav.map((item) => (
+          {travelScenarios.map((item) => (
             <Link
               key={item.to}
               to={item.to}
-              activeOptions={{ exact: item.exact ?? false }}
               activeProps={{
-                className: overlay
-                  ? "bg-primary-foreground/15 text-primary-foreground"
-                  : "bg-secondary text-foreground",
+                className: "bg-secondary text-foreground",
               }}
-              className={cn(
-                "whitespace-nowrap rounded-full px-3 py-2 text-sm font-medium transition-colors",
-                overlay
-                  ? "text-primary-foreground/80 hover:bg-primary-foreground/12 hover:text-primary-foreground"
-                  : "text-muted-foreground hover:bg-secondary hover:text-foreground",
-              )}
+              className="whitespace-nowrap rounded-full px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
             >
-              {item.label}
+              {item.navTitle}
             </Link>
           ))}
         </nav>
 
         <div className="hidden items-center gap-2 md:flex">
-          <Button
-            variant="ghost"
-            size="sm"
-            className={
-              overlay
-                ? "text-primary-foreground hover:bg-primary-foreground/12 hover:text-primary-foreground"
-                : undefined
-            }
-            asChild
-          >
+          <Button variant="ghost" size="sm" asChild>
             <Link to="/favorites">
               <Heart className="size-4" />
               Избранное
             </Link>
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className={
-              overlay
-                ? "border-primary-foreground/35 bg-transparent text-primary-foreground hover:bg-primary-foreground/12 hover:text-primary-foreground"
-                : undefined
-            }
-            asChild
-          >
-            <Link to="/for-companies">Для турфирм</Link>
+          <Button variant="outline" size="sm" asChild>
+            <Link to={b2bNav.to}>{b2bNav.title}</Link>
           </Button>
           {isAuthenticated ? (
             <>
-              <Button
-                variant="secondary"
-                size="sm"
-                className={
-                  overlay
-                    ? "bg-primary-foreground/15 text-primary-foreground hover:bg-primary-foreground/25"
-                    : undefined
-                }
-                asChild
-              >
+              <Button variant="secondary" size="sm" asChild>
                 <Link to={accountTo}>
                   <User className="size-4" />
                   {user?.name.split(" ")[0]}
                 </Link>
               </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className={
-                  overlay
-                    ? "text-primary-foreground hover:bg-primary-foreground/12 hover:text-primary-foreground"
-                    : undefined
-                }
-                onClick={logout}
-              >
+              <Button variant="ghost" size="sm" onClick={logout}>
                 <LogOut className="size-4" />
               </Button>
             </>
@@ -155,32 +83,14 @@ export function SiteHeader({ compact = false }: { compact?: boolean }) {
         <div className={cn("flex items-center justify-end gap-1 md:hidden", compact && "gap-2")}>
           {!compact ? (
             <>
-              <Button
-                variant="ghost"
-                size="icon"
-                className={
-                  overlay
-                    ? "text-primary-foreground hover:bg-primary-foreground/12 hover:text-primary-foreground"
-                    : undefined
-                }
-                asChild
-              >
+              <Button variant="ghost" size="icon" asChild>
                 <Link to={accountTo} aria-label="Аккаунт">
                   <User className="size-5" />
                 </Link>
               </Button>
               <Sheet>
                 <SheetTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    aria-label="Меню"
-                    className={
-                      overlay
-                        ? "text-primary-foreground hover:bg-primary-foreground/12 hover:text-primary-foreground"
-                        : undefined
-                    }
-                  >
+                  <Button variant="ghost" size="icon" aria-label="Меню">
                     <Menu className="size-5" />
                   </Button>
                 </SheetTrigger>
@@ -190,12 +100,10 @@ export function SiteHeader({ compact = false }: { compact?: boolean }) {
                   </SheetHeader>
                   <nav className="mt-2 flex flex-col gap-1 px-4">
                     {[
-                      ...nav,
-                      { label: "Экскурсии", to: "/excursions" },
-                      { label: "Помощь в поездке", to: "/assistance" },
+                      { label: "Главная", to: "/" },
+                      ...travelScenarios.map((item) => ({ label: item.title, to: item.to })),
                       { label: "Избранное", to: "/favorites" },
-                      { label: "Горящие туры", to: "/hot" },
-                      { label: "Для турфирм", to: "/for-companies" },
+                      { label: b2bNav.title, to: b2bNav.to },
                       {
                         label: isAuthenticated ? (user?.name ?? "Профиль") : "Войти",
                         to: accountTo,

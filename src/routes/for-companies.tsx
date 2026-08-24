@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { destinations, formatPrice, heroImage } from "@/data/demo";
+import { travelScenarios } from "@/data/scenarios";
 import { useAuth } from "@/lib/platform/auth";
 import { cn } from "@/lib/utils";
 
@@ -35,21 +36,6 @@ export const Route = createFileRoute("/for-companies")({
   }),
   component: ForCompaniesPage,
 });
-
-const audience = [
-  {
-    title: "Турфирмы и агентства",
-    text: "Пакетные туры, отели и готовые поездки для клиентов из Казахстана и СНГ.",
-  },
-  {
-    title: "Экскурсии и море",
-    text: "Сафари, яхты, гиды, билеты и программы на месте, когда турист уже в стране.",
-  },
-  {
-    title: "Помощь «здесь и сейчас»",
-    text: "Машина, трансфер, гид на сегодня. Быстрый ответ на заявку: ваш плюс.",
-  },
-];
 
 const flow = [
   {
@@ -91,7 +77,7 @@ const startSteps = [
   { title: "Компания", text: "Название, город, сайт и коротко, чем занимаетесь." },
   {
     title: "Услуги и страны",
-    text: "Туры, экскурсии, трансферы. Где работаете и откуда клиенты.",
+    text: "Туры, экскурсии, жильё, авто, спорт и помощь туристам. Где работаете.",
   },
   {
     title: "Документы",
@@ -145,7 +131,7 @@ function ForCompaniesPage() {
             Канал заявок для турфирм
           </p>
           <h1 className="mt-4 max-w-3xl font-display text-3xl font-semibold leading-tight text-primary-foreground md:text-5xl">
-            Туристы приходят с готовой заявкой, вы отвечаете своей ценой
+            TourGo для бизнеса
           </h1>
           <p className="mt-3 max-w-xl text-sm text-primary-foreground/80 md:text-base">
             Одна заявка от туриста попадает нескольким компаниям. Он сравнивает ответы и выбирает
@@ -194,23 +180,26 @@ function ForCompaniesPage() {
 
       <div className="container-page py-10 md:py-14">
         <section>
-          <h2 className="font-display text-2xl font-semibold md:text-3xl">Кому это подходит</h2>
+          <h2 className="font-display text-2xl font-semibold md:text-3xl">Какие услуги вы предлагаете?</h2>
           <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-            Если вы называете цену за тур, экскурсию или помощь на месте и хотите заявки без
-            холодных звонков.
+            Если вы называете цену за тур, экскурсию, жильё, авто или помощь на месте — отметьте
+            свои услуги и получайте заявки.
           </p>
-          <div className="mt-6 grid gap-4 md:grid-cols-3">
-            {audience.map((item) => (
-              <div key={item.title} className="surface-card p-6">
-                <h3 className="font-display text-lg font-semibold">{item.title}</h3>
-                <p className="mt-2 text-sm text-muted-foreground">{item.text}</p>
-              </div>
+          <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {travelScenarios.map((item) => (
+              <label
+                key={item.id}
+                className="flex items-center gap-3 rounded-2xl border border-border bg-card px-4 py-3 text-sm font-semibold"
+              >
+                <input type="checkbox" defaultChecked className="size-4 accent-primary" />
+                {item.title}
+              </label>
             ))}
           </div>
           <p className="mt-4 text-sm text-muted-foreground">
-            Ищете тур для себя?{" "}
-            <Link to="/search" search={{} as never} className="font-semibold text-primary hover:underline">
-              Открыть каталог туров
+            Ищете услугу для себя?{" "}
+            <Link to="/" className="font-semibold text-primary hover:underline">
+              Открыть TourGo
             </Link>
           </p>
         </section>

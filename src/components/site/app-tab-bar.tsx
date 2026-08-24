@@ -4,10 +4,6 @@ import { Home, Luggage, Map, User } from "lucide-react";
 import { useShowAppTabBar } from "@/hooks/use-native-app";
 import { cn } from "@/lib/utils";
 
-/**
- * App bottom tabs. tourist flow only.
- * Главная → каталог/туры → поездки (аккаунт) → профиль.
- */
 const tabs = [
   {
     label: "Главная",
@@ -25,10 +21,7 @@ const tabs = [
       path.startsWith("/destination/") ||
       path === "/hot" ||
       path === "/compare" ||
-      path === "/excursions" ||
-      path === "/destinations" ||
-      path === "/experiences" ||
-      path === "/assistance",
+      path === "/destinations",
   },
   {
     label: "Поездки",

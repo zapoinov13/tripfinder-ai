@@ -18,10 +18,11 @@ import { useState } from "react";
 
 import { SiteLayout } from "@/components/site/site-layout";
 import { Button } from "@/components/ui/button";
+import { VoiceTextarea } from "@/components/ui/voice-textarea";
 import { destinations, formatPrice, resortsByDestination } from "@/data/demo";
 import { cn } from "@/lib/utils";
 
-type Search = { destination?: string; city?: string };
+type Search = { destination?: string; city?: string; wish?: string };
 
 export const Route = createFileRoute("/assistance")({
   validateSearch: (search: Record<string, unknown>): Search => ({
@@ -29,6 +30,7 @@ export const Route = createFileRoute("/assistance")({
       ? { destination: search["destination"] }
       : {}),
     ...(typeof search["city"] === "string" && search["city"] ? { city: search["city"] } : {}),
+    ...(typeof search["wish"] === "string" && search["wish"] ? { wish: search["wish"] } : {}),
   }),
   head: () => ({
     meta: [
@@ -36,7 +38,7 @@ export const Route = createFileRoute("/assistance")({
       {
         name: "description",
         content:
-          "Уже в поездке? Нужна машина, гид или билеты на сегодня. Компании в городе пришлют цены.",
+          "Опишите задачу своими словами. Водитель, гид, бронь, фотограф — компании пришлют предложения.",
       },
     ],
   }),
@@ -117,6 +119,7 @@ function AssistancePage() {
   const cityOk = Boolean(city && cities.some((c) => c.name === city));
   const place = cityOk ? city : dest?.city ?? dest?.country ?? "";
   const [hint, setHint] = useState(false);
+  const [wish, setWish] = useState(search.wish ?? "");
 
   const go = (patch: Search) => {
     setHint(false);
@@ -156,14 +159,14 @@ function AssistancePage() {
         <div className="container-page absolute inset-x-0 top-0 flex h-full flex-col justify-end pb-8 pt-24">
           <p className="inline-flex w-fit items-center gap-2 rounded-full bg-primary-foreground/12 px-3 py-1 text-xs font-semibold text-primary-foreground">
             <LifeBuoy className="size-3.5" />
-            Уже на месте
+            Помощь в поездке
           </p>
           <h1 className="mt-4 max-w-3xl font-display text-3xl font-semibold leading-tight text-primary-foreground md:text-5xl">
-            Уже в поездке? Компании в городе помогут
+            Что вам нужно?
           </h1>
-          <p className="mt-3 max-w-xl text-sm text-primary-foreground/80 md:text-base">
-            Машина, трансфер, гид или билеты на сегодня. Напишите, что нужно. Несколько компаний
-            пришлют цены. Вы выбираете.
+          <p className="mt-3 max-w-xl text-base leading-relaxed text-primary-foreground/88 md:text-lg">
+            Опишите задачу своими словами или голосом. Водитель, гид, бронь, фотограф — компании
+            пришлют предложения.
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <Button size="lg" asChild>
@@ -203,7 +206,28 @@ function AssistancePage() {
       </div>
 
       <div className="container-page py-10 md:py-14">
-        <div id="where" className="scroll-mt-28">
+        <div className="surface-card p-5 md:p-6">
+          <h2 className="font-display text-2xl font-semibold">Опишите задачу своими словами</h2>
+          <p className="mt-2 text-base leading-relaxed text-foreground/70">
+            Например: «Нужен русскоговорящий водитель завтра на весь день».
+          </p>
+          <div className="mt-4">
+            <VoiceTextarea
+              value={wish}
+              onChange={setWish}
+              placeholder="Нужен русскоговорящий водитель завтра на весь день."
+            />
+          </div>
+          <Button
+            className="mt-4"
+            size="lg"
+            onClick={() => onNeed(wish.trim() || "Нужна помощь в поездке")}
+          >
+            Получить предложения
+          </Button>
+        </div>
+
+        <div id="where" className="mt-10 scroll-mt-28">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
               <p className="text-sm font-medium text-primary">Шаг 1</p>

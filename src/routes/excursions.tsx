@@ -52,7 +52,7 @@ import {
 } from "@/data/excursions";
 import { cn } from "@/lib/utils";
 
-type Search = { destination?: string; city?: string };
+type Search = { destination?: string; city?: string; q?: string };
 
 export const Route = createFileRoute("/excursions")({
   validateSearch: (search: Record<string, unknown>): Search => ({
@@ -60,6 +60,7 @@ export const Route = createFileRoute("/excursions")({
       ? { destination: search["destination"] }
       : {}),
     ...(typeof search["city"] === "string" && search["city"] ? { city: search["city"] } : {}),
+    ...(typeof search["q"] === "string" && search["q"] ? { q: search["q"] } : {}),
   }),
   head: () => ({
     meta: [
@@ -132,7 +133,7 @@ function ExcursionsPage() {
   const featured = getFeaturedExcursions(6);
 
   const [category, setCategory] = useState<ExcursionCategory | "Все">("Все");
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(search.q ?? "");
   const [sort, setSort] = useState<ExcursionSort>("recommended");
   const [selected, setSelected] = useState<Excursion | null>(null);
 
@@ -171,17 +172,17 @@ function ExcursionsPage() {
         />
         <div className="absolute inset-0 bg-gradient-to-r from-background via-background/95 to-background/70" />
         <div className="container-page relative py-8 md:py-10">
-          <p className="text-sm font-medium text-primary">Экскурсии и впечатления</p>
+          <p className="text-sm font-medium text-primary">Экскурсии</p>
           <h1 className="mt-1 max-w-3xl font-display text-3xl font-semibold md:text-4xl">
             {step === 1
-              ? "Что посмотреть и чем заняться"
+              ? "Где вы находитесь?"
               : step === 2
                 ? `Города в ${dest?.country}`
                 : `${city}, ${dest?.country}`}
           </h1>
-          <p className="mt-2 max-w-2xl text-sm text-muted-foreground md:text-base">
+          <p className="mt-2 max-w-2xl text-base leading-relaxed text-foreground/70">
             {step === 1
-              ? "Сафари, яхты, музеи, парки и трансферы. Выберите страну и сравните цены."
+              ? "Определите местоположение или выберите страну. Потом — что хотите сделать."
               : step === 2
                 ? "Где именно вы отдыхаете? Программы привязаны к городу."
                 : `${countLabel(list.length)} в этом городе. Откройте карточку или оставьте заявку.`}
@@ -192,6 +193,52 @@ function ExcursionsPage() {
             <StatPill label="Городов" value={String(stats.cities)} />
             <StatPill label="Программ" value={String(stats.programs)} />
             <StatPill label="От" value={formatPrice(stats.minPrice)} />
+          </div>
+
+          {step === 1 ? (
+            <div className="mt-5">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  if (!navigator.geolocation) return;
+                  navigator.geolocation.getCurrentPosition(() => {
+                    go({ destination: "uae", city: "Дубай" });
+                  });
+                }}
+              >
+                <MapPin className="size-4" />
+                Использовать моё местоположение
+              </Button>
+            </div>
+          ) : null}
+
+          <div className="mt-6">
+            <p className="text-sm font-semibold">Что хотите сделать?</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {[
+                { label: "🏜 Сафари", q: "сафари" },
+                { label: "🛥 Яхты", q: "яхт" },
+                { label: "🏙 Обзорные экскурсии", q: "обзор" },
+                { label: "🎢 Парки развлечений", q: "парк" },
+                { label: "🎟 Билеты", q: "билет" },
+                { label: "🌊 Водные развлечения", q: "яхт" },
+                { label: "🚌 Поездки в другой город", q: "город" },
+                { label: "🚁 Необычные развлечения", q: "сафари" },
+              ].map((item) => (
+                <button
+                  key={item.label}
+                  type="button"
+                  onClick={() => setQuery(item.q)}
+                  className={cn(
+                    "rounded-full border px-3 py-1.5 text-sm font-semibold",
+                    query === item.q ? "border-primary bg-primary text-primary-foreground" : "border-border bg-card",
+                  )}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
           </div>
 
           <Stepper step={step} />
@@ -682,11 +729,11 @@ function ExcursionSheet({
             </Button>
             <Button variant="outline" asChild>
               <Link
-                to="/search"
-                search={{ category: "excursion", q: e.title } as never}
+                to="/excursions"
+                search={{ destination: e.destinationId, city: e.city, q: e.title }}
                 onClick={onClose}
               >
-                Смотреть похожие туры
+                Другие программы в этом городе
               </Link>
             </Button>
           </div>

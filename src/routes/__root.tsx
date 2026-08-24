@@ -89,32 +89,32 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
       { name: "apple-mobile-web-app-title", content: "TourGo" },
-      { title: "TourGo: сравните туры от разных компаний и выберите лучшую цену" },
+      { title: "TourGo: всё для путешествия в одном месте" },
       {
         name: "description",
         content:
-          "Готовые туры в одном каталоге или одна заявка нескольким турфирмам. Сравнивайте цены и платите напрямую выбранной компании.",
+          "Всё для путешествия в одном месте: туры, экскурсии, жильё, авто, спорт и помощь в поездке.",
       },
       {
         property: "og:title",
-        content: "TourGo: сравните туры от разных компаний и выберите лучшую цену",
+        content: "TourGo: всё для путешествия в одном месте",
       },
       {
         property: "og:description",
         content:
-          "Готовые туры в одном каталоге или одна заявка нескольким турфирмам. Платите напрямую компании.",
+          "Туры, экскурсии, жильё, авто, спорт и помощь в поездке. Платите напрямую выбранной компании.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:site", content: "@Lovable" },
       {
         name: "twitter:title",
-        content: "TourGo: сравните туры от разных компаний и выберите лучшую цену",
+        content: "TourGo: всё для путешествия в одном месте",
       },
       {
         name: "twitter:description",
         content:
-          "Готовые туры в одном каталоге или одна заявка нескольким турфирмам. Платите напрямую компании.",
+          "Туры, экскурсии, жильё, авто, спорт и помощь в поездке. Платите напрямую выбранной компании.",
       },
       {
         property: "og:image",

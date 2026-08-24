@@ -2,25 +2,19 @@ import { Link } from "@tanstack/react-router";
 import { ArrowRight, Mail, Plane } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { b2bNav, travelScenarios } from "@/data/scenarios";
 import { SUPPORT_EMAIL, SUPPORT_MAILTO } from "@/lib/contact";
 
 const columns = [
   {
     title: "Путешествия",
-    links: [
-      { label: "Все туры", to: "/search" },
-      { label: "Направления", to: "/destinations" },
-      { label: "Горящие туры", to: "/hot" },
-      { label: "Экскурсии", to: "/excursions" },
-      { label: "Уже в поездке", to: "/assistance" },
-      { label: "Оставить заявку", to: "/request" },
-    ],
+    links: travelScenarios.map((item) => ({ label: item.title, to: item.to })),
   },
   {
     title: "Компания",
     links: [
       { label: "О TourGo", to: "/about" },
-      { label: "Для турфирм", to: "/for-companies" },
+      { label: b2bNav.title, to: b2bNav.to },
       { label: "Добавить турфирму", to: "/company-signup" },
       { label: "Контакты", to: "/about", hash: "contacts" },
     ],
@@ -49,8 +43,8 @@ export function SiteFooter() {
               <span className="font-display text-xl font-semibold tracking-tight">TourGo</span>
             </Link>
             <p className="mt-4 text-sm text-primary-foreground/70 md:text-base">
-              Сравнивайте туры от разных компаний в одном месте. Выбирайте лучшую цену и платите
-              напрямую турфирме, не «сайту-посреднику».
+              Туры, экскурсии, жильё, авто, спорт и помощь в поездке — в одном месте. Платите
+              напрямую выбранной компании.
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
@@ -60,8 +54,8 @@ export function SiteFooter() {
               className="bg-primary-foreground text-ink hover:bg-primary-foreground/90"
               asChild
             >
-              <Link to="/search" search={{} as never}>
-                Найти тур
+              <Link to="/">
+                Что вам нужно?
                 <ArrowRight className="size-4" />
               </Link>
             </Button>
@@ -71,7 +65,7 @@ export function SiteFooter() {
               className="bg-primary-foreground/10 text-primary-foreground hover:bg-primary-foreground/20"
               asChild
             >
-              <Link to="/for-companies">Для турфирм</Link>
+              <Link to={b2bNav.to}>{b2bNav.title}</Link>
             </Button>
           </div>
         </div>

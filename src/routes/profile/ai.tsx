@@ -34,7 +34,7 @@ function AiHistoryContent() {
         <div className="surface-card p-8 text-center">
           <p className="text-muted-foreground">История пуста</p>
           <Button className="mt-4" asChild>
-            <Link to="/ai-search">AI Search</Link>
+            <Link to="/">Рассказать, что нужно</Link>
           </Button>
         </div>
       ) : (

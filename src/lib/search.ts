@@ -205,7 +205,11 @@ export function filterTours(params: SearchParams, source: Tour[] = tours): Tour[
     if (params.from && tour.from !== params.from) return false;
     if (destinationId && hotel.destinationId !== destinationId) return false;
     if (!matchesCityFilter(hotel, params.city, hotel.destinationId)) return false;
-    if (params.category && tour.offerCategory !== params.category) return false;
+    if (params.category) {
+      if (tour.offerCategory !== params.category) return false;
+    } else if (tour.offerCategory !== "tour") {
+      return false;
+    }
     if (params.q.trim() && !matchesTextQuery(buildTourSearchHaystack(tour, hotel), params.q.trim())) {
       return false;
     }

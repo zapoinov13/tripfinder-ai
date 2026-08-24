@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as AiSearchRouteImport } from './routes/ai-search'
 import { Route as AssistanceRouteImport } from './routes/assistance'
+import { Route as CarsRouteImport } from './routes/cars'
 import { Route as CompanySignupRouteImport } from './routes/company-signup'
 import { Route as CompareRouteImport } from './routes/compare'
 import { Route as DestinationsRouteImport } from './routes/destinations'
@@ -29,6 +30,8 @@ import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ProfileRouteRouteImport } from './routes/profile/route'
 import { Route as RegistrationRouteImport } from './routes/registration'
 import { Route as SearchRouteImport } from './routes/search'
+import { Route as SportRouteImport } from './routes/sport'
+import { Route as StaysRouteImport } from './routes/stays'
 import { Route as SupportRouteImport } from './routes/support'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
@@ -89,6 +92,11 @@ const AiSearchRoute = AiSearchRouteImport.update({
 const AssistanceRoute = AssistanceRouteImport.update({
   id: '/assistance',
   path: '/assistance',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CarsRoute = CarsRouteImport.update({
+  id: '/cars',
+  path: '/cars',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CompanySignupRoute = CompanySignupRouteImport.update({
@@ -169,6 +177,16 @@ const RegistrationRoute = RegistrationRouteImport.update({
 const SearchRoute = SearchRouteImport.update({
   id: '/search',
   path: '/search',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SportRoute = SportRouteImport.update({
+  id: '/sport',
+  path: '/sport',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StaysRoute = StaysRouteImport.update({
+  id: '/stays',
+  path: '/stays',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SupportRoute = SupportRouteImport.update({
@@ -384,6 +402,7 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/ai-search': typeof AiSearchRoute
   '/assistance': typeof AssistanceRoute
+  '/cars': typeof CarsRoute
   '/company-signup': typeof CompanySignupRoute
   '/compare': typeof CompareRoute
   '/destinations': typeof DestinationsRoute
@@ -399,6 +418,8 @@ export interface FileRoutesByFullPath {
   '/privacy': typeof PrivacyRoute
   '/registration': typeof RegistrationRoute
   '/search': typeof SearchRoute
+  '/sport': typeof SportRoute
+  '/stays': typeof StaysRoute
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
   '/admin/ai-keys': typeof AdminAiKeysRoute
@@ -446,6 +467,7 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/ai-search': typeof AiSearchRoute
   '/assistance': typeof AssistanceRoute
+  '/cars': typeof CarsRoute
   '/company-signup': typeof CompanySignupRoute
   '/compare': typeof CompareRoute
   '/destinations': typeof DestinationsRoute
@@ -461,6 +483,8 @@ export interface FileRoutesByTo {
   '/privacy': typeof PrivacyRoute
   '/registration': typeof RegistrationRoute
   '/search': typeof SearchRoute
+  '/sport': typeof SportRoute
+  '/stays': typeof StaysRoute
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
   '/admin/ai-keys': typeof AdminAiKeysRoute
@@ -510,6 +534,7 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/ai-search': typeof AiSearchRoute
   '/assistance': typeof AssistanceRoute
+  '/cars': typeof CarsRoute
   '/company-signup': typeof CompanySignupRoute
   '/compare': typeof CompareRoute
   '/destinations': typeof DestinationsRoute
@@ -525,6 +550,8 @@ export interface FileRoutesById {
   '/privacy': typeof PrivacyRoute
   '/registration': typeof RegistrationRoute
   '/search': typeof SearchRoute
+  '/sport': typeof SportRoute
+  '/stays': typeof StaysRoute
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
   '/admin/ai-keys': typeof AdminAiKeysRoute
@@ -575,6 +602,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/ai-search'
     | '/assistance'
+    | '/cars'
     | '/company-signup'
     | '/compare'
     | '/destinations'
@@ -590,6 +618,8 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/registration'
     | '/search'
+    | '/sport'
+    | '/stays'
     | '/support'
     | '/terms'
     | '/admin/ai-keys'
@@ -637,6 +667,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/ai-search'
     | '/assistance'
+    | '/cars'
     | '/company-signup'
     | '/compare'
     | '/destinations'
@@ -652,6 +683,8 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/registration'
     | '/search'
+    | '/sport'
+    | '/stays'
     | '/support'
     | '/terms'
     | '/admin/ai-keys'
@@ -700,6 +733,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/ai-search'
     | '/assistance'
+    | '/cars'
     | '/company-signup'
     | '/compare'
     | '/destinations'
@@ -715,6 +749,8 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/registration'
     | '/search'
+    | '/sport'
+    | '/stays'
     | '/support'
     | '/terms'
     | '/admin/ai-keys'
@@ -764,6 +800,7 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   AiSearchRoute: typeof AiSearchRoute
   AssistanceRoute: typeof AssistanceRoute
+  CarsRoute: typeof CarsRoute
   CompanySignupRoute: typeof CompanySignupRoute
   CompareRoute: typeof CompareRoute
   DestinationsRoute: typeof DestinationsRoute
@@ -779,6 +816,8 @@ export interface RootRouteChildren {
   PrivacyRoute: typeof PrivacyRoute
   RegistrationRoute: typeof RegistrationRoute
   SearchRoute: typeof SearchRoute
+  SportRoute: typeof SportRoute
+  StaysRoute: typeof StaysRoute
   SupportRoute: typeof SupportRoute
   TermsRoute: typeof TermsRoute
   AdminAiKeysRoute: typeof AdminAiKeysRoute
@@ -843,6 +882,13 @@ declare module '@tanstack/react-router' {
       path: '/assistance'
       fullPath: '/assistance'
       preLoaderRoute: typeof AssistanceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cars': {
+      id: '/cars'
+      path: '/cars'
+      fullPath: '/cars'
+      preLoaderRoute: typeof CarsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/company-signup': {
@@ -955,6 +1001,20 @@ declare module '@tanstack/react-router' {
       path: '/search'
       fullPath: '/search'
       preLoaderRoute: typeof SearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sport': {
+      id: '/sport'
+      path: '/sport'
+      fullPath: '/sport'
+      preLoaderRoute: typeof SportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/stays': {
+      id: '/stays'
+      path: '/stays'
+      fullPath: '/stays'
+      preLoaderRoute: typeof StaysRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/support': {
@@ -1277,6 +1337,7 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   AiSearchRoute: AiSearchRoute,
   AssistanceRoute: AssistanceRoute,
+  CarsRoute: CarsRoute,
   CompanySignupRoute: CompanySignupRoute,
   CompareRoute: CompareRoute,
   DestinationsRoute: DestinationsRoute,
@@ -1292,6 +1353,8 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacyRoute: PrivacyRoute,
   RegistrationRoute: RegistrationRoute,
   SearchRoute: SearchRoute,
+  SportRoute: SportRoute,
+  StaysRoute: StaysRoute,
   SupportRoute: SupportRoute,
   TermsRoute: TermsRoute,
   AdminAiKeysRoute: AdminAiKeysRoute,
