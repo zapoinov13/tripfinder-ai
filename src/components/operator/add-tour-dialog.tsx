@@ -1,4 +1,14 @@
-import { Check, Cable, ImagePlus, Link2, PencilLine, Send, Star, Trash2, Video } from "lucide-react";
+import {
+  Check,
+  Cable,
+  ImagePlus,
+  Link2,
+  PencilLine,
+  Send,
+  Star,
+  Trash2,
+  Video,
+} from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
@@ -102,7 +112,10 @@ export function AddTourDialog({
       text: telegramText.trim(),
       ...(telegramLink.trim() ? { sourceLink: telegramLink.trim() } : {}),
     });
-    if (result.warnings.includes("Вставьте текст поста или описание тура") && !telegramText.trim()) {
+    if (
+      result.warnings.includes("Вставьте текст поста или описание тура") &&
+      !telegramText.trim()
+    ) {
       toast.error("Вставьте текст поста или описание");
       return;
     }
@@ -219,7 +232,9 @@ export function AddTourDialog({
                 id="tg-text"
                 value={telegramText}
                 onChange={(e) => setTelegramText(e.target.value)}
-                placeholder={"Дубай, Rixos, 7 ночей AI\nВылет из Алматы 12.09\nЦена 1 450 000 тг\nhttps://t.me/yourchannel/42"}
+                placeholder={
+                  "Дубай, Rixos, 7 ночей AI\nВылет из Алматы 12.09\nЦена 1 450 000 тг\nhttps://t.me/yourchannel/42"
+                }
                 className="min-h-32"
               />
             </div>
@@ -654,7 +669,11 @@ function TourDraftForm({
         <div className="grid gap-4 sm:grid-cols-3">
           <div className="space-y-2">
             <Label htmlFor="tour-price">Цена, ₸</Label>
-            <MoneyInput id="tour-price" value={draft.price} onChange={(price) => onPatch({ price })} />
+            <MoneyInput
+              id="tour-price"
+              value={draft.price}
+              onChange={(price) => onPatch({ price })}
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="tour-old">Старая цена, ₸</Label>
@@ -774,7 +793,10 @@ function PhotoVideoFields({
 
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
         {draft.photos.map((src, i) => (
-          <div key={`${src.slice(0, 24)}-${i}`} className="relative aspect-[4/3] overflow-hidden rounded-xl">
+          <div
+            key={`${src.slice(0, 24)}-${i}`}
+            className="relative aspect-[4/3] overflow-hidden rounded-xl"
+          >
             <img src={src} alt="" className="size-full object-cover" />
             <button
               type="button"
@@ -832,9 +854,19 @@ function PhotoVideoFields({
           return (
             <div key={src} className="overflow-hidden rounded-xl border border-border">
               {embed ? (
-                <iframe title="Видео тура" src={embed} className="aspect-video w-full" allowFullScreen />
+                <iframe
+                  title="Видео тура"
+                  src={embed}
+                  className="aspect-video w-full"
+                  allowFullScreen
+                />
               ) : (
-                <a href={src} target="_blank" rel="noreferrer" className="flex items-center gap-2 px-3 py-2 text-sm">
+                <a
+                  href={src}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center gap-2 px-3 py-2 text-sm"
+                >
                   <Video className="size-4" />
                   {src}
                 </a>

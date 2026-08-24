@@ -71,7 +71,9 @@ function SportPage() {
     <SiteLayout>
       <div className="container-page py-8 md:py-12">
         <p className="text-sm font-medium text-primary">Спорт</p>
-        <h1 className="mt-1 font-display text-3xl font-semibold md:text-5xl">Чем хотите заняться?</h1>
+        <h1 className="mt-1 font-display text-3xl font-semibold md:text-5xl">
+          Чем хотите заняться?
+        </h1>
         <p className="mt-2 max-w-xl text-base leading-relaxed text-foreground/70">
           Где? Выберите город или определите местоположение.
         </p>
@@ -140,7 +142,9 @@ function SportPage() {
         </div>
         {list.length === 0 ? (
           <div className="surface-card mt-8 p-6 text-center">
-            <p className="text-foreground/70">Пока нет слотов в витрине. Опишите, чем хотите заняться — компании ответят.</p>
+            <p className="text-foreground/70">
+              Пока нет слотов в витрине. Опишите, чем хотите заняться — компании ответят.
+            </p>
             <Button className="mt-4" asChild>
               <Link to="/request" search={requestFor(params.q || "Нужна спортивная активность")}>
                 Оставить заявку

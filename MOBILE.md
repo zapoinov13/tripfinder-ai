@@ -59,19 +59,19 @@ npm run cap:ios
 
 ## Публикация в сторы (когда будете готовы платить)
 
-| Шаг | iOS | Android |
-|-----|-----|---------|
-| Аккаунт | Apple Developer $99/год | Google Play $25 разово |
-| Сборка | Xcode → Archive → TestFlight | Android Studio → Signed AAB |
-| Материалы | `store/metadata.json` | то же |
-| Privacy URL | https://tripfinder-ai.vercel.app/privacy | то же |
-| Test accounts | см. `store/metadata.json` | то же |
+| Шаг           | iOS                                      | Android                     |
+| ------------- | ---------------------------------------- | --------------------------- |
+| Аккаунт       | Apple Developer $99/год                  | Google Play $25 разово      |
+| Сборка        | Xcode → Archive → TestFlight             | Android Studio → Signed AAB |
+| Материалы     | `store/metadata.json`                    | то же                       |
+| Privacy URL   | https://tripfinder-ai.vercel.app/privacy | то же                       |
+| Test accounts | см. `store/metadata.json`                | то же                       |
 
 ## Тестовые аккаунты для модераторов
 
-| Роль | Email | Пароль |
-|------|-------|--------|
-| Турист | tourist@test.tourgo.app | `$REVIEW_PASSWORD` |
+| Роль     | Email                    | Пароль             |
+| -------- | ------------------------ | ------------------ |
+| Турист   | tourist@test.tourgo.app  | `$REVIEW_PASSWORD` |
 | Турфирма | operator@test.tourgo.app | `$REVIEW_PASSWORD` |
 
 Пароль задаётся при `REVIEW_PASSWORD=... npm run review:users` и в репозитории не хранится.

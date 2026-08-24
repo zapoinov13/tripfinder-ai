@@ -69,7 +69,12 @@ function OperatorBillingPage() {
   const state = usePlatformStore();
   if (!allowed || !organization || !user) {
     return (
-      <DashShell brand="TourGo" items={nav} title="Тариф" subtitle="Меняет только владелец компании">
+      <DashShell
+        brand="TourGo"
+        items={nav}
+        title="Тариф"
+        subtitle="Меняет только владелец компании"
+      >
         <p className="text-sm text-muted-foreground">
           Посмотреть и сменить тариф может владелец. Менеджер работает с заявками и турами.
         </p>
@@ -226,7 +231,9 @@ function OperatorBillingPage() {
                 ) : null}
               </div>
               <p className="mt-3 font-display text-3xl font-semibold">{formatPrice(plan.price)}</p>
-              <p className="mt-1 text-sm text-muted-foreground">в месяц · до {formatNumber(plan.tourLimit)} активных туров</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                в месяц · до {formatNumber(plan.tourLimit)} активных туров
+              </p>
               <p className="mt-3 text-sm text-muted-foreground">{copy.forWhom}</p>
               <ul className="mt-4 space-y-2 text-sm">
                 {copy.included.map((line) => (

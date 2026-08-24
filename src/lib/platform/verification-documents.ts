@@ -27,12 +27,7 @@ export const verificationDocumentTypes: Array<{
 ];
 
 const MAX_FILE_BYTES = 5 * 1024 * 1024;
-const ALLOWED_MIME = new Set([
-  "application/pdf",
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-]);
+const ALLOWED_MIME = new Set(["application/pdf", "image/jpeg", "image/png", "image/webp"]);
 
 export function verificationDocumentLabel(type: VerificationDocumentId) {
   return verificationDocumentTypes.find((item) => item.id === type)?.label ?? type;
@@ -83,6 +78,9 @@ export function upsertVerificationFile(
   return [...files.filter((file) => file.type !== next.type), next];
 }
 
-export function removeVerificationFile(files: CompanyVerificationFile[], type: VerificationDocumentId) {
+export function removeVerificationFile(
+  files: CompanyVerificationFile[],
+  type: VerificationDocumentId,
+) {
   return files.filter((file) => file.type !== type);
 }

@@ -6,13 +6,7 @@ import { SiteLayout } from "@/components/site/site-layout";
 import { Button } from "@/components/ui/button";
 import { DateRangePicker } from "@/components/ui/date-picker";
 import { destinations, resortsByDestination } from "@/data/demo";
-import {
-  formatKzt,
-  popularStayCities,
-  stayAreas,
-  stayKinds,
-  stays,
-} from "@/data/scenario-catalog";
+import { formatKzt, popularStayCities, stayAreas, stayKinds, stays } from "@/data/scenario-catalog";
 import { cn } from "@/lib/utils";
 
 type Search = {
@@ -36,7 +30,10 @@ export const Route = createFileRoute("/stays")({
   head: () => ({
     meta: [
       { title: "Жильё: отели, квартиры и виллы · TourGo" },
-      { name: "description", content: "Где хотите остановиться? Отели, апартаменты, квартиры и виллы." },
+      {
+        name: "description",
+        content: "Где хотите остановиться? Отели, апартаменты, квартиры и виллы.",
+      },
     ],
   }),
   component: StaysPage,
@@ -45,8 +42,7 @@ export const Route = createFileRoute("/stays")({
 function StaysPage() {
   const params = Route.useSearch();
   const navigate = useNavigate({ from: "/stays" });
-  const update = (patch: Search) =>
-    void navigate({ search: { ...params, ...patch } as never });
+  const update = (patch: Search) => void navigate({ search: { ...params, ...patch } as never });
   const [city, setCity] = useState(params.city ?? params.q ?? "");
 
   useEffect(() => {
@@ -58,12 +54,14 @@ function StaysPage() {
     if (params.kind && item.kind !== params.kind) return false;
     const needle = (params.city || city || "").trim().toLowerCase();
     if (!needle) return true;
-    return `${item.city} ${item.area} ${item.name}`.toLowerCase().includes(needle)
-      || popularStayCities.some(
+    return (
+      `${item.city} ${item.area} ${item.name}`.toLowerCase().includes(needle) ||
+      popularStayCities.some(
         (place) =>
           place.city.toLowerCase() === item.city.toLowerCase() &&
           (place.name.toLowerCase() === needle || place.city.toLowerCase() === needle),
-      );
+      )
+    );
   });
 
   const dest = destinations.find((d) => d.id === params.destination);
@@ -82,7 +80,9 @@ function StaysPage() {
     <SiteLayout>
       <div className="container-page py-8 md:py-12">
         <p className="text-sm font-medium text-primary">Жильё</p>
-        <h1 className="mt-1 font-display text-3xl font-semibold md:text-5xl">Где хотите остановиться?</h1>
+        <h1 className="mt-1 font-display text-3xl font-semibold md:text-5xl">
+          Где хотите остановиться?
+        </h1>
         <form
           className="surface-card mt-6 grid gap-3 p-3 md:grid-cols-[1.2fr_1fr_auto] md:items-end"
           onSubmit={(e) => {
@@ -204,7 +204,9 @@ function StaysPage() {
         </div>
         {list.length === 0 ? (
           <div className="surface-card mt-8 p-6 text-center">
-            <p className="text-foreground/70">По этому запросу пока нет карточек. Оставьте заявку — компании пришлют варианты.</p>
+            <p className="text-foreground/70">
+              По этому запросу пока нет карточек. Оставьте заявку — компании пришлют варианты.
+            </p>
             <Button className="mt-4" asChild>
               <Link to="/request" search={requestFor(params.q || city || "Нужно жильё")}>
                 Оставить заявку

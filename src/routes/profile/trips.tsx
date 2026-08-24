@@ -52,14 +52,20 @@ function TripsContent() {
           <p className="text-xs text-muted-foreground">Брони</p>
           <p className="mt-1 font-display text-2xl font-semibold">{bookings.length}</p>
         </div>
-        <Link to="/profile/requests" className="surface-card p-4 transition-colors hover:border-primary/40">
+        <Link
+          to="/profile/requests"
+          className="surface-card p-4 transition-colors hover:border-primary/40"
+        >
           <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <Inbox className="size-3.5" />
             Заявки
           </p>
           <p className="mt-1 font-display text-2xl font-semibold">{requests}</p>
         </Link>
-        <Link to="/favorites" className="surface-card p-4 transition-colors hover:border-primary/40">
+        <Link
+          to="/favorites"
+          className="surface-card p-4 transition-colors hover:border-primary/40"
+        >
           <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <Heart className="size-3.5" />
             Избранное

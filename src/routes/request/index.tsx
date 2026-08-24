@@ -16,7 +16,13 @@ import { useAuth } from "@/lib/platform/auth";
 import { collectOffersFromCatalog, createTripRequest } from "@/lib/platform/requests";
 import type { TripRequestKind } from "@/lib/platform/types";
 
-type Search = { kind?: TripRequestKind; destination?: string; from?: string; city?: string; wish?: string };
+type Search = {
+  kind?: TripRequestKind;
+  destination?: string;
+  from?: string;
+  city?: string;
+  wish?: string;
+};
 
 export const Route = createFileRoute("/request/")({
   validateSearch: (search: Record<string, unknown>): Search => ({
@@ -133,7 +139,9 @@ function RequestPage() {
                 >
                   {destinations.map((d) => (
                     <option key={d.id} value={d.id}>
-                      {kind === "assistance" ? `${d.flag} ${d.country}` : `${d.city} · ${d.country}`}
+                      {kind === "assistance"
+                        ? `${d.flag} ${d.country}`
+                        : `${d.city} · ${d.country}`}
                     </option>
                   ))}
                 </select>
@@ -252,11 +260,7 @@ function RequestPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="req-phone">Телефон или WhatsApp</Label>
-                <PhoneInput
-                  id="req-phone"
-                  value={phone}
-                  onChange={setPhone}
-                />
+                <PhoneInput id="req-phone" value={phone} onChange={setPhone} />
               </div>
             </div>
 

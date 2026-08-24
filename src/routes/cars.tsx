@@ -180,7 +180,10 @@ function CarsPage() {
           ))}
         </div>
 
-        <div id="cars-results" className="mt-8 grid scroll-mt-28 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div
+          id="cars-results"
+          className="mt-8 grid scroll-mt-28 gap-4 sm:grid-cols-2 lg:grid-cols-3"
+        >
           {list.map((item) => (
             <article key={item.id} className="surface-card flex flex-col p-5">
               <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -191,10 +194,14 @@ function CarsPage() {
                 {item.seats} мест · {item.gearbox} · {item.deposit}
               </p>
               <p className="mt-4 font-display text-lg font-semibold">
-                {formatKzt(item.price)} <span className="text-sm font-medium text-foreground/60">/ день</span>
+                {formatKzt(item.price)}{" "}
+                <span className="text-sm font-medium text-foreground/60">/ день</span>
               </p>
               <Button className="mt-4" asChild>
-                <Link to="/request" search={requestFor(`Аренда ${item.name} в ${item.city}, без водителя`)}>
+                <Link
+                  to="/request"
+                  search={requestFor(`Аренда ${item.name} в ${item.city}, без водителя`)}
+                >
                   Запросить авто
                 </Link>
               </Button>
@@ -203,7 +210,9 @@ function CarsPage() {
         </div>
         {list.length === 0 ? (
           <div className="surface-card mt-8 p-6 text-center">
-            <p className="text-foreground/70">В этом городе пока нет машин в витрине. Компании пришлют варианты по заявке.</p>
+            <p className="text-foreground/70">
+              В этом городе пока нет машин в витрине. Компании пришлют варианты по заявке.
+            </p>
             <Button className="mt-4" asChild>
               <Link to="/request" search={requestFor(params.q || "Нужна аренда авто без водителя")}>
                 Оставить заявку

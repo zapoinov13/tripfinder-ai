@@ -107,8 +107,8 @@ function CompanySignupPage() {
     if (step === 0) {
       return Boolean(
         person.firstName.trim() &&
-          parsePhoneDigits(person.phone).length >= 11 &&
-          person.email.trim(),
+        parsePhoneDigits(person.phone).length >= 11 &&
+        person.email.trim(),
       );
     }
     if (step === 1) return Boolean(company.name.trim() && company.city.trim());
@@ -391,9 +391,7 @@ function CompanySignupPage() {
                   onClick={() => {
                     if (!canContinue()) {
                       toast.error(
-                        step === 0
-                          ? "Укажите имя, телефон и почту"
-                          : "Заполните обязательные поля",
+                        step === 0 ? "Укажите имя, телефон и почту" : "Заполните обязательные поля",
                       );
                       return;
                     }
@@ -412,7 +410,9 @@ function CompanySignupPage() {
                     <Check className="size-4" />
                     {verificationSubmitLabel(verificationFiles)}
                   </Button>
-                  <p className="text-xs text-muted-foreground">{verificationSubmitHint(verificationFiles)}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {verificationSubmitHint(verificationFiles)}
+                  </p>
                 </div>
               )}
             </div>
@@ -477,7 +477,9 @@ function CheckGroup({
   return (
     <div>
       {title ? <h3 className="text-sm font-semibold">{title}</h3> : null}
-      <p className={cn("text-sm text-muted-foreground", title ? "mt-1" : "")}>Можно выбрать несколько.</p>
+      <p className={cn("text-sm text-muted-foreground", title ? "mt-1" : "")}>
+        Можно выбрать несколько.
+      </p>
       <div className="mt-4 grid gap-2 sm:grid-cols-2">
         {options.map((option) => {
           const active = selected.includes(option);

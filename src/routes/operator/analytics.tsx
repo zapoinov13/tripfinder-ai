@@ -147,8 +147,17 @@ function OperatorAnalyticsPage() {
       </div>
 
       <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <KpiCard label="Заявки без ответа" value={String(data.openRequests)} hint="можно забрать сейчас" emphasis={data.openRequests > 0} />
-        <KpiCard label="Непрочитанные" value={String(data.unreadMessages)} hint="сообщения туристов" />
+        <KpiCard
+          label="Заявки без ответа"
+          value={String(data.openRequests)}
+          hint="можно забрать сейчас"
+          emphasis={data.openRequests > 0}
+        />
+        <KpiCard
+          label="Непрочитанные"
+          value={String(data.unreadMessages)}
+          hint="сообщения туристов"
+        />
         <KpiCard
           label="Среднее время ответа"
           value={data.avgResponseHours !== null ? `${data.avgResponseHours} ч` : "-"}
@@ -237,18 +246,36 @@ function OperatorAnalyticsPage() {
                   <Legend
                     formatter={(value) =>
                       (
-                        {
+                        ({
                           views: "Просмотры",
                           offers: "Ответы",
                           picks: "Выбрали",
                           revenue: "Выручка",
-                        } as Record<string, string>
+                        }) as Record<string, string>
                       )[String(value)] ?? value
                     }
                   />
-                  <Area type="monotone" dataKey="views" stroke="var(--muted-foreground)" strokeWidth={1.5} fill="url(#an-views)" />
-                  <Area type="monotone" dataKey="offers" stroke="var(--primary)" strokeWidth={2.5} fill="url(#an-offers)" />
-                  <Area type="monotone" dataKey="picks" stroke="var(--success)" strokeWidth={2} fill="url(#an-picks)" />
+                  <Area
+                    type="monotone"
+                    dataKey="views"
+                    stroke="var(--muted-foreground)"
+                    strokeWidth={1.5}
+                    fill="url(#an-views)"
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="offers"
+                    stroke="var(--primary)"
+                    strokeWidth={2.5}
+                    fill="url(#an-offers)"
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="picks"
+                    stroke="var(--success)"
+                    strokeWidth={2}
+                    fill="url(#an-picks)"
+                  />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
@@ -296,7 +323,9 @@ function OperatorAnalyticsPage() {
                   </p>
                   <p className="mt-1 text-[11px] text-muted-foreground">{step.hint}</p>
                   {i > 0 && drop > 0 ? (
-                    <p className="mt-2 text-[11px] font-medium text-premium">−{drop}% от шага выше</p>
+                    <p className="mt-2 text-[11px] font-medium text-premium">
+                      −{drop}% от шага выше
+                    </p>
                   ) : null}
                 </div>
               </div>
@@ -348,7 +377,9 @@ function OperatorAnalyticsPage() {
                             {row.hotel.city} · {nightsLabel(row.tour.nights)} · {row.tour.meal}
                           </p>
                         </div>
-                        <p className="shrink-0 font-semibold tabular-nums">{formatPrice(row.tour.price)}</p>
+                        <p className="shrink-0 font-semibold tabular-nums">
+                          {formatPrice(row.tour.price)}
+                        </p>
                       </div>
                       <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-secondary">
                         <div
@@ -426,8 +457,7 @@ function OperatorAnalyticsPage() {
               </li>
               <li className="flex items-center justify-between gap-3">
                 <span className="inline-flex items-center gap-2 text-muted-foreground">
-                  <Heart className="size-4" />
-                  В избранном
+                  <Heart className="size-4" />В избранном
                 </span>
                 <span className="font-semibold tabular-nums">{formatNumber(data.favorites)}</span>
               </li>

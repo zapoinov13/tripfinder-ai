@@ -670,17 +670,15 @@ export function SearchPanel({
                   <Label className="text-xs text-muted-foreground">Бюджет, ₸ (до)</Label>
                   <MoneyInput
                     value={parsedAi.budgetMax}
-                    onChange={(next) =>
-                      patchParsedAi({ budgetMax: Math.max(PRICE_MIN, next) })
-                    }
+                    onChange={(next) => patchParsedAi({ budgetMax: Math.max(PRICE_MIN, next) })}
                     className="h-10"
                   />
                 </div>
               </div>
 
               <p className="mt-4 text-xs text-muted-foreground">
-                Умный поиск не придумывает предложения: он ищет только реальные туры, которые есть
-                в TourGo.
+                Умный поиск не придумывает предложения: он ищет только реальные туры, которые есть в
+                TourGo.
               </p>
 
               <Button size="lg" className="mt-4 w-full rounded-2xl" onClick={() => goAiSearch()}>

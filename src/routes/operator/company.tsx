@@ -61,15 +61,14 @@ const MAX_VIDEOS = 3;
 
 type SectionId = "face" | "contacts" | "services" | "media" | "verification" | "team";
 
-const sections: { id: SectionId; label: string; icon: ComponentType<{ className?: string }> }[] =
-  [
-    { id: "face", label: "Лицо", icon: Building2 },
-    { id: "contacts", label: "Контакты", icon: Phone },
-    { id: "services", label: "Услуги", icon: Briefcase },
-    { id: "media", label: "Медиа", icon: Camera },
-    { id: "verification", label: "Проверка", icon: ShieldCheck },
-    { id: "team", label: "Команда", icon: Users },
-  ];
+const sections: { id: SectionId; label: string; icon: ComponentType<{ className?: string }> }[] = [
+  { id: "face", label: "Лицо", icon: Building2 },
+  { id: "contacts", label: "Контакты", icon: Phone },
+  { id: "services", label: "Услуги", icon: Briefcase },
+  { id: "media", label: "Медиа", icon: Camera },
+  { id: "verification", label: "Проверка", icon: ShieldCheck },
+  { id: "team", label: "Команда", icon: Users },
+];
 
 function OperatorCompanyPage() {
   const { allowed } = useRequireAuth(["OPERATOR_ADMIN", "OPERATOR_MANAGER"]);
@@ -170,7 +169,9 @@ function OperatorCompanyPage() {
                       Проверена
                     </Badge>
                   ) : (
-                    <Badge className="border-0 bg-premium/15 text-premium">Без знака проверки</Badge>
+                    <Badge className="border-0 bg-premium/15 text-premium">
+                      Без знака проверки
+                    </Badge>
                   )}
                 </div>
                 <p className="mt-1 text-sm text-muted-foreground">
@@ -185,7 +186,9 @@ function OperatorCompanyPage() {
                     Следующий шаг: {nextCheck.label}
                   </button>
                 ) : (
-                  <p className="mt-2 text-sm font-medium text-success">Страница полностью заполнена</p>
+                  <p className="mt-2 text-sm font-medium text-success">
+                    Страница полностью заполнена
+                  </p>
                 )}
               </div>
             </div>
@@ -235,11 +238,7 @@ function OperatorCompanyPage() {
             title="Лицо компании"
             description="Обложка, логотип и текст. Первое впечатление туриста."
           >
-            <HeroEditor
-              form={form}
-              disabled={readOnly}
-              onChange={setForm}
-            />
+            <HeroEditor form={form} disabled={readOnly} onChange={setForm} />
             <div className="grid gap-4 sm:grid-cols-2">
               <Field
                 id="company-name"
@@ -311,12 +310,7 @@ function OperatorCompanyPage() {
             description="Турист напишет сюда, если выберет ваше предложение."
           >
             <div className="grid gap-4 sm:grid-cols-2">
-              <ContactField
-                id="company-phone"
-                label="Телефон"
-                icon={Phone}
-                disabled={readOnly}
-              >
+              <ContactField id="company-phone" label="Телефон" icon={Phone} disabled={readOnly}>
                 <PhoneInput
                   id="company-phone"
                   value={form.phone}
@@ -608,7 +602,15 @@ function ProgressRing({ value }: { value: number }) {
   return (
     <div className="relative grid size-[72px] place-items-center">
       <svg className="-rotate-90" width="72" height="72" viewBox="0 0 72 72" aria-hidden>
-        <circle cx="36" cy="36" r={r} fill="none" stroke="currentColor" strokeWidth="6" className="text-secondary" />
+        <circle
+          cx="36"
+          cy="36"
+          r={r}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="6"
+          className="text-secondary"
+        />
         <circle
           cx="36"
           cy="36"
@@ -642,11 +644,7 @@ const ProfileSection = ({
   children: ReactNode;
   ref?: (el: HTMLElement | null) => void;
 }) => (
-  <section
-    id={id}
-    ref={ref}
-    className="scroll-mt-28 surface-card overflow-hidden"
-  >
+  <section id={id} ref={ref} className="scroll-mt-28 surface-card overflow-hidden">
     <div className="border-b border-border bg-secondary/20 px-5 py-4 md:px-6">
       <div className="flex items-start gap-3">
         <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
@@ -766,15 +764,18 @@ function CompanyPreview({ form, verified }: { form: Organization; verified: bool
           {(form.photos ?? []).length > 0 ? (
             <div className="mt-4 grid grid-cols-3 gap-1.5">
               {(form.photos ?? []).slice(0, 3).map((src, i) => (
-                <img key={`${src.slice(0, 16)}-${i}`} src={src} alt="" className="aspect-square rounded-lg object-cover" />
+                <img
+                  key={`${src.slice(0, 16)}-${i}`}
+                  src={src}
+                  alt=""
+                  className="aspect-square rounded-lg object-cover"
+                />
               ))}
             </div>
           ) : null}
 
           <div className="mt-4 space-y-2 border-t border-border pt-4">
-            {form.phone ? (
-              <PreviewContact icon={Phone} label={form.phone} />
-            ) : null}
+            {form.phone ? <PreviewContact icon={Phone} label={form.phone} /> : null}
             {wa ? <PreviewContact icon={MessageCircle} label="WhatsApp" /> : null}
             {form.website ? <PreviewContact icon={Globe} label="Сайт" /> : null}
             {form.instagram ? <PreviewContact icon={Instagram} label={form.instagram} /> : null}
@@ -878,12 +879,7 @@ function CoverField({
   onChange: (v: string) => void;
 }) {
   return (
-    <label
-      className={cn(
-        "group relative block",
-        !disabled && "cursor-pointer",
-      )}
-    >
+    <label className={cn("group relative block", !disabled && "cursor-pointer")}>
       {value ? (
         <img src={value} alt="" className="h-40 w-full object-cover md:h-48" />
       ) : (
@@ -1024,7 +1020,9 @@ function PhotoGrid({
           <label className="flex aspect-[4/3] cursor-pointer flex-col items-center justify-center gap-1.5 rounded-2xl border border-dashed border-border bg-secondary/20 text-xs text-muted-foreground transition hover:border-primary/50 hover:bg-secondary/40">
             <ImagePlus className="size-5" />
             Добавить фото
-            <span className="text-[10px]">{photos.length}/{MAX_PHOTOS}</span>
+            <span className="text-[10px]">
+              {photos.length}/{MAX_PHOTOS}
+            </span>
             <input
               type="file"
               accept="image/*"
@@ -1105,16 +1103,30 @@ function VideoList({
         return (
           <div key={src} className="overflow-hidden rounded-2xl border border-border">
             {embed ? (
-              <iframe title="Видео компании" src={embed} className="aspect-video w-full" allowFullScreen />
+              <iframe
+                title="Видео компании"
+                src={embed}
+                className="aspect-video w-full"
+                allowFullScreen
+              />
             ) : (
-              <a href={src} target="_blank" rel="noreferrer" className="flex items-center gap-2 px-4 py-3 text-sm">
+              <a
+                href={src}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center gap-2 px-4 py-3 text-sm"
+              >
                 <Video className="size-4" />
                 {src}
               </a>
             )}
             {!disabled ? (
               <div className="flex justify-end border-t border-border p-2">
-                <Button size="sm" variant="ghost" onClick={() => onChange(videos.filter((v) => v !== src))}>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => onChange(videos.filter((v) => v !== src))}
+                >
                   Удалить
                 </Button>
               </div>

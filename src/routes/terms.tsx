@@ -43,7 +43,9 @@ function TermsPage() {
             <li>Компания отвечает за достоверность цен, условий и документов.</li>
             <li>TourGo может скрыть предложения при нарушении правил платформы.</li>
           </ul>
-          <h2 className="font-display text-lg font-semibold text-foreground">Ограничение ответственности</h2>
+          <h2 className="font-display text-lg font-semibold text-foreground">
+            Ограничение ответственности
+          </h2>
           <p>
             TourGo не является турагентством и не участвует в расчётах между туристом и компанией.
             Споры по поездке решаются напрямую с турфирмой.

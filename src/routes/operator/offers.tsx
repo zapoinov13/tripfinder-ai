@@ -27,10 +27,7 @@ export const Route = createFileRoute("/operator/offers")({
   component: OperatorOffersPage,
 });
 
-const statusMeta: Record<
-  RequestOfferStatus,
-  { text: string; tone: string; hint: string }
-> = {
+const statusMeta: Record<RequestOfferStatus, { text: string; tone: string; hint: string }> = {
   SENT: {
     text: "Ждёт ответа",
     tone: "bg-primary/12 text-primary",
@@ -143,7 +140,11 @@ function OperatorOffersPage() {
               value={String(counts.CHOSEN)}
               hint={winRate !== null ? `конверсия ${winRate}%` : "пока нет решений"}
             />
-            <KpiCard label="Не выбрали" value={String(counts.DECLINED)} hint="можно улучшить цену" />
+            <KpiCard
+              label="Не выбрали"
+              value={String(counts.DECLINED)}
+              hint="можно улучшить цену"
+            />
           </div>
 
           <div className="mt-6">
@@ -247,17 +248,14 @@ function OfferCard({
             {formatPrice(offer.price)}
           </p>
           {request ? (
-            <p
-              className={cn(
-                "mt-1 text-xs",
-                withinBudget ? "text-success" : "text-premium",
-              )}
-            >
+            <p className={cn("mt-1 text-xs", withinBudget ? "text-success" : "text-premium")}>
               Бюджет туриста до {formatPrice(request.budget)}
               {withinBudget ? " · в бюджете" : " · выше бюджета"}
             </p>
           ) : null}
-          <p className="mt-2 text-xs text-muted-foreground">Отправлено {fmtSent(offer.createdAt)}</p>
+          <p className="mt-2 text-xs text-muted-foreground">
+            Отправлено {fmtSent(offer.createdAt)}
+          </p>
         </div>
       </div>
 

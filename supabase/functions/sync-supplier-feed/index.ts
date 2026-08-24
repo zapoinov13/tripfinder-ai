@@ -155,7 +155,10 @@ async function fetchFeed(
         signal: controller.signal,
       });
     } catch (err) {
-      const message = err instanceof Error && err.name === "AbortError" ? "upstream timeout" : "upstream unreachable";
+      const message =
+        err instanceof Error && err.name === "AbortError"
+          ? "upstream timeout"
+          : "upstream unreachable";
       return { ok: false, error: message, status: 504 };
     } finally {
       clearTimeout(timer);

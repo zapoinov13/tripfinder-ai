@@ -191,7 +191,11 @@ function Index() {
             <TourCard key={tour.id} tour={tour} layout="grid" />
           ))}
         </div>
-        <SeeRestLink to="/search" search={{ offers: "hot" }} label="Смотреть остальные горящие туры" />
+        <SeeRestLink
+          to="/search"
+          search={{ offers: "hot" }}
+          label="Смотреть остальные горящие туры"
+        />
       </section>
 
       <section className="container-page mt-16 md:mt-24">
@@ -262,7 +266,9 @@ function SectionHead({
         <h2 className="font-display text-[1.65rem] font-semibold leading-snug tracking-tight md:text-4xl md:leading-[1.15]">
           {title}
         </h2>
-        {subtitle ? <p className="mt-2 max-w-xl text-base leading-relaxed text-foreground/70">{subtitle}</p> : null}
+        {subtitle ? (
+          <p className="mt-2 max-w-xl text-base leading-relaxed text-foreground/70">{subtitle}</p>
+        ) : null}
       </div>
       {action ? <div className="hidden shrink-0 md:block">{action}</div> : null}
     </div>

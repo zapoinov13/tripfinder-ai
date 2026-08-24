@@ -55,7 +55,10 @@ async function main() {
   // Company public page
   await page2.goto(`${BASE}/company/family-travel`, { waitUntil: "networkidle", timeout: 45000 });
   const companyBody = await page2.locator("body").innerText();
-  if (/Application error|404|не найден/i.test(companyBody) && !companyBody.match(/Family|Travel|тур/i)) {
+  if (
+    /Application error|404|не найден/i.test(companyBody) &&
+    !companyBody.match(/Family|Travel|тур/i)
+  ) {
     record("/company/family-travel", "content", "Company page empty or error");
   }
 

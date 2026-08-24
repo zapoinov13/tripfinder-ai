@@ -66,7 +66,11 @@ const destinationAliases: Array<{ id: string; aliases: string[] }> = destination
 }));
 
 const preferenceMap: Array<{ key: string; label: string; matches: string[] }> = [
-  { key: "near_sea", label: "Рядом с морем", matches: ["море", "пляж", "берег", "первая линия", "у воды"] },
+  {
+    key: "near_sea",
+    label: "Рядом с морем",
+    matches: ["море", "пляж", "берег", "первая линия", "у воды"],
+  },
   { key: "family_friendly", label: "Для семьи", matches: ["сем", "реб", "дет", "kids"] },
   {
     key: "infrastructure_nearby",
@@ -81,7 +85,11 @@ const preferenceMap: Array<{ key: string; label: string; matches: string[] }> = 
   { key: "tickets", label: "Билеты", matches: ["burj", "бурдж", "билеты", "аквапарк"] },
   { key: "russian_support", label: "Русскоязычная поддержка", matches: ["русск", "снг"] },
   { key: "transfer", label: "Трансфер", matches: ["трансфер", "transfer"] },
-  { key: "premium", label: "Премиум", matches: ["премиум", "premium", "люкс", "luxury", "5 зв", "пять зв"] },
+  {
+    key: "premium",
+    label: "Премиум",
+    matches: ["премиум", "premium", "люкс", "luxury", "5 зв", "пять зв"],
+  },
   { key: "hot", label: "Горящие", matches: ["горящ", "last minute", "скидк"] },
 ];
 
@@ -100,7 +108,10 @@ const preferenceToOffers: Record<string, string[]> = {
 };
 
 const mealAliases = [
-  { code: "AI", matches: ["all inclusive", "всё включено", "все включено", "олл", "all inclusive"] },
+  {
+    code: "AI",
+    matches: ["all inclusive", "всё включено", "все включено", "олл", "all inclusive"],
+  },
   { code: "UAI", matches: ["ultra", "ультра"] },
   { code: "BB", matches: ["завтрак"] },
   { code: "HB", matches: ["полупансион"] },

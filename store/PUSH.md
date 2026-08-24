@@ -17,8 +17,8 @@ supabase functions deploy delete-account --project-ref mgyufoyornzbwvgdfojb
 
 Dashboard → Edge Functions → Secrets:
 
-| Secret | Значение |
-|--------|----------|
+| Secret                     | Значение                                            |
+| -------------------------- | --------------------------------------------------- |
 | `FCM_SERVICE_ACCOUNT_JSON` | Полный JSON сервисного аккаунта Firebase (см. ниже) |
 
 Без `FCM_SERVICE_ACCOUNT_JSON` уведомления сохраняются in-app, push на телефон не уходит.

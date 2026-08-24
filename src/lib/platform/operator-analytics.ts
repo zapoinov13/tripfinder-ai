@@ -111,7 +111,10 @@ function lastDays(count: number) {
   });
 }
 
-export function computeOperatorAnalytics(orgId: string, period: AnalyticsPeriod): OperatorAnalytics {
+export function computeOperatorAnalytics(
+  orgId: string,
+  period: AnalyticsPeriod,
+): OperatorAnalytics {
   const state = getState();
   const { start, end, prevStart, prevEnd } = periodBounds(period);
   const tours = state.tours.filter((t) => t.operatorOrgId === orgId);
@@ -126,8 +129,9 @@ export function computeOperatorAnalytics(orgId: string, period: AnalyticsPeriod)
   const favoritesPrev =
     period === 0
       ? 0
-      : state.favorites.filter((f) => tourIds.has(f.tourId) && inRange(f.createdAt, prevStart, prevEnd))
-          .length;
+      : state.favorites.filter(
+          (f) => tourIds.has(f.tourId) && inRange(f.createdAt, prevStart, prevEnd),
+        ).length;
 
   const myOffers = state.requestOffers.filter(
     (o) => o.organizationId === orgId && inRange(o.createdAt, start, end),
@@ -201,12 +205,15 @@ export function computeOperatorAnalytics(orgId: string, period: AnalyticsPeriod)
     })
     .sort((a, b) => b.views - a.views);
 
-  const byCity = topTours.reduce<Record<string, { views: number; bookings: number }>>((acc, row) => {
-    const city = row.hotel.city || "Другое";
-    const cur = acc[city] ?? { views: 0, bookings: 0 };
-    acc[city] = { views: cur.views + row.views, bookings: cur.bookings + row.bookings };
-    return acc;
-  }, {});
+  const byCity = topTours.reduce<Record<string, { views: number; bookings: number }>>(
+    (acc, row) => {
+      const city = row.hotel.city || "Другое";
+      const cur = acc[city] ?? { views: 0, bookings: 0 };
+      acc[city] = { views: cur.views + row.views, bookings: cur.bookings + row.bookings };
+      return acc;
+    },
+    {},
+  );
   const cities = Object.entries(byCity)
     .map(([city, stat]) => ({ city, ...stat }))
     .sort((a, b) => b.views - a.views);
@@ -285,8 +292,16 @@ export function computeOperatorAnalytics(orgId: string, period: AnalyticsPeriod)
   const funnel = [
     { label: "Просмотры", value: views, hint: "открыли карточку" },
     { label: "В избранном", value: favorites, hint: pct(favorites, views) + " от просмотров" },
-    { label: "Ваши ответы", value: myOffers.length, hint: pct(myOffers.length, Math.max(favorites, 1)) + " от избранного" },
-    { label: "Вас выбрали", value: chosen.length, hint: pct(chosen.length, myOffers.length) + " от ответов" },
+    {
+      label: "Ваши ответы",
+      value: myOffers.length,
+      hint: pct(myOffers.length, Math.max(favorites, 1)) + " от избранного",
+    },
+    {
+      label: "Вас выбрали",
+      value: chosen.length,
+      hint: pct(chosen.length, myOffers.length) + " от ответов",
+    },
     {
       label: "Оплачено",
       value: paid.length || (period === 0 ? catalogBookings : paid.length),

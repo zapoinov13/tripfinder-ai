@@ -98,7 +98,10 @@ function setupSteps(org: Organization, openRequests: number, activeTours: number
     {
       done: openRequests === 0,
       title: "Ответить на заявки туристов",
-      text: openRequests > 0 ? `${openRequests} заявок ждут вашего предложения.` : "Новых заявок пока нет.",
+      text:
+        openRequests > 0
+          ? `${openRequests} заявок ждут вашего предложения.`
+          : "Новых заявок пока нет.",
       to: "/operator/requests",
       cta: openRequests > 0 ? "Ответить" : "Смотреть",
     },
@@ -231,7 +234,9 @@ function OperatorDashboard() {
             <span
               className={cn(
                 "grid size-9 w-fit place-items-center rounded-xl",
-                action.highlight ? "bg-primary text-primary-foreground" : "bg-secondary text-foreground",
+                action.highlight
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-secondary text-foreground",
               )}
             >
               <action.icon className="size-4" />
@@ -286,7 +291,9 @@ function OperatorDashboard() {
                     key={step.title}
                     className={cn(
                       "flex items-start gap-3 rounded-xl border px-4 py-3",
-                      step.done ? "border-border/60 bg-secondary/30" : "border-border bg-background",
+                      step.done
+                        ? "border-border/60 bg-secondary/30"
+                        : "border-border bg-background",
                     )}
                   >
                     {step.done ? (
@@ -295,7 +302,9 @@ function OperatorDashboard() {
                       <Circle className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
                     )}
                     <div className="min-w-0 flex-1">
-                      <p className={cn("text-sm font-medium", step.done && "text-muted-foreground")}>
+                      <p
+                        className={cn("text-sm font-medium", step.done && "text-muted-foreground")}
+                      >
                         {step.title}
                       </p>
                       <p className="mt-0.5 text-xs text-muted-foreground">{step.text}</p>
@@ -314,7 +323,9 @@ function OperatorDashboard() {
               <div className="flex items-center justify-between gap-3">
                 <h2 className="font-display text-lg font-semibold">Продажи</h2>
                 {revenue > 0 ? (
-                  <span className="text-sm font-medium text-success">{formatPrice(revenue)} всего</span>
+                  <span className="text-sm font-medium text-success">
+                    {formatPrice(revenue)} всего
+                  </span>
                 ) : null}
               </div>
               <div className="mt-6 h-72">
@@ -362,7 +373,9 @@ function OperatorDashboard() {
             </div>
             <div className="flex items-start justify-between gap-3">
               <dt className="text-muted-foreground">Баланс продвижения</dt>
-              <dd className="font-medium tabular-nums">{formatPrice(organization.promotionBalance)}</dd>
+              <dd className="font-medium tabular-nums">
+                {formatPrice(organization.promotionBalance)}
+              </dd>
             </div>
           </dl>
 

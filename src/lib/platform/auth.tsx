@@ -309,7 +309,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!sb) {
         return {
           ok: false,
-          error: "Apple Sign-In доступен после подключения Supabase OAuth (Authentication → Apple).",
+          error:
+            "Apple Sign-In доступен после подключения Supabase OAuth (Authentication → Apple).",
         };
       }
       const redirectTo = `${window.location.origin}/profile`;
@@ -392,7 +393,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setState((s) => ({
       ...s,
       users: s.users.map((u) =>
-        u.id === current ? { ...u, status: "suspended" as const, email: `deleted+${u.id}@tourgo.app` } : u,
+        u.id === current
+          ? { ...u, status: "suspended" as const, email: `deleted+${u.id}@tourgo.app` }
+          : u,
       ),
       session: null,
     }));
@@ -718,7 +721,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return perms.includes("admin:all") || perms.includes(permission);
       },
     }),
-    [user, organization, login, loginWithApple, logout, deleteAccount, registerTourist, registerOperator, purchasePremium],
+    [
+      user,
+      organization,
+      login,
+      loginWithApple,
+      logout,
+      deleteAccount,
+      registerTourist,
+      registerOperator,
+      purchasePremium,
+    ],
   );
 
   return (

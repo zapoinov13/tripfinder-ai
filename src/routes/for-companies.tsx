@@ -64,7 +64,11 @@ const cabinet = [
     text: "Вручную, со сайта, из Telegram или автозагрузкой каталога по API.",
   },
   { icon: MessageCircle, title: "Сообщения", text: "Переписка с туристом после выбора." },
-  { icon: Building2, title: "Страница компании", text: "Фото, контакты, отзывы: витрина для туриста." },
+  {
+    icon: Building2,
+    title: "Страница компании",
+    text: "Фото, контакты, отзывы: витрина для туриста.",
+  },
   {
     icon: BadgeCheck,
     title: "Знак проверки",
@@ -180,7 +184,9 @@ function ForCompaniesPage() {
 
       <div className="container-page py-10 md:py-14">
         <section>
-          <h2 className="font-display text-2xl font-semibold md:text-3xl">Какие услуги вы предлагаете?</h2>
+          <h2 className="font-display text-2xl font-semibold md:text-3xl">
+            Какие услуги вы предлагаете?
+          </h2>
           <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
             Если вы называете цену за тур, экскурсию, жильё, авто или помощь на месте — отметьте
             свои услуги и получайте заявки.
@@ -205,11 +211,15 @@ function ForCompaniesPage() {
         </section>
 
         <section className="mt-14">
-          <h2 className="font-display text-2xl font-semibold md:text-3xl">Как к вам приходит клиент</h2>
+          <h2 className="font-display text-2xl font-semibold md:text-3xl">
+            Как к вам приходит клиент
+          </h2>
           <ol className="mt-6 grid gap-4 md:grid-cols-3">
             {flow.map((item) => (
               <li key={item.n} className="rounded-3xl bg-secondary/50 p-6">
-                <span className="font-display text-3xl font-semibold text-primary/35">{item.n}</span>
+                <span className="font-display text-3xl font-semibold text-primary/35">
+                  {item.n}
+                </span>
                 <h3 className="mt-3 font-display text-lg font-semibold">{item.title}</h3>
                 <p className="mt-2 text-sm text-muted-foreground">{item.text}</p>
               </li>
@@ -286,7 +296,8 @@ function ForCompaniesPage() {
           <div>
             <h2 className="font-display text-2xl font-semibold md:text-3xl">Частые вопросы</h2>
             <p className="mt-2 text-sm text-muted-foreground">
-              Коротко, без терминов. Если остались вопросы, начните регистрацию, в кабинете всё видно.
+              Коротко, без терминов. Если остались вопросы, начните регистрацию, в кабинете всё
+              видно.
             </p>
           </div>
           <Accordion type="single" collapsible className="w-full">

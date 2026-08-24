@@ -297,9 +297,7 @@ function TourPage() {
                       { icon: UtensilsCrossed, text: tour.meal },
                       {
                         icon: Bus,
-                        text: tour.transfer
-                          ? "Трансфер включён"
-                          : "Трансфер уточняется у компании",
+                        text: tour.transfer ? "Трансфер включён" : "Трансфер уточняется у компании",
                       },
                     ]
                 ).map((item) => (

@@ -210,7 +210,10 @@ export function filterTours(params: SearchParams, source: Tour[] = tours): Tour[
     } else if (tour.offerCategory !== "tour") {
       return false;
     }
-    if (params.q.trim() && !matchesTextQuery(buildTourSearchHaystack(tour, hotel), params.q.trim())) {
+    if (
+      params.q.trim() &&
+      !matchesTextQuery(buildTourSearchHaystack(tour, hotel), params.q.trim())
+    ) {
       return false;
     }
     if (params.adults > 0 && tour.adults > 0 && tour.adults < params.adults) return false;

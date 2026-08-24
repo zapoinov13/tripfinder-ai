@@ -5,13 +5,7 @@ import { DashShell } from "@/components/dash/dash-shell";
 import { useOperatorNav } from "@/components/dash/nav-items";
 import { AddTourDialog } from "@/components/operator/add-tour-dialog";
 import { Button } from "@/components/ui/button";
-import {
-  formatNumber,
-  formatPrice,
-  guestsLabel,
-  nightsLabel,
-  tourCover,
-} from "@/data/demo";
+import { formatNumber, formatPrice, guestsLabel, nightsLabel, tourCover } from "@/data/demo";
 import { canCreateTour } from "@/lib/platform-contracts";
 import { useAuth, useRequireAuth } from "@/lib/platform/auth";
 import { getHotel } from "@/lib/platform/catalog";
@@ -24,7 +18,9 @@ type Search = { add?: "api" | "1" };
 
 export const Route = createFileRoute("/operator/tours")({
   validateSearch: (search: Record<string, unknown>): Search => ({
-    ...(search["add"] === "api" || search["add"] === "1" ? { add: search["add"] as "api" | "1" } : {}),
+    ...(search["add"] === "api" || search["add"] === "1"
+      ? { add: search["add"] as "api" | "1" }
+      : {}),
   }),
   head: () => ({ meta: [{ title: "Мои туры · TourGo" }] }),
   component: OperatorToursPage,
@@ -128,7 +124,13 @@ function OperatorToursPage() {
           <p className="mt-2 text-sm text-muted-foreground">
             Добавьте карточку: фото отеля, питание, что входит в цену и описание.
           </p>
-          <Button className="mt-5" onClick={() => { setAddMode("choose"); setAdding(true); }}>
+          <Button
+            className="mt-5"
+            onClick={() => {
+              setAddMode("choose");
+              setAdding(true);
+            }}
+          >
             Добавить тур
           </Button>
         </div>
@@ -178,8 +180,12 @@ function OperatorToursPage() {
                   ) : null}
                   <div className="flex items-end justify-between gap-3 pt-2">
                     <div>
-                      <p className="font-display text-xl font-semibold">{formatPrice(tour.price)}</p>
-                      <p className="text-xs text-muted-foreground">{formatNumber(tour.views)} просмотров</p>
+                      <p className="font-display text-xl font-semibold">
+                        {formatPrice(tour.price)}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {formatNumber(tour.views)} просмотров
+                      </p>
                     </div>
                     <Button
                       size="sm"

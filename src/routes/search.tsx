@@ -30,13 +30,7 @@ import {
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Slider } from "@/components/ui/slider";
 import { VoiceTextarea } from "@/components/ui/voice-textarea";
-import {
-  AMENITIES,
-  amenityLabels,
-  destinations,
-  formatPrice,
-  mealOptions,
-} from "@/data/demo";
+import { AMENITIES, amenityLabels, destinations, formatPrice, mealOptions } from "@/data/demo";
 import { useAuth } from "@/lib/platform/auth";
 import { useTourSearch, searchService } from "@/lib/platform/search-service";
 import { mergeParsedIntoSearchParams, parseTravelQuery } from "@/lib/ai-search";
@@ -374,7 +368,10 @@ function ToursSearchBar({ params, update }: { params: SearchParams; update: Upda
       <SelectField
         label="Откуда"
         value={params.from}
-        options={[{ value: "", label: "Любой город" }, ...originCities.map((c) => ({ value: c, label: c }))]}
+        options={[
+          { value: "", label: "Любой город" },
+          ...originCities.map((c) => ({ value: c, label: c })),
+        ]}
         onChange={(from) => update({ from })}
       />
       <SelectField
@@ -609,7 +606,9 @@ function SearchPage() {
         offers: params.offers.includes("premium")
           ? params.offers.filter((o) => o !== "premium")
           : [...params.offers, "premium"],
-        stars: params.stars.includes(5) ? params.stars.filter((s) => s !== 5) : [...params.stars, 5],
+        stars: params.stars.includes(5)
+          ? params.stars.filter((s) => s !== 5)
+          : [...params.stars, 5],
       },
     },
     {

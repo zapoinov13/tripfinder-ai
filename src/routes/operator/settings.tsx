@@ -51,9 +51,7 @@ function OperatorSettingsPage() {
     setState((s) => ({
       ...s,
       users: s.users.map((u) =>
-        u.id === user.id
-          ? { ...u, name: name.trim() || u.name, city: city.trim() || u.city }
-          : u,
+        u.id === user.id ? { ...u, name: name.trim() || u.name, city: city.trim() || u.city } : u,
       ),
     }));
     toast.success("Имя и город сохранены");
@@ -160,10 +158,19 @@ function OperatorSettingsPage() {
           </div>
           <p className="font-medium">{organization.name}</p>
           <p className="text-sm text-muted-foreground">
-            {verified ? "Проверена TourGo. Знак виден туристам." : "Ещё на проверке. Кабинет уже открыт."}
+            {verified
+              ? "Проверена TourGo. Знак виден туристам."
+              : "Ещё на проверке. Кабинет уже открыт."}
           </p>
           <p className="text-sm text-muted-foreground">
-            Тариф: {plan?.name === "Start" ? "Старт" : plan?.name === "Business" ? "Бизнес" : plan?.name === "Pro" ? "Про" : plan?.name}
+            Тариф:{" "}
+            {plan?.name === "Start"
+              ? "Старт"
+              : plan?.name === "Business"
+                ? "Бизнес"
+                : plan?.name === "Pro"
+                  ? "Про"
+                  : plan?.name}
           </p>
           <div className="flex flex-wrap gap-2">
             <Button size="sm" variant="outline" asChild>

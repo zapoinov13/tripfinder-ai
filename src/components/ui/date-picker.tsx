@@ -32,7 +32,10 @@ function addDays(d: Date, days: number) {
 }
 
 function nightsBetween(from: Date, to: Date) {
-  return Math.max(0, Math.round((startOfDay(to).getTime() - startOfDay(from).getTime()) / 86400000));
+  return Math.max(
+    0,
+    Math.round((startOfDay(to).getTime() - startOfDay(from).getTime()) / 86400000),
+  );
 }
 
 function nightsWord(n: number) {
@@ -135,7 +138,9 @@ export function DateRangePicker({
             <span className="flex h-11 w-full items-center gap-3 rounded-xl border border-input bg-background px-3 transition-colors hover:border-primary/40">
               <CalendarDays className="size-4 shrink-0 text-muted-foreground" />
               <span className="min-w-0 flex-1">
-                <span className="block text-[11px] leading-none text-muted-foreground">{label}</span>
+                <span className="block text-[11px] leading-none text-muted-foreground">
+                  {label}
+                </span>
                 <span className="mt-0.5 block truncate text-sm font-medium">
                   {formatRangeLabel(fromDate, toDate)}
                   {nights > 0 ? ` · ${nightsWord(nights)}` : ""}
@@ -158,7 +163,9 @@ export function DateRangePicker({
           {nights > 0 ? (
             <p className="mt-2 text-xs font-medium text-primary">{nightsWord(nights)}</p>
           ) : (
-            <p className="mt-2 text-xs text-muted-foreground">Сначала выберите дату вылета, затем возвращения</p>
+            <p className="mt-2 text-xs text-muted-foreground">
+              Сначала выберите дату вылета, затем возвращения
+            </p>
           )}
         </div>
 
@@ -180,7 +187,9 @@ export function DateRangePicker({
               : shortPresets.map((p) => (
                   <PresetChip
                     key={p.label}
-                    active={fromDate ? toIsoDate(fromDate) === toIsoDate(addDays(min, p.days)) : false}
+                    active={
+                      fromDate ? toIsoDate(fromDate) === toIsoDate(addDays(min, p.days)) : false
+                    }
                     onClick={() => {
                       const day = addDays(min, p.days);
                       applyRange(day, day);
@@ -264,7 +273,10 @@ export function DatePicker({
           </span>
         </button>
       </PopoverTrigger>
-      <PopoverContent align="start" className="w-auto overflow-hidden rounded-3xl border-border p-0 shadow-lift">
+      <PopoverContent
+        align="start"
+        className="w-auto overflow-hidden rounded-3xl border-border p-0 shadow-lift"
+      >
         <div className="px-2 py-2 sm:px-3">
           <Calendar
             mode="single"

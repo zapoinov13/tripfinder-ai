@@ -53,7 +53,11 @@ function AdminPushPage() {
             }
             setBusy(true);
             try {
-              const res = await dispatchPushBroadcast({ title: title.trim(), body: body.trim(), audience });
+              const res = await dispatchPushBroadcast({
+                title: title.trim(),
+                body: body.trim(),
+                audience,
+              });
               if (!res.ok) {
                 toast.error(res.error ?? "Не удалось отправить");
                 return;

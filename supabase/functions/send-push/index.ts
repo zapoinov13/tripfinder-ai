@@ -45,8 +45,7 @@ function readServiceAccount(): ServiceAccount | null {
 }
 
 function base64url(input: ArrayBuffer | string): string {
-  const bytes =
-    typeof input === "string" ? new TextEncoder().encode(input) : new Uint8Array(input);
+  const bytes = typeof input === "string" ? new TextEncoder().encode(input) : new Uint8Array(input);
   let binary = "";
   for (const b of bytes) binary += String.fromCharCode(b);
   return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
@@ -166,7 +165,8 @@ async function sendFcm(
 
         const text = await res.text();
         // 404 UNREGISTERED / 400 INVALID_ARGUMENT — токен мёртв, убираем из базы.
-        const stale = res.status === 404 || (res.status === 400 && text.includes("INVALID_ARGUMENT"));
+        const stale =
+          res.status === 404 || (res.status === 400 && text.includes("INVALID_ARGUMENT"));
         if (!stale) console.error("[push] FCM", res.status, text.slice(0, 200));
         return { ok: false as const, token, stale };
       }),

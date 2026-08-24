@@ -9,11 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth, useRequireAuth } from "@/lib/platform/auth";
 import { usePlatformStore } from "@/lib/platform/hooks";
-import {
-  getCompanyRating,
-  getCompanyReviews,
-  replyToCompanyReview,
-} from "@/lib/platform/messages";
+import { getCompanyRating, getCompanyReviews, replyToCompanyReview } from "@/lib/platform/messages";
 import type { CompanyReview } from "@/lib/platform/types";
 import { cn } from "@/lib/utils";
 

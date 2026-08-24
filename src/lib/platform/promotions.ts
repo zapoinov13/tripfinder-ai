@@ -11,10 +11,7 @@ const DEFAULT_PRICES: Record<PromotionType, number> = {
   HOME_FEATURE: 75000,
 };
 
-export const promotionCatalogMeta: Record<
-  PromotionType,
-  { badge: string; title: string }
-> = {
+export const promotionCatalogMeta: Record<PromotionType, { badge: string; title: string }> = {
   BOOST: { badge: "Хит", title: "Поднять в поиске" },
   FEATURED: { badge: "Выгодная цена", title: "В топе поиска" },
   PREMIUM_PLACEMENT: { badge: "Выгодная цена", title: "Приоритет в фильтрах" },
@@ -55,9 +52,7 @@ export function expireStalePromotions() {
   if (expiredIds.length === 0) return;
 
   const tourIds = new Set(
-    state.promotions
-      .filter((p) => expiredIds.includes(p.id))
-      .map((p) => p.tourOfferId),
+    state.promotions.filter((p) => expiredIds.includes(p.id)).map((p) => p.tourOfferId),
   );
 
   setState((s) => ({
@@ -82,9 +77,7 @@ export function syncTourPromotionTags(tourId: string) {
   const now = Date.now();
   const active = getState().promotions.filter(
     (p) =>
-      p.tourOfferId === tourId &&
-      p.status === "ACTIVE" &&
-      new Date(p.expiresAt).getTime() > now,
+      p.tourOfferId === tourId && p.status === "ACTIVE" && new Date(p.expiresAt).getTime() > now,
   );
   const tags = new Set<"sponsored" | "premium" | "best">();
   for (const promo of active) {
@@ -108,8 +101,7 @@ export type PurchasePromotionInput = {
 };
 
 export type PurchasePromotionResult =
-  | { ok: true; promotion: PromotionOrder; paidFromBalance: boolean }
-  | { ok: false; reason: string };
+  { ok: true; promotion: PromotionOrder; paidFromBalance: boolean } | { ok: false; reason: string };
 
 export async function purchasePromotion(
   input: PurchasePromotionInput,
@@ -251,8 +243,7 @@ export function orgPromotionStats(org: Organization) {
   const active = getActiveOrgPromotions(org.id);
   const spent = getState()
     .payments.filter(
-      (p) =>
-        p.organizationId === org.id && p.type === "promotion" && p.status === "paid",
+      (p) => p.organizationId === org.id && p.type === "promotion" && p.status === "paid",
     )
     .reduce((sum, p) => sum + p.amount, 0);
   return { activeCount: active.length, spent, balance: org.promotionBalance };

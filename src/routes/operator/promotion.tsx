@@ -1,14 +1,5 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
-import {
-  Check,
-  Home,
-  Megaphone,
-  Sparkles,
-  Star,
-  TrendingUp,
-  Wallet,
-  Zap,
-} from "lucide-react";
+import { Check, Home, Megaphone, Sparkles, Star, TrendingUp, Wallet, Zap } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
@@ -238,7 +229,9 @@ function OperatorPromotionPage() {
                 ))}
               </ul>
               <div className="mt-4 flex flex-wrap items-center gap-2 text-[11px]">
-                <span className="rounded-full bg-secondary px-2.5 py-1 font-medium">{item.where}</span>
+                <span className="rounded-full bg-secondary px-2.5 py-1 font-medium">
+                  {item.where}
+                </span>
                 <span className="rounded-full bg-premium/20 px-2.5 py-1 font-semibold text-ink">
                   {item.badge}
                 </span>
@@ -280,7 +273,9 @@ function OperatorPromotionPage() {
                     onClick={() => setTourId(t.id)}
                     className={cn(
                       "overflow-hidden rounded-2xl border text-left transition-colors",
-                      on ? "border-primary ring-2 ring-primary/20" : "border-border hover:border-primary/40",
+                      on
+                        ? "border-primary ring-2 ring-primary/20"
+                        : "border-border hover:border-primary/40",
                     )}
                   >
                     <img src={tourCover(t, hotel)} alt="" className="h-24 w-full object-cover" />
@@ -358,7 +353,9 @@ function OperatorPromotionPage() {
               onClick={() => setPayFromBalance(true)}
               className={cn(
                 "flex w-full items-center gap-3 rounded-xl border px-3 py-3 text-left text-sm transition-colors",
-                payFromBalance ? "border-primary bg-primary-soft" : "border-border hover:border-primary/40",
+                payFromBalance
+                  ? "border-primary bg-primary-soft"
+                  : "border-border hover:border-primary/40",
               )}
             >
               <Wallet className="size-4 shrink-0 text-primary" />
@@ -374,7 +371,9 @@ function OperatorPromotionPage() {
               onClick={() => setPayFromBalance(false)}
               className={cn(
                 "flex w-full items-center gap-3 rounded-xl border px-3 py-3 text-left text-sm transition-colors",
-                !payFromBalance ? "border-primary bg-primary-soft" : "border-border hover:border-primary/40",
+                !payFromBalance
+                  ? "border-primary bg-primary-soft"
+                  : "border-border hover:border-primary/40",
               )}
             >
               <span className="grid size-4 shrink-0 place-items-center rounded bg-secondary text-[10px] font-bold">
@@ -382,7 +381,9 @@ function OperatorPromotionPage() {
               </span>
               <span>
                 <span className="font-medium">Картой (демо)</span>
-                <span className="mt-0.5 block text-xs text-muted-foreground">Мгновенная оплата</span>
+                <span className="mt-0.5 block text-xs text-muted-foreground">
+                  Мгновенная оплата
+                </span>
               </span>
             </button>
           </div>
@@ -456,7 +457,13 @@ function OperatorPromotionPage() {
                       variant="ghost"
                       className="mt-2 h-8 px-2 text-xs"
                       onClick={() => {
-                        if (cancelPromotion({ promotionId: p.id, organizationId: organization.id, actorId: user.id })) {
+                        if (
+                          cancelPromotion({
+                            promotionId: p.id,
+                            organizationId: organization.id,
+                            actorId: user.id,
+                          })
+                        ) {
                           toast.success("Продвижение остановлено");
                         }
                       }}

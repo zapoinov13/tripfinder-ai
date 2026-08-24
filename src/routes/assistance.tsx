@@ -67,16 +67,14 @@ const needs = [
     icon: MessageSquare,
     title: "Гид на русском",
     text: "Обзорная, семейная или под ваши интересы.",
-    wish: (place: string) =>
-      `Мы сейчас в ${place}. Нужен русскоговорящий гид на полдня.`,
+    wish: (place: string) => `Мы сейчас в ${place}. Нужен русскоговорящий гид на полдня.`,
   },
   {
     id: "tour",
     icon: Sun,
     title: "Экскурсия на завтра",
     text: "Готовая программа на ближайшие дни.",
-    wish: (place: string) =>
-      `Мы сейчас в ${place}. Завтра хотим экскурсию. Нас двое взрослых.`,
+    wish: (place: string) => `Мы сейчас в ${place}. Завтра хотим экскурсию. Нас двое взрослых.`,
   },
   {
     id: "sea",
@@ -97,9 +95,18 @@ const needs = [
 ];
 
 const steps = [
-  { title: "Где вы и что нужно", text: "Страна, город и задача. Можно написать своими словами или голосом." },
-  { title: "Компании отвечают", text: "Заявку видят проверенные турфирмы, которые работают в этой стране." },
-  { title: "Сравниваете цены", text: "Несколько предложений в одном окне. Смотрите состав, время и сумму." },
+  {
+    title: "Где вы и что нужно",
+    text: "Страна, город и задача. Можно написать своими словами или голосом.",
+  },
+  {
+    title: "Компании отвечают",
+    text: "Заявку видят проверенные турфирмы, которые работают в этой стране.",
+  },
+  {
+    title: "Сравниваете цены",
+    text: "Несколько предложений в одном окне. Смотрите состав, время и сумму.",
+  },
   { title: "Выбираете сами", text: "Пишете компании напрямую. TourGo не берёт оплату за поездку." },
 ];
 
@@ -117,7 +124,7 @@ function AssistancePage() {
   const dest = destinations.find((d) => d.id === destinationId);
   const cities = dest ? (resortsByDestination[dest.id] ?? []) : [];
   const cityOk = Boolean(city && cities.some((c) => c.name === city));
-  const place = cityOk ? city : dest?.city ?? dest?.country ?? "";
+  const place = cityOk ? city : (dest?.city ?? dest?.country ?? "");
   const [hint, setHint] = useState(false);
   const [wish, setWish] = useState(search.wish ?? "");
 
@@ -231,7 +238,9 @@ function AssistancePage() {
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
               <p className="text-sm font-medium text-primary">Шаг 1</p>
-              <h2 className="mt-1 font-display text-2xl font-semibold md:text-3xl">Где вы сейчас?</h2>
+              <h2 className="mt-1 font-display text-2xl font-semibold md:text-3xl">
+                Где вы сейчас?
+              </h2>
               <p className="mt-2 text-sm text-muted-foreground">
                 Компании увидят страну и город и предложат то, что реально сделать на месте.
               </p>
@@ -291,7 +300,9 @@ function AssistancePage() {
                       key={item.name}
                       type="button"
                       onClick={() =>
-                        go(on ? { destination: dest.id } : { destination: dest.id, city: item.name })
+                        go(
+                          on ? { destination: dest.id } : { destination: dest.id, city: item.name },
+                        )
                       }
                       className={cn(
                         "rounded-full border px-3 py-1.5 text-sm font-medium transition-colors",
@@ -311,7 +322,9 @@ function AssistancePage() {
 
         <div className="mt-12">
           <p className="text-sm font-medium text-primary">Шаг 2</p>
-          <h2 className="mt-1 font-display text-2xl font-semibold md:text-3xl">Что нужно сделать?</h2>
+          <h2 className="mt-1 font-display text-2xl font-semibold md:text-3xl">
+            Что нужно сделать?
+          </h2>
           <p className="mt-2 text-sm text-muted-foreground">
             Нажмите карточку. Текст заявки подставится сам, его можно поправить и надиктовать.
           </p>
@@ -375,8 +388,8 @@ function AssistancePage() {
               <h2 className="mt-1 font-display text-2xl font-semibold">Одна заявка, три цены</h2>
               <p className="mt-3 flex items-start gap-2 rounded-2xl bg-secondary/70 p-4 text-sm">
                 <MapPin className="mt-0.5 size-4 shrink-0 text-primary" />
-                «Мы сейчас в Дубае. Нас пять человек. Завтра хотим мечеть в Абу-Даби и Ferrari World.
-                Нужна машина с русскоговорящим водителем.»
+                «Мы сейчас в Дубае. Нас пять человек. Завтра хотим мечеть в Абу-Даби и Ferrari
+                World. Нужна машина с русскоговорящим водителем.»
               </p>
               <div className="mt-5 grid gap-3">
                 {offers.map((o, i) => (

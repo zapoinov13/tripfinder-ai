@@ -117,9 +117,7 @@ function Stepper({ step }: { step: 1 | 2 | 3 }) {
           <span className={step === item.n ? "font-semibold" : "text-muted-foreground"}>
             {item.label}
           </span>
-          {i < items.length - 1 ? (
-            <ChevronRight className="size-4 text-muted-foreground" />
-          ) : null}
+          {i < items.length - 1 ? <ChevronRight className="size-4 text-muted-foreground" /> : null}
         </li>
       ))}
     </ol>
@@ -255,7 +253,9 @@ function ExcursionsPage() {
                   onClick={() => setQuery(item.q)}
                   className={cn(
                     "rounded-full border px-3 py-1.5 text-sm font-semibold",
-                    query === item.q ? "border-primary bg-primary text-primary-foreground" : "border-border bg-card",
+                    query === item.q
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-border bg-card",
                   )}
                 >
                   {item.label}
@@ -399,7 +399,9 @@ function ExcursionsPage() {
                     className="size-full object-cover transition-transform duration-700 group-hover:scale-105"
                   />
                   <div className="absolute inset-0 media-scrim-strong" />
-                  <p className={cn(mediaTitleClass("sm"), "absolute bottom-3 left-4 right-4 z-[1]")}>
+                  <p
+                    className={cn(mediaTitleClass("sm"), "absolute bottom-3 left-4 right-4 z-[1]")}
+                  >
                     {item.city}
                   </p>
                 </div>
@@ -407,7 +409,9 @@ function ExcursionsPage() {
                   <p className="text-sm text-muted-foreground">
                     {item.blurb || `Программы в городе ${item.city}`}
                   </p>
-                  <p className="mt-2 text-sm font-semibold text-primary">{countLabel(item.count)}</p>
+                  <p className="mt-2 text-sm font-semibold text-primary">
+                    {countLabel(item.count)}
+                  </p>
                 </div>
               </button>
             ))}
@@ -549,13 +553,7 @@ function StatPill({ label, value }: { label: string; value: string }) {
   );
 }
 
-function FeaturedCard({
-  excursion: e,
-  onOpen,
-}: {
-  excursion: Excursion;
-  onOpen: () => void;
-}) {
+function FeaturedCard({ excursion: e, onOpen }: { excursion: Excursion; onOpen: () => void }) {
   const dest = destinations.find((d) => d.id === e.destinationId);
   return (
     <article className="group overflow-hidden rounded-2xl border border-border bg-card shadow-card">
@@ -598,13 +596,7 @@ function FeaturedCard({
   );
 }
 
-function ExcursionCard({
-  excursion: e,
-  onOpen,
-}: {
-  excursion: Excursion;
-  onOpen: () => void;
-}) {
+function ExcursionCard({ excursion: e, onOpen }: { excursion: Excursion; onOpen: () => void }) {
   const Icon = categoryIcon[e.category];
   return (
     <article className="surface-card group overflow-hidden">

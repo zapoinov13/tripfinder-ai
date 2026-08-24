@@ -1,12 +1,5 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
-import {
-  BadgeCheck,
-  Mail,
-  Scale,
-  ShieldCheck,
-  Users,
-  Sparkles,
-} from "lucide-react";
+import { BadgeCheck, Mail, Scale, ShieldCheck, Users, Sparkles } from "lucide-react";
 
 import { FaqSection } from "@/components/site/faq-section";
 import { SiteLayout } from "@/components/site/site-layout";
@@ -92,7 +85,11 @@ function AboutPage() {
             { href: "#support", label: "Поддержка" },
             { href: "#terms", label: "Условия" },
           ].map((item) => (
-            <a key={item.href} href={item.href} className="font-medium text-muted-foreground hover:text-foreground">
+            <a
+              key={item.href}
+              href={item.href}
+              className="font-medium text-muted-foreground hover:text-foreground"
+            >
               {item.label}
             </a>
           ))}
@@ -129,7 +126,9 @@ function AboutPage() {
           <ol className="mt-6 grid gap-4 md:grid-cols-3">
             {steps.map((item) => (
               <li key={item.n} className="rounded-3xl bg-secondary/50 p-5">
-                <span className="font-display text-3xl font-semibold text-primary/35">{item.n}</span>
+                <span className="font-display text-3xl font-semibold text-primary/35">
+                  {item.n}
+                </span>
                 <h3 className="mt-3 font-display text-base font-semibold">{item.title}</h3>
                 <p className="mt-1 text-sm text-muted-foreground">{item.text}</p>
               </li>
@@ -183,7 +182,9 @@ function AboutPage() {
 
         <section id="faq" className="mt-14 scroll-mt-28">
           <h2 className="font-display text-2xl font-semibold md:text-3xl">Частые вопросы</h2>
-          <p className="mt-2 text-sm text-muted-foreground">Коротко и по делу, без отраслевых слов.</p>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Коротко и по делу, без отраслевых слов.
+          </p>
           <div className="mt-4">
             <FaqSection />
           </div>
@@ -205,7 +206,9 @@ function AboutPage() {
               <Mail className="size-4" />
               {SUPPORT_EMAIL}
             </a>
-            <p className="mt-2 text-xs text-muted-foreground">Обычно отвечаем в рабочие часы, в течение дня.</p>
+            <p className="mt-2 text-xs text-muted-foreground">
+              Обычно отвечаем в рабочие часы, в течение дня.
+            </p>
           </div>
           <div className="rounded-2xl bg-secondary/60 p-5">
             <p className="flex items-center gap-2 text-sm font-semibold">
@@ -226,12 +229,12 @@ function AboutPage() {
           <h2 className="font-display text-2xl font-semibold">Условия</h2>
           <div className="mt-4 space-y-3 text-sm leading-relaxed text-muted-foreground">
             <p>
-              TourGo показывает предложения туристических компаний и помогает оставить заявку. Договор
-              на поездку заключается между вами и выбранной компанией.
+              TourGo показывает предложения туристических компаний и помогает оставить заявку.
+              Договор на поездку заключается между вами и выбранной компанией.
             </p>
             <p>
-              Мы не гарантируем наличие мест и итоговую цену: их подтверждает компания перед оплатой.
-              Размещение компаний на первом этапе бесплатное.
+              Мы не гарантируем наличие мест и итоговую цену: их подтверждает компания перед
+              оплатой. Размещение компаний на первом этапе бесплатное.
             </p>
           </div>
         </section>
@@ -240,8 +243,8 @@ function AboutPage() {
           <h2 className="font-display text-2xl font-semibold">Политика конфиденциальности</h2>
           <div className="mt-4 space-y-3 text-sm leading-relaxed text-muted-foreground">
             <p>
-              Имя и телефон из заявки видят только те компании, которым вы отправили запрос или которых
-              выбрали. Мы не продаём контакты.
+              Имя и телефон из заявки видят только те компании, которым вы отправили запрос или
+              которых выбрали. Мы не продаём контакты.
             </p>
             <p>
               Вход и избранное хранятся в вашем аккаунте. Если есть вопрос по данным, напишите на{" "}

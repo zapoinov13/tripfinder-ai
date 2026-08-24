@@ -4,21 +4,22 @@
 
 ## Что уже готово в репозитории
 
-| Материал | Путь |
-|----------|------|
-| Иконка 1024×1024 | `store/icons/icon-1024.png` |
-| Иконка 512 (Play) | `store/icons/icon-512.png` |
-| Feature graphic 1024×500 | `store/icons/feature-graphic-1024x500.png` |
-| Скриншоты iPhone 6.7" | `store/screenshots/ios/6.7-inch/` |
-| Скриншоты iPhone 6.5" | `store/screenshots/ios/6.5-inch/` |
-| Скриншоты Android | `store/screenshots/android/phone/` |
-| Тексты RU/EN | `store/metadata.json` |
-| Review notes | `store/review-notes.txt` |
+| Материал                  | Путь                                                         |
+| ------------------------- | ------------------------------------------------------------ |
+| Иконка 1024×1024          | `store/icons/icon-1024.png`                                  |
+| Иконка 512 (Play)         | `store/icons/icon-512.png`                                   |
+| Feature graphic 1024×500  | `store/icons/feature-graphic-1024x500.png`                   |
+| Скриншоты iPhone 6.7"     | `store/screenshots/ios/6.7-inch/`                            |
+| Скриншоты iPhone 6.5"     | `store/screenshots/ios/6.5-inch/`                            |
+| Скриншоты Android         | `store/screenshots/android/phone/`                           |
+| Тексты RU/EN              | `store/metadata.json`                                        |
+| Review notes              | `store/review-notes.txt`                                     |
 | Privacy / Terms / Support | https://tripfinder-ai.vercel.app/privacy · /terms · /support |
-| iOS иконка в Xcode | `ios/App/App/Assets.xcassets/AppIcon.appiconset/` |
-| Android иконки + splash | `android/app/src/main/res/` |
+| iOS иконка в Xcode        | `ios/App/App/Assets.xcassets/AppIcon.appiconset/`            |
+| Android иконки + splash   | `android/app/src/main/res/`                                  |
 
 Пересобрать ассеты:
+
 ```bash
 npm run store:icons          # иконки + splash + feature graphic
 npm run store:screenshots    # скрины с production (?app=1)
@@ -30,18 +31,18 @@ npm run cap:sync             # после иконок. sync в нативные
 
 ## Шаг 1. Оплатить аккаунты (единственное обязательное с вашей стороны)
 
-| Store | Ссылка | Цена |
-|-------|--------|------|
-| **Apple Developer** | https://developer.apple.com/programs/enroll/ | $99/год |
-| **Google Play Console** | https://play.google.com/console/signup | $25 разово |
+| Store                   | Ссылка                                       | Цена       |
+| ----------------------- | -------------------------------------------- | ---------- |
+| **Apple Developer**     | https://developer.apple.com/programs/enroll/ | $99/год    |
+| **Google Play Console** | https://play.google.com/console/signup       | $25 разово |
 
 ---
 
 ## Шаг 2. iOS (после Apple Developer)
 
-1. **App Store Connect** → My Apps → **+** → New App  
-   - Name: `TourGo`  
-   - Bundle ID: `com.tourgo.app`  
+1. **App Store Connect** → My Apps → **+** → New App
+   - Name: `TourGo`
+   - Bundle ID: `com.tourgo.app`
    - SKU: `tourgo-ios`
 
 2. **Загрузить материалы**
@@ -62,16 +63,17 @@ npm run cap:sync             # после иконок. sync в нативные
 4. **Review Information**. вставить из `store/review-notes.txt`
 
 5. **Xcode** (на Mac):
+
    ```bash
    npm run cap:sync
    npm run cap:ios
    ```
-   - Signing → ваш Team  
-   - Product → Archive → Distribute → App Store Connect  
+   - Signing → ваш Team
+   - Product → Archive → Distribute → App Store Connect
    - TestFlight → Internal Testing → Submit for Review
 
 6. **Apple Sign-In** (если модератор попросит):
-   - Apple Developer → Identifiers → `com.tourgo.app` → Sign in with Apple ✓  
+   - Apple Developer → Identifiers → `com.tourgo.app` → Sign in with Apple ✓
    - Supabase → Authentication → Apple (Service ID + Key)
 
 ---
@@ -101,7 +103,7 @@ npm run cap:sync             # после иконок. sync в нативные
    npm run cap:sync
    npm run cap:android
    ```
-   - Build → Generate Signed Bundle / APK → **Android App Bundle (.aab)**  
+   - Build → Generate Signed Bundle / APK → **Android App Bundle (.aab)**
    - Upload в Production track
 
 ---
@@ -127,12 +129,12 @@ npm run cap:sync             # после иконок. sync в нативные
 
 ## Сроки review
 
-| Store | Обычно |
-|-------|--------|
-| Apple TestFlight | сразу после upload |
-| Apple Review | 1–7 дней |
-| Google Internal | сразу |
-| Google Production | 1–3 дня |
+| Store             | Обычно             |
+| ----------------- | ------------------ |
+| Apple TestFlight  | сразу после upload |
+| Apple Review      | 1–7 дней           |
+| Google Internal   | сразу              |
+| Google Production | 1–3 дня            |
 
 ---
 

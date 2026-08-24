@@ -1,12 +1,4 @@
-import {
-  CarFront,
-  Dumbbell,
-  Globe2,
-  Home,
-  LifeBuoy,
-  Ticket,
-  type LucideIcon,
-} from "lucide-react";
+import { CarFront, Dumbbell, Globe2, Home, LifeBuoy, Ticket, type LucideIcon } from "lucide-react";
 
 export type TravelScenarioId = "tours" | "excursions" | "stays" | "cars" | "sport" | "help";
 
