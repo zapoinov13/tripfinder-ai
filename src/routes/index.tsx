@@ -64,84 +64,79 @@ function Index() {
 
   return (
     <SiteLayout>
-      <section className="container-page pt-3 md:py-14">
-        <div className="relative overflow-hidden rounded-[1.75rem] md:rounded-[2.5rem]">
+      <section className="md:container-page md:py-14">
+        <div className="relative overflow-hidden md:rounded-[2.5rem]">
           <img
             src={heroImage}
             alt="Пляж и курорт: подбор туров на TourGo"
-            className="h-[24rem] w-full object-cover sm:h-[26rem] md:h-[32rem]"
+            className="h-[min(68svh,30rem)] w-full object-cover object-[center_35%] animate-soft-zoom md:h-[32rem]"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/55 to-ink/10" />
+          <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/50 to-ink/15" />
 
-          <div className="absolute inset-x-0 bottom-0 flex flex-col gap-3 p-5 text-primary-foreground md:gap-5 md:p-10">
-            <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-primary-foreground/15 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] backdrop-blur-md md:text-xs">
-              <ShieldCheck className="size-3.5" aria-hidden />
-              Проверенные турфирмы
-            </span>
+          <div className="absolute inset-x-0 bottom-0 flex flex-col gap-3 px-5 pb-6 pt-16 text-primary-foreground md:gap-5 md:p-10">
+            <p className="animate-fade-up font-display text-2xl font-semibold tracking-tight md:text-3xl">
+              TourGo
+            </p>
 
-            <h1 className="font-display text-[2rem] font-semibold leading-[1.05] tracking-tight sm:text-5xl md:text-6xl">
+            <h1 className="animate-fade-up font-display text-[1.85rem] font-semibold leading-[1.08] tracking-tight [animation-delay:80ms] sm:text-5xl md:text-6xl">
               Сравните цены
               <br />и купите выгоднее
             </h1>
 
-            <p className="max-w-md text-[15px] leading-snug text-primary-foreground/80 md:text-xl md:leading-relaxed">
-              Туры, экскурсии, жильё, авто и помощь от разных компаний. Платите напрямую.
+            <p className="animate-fade-up max-w-md text-[15px] leading-snug text-primary-foreground/80 [animation-delay:140ms] md:text-xl md:leading-relaxed">
+              Туры, жильё, авто и помощь от компаний. Платите напрямую.
             </p>
 
             <Link
               to="/ai-search"
               search={{} as never}
-              className="mt-1 flex items-center gap-3 rounded-2xl bg-background/95 p-3 text-left shadow-lg backdrop-blur-md active:scale-[0.99] md:hidden"
+              className="animate-fade-up mt-1 flex h-12 w-full items-center gap-3 rounded-2xl bg-background px-3.5 text-left text-foreground shadow-lg active:scale-[0.99] [animation-delay:200ms] md:hidden"
             >
-              <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground">
-                <Sparkles className="size-5" aria-hidden />
+              <span className="grid size-8 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground">
+                <Sparkles className="size-4" aria-hidden />
               </span>
-              <span className="min-w-0">
-                <span className="block text-sm font-semibold text-foreground">Куда хотите поехать?</span>
-                <span className="block truncate text-xs text-foreground/60">
-                  Опишите отдых — подберём за секунды
-                </span>
+              <span className="min-w-0 flex-1 truncate text-[15px] font-semibold">
+                Опишите поездку
               </span>
-              <ArrowRight className="ml-auto size-4 shrink-0 text-foreground/50" aria-hidden />
+              <ArrowRight className="size-4 shrink-0 text-foreground/45" aria-hidden />
             </Link>
 
-            <div className="hidden max-w-2xl md:block">
+            <div className="animate-fade-up hidden max-w-2xl [animation-delay:200ms] md:block">
               <AiIntentBar tone="onDark" />
             </div>
           </div>
         </div>
+      </section>
 
-        <div className="mt-3 grid grid-cols-3 gap-2 md:mt-6 md:gap-4">
+      <section className="container-page pt-4 md:pt-0">
+        <div className="hidden grid-cols-3 gap-4 md:mt-6 md:grid">
           {facts.map((fact) => (
-            <div
-              key={fact.label}
-              className="surface-card px-2 py-2.5 text-center md:px-4 md:py-4"
-            >
-              <p className="font-display text-lg font-semibold leading-none md:text-3xl">{fact.value}</p>
-              <p className="mt-1 text-[11px] leading-tight text-foreground/60 md:text-sm">{fact.label}</p>
+            <div key={fact.label} className="surface-card px-4 py-4 text-center">
+              <p className="font-display text-3xl font-semibold leading-none">{fact.value}</p>
+              <p className="mt-1 text-sm text-foreground/60">{fact.label}</p>
             </div>
           ))}
         </div>
 
-        <div className="mt-4 grid auto-rows-fr grid-cols-2 items-stretch gap-2.5 md:mt-10 md:grid-cols-3 md:gap-4">
+        <div className="grid auto-rows-fr grid-cols-2 items-stretch gap-2.5 md:mt-10 md:grid-cols-3 md:gap-4">
           {travelScenarios.map((item) => (
             <Link
               key={item.id}
               to={item.to}
               search={{} as never}
-              className="surface-card flex h-full min-h-[8.25rem] flex-col items-center justify-center gap-2 p-3 text-center md:min-h-[11.5rem] md:items-start md:justify-between md:p-6 md:text-left md:transition-transform md:hover:-translate-y-1"
+              className="surface-card flex h-full min-h-[6.75rem] flex-col items-start justify-between gap-2 p-3.5 text-left md:min-h-[11.5rem] md:p-6 md:transition-transform md:hover:-translate-y-1"
             >
-              <span className="grid size-11 place-items-center rounded-2xl bg-primary-soft text-primary md:size-14">
+              <span className="grid size-10 place-items-center rounded-2xl bg-primary-soft text-primary md:size-14">
                 <item.icon className="size-5 md:size-7" />
               </span>
               <span className="min-w-0 w-full">
-                <span className="block font-display text-[1.05rem] font-semibold leading-tight md:hidden">
+                <span className="block font-display text-base font-semibold leading-tight md:hidden">
                   {item.shortTitle ?? item.title}
                 </span>
                 <span className="hidden font-display text-2xl font-semibold leading-snug md:block">
                   {item.title}
                 </span>
-                <span className="mt-0.5 block truncate text-[13px] leading-tight text-foreground/60 md:mt-1 md:text-base md:leading-relaxed md:whitespace-normal">
+                <span className="mt-0.5 block text-[12px] leading-snug text-foreground/60 md:mt-1 md:text-base md:leading-relaxed">
                   <span className="md:hidden">{item.shortHint}</span>
                   <span className="hidden md:inline">{item.hint}</span>
                 </span>
@@ -149,7 +144,6 @@ function Index() {
             </Link>
           ))}
         </div>
-
 
         <Link
           to={b2bNav.to}
