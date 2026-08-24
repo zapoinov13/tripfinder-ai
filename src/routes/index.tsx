@@ -75,8 +75,6 @@ function Index() {
           <ArrowRight className="size-6 shrink-0" />
         </Link>
       </section>
-<<<<<<< HEAD
-=======
 
       <section className="container-page mt-16 md:mt-24">
         <SectionHead
