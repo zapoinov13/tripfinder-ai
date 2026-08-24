@@ -99,10 +99,14 @@ function extractUrls(text: string): string[] {
 
 /**
  * Heuristic import from a tour page URL (path + query).
- * Full HTML scrape needs a server proxy; this fills a draft for operator review.
+ * Pass `pageText` from server HTML fetch for richer title/price/hotel extraction.
  */
-export function draftFromUrl(url: string): { draft: TourDraft; fields: string[] } {
+export function draftFromUrl(
+  url: string,
+  pageText?: string,
+): { draft: TourDraft; fields: string[]; warnings: string[] } {
   const fields: string[] = [];
+  const warnings: string[] = [];
   let path = url;
   let search = "";
   try {
@@ -113,12 +117,15 @@ export function draftFromUrl(url: string): { draft: TourDraft; fields: string[] 
     /* keep raw */
   }
   const lower = `${path} ${search}`.toLowerCase();
-  const destinationId = guessDestination(lower);
+  const blob = `${lower}\n${pageText ?? ""}`;
+  const destinationId = guessDestination(blob);
   const draft = emptyDraft(destinationId);
-  const nights = extractNights(lower) ?? draft.nights;
-  const price = extractPrice(lower);
-  const meal = extractMeal(lower);
-  const fromCity = extractFromCity(url) ?? extractFromCity(lower);
+  const nights = extractNights(blob) ?? draft.nights;
+  const price = extractPrice(blob);
+  const meal = extractMeal(blob);
+  const fromCity = extractFromCity(url) ?? extractFromCity(blob);
+  const hotel = pageText ? extractHotel(pageText) : undefined;
+  const titleFromPage = pageText ? extractTitle(pageText) : undefined;
 
   const slugTitle = (() => {
     try {
@@ -134,6 +141,14 @@ export function draftFromUrl(url: string): { draft: TourDraft; fields: string[] 
     }
   })();
 
+  const title = titleFromPage || slugTitle;
+  const photoUrls = pageText
+    ? extractUrls(pageText).filter((u) => /\.(jpe?g|png|webp|gif)(\?|$)/i.test(u)).slice(0, 8)
+    : [];
+
+  if (pageText && !price) warnings.push("Цену на странице не нашли, проверьте вручную");
+  if (pageText && !hotel && !title) warnings.push("Название отеля не нашли, укажите вручную");
+
   const next: TourDraft = {
     ...draft,
     nights,
@@ -141,15 +156,25 @@ export function draftFromUrl(url: string): { draft: TourDraft; fields: string[] 
       .toISOString()
       .slice(0, 10),
     sourceUrl: url,
+    ...(pageText ? { description: pageText.slice(0, 2000) } : {}),
     ...(price ? { price } : {}),
     ...(meal ? { mealCode: meal } : {}),
     ...(fromCity ? { fromCity } : {}),
-    ...(slugTitle ? { title: slugTitle, hotelName: draft.customHotel ? slugTitle : draft.hotelName } : {}),
+    ...(hotel
+      ? { hotelName: hotel, customHotel: true, title: title || hotel }
+      : title
+        ? { title, hotelName: draft.customHotel ? title : draft.hotelName }
+        : {}),
+    ...(photoUrls.length ? { photos: photoUrls } : {}),
   };
 
-  fields.push("направление", "даты", "питание", "цена");
-  if (slugTitle) fields.push("название");
-  return { draft: next, fields };
+  fields.push("направление", "даты");
+  if (meal) fields.push("питание");
+  if (price) fields.push("цена");
+  if (title || hotel) fields.push("название");
+  if (photoUrls.length) fields.push("фото");
+  if (pageText) fields.push("описание");
+  return { draft: next, fields, warnings };
 }
 
 /**

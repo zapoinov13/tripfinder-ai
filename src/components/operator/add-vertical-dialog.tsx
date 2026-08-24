@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { destinations } from "@/data/demo";
 import { carClasses, formatKzt, sportKinds, stayKinds } from "@/data/scenario-catalog";
+import { ingestVerticalFromUrl } from "@/lib/platform/page-ingest";
 import {
   draftVerticalFromLink,
   verticalLabel,
@@ -52,6 +53,7 @@ export function AddVerticalDialog({
   const [draft, setDraft] = useState<VerticalOfferDraft | null>(null);
   const [warnings, setWarnings] = useState<string[]>([]);
   const [fields, setFields] = useState<string[]>([]);
+  const [busy, setBusy] = useState(false);
 
   const kindOptions = useMemo(() => {
     if (vertical === "sport") return sportKinds.map((k) => ({ id: k.id, label: k.label }));
@@ -66,18 +68,39 @@ export function AddVerticalDialog({
     setDraft(null);
     setWarnings([]);
     setFields([]);
+    setBusy(false);
   };
 
-  const parse = () => {
-    const result = draftVerticalFromLink({ vertical, url, text });
-    if (result.warnings.length && !result.draft.name && !url && !text) {
-      toast.error(result.warnings[0]);
+  const parse = async () => {
+    if (!url.trim() && !text.trim()) {
+      toast.error("Вставьте ссылку или текст");
       return;
     }
-    setDraft(result.draft);
-    setWarnings(result.warnings);
-    setFields(result.fields);
-    setMode("review");
+    setBusy(true);
+    try {
+      const result = url.trim()
+        ? await ingestVerticalFromUrl({ vertical, url, text })
+        : draftVerticalFromLink({ vertical, url: "", text });
+      if (!result.draft.name && !url && !text) {
+        toast.error(result.warnings[0] ?? "Не удалось собрать карточку");
+        return;
+      }
+      setDraft(result.draft);
+      setWarnings(result.warnings);
+      setFields(result.fields);
+      setMode("review");
+      if ("fetched" in result && result.fetched) {
+        toast.success("Страница прочитана на сервере");
+      }
+    } catch {
+      const result = draftVerticalFromLink({ vertical, url, text });
+      setDraft(result.draft);
+      setWarnings(["Сервер недоступен, собрали по ссылке и тексту", ...result.warnings]);
+      setFields(result.fields);
+      setMode("review");
+    } finally {
+      setBusy(false);
+    }
   };
 
   const publish = () => {
@@ -109,7 +132,7 @@ export function AddVerticalDialog({
           </DialogTitle>
           <DialogDescription>
             {mode === "link"
-              ? "Вставьте ссылку Instagram или сайта и текст. TourGo соберёт черновик."
+              ? "Для сайта сервер сам прочитает HTML. Для Instagram лучше добавить bio рядом."
               : "Исправьте поля при необходимости и опубликуйте."}
           </DialogDescription>
         </DialogHeader>
@@ -117,27 +140,28 @@ export function AddVerticalDialog({
         {mode === "link" ? (
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="vert-url">Ссылка на Instagram или сайт</Label>
+              <Label htmlFor="vert-url">Ссылка на сайт или Instagram</Label>
               <Input
                 id="vert-url"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
-                placeholder="https://instagram.com/... или сайт"
+                placeholder="https://company.kz/... или Instagram"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="vert-text">Bio / пост / текст со страницы</Label>
+              <Label htmlFor="vert-text">Доп. текст (необязательно для сайта)</Label>
               <textarea
                 id="vert-text"
                 value={text}
                 onChange={(e) => setText(e.target.value)}
-                rows={6}
+                rows={5}
                 placeholder={placeholders[vertical]}
                 className="w-full resize-none rounded-xl border border-border bg-card px-3 py-2 text-sm outline-none focus:border-primary"
               />
             </div>
             <p className="text-xs leading-relaxed text-muted-foreground">
-              Instagram не отдаёт профиль в браузер без Meta API. Рабочий путь: ссылка + текст.
+              Обычный сайт: сервер загрузит страницу и вытащит название, цену и описание. Instagram:
+              часто нужен bio или пост вручную.
             </p>
           </div>
         ) : draft ? (
@@ -232,19 +256,16 @@ export function AddVerticalDialog({
             </div>
             <div className="space-y-2">
               <Label htmlFor="vert-detail">
-                {vertical === "sport" ? "Слот / формат" : vertical === "stay" ? "Подпись к цене" : "Коробка и депозит"}
+                {vertical === "sport"
+                  ? "Слот / формат"
+                  : vertical === "stay"
+                    ? "Подпись к цене"
+                    : "Коробка и депозит"}
               </Label>
               <Input
                 id="vert-detail"
                 value={draft.detail}
                 onChange={(e) => setDraft({ ...draft, detail: e.target.value })}
-                placeholder={
-                  vertical === "sport"
-                    ? "сегодня 19:00"
-                    : vertical === "stay"
-                      ? "за ночь"
-                      : "автомат · с депозитом"
-                }
               />
             </div>
             <div className="rounded-xl border border-border p-3 text-sm">
@@ -269,8 +290,8 @@ export function AddVerticalDialog({
             </Button>
           )}
           {mode === "link" ? (
-            <Button type="button" onClick={parse}>
-              Собрать карточку
+            <Button type="button" disabled={busy} onClick={() => void parse()}>
+              {busy ? "Читаем страницу…" : "Собрать карточку"}
             </Button>
           ) : (
             <Button type="button" onClick={publish}>

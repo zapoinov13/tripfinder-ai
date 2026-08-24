@@ -42,6 +42,7 @@ import {
   type TourDraft,
 } from "@/lib/platform/tour-editor";
 import { draftFromTelegram, draftFromUrl } from "@/lib/platform/ingest";
+import { ingestTourFromUrl } from "@/lib/platform/page-ingest";
 import { originCities } from "@/lib/search";
 import { cn } from "@/lib/utils";
 
@@ -66,6 +67,7 @@ export function AddTourDialog({
   const [telegramLink, setTelegramLink] = useState("");
   const [importedFields, setImportedFields] = useState<string[]>([]);
   const [ingestWarnings, setIngestWarnings] = useState<string[]>([]);
+  const [urlBusy, setUrlBusy] = useState(false);
 
   const destinationHotels = hotels.filter((h) => h.destinationId === draft.destinationId);
   const dest = destinations.find((d) => d.id === draft.destinationId);
@@ -85,16 +87,33 @@ export function AddTourDialog({
     });
   };
 
-  const loadFromUrl = () => {
+  const loadFromUrl = async () => {
     if (!url.trim()) {
       toast.error("Вставьте ссылку на страницу тура");
       return;
     }
-    const result = draftFromUrl(url.trim());
-    setDraft(result.draft);
-    setImportedFields(result.fields);
-    setIngestWarnings([]);
-    setMode("review");
+    setUrlBusy(true);
+    try {
+      const result = await ingestTourFromUrl(url.trim());
+      setDraft(result.draft);
+      setImportedFields(result.fields);
+      setIngestWarnings(result.warnings);
+      setMode("review");
+      if (result.fetched) {
+        toast.success("Страница прочитана на сервере");
+      } else if (result.warnings[0]) {
+        toast.message(result.warnings[0]);
+      }
+    } catch {
+      const result = draftFromUrl(url.trim());
+      setDraft(result.draft);
+      setImportedFields(result.fields);
+      setIngestWarnings(result.warnings);
+      setMode("review");
+      toast.message("Сервер недоступен, собрали черновик по ссылке");
+    } finally {
+      setUrlBusy(false);
+    }
   };
 
   const loadFromTelegram = () => {
@@ -136,7 +155,7 @@ export function AddTourDialog({
             {mode === "choose"
               ? "Соберите карточку: вручную, со сайта, из Telegram или автозагрузкой каталога (Бизнес/Про)."
               : mode === "url"
-                ? "Мы попробуем перенести название, отель, даты, питание и цену."
+                ? "Сервер откроет страницу и соберёт название, цену, отель и описание."
                 : mode === "telegram"
                   ? "Вставьте пост или описание, соберём черновик для проверки."
                   : mode === "api"
@@ -206,7 +225,8 @@ export function AddTourDialog({
               placeholder="https://mycompany.kz/tours/dubai-7-nights"
             />
             <p className="text-xs text-muted-foreground">
-              Перед публикацией вы сами проверите фото, питание и цену.
+              Сервер откроет страницу, вытащит название, цену и описание. Вы проверите поля перед
+              публикацией.
             </p>
           </div>
         ) : null}
@@ -277,7 +297,9 @@ export function AddTourDialog({
               <Button variant="ghost" onClick={() => setMode("choose")}>
                 Назад
               </Button>
-              <Button onClick={loadFromUrl}>Загрузить данные</Button>
+              <Button onClick={() => void loadFromUrl()} disabled={urlBusy}>
+                {urlBusy ? "Читаем страницу…" : "Загрузить данные"}
+              </Button>
             </>
           ) : null}
           {mode === "telegram" ? (
