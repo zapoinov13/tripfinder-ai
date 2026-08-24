@@ -194,13 +194,9 @@ function baseParse(input: { url: string; text?: string }, vertical: VerticalId, 
   const fields: string[] = [];
 
   if (!url && !text) {
-    return {
-      draft: emptyDraft(vertical),
-      fields,
-      warnings: ["Вставьте ссылку на Instagram или сайт и описание"],
-      sourceKind: "website" as const,
-    };
+    warnings.push("Вставьте ссылку на Instagram или сайт и описание");
   }
+
 
   const sourceKind = isInstagram(url) ? ("instagram" as const) : ("website" as const);
   const blob = `${url}\n${text}`;
