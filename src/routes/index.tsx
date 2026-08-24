@@ -413,8 +413,8 @@ function Index() {
               <p className="text-xs font-semibold tracking-[0.18em] text-primary-foreground/70 uppercase">
                 Как устроен TourGo
               </p>
-              <h2 className="mt-3 max-w-xl font-display text-3xl font-semibold leading-snug tracking-tight md:text-4xl md:leading-[1.15]">
-                От идеи отпуска до выбора турфирмы за три шага
+              <h2 className="mt-3 max-w-xl whitespace-pre-line font-display text-3xl font-semibold leading-snug tracking-tight md:text-4xl md:leading-[1.15]">
+                От идеи отпуска до выбора турфирмы{"\u00A0"}{"\n"}за три шага
               </h2>
               <p className="mt-4 max-w-xl text-base leading-relaxed text-primary-foreground/85 md:text-lg">
                 Мы не продаём туры сами. Мы собираем предложения компаний, чтобы вы сравнили цены и
