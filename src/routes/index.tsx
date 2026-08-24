@@ -51,6 +51,14 @@ const how = [
   },
 ];
 
+const facts = [
+  { value: "6", label: "разделов поездки" },
+  { value: "0%", label: "комиссии туристу" },
+  { value: "24/7", label: "помощь на месте" },
+];
+
+
+
 function Index() {
   const featuredExcursions = getFeaturedExcursions(3);
 
