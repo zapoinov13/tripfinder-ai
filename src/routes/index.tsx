@@ -1,3 +1,4 @@
+import React from "react";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import {
   ArrowRight,
@@ -220,7 +221,7 @@ function Index() {
 
       <section className="container-page mt-16 md:mt-24">
         <SectionHead
-          title="Горящие туры: успейте на скидку"
+          title={"Горящие туры\nуспейте на скидку"}
           subtitle="Вылеты в ближайшие даты: компании уже снизили цену"
           action={
             <Button variant="outline" asChild>
