@@ -6,7 +6,10 @@
 
 - **Capacitor 8**. оболочка iOS + Android (`ios/`, `android/`)
 - **App ID:** `com.tourgo.app`
-- **Production URL:** приложение грузит `https://tripfinder-ai.vercel.app`
+- **Локальный веб-бандл:** `npm run cap:build` собирает SPA в `dist/client`,
+  оболочка грузит его с устройства (Apple Guideline 4.2 — не «обёртка над сайтом»).
+  Server functions (AI-чат, premium) ходят на `https://tripfinder-ai.vercel.app`,
+  каталог и авторизация — напрямую в Supabase
 - **Tab bar:** Главная · Поиск · Поездки · Профиль
 - **Компактный UI** в нативном приложении (без лишнего лендинга)
 - **Deep links:** `https://tripfinder-ai.vercel.app/..` и `tourgo://path`
@@ -19,8 +22,8 @@
 ## Быстрый старт
 
 ```bash
-# 1. Сборка веб-приложения + sync в нативные проекты
-npm run cap:sync
+# 1. Сборка локального SPA-бандла + sync в нативные проекты
+npm run cap:sync        # = npm run cap:build && npx cap sync
 
 # 2. iOS (нужен Mac + Xcode)
 npm run cap:ios

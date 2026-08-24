@@ -65,9 +65,13 @@ npm run cap:sync             # после иконок. sync в нативные
 5. **Xcode** (на Mac):
 
    ```bash
-   npm run cap:sync
+   npm run cap:sync    # собирает локальный SPA-бандл (dist/client) и синкает
    npm run cap:ios
    ```
+
+   Приложение грузит веб-бандл с устройства, а не прод-сайт — это ответ на
+   Guideline 4.2 «minimum functionality». Релиз с CAPACITOR_SERVER_URL не собирать.
+
    - Signing → ваш Team
    - Product → Archive → Distribute → App Store Connect
    - TestFlight → Internal Testing → Submit for Review

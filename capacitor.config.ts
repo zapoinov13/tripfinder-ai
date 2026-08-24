@@ -1,21 +1,23 @@
 import type { CapacitorConfig } from "@capacitor/cli";
 
 /**
- * TourGo ships as a Capacitor shell around the production web app.
- * TanStack Start builds SSR assets without a local index.html, so the shell
- * loads the deployed site until we add a dedicated SPA export.
+ * TourGo ships with a LOCAL web bundle (Apple Guideline 4.2: приложение не
+ * должно быть обёрткой над сайтом). SPA-бандл собирает
+ * `npm run cap:build` → dist/client (см. vite.capacitor.config.ts);
+ * server functions из бандла ходят на прод через server-fn-proxy.
+ *
+ * CAPACITOR_SERVER_URL оставлен ТОЛЬКО для live-reload разработки
+ * (`npm run mobile:preview`) — в стор с ним собирать нельзя.
  */
-const serverUrl = process.env.CAPACITOR_SERVER_URL ?? "https://tripfinder-ai.vercel.app";
+const serverUrl = process.env.CAPACITOR_SERVER_URL;
 
 const config: CapacitorConfig = {
   appId: "com.tourgo.app",
   appName: "TourGo",
-  webDir: ".output/public",
-  server: {
-    url: serverUrl,
-    cleartext: false,
-    androidScheme: "https",
-  },
+  webDir: "dist/client",
+  server: serverUrl
+    ? { url: serverUrl, cleartext: false, androidScheme: "https" }
+    : { androidScheme: "https" },
   plugins: {
     PushNotifications: {
       presentationOptions: ["badge", "sound", "alert"],

@@ -158,7 +158,11 @@ function ExcursionsPage() {
   const dest = destinations.find((d) => d.id === destination);
   const cities = destination ? getExcursionCities(destination) : [];
   const cityOk = Boolean(city && cities.some((c) => c.city === city));
-  const list = cityOk ? getCityExcursions(destination, city) : [];
+  // Без useMemo массив пересоздавался каждый рендер и обнулял мемоизацию visible.
+  const list = useMemo(
+    () => (cityOk ? getCityExcursions(destination, city) : []),
+    [cityOk, destination, city],
+  );
 
   const queryHits = useMemo(
     () => (query ? sortExcursions(filterExcursions(excursions, query, category), sort) : []),
