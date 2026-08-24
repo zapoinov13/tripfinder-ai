@@ -1,3 +1,4 @@
+import React from "react";
 import { Link, createFileRoute } from "@tanstack/react-router";
 import {
   ArrowRight,
