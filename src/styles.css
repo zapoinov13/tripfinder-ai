@@ -89,7 +89,8 @@
   --secondary: oklch(0.955 0.008 90);
   --secondary-foreground: oklch(0.25 0.02 250);
   --muted: oklch(0.958 0.006 90);
-  --muted-foreground: oklch(0.53 0.02 255);
+  /* Чуть темнее: длинный текст на светлом фоне читается увереннее */
+  --muted-foreground: oklch(0.44 0.02 255);
   --accent: oklch(0.55 0.11 215);
   --accent-foreground: oklch(0.99 0.005 90);
   --ink: oklch(0.19 0.02 250);
@@ -187,6 +188,8 @@
     overflow-y: visible;
     min-height: 100dvh;
     -webkit-overflow-scrolling: touch;
+    font-size: 1.02rem;
+    line-height: 1.6;
   }
 
   h1,

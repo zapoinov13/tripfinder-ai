@@ -103,49 +103,34 @@ function Index() {
             height={1080}
             className="animate-soft-zoom size-full object-cover"
           />
-          <div className="absolute inset-0 bg-[linear-gradient(175deg,oklch(0.16_0.02_250/0.72)_0%,oklch(0.16_0.02_250/0.38)_38%,oklch(0.16_0.02_250/0.9)_100%)]" />
+          <div className="absolute inset-0 bg-[linear-gradient(175deg,oklch(0.14_0.02_250/0.78)_0%,oklch(0.14_0.02_250/0.45)_36%,oklch(0.12_0.02_250/0.94)_100%)]" />
         </div>
 
-        <div className="container-page relative flex min-h-[92svh] flex-col justify-end gap-5 pb-8 pt-20 md:min-h-[92vh] md:gap-6 md:pb-16 md:pt-32">
+        <div className="container-page relative flex min-h-[92svh] flex-col justify-end gap-5 pb-8 pt-20 md:min-h-[92vh] md:gap-7 md:pb-16 md:pt-32">
           <div className="animate-fade-up max-w-3xl">
-            <p className="inline-flex items-center gap-2 rounded-full border border-primary-foreground/25 bg-primary-foreground/10 px-3 py-1.5 text-[0.7rem] font-semibold tracking-[0.14em] text-primary-foreground uppercase backdrop-blur-md md:text-xs">
-              <ShieldCheck className="size-3.5" />
-              Туры от проверенных компаний
+            <p className="font-display text-lg font-semibold tracking-tight text-primary-foreground drop-shadow-md md:text-2xl">
+              TourGo
             </p>
-            <h1 className="mt-4 font-display text-[2.1rem] font-semibold leading-[1.05] tracking-tight text-primary-foreground drop-shadow-md md:mt-5 md:text-7xl md:leading-[1.02]">
-              Сравните цены
-              <br className="hidden sm:block" /> и купите тур выгоднее
+            <h1 className="mt-3 font-display text-[2.15rem] font-semibold leading-[1.12] tracking-tight text-primary-foreground drop-shadow-md sm:text-5xl md:mt-4 md:text-6xl md:leading-[1.08]">
+              Сравните цены и купите тур выгоднее
             </h1>
-            <p className="mt-3 max-w-xl text-base text-primary-foreground drop-shadow-md md:mt-4 md:text-xl">
-              Готовые туры от разных турфирм в одном каталоге. Или одна заявка: компании сами
+            <p className="mt-4 max-w-2xl text-[1.05rem] leading-[1.65] text-primary-foreground/95 drop-shadow-md md:mt-5 md:text-xl md:leading-[1.6]">
+              Готовые туры от разных турфирм в одном каталоге. Или одна заявка — компании сами
               пришлют цены, вы выберете лучшую и оплатите напрямую фирме.
             </p>
-
-            <ul className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-[0.8rem] text-primary-foreground/85 md:mt-6 md:gap-x-6 md:text-sm">
-
-              {heroFacts.map((fact) => (
-                <li key={fact.label} className="flex items-center gap-2">
-                  <fact.icon className="size-4 text-primary-foreground" />
-                  <span>
-                    <span className="font-semibold text-primary-foreground">{fact.value}</span>{" "}
-                    {fact.label}
-                  </span>
-                </li>
-              ))}
-            </ul>
           </div>
 
           <div id="search" className="animate-fade-up animation-delay-150 scroll-mt-28">
             <SearchPanel tone="hero" />
-            <div className="mt-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-              <p className="text-sm text-primary-foreground/85">
+            <div className="mt-5 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <p className="max-w-xl text-base leading-relaxed text-primary-foreground/90">
                 Не хотите листать каталог?{" "}
                 <Link
                   to="/request"
                   search={{}}
-                  className="font-semibold text-primary-foreground underline underline-offset-4"
+                  className="font-semibold text-primary-foreground underline decoration-primary-foreground/50 underline-offset-4 hover:decoration-primary-foreground"
                 >
-                  Оставьте заявку, турфирмы пришлют цены сами
+                  Оставьте заявку — турфирмы пришлют цены сами
                 </Link>
               </p>
               <div className="-mx-4 flex snap-x gap-2 overflow-x-auto px-4 pb-1 md:mx-0 md:px-0">
@@ -154,13 +139,24 @@ function Index() {
                     key={d.id}
                     to="/destination/$destinationId"
                     params={{ destinationId: d.id }}
-                    className="snap-start whitespace-nowrap rounded-full border border-primary-foreground/25 bg-primary-foreground/10 px-3.5 py-2 text-sm font-medium text-primary-foreground backdrop-blur-md transition-colors hover:bg-primary-foreground/20"
+                    className="snap-start whitespace-nowrap rounded-full border border-primary-foreground/30 bg-primary-foreground/12 px-3.5 py-2 text-sm font-medium text-primary-foreground backdrop-blur-md transition-colors hover:bg-primary-foreground/22"
                   >
                     {d.flag} {d.country}
                   </Link>
                 ))}
               </div>
             </div>
+            <ul className="mt-5 flex flex-wrap gap-x-6 gap-y-2 border-t border-primary-foreground/20 pt-4 text-sm leading-snug text-primary-foreground/90 md:text-[0.95rem]">
+              {heroFacts.map((fact) => (
+                <li key={fact.label} className="flex items-center gap-2">
+                  <fact.icon className="size-4 shrink-0 text-primary-foreground" />
+                  <span>
+                    <span className="font-semibold text-primary-foreground">{fact.value}</span>{" "}
+                    {fact.label}
+                  </span>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
       </section>
@@ -235,7 +231,7 @@ function Index() {
             </Button>
           }
         />
-        <div className="mt-3 flex items-center gap-2 text-sm text-muted-foreground md:hidden">
+        <div className="mt-3 flex items-center gap-2 text-base text-foreground/70 md:hidden">
           <Flame className="size-4 text-primary" />
           Скидки на ближайший вылет
         </div>
@@ -266,13 +262,13 @@ function Index() {
             />
             <div className="absolute inset-0 media-scrim-strong" />
             <div className="relative flex h-full min-h-[260px] flex-col justify-end p-6 md:p-8">
-              <h3 className="media-caption font-display text-xl font-semibold">
+              <h3 className="media-caption font-display text-2xl font-semibold tracking-tight">
                 Экскурсии
               </h3>
-              <p className="media-caption-muted mt-2 text-sm">
+              <p className="media-caption-muted mt-3 max-w-md text-base leading-relaxed">
                 Сафари, яхты, обзор города, парки и билеты. Цены от разных компаний рядом.
               </p>
-              <span className="media-caption mt-5 inline-flex items-center gap-1.5 text-sm font-medium">
+              <span className="media-caption mt-5 inline-flex items-center gap-1.5 text-sm font-semibold">
                 Смотреть экскурсии
                 <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
               </span>
@@ -290,13 +286,13 @@ function Index() {
             />
             <div className="absolute inset-0 media-scrim-strong" />
             <div className="relative flex h-full min-h-[260px] flex-col justify-end p-6 md:p-8">
-              <h3 className="media-caption font-display text-xl font-semibold">
+              <h3 className="media-caption font-display text-2xl font-semibold tracking-tight">
                 Уже в поездке?
               </h3>
-              <p className="media-caption-muted mt-2 text-sm">
+              <p className="media-caption-muted mt-3 max-w-md text-base leading-relaxed">
                 Нужна машина, гид или билеты на сегодня? Компании в городе пришлют цены.
               </p>
-              <span className="media-caption mt-5 inline-flex items-center gap-1.5 text-sm font-medium">
+              <span className="media-caption mt-5 inline-flex items-center gap-1.5 text-sm font-semibold">
                 Попросить помощь
                 <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
               </span>
@@ -319,10 +315,10 @@ function Index() {
               <p className="inline-flex rounded-full bg-primary-foreground/14 px-3 py-1 text-xs font-semibold tracking-[0.16em] text-primary-foreground uppercase backdrop-blur-md">
                 Не хотите искать сами?
               </p>
-              <h2 className="mt-4 max-w-xl font-display text-3xl font-semibold tracking-tight text-primary-foreground md:text-5xl md:leading-[1.08]">
+              <h2 className="mt-4 max-w-xl font-display text-3xl font-semibold tracking-tight text-primary-foreground md:text-5xl md:leading-[1.12]">
                 Одна заявка. Несколько цен.
               </h2>
-              <p className="mt-4 max-w-lg text-sm text-primary-foreground/80 md:text-base">
+              <p className="mt-5 max-w-lg text-base leading-relaxed text-primary-foreground/92 md:text-lg md:leading-relaxed">
                 Расскажите, куда и когда едете. Компании сами пришлют отель, цену и условия. Вы
                 сравниваете и выбираете.
               </p>
@@ -416,10 +412,10 @@ function Index() {
               <p className="text-xs font-semibold tracking-[0.18em] text-primary-foreground/70 uppercase">
                 Как устроен TourGo
               </p>
-              <h2 className="mt-3 max-w-xl font-display text-3xl font-semibold tracking-tight md:text-4xl">
+              <h2 className="mt-3 max-w-xl font-display text-3xl font-semibold leading-snug tracking-tight md:text-4xl md:leading-[1.15]">
                 От идеи отпуска до выбора турфирмы за три шага
               </h2>
-              <p className="mt-3 max-w-xl text-sm text-primary-foreground/75 md:text-base">
+              <p className="mt-4 max-w-xl text-base leading-relaxed text-primary-foreground/85 md:text-lg">
                 Мы не продаём туры сами. Мы собираем предложения компаний, чтобы вы сравнили цены и
                 купили у той, что подходит.
               </p>
@@ -463,8 +459,12 @@ function Index() {
                     {step.n}
                   </span>
                 </div>
-                <h3 className="mt-6 font-display text-xl font-semibold">{step.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-primary-foreground/75">{step.text}</p>
+                <h3 className="mt-6 font-display text-xl font-semibold leading-snug md:text-2xl">
+                  {step.title}
+                </h3>
+                <p className="mt-3 text-base leading-relaxed text-primary-foreground/85">
+                  {step.text}
+                </p>
               </li>
             ))}
           </ol>
@@ -473,11 +473,13 @@ function Index() {
 
       <section className="mt-16 md:mt-24">
         <div className="container-page">
-          <p className="text-sm font-semibold tracking-[0.18em] text-primary uppercase">Почему TourGo</p>
-          <h2 className="mt-3 max-w-3xl font-display text-3xl font-semibold tracking-tight md:text-5xl md:leading-[1.08]">
+          <p className="text-sm font-semibold tracking-[0.14em] text-primary uppercase">
+            Почему TourGo
+          </p>
+          <h2 className="mt-3 max-w-3xl font-display text-3xl font-semibold leading-snug tracking-tight md:text-5xl md:leading-[1.12]">
             Хватит собирать отпуск в десяти WhatsApp
           </h2>
-          <p className="mt-4 max-w-2xl text-base text-muted-foreground md:text-lg">
+          <p className="mt-5 max-w-2xl text-lg leading-relaxed text-foreground/70 md:text-xl md:leading-relaxed">
             Раньше вы писали знакомым агентам и ждали скрины прайсов. Здесь все ответы в одном
             окне: кто какую цену дал, какой отель и что входит.
           </p>
@@ -499,14 +501,14 @@ function Index() {
               <span className="w-fit rounded-full bg-black/35 px-3 py-1 text-xs font-semibold text-white backdrop-blur-md">
                 Самый удобный способ
               </span>
-              <h3 className="media-caption mt-4 font-display text-2xl font-semibold md:text-4xl">
+              <h3 className="media-caption mt-4 font-display text-2xl font-semibold leading-snug md:text-4xl md:leading-[1.15]">
                 Одна заявка: цены от нескольких турфирм
               </h3>
-              <p className="media-caption-muted mt-3 max-w-lg text-sm md:text-base">
+              <p className="media-caption-muted mt-4 max-w-lg text-base leading-relaxed md:text-lg">
                 Опишите куда, когда и бюджет. Подходящие компании пришлют свои варианты. Вы
                 сравниваете и пишете той, чья цена и условия лучше.
               </p>
-              <span className="media-caption mt-5 inline-flex items-center gap-1.5 text-sm font-medium">
+              <span className="media-caption mt-5 inline-flex items-center gap-1.5 text-sm font-semibold">
                 Получить цены от компаний
                 <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
               </span>
@@ -525,10 +527,10 @@ function Index() {
             />
             <div className="absolute inset-0 media-scrim-strong" />
             <div className="relative flex h-full min-h-[220px] flex-col justify-end p-6">
-              <h3 className="media-caption font-display text-xl font-semibold">
+              <h3 className="media-caption font-display text-xl font-semibold leading-snug md:text-2xl">
                 Каталог как витрина, а не лента сторис
               </h3>
-              <p className="media-caption-muted mt-2 text-sm">
+              <p className="media-caption-muted mt-3 text-base leading-relaxed">
                 Цена, питание, перелёт и название компании сразу на карточке. Без скринов из чата.
               </p>
             </div>
@@ -545,11 +547,11 @@ function Index() {
             />
             <div className="absolute inset-0 media-scrim-strong" />
             <div className="relative flex h-full min-h-[220px] flex-col justify-end p-6">
-              <h3 className="media-caption font-display text-xl font-semibold">
+              <h3 className="media-caption font-display text-xl font-semibold leading-snug md:text-2xl">
                 Платите турфирме, не «сайту»
               </h3>
-              <p className="media-caption-muted mt-2 text-sm">
-                TourGo: витрина. Договор и деньги у компании, которую выбрали вы.
+              <p className="media-caption-muted mt-3 text-base leading-relaxed">
+                TourGo — витрина. Договор и деньги у компании, которую выбрали вы.
               </p>
             </div>
           </Link>
@@ -566,7 +568,7 @@ function Index() {
                 { icon: Users, text: "Непонятно, кому можно доверять, а кто просто пишет" },
                 { icon: Scale, text: "Цены разбросаны: сравнить почти невозможно" },
               ].map((item) => (
-                <li key={item.text} className="flex items-start gap-3 text-sm text-muted-foreground">
+                <li key={item.text} className="flex items-start gap-3 text-base leading-relaxed text-foreground/75">
                   <span className="mt-0.5 grid size-8 shrink-0 place-items-center rounded-xl bg-card">
                     <item.icon className="size-4" />
                   </span>
@@ -585,7 +587,7 @@ function Index() {
                 { icon: Scale, text: "Отели, питание и цены рядом, выбор за минуты" },
                 { icon: Mic, text: "Можно просто сказать голосом, какой отдых хотите" },
               ].map((item) => (
-                <li key={item.text} className="flex items-start gap-3 text-sm text-primary-foreground/90">
+                <li key={item.text} className="flex items-start gap-3 text-base leading-relaxed text-primary-foreground/92">
                   <span className="mt-0.5 grid size-8 shrink-0 place-items-center rounded-xl bg-primary-foreground/12">
                     <item.icon className="size-4" />
                   </span>
@@ -610,10 +612,10 @@ function Index() {
               <p className="inline-flex rounded-full bg-primary-foreground/14 px-3 py-1 text-xs font-semibold tracking-[0.16em] text-primary-foreground uppercase backdrop-blur-md">
                 Для турфирм
               </p>
-              <h2 className="mt-4 max-w-xl font-display text-3xl font-semibold tracking-tight text-primary-foreground md:text-5xl md:leading-[1.08]">
+              <h2 className="mt-4 max-w-xl font-display text-3xl font-semibold tracking-tight text-primary-foreground md:text-5xl md:leading-[1.12]">
                 Туристы уже ищут отпуск. Покажите свою цену первыми
               </h2>
-              <p className="mt-4 max-w-lg text-sm text-primary-foreground/80 md:text-base">
+              <p className="mt-5 max-w-lg text-base leading-relaxed text-primary-foreground/90 md:text-lg">
                 Заявки приходят в кабинет. Вы отвечаете предложением. Клиент ваш, оплата идёт вам,
                 не платформе.
               </p>
@@ -658,10 +660,12 @@ function Index() {
                   key={item.title}
                   className="rounded-2xl border border-primary-foreground/15 bg-primary-foreground/10 p-4 backdrop-blur-md"
                 >
-                  <p className="font-display text-sm font-semibold text-primary-foreground">
+                  <p className="font-display text-base font-semibold text-primary-foreground">
                     {item.title}
                   </p>
-                  <p className="mt-1 text-sm text-primary-foreground/75">{item.text}</p>
+                  <p className="mt-1.5 text-base leading-relaxed text-primary-foreground/80">
+                    {item.text}
+                  </p>
                 </li>
               ))}
             </ul>
@@ -717,10 +721,14 @@ function SectionHead({
   return (
     <div className="grid grid-cols-[minmax(0,1fr)_auto] items-end gap-4">
       <div className="min-w-0">
-        <h2 className={cn("font-display text-2xl font-semibold tracking-tight md:text-3xl")}>
+        <h2 className="font-display text-[1.65rem] font-semibold leading-snug tracking-tight md:text-4xl md:leading-[1.15]">
           {title}
         </h2>
-        {subtitle ? <p className="mt-2 max-w-2xl text-muted-foreground">{subtitle}</p> : null}
+        {subtitle ? (
+          <p className="mt-3 max-w-2xl text-base leading-relaxed text-foreground/70 md:text-lg md:leading-relaxed">
+            {subtitle}
+          </p>
+        ) : null}
       </div>
       {action ? <div className="hidden md:block">{action}</div> : null}
     </div>
