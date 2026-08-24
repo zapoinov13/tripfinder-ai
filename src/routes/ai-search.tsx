@@ -27,7 +27,10 @@ export const Route = createFileRoute("/ai-search")({
   head: () => ({
     meta: [
       { title: "Поиск · TourGo" },
-      { name: "description", content: "Расскажите, что нужно, и откроем нужный раздел." },
+      {
+        name: "description",
+        content: "Опишите поездку своими словами. TourGo откроет нужный раздел и покажет предложения компаний.",
+      },
     ],
   }),
   component: AiSearchPage,
@@ -64,13 +67,13 @@ function AiSearchPage() {
       <div className="container-page py-8 md:py-14">
         <p className="inline-flex items-center gap-2 text-sm font-medium text-primary">
           <Sparkles className="size-4" />
-          Поиск
+          Умный поиск
         </p>
         <h1 className="mt-2 font-display text-3xl font-semibold leading-tight md:text-5xl">
-          Расскажите, что нужно
+          Опишите поездку своими словами
         </h1>
         <p className="mt-2 max-w-lg text-base leading-relaxed text-foreground/70">
-          Напишите или скажите. TourGo откроет туры, жильё, авто, спорт или помощь.
+          Напишите или скажите. Откроем туры, жильё, авто, спорт или помощь и покажем цены компаний.
         </p>
 
         <form

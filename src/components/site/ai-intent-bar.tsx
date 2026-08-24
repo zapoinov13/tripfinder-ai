@@ -57,7 +57,7 @@ export function AiIntentBar({ tone = "light" }: { tone?: "light" | "onDark" }) {
       <Input
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="Расскажите, что нужно"
+        placeholder="Например: Дубай на неделю для двоих"
         className={cn(
           "h-11 min-w-0 flex-1 border-0 bg-transparent px-2 text-[15px] shadow-none placeholder:truncate focus-visible:ring-0",
           tone === "onDark" &&

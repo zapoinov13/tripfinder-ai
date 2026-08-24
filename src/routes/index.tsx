@@ -20,11 +20,11 @@ import { b2bNav, travelScenarios } from "@/data/scenarios";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "TourGo: туры, экскурсии, жильё, авто и помощь в поездке" },
+      { title: "TourGo: сравните цены на туры, экскурсии, жильё и помощь в поездке" },
       {
         name: "description",
         content:
-          "Всё для путешествия в одном месте. Сравните предложения компаний и выберите выгоднее.",
+          "Сравните предложения компаний и купите выгоднее. Туры, экскурсии, жильё, авто и помощь в одном месте. Платите напрямую выбранной фирме.",
       },
     ],
   }),
@@ -34,18 +34,18 @@ export const Route = createFileRoute("/")({
 const how = [
   {
     icon: Sparkles,
-    title: "Выберите, что нужно",
-    text: "Тур, экскурсия, жильё, авто, спорт или помощь. Поиск уже внутри раздела.",
+    title: "Откройте нужный раздел",
+    text: "Тур, экскурсия, жильё, авто, спорт или помощь. Фильтры и поиск уже внутри.",
   },
   {
     icon: Wallet,
-    title: "Сравните цены компаний",
-    text: "Несколько предложений рядом. Смотрите состав, даты и сумму.",
+    title: "Сравните цены рядом",
+    text: "Несколько компаний на одном экране. Состав, даты и сумма без переписки в чатах.",
   },
   {
     icon: ShieldCheck,
     title: "Платите компании напрямую",
-    text: "TourGo не продаёт поездку за агентство. Договор и оплата у выбранной фирмы.",
+    text: "TourGo: витрина. Договор и деньги у фирмы, которую выбрали вы.",
   },
 ];
 
@@ -56,10 +56,10 @@ function Index() {
     <SiteLayout>
       <section className="container-page py-6 md:py-14">
         <h1 className="font-display text-[1.75rem] font-semibold leading-tight tracking-tight sm:text-4xl md:text-6xl">
-          Всё для путешествия в одном месте
+          Сравните цены и купите выгоднее
         </h1>
         <p className="mt-2 max-w-xl text-base leading-snug text-foreground/70 md:mt-3 md:text-xl md:leading-relaxed">
-          Туры, экскурсии, жильё, авто и помощь: сравните цены компаний
+          Туры, экскурсии, жильё, авто и помощь от разных компаний. Платите напрямую.
         </p>
 
         <div className="mt-5 hidden max-w-2xl md:mt-6 md:block">
@@ -103,7 +103,7 @@ function Index() {
               {b2bNav.title}
             </span>
             <span className="mt-1 block font-display text-base font-semibold leading-snug md:mt-2 md:text-2xl">
-              Вы туристическая компания?
+              Приведите клиентов без комиссии туристу
             </span>
             <span className="mt-1 hidden text-sm leading-relaxed text-primary-foreground/80 md:block md:text-base">
               {b2bNav.hint}
@@ -116,7 +116,7 @@ function Index() {
       <section className="container-page mt-6 md:mt-10">
         <SectionHead
           title="Куда едут чаще всего"
-          subtitle="Откройте страну: внутри туры от разных компаний"
+          subtitle="Откройте страну и сравните туры от разных компаний"
           action={
             <Button variant="outline" asChild>
               <Link to="/destinations">
@@ -173,7 +173,7 @@ function Index() {
       <section className="container-page mt-16 md:mt-24">
         <SectionHead
           title="Горящие туры"
-          subtitle="Ближайшие даты: компании уже снизили цену"
+          subtitle="Ближайшие вылеты со сниженной ценой. Успейте забронировать"
           action={
             <Button variant="outline" asChild>
               <Link to="/search" search={{ offers: "hot" } as never}>
@@ -185,7 +185,7 @@ function Index() {
         />
         <div className="mt-3 flex items-center gap-2 text-base text-foreground/70 md:hidden">
           <Flame className="size-4 text-primary" />
-          Скидки на ближайший вылет
+          Скидки на ближайший вылет. Осталось мало мест
         </div>
         <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {hotTours.map((tour) => (
@@ -198,7 +198,7 @@ function Index() {
       <section className="container-page mt-16 md:mt-24">
         <SectionHead
           title="Экскурсии и развлечения"
-          subtitle="Сафари, яхты, парки, когда вы уже на месте"
+          subtitle="Сафари, яхты и парки от местных компаний, когда вы уже на месте"
           action={
             <Button variant="outline" asChild>
               <Link to="/excursions">
@@ -231,7 +231,10 @@ function Index() {
       </section>
 
       <section className="container-page mt-16 mb-10 md:mt-24">
-        <SectionHead title="Как устроен TourGo" subtitle="Коротко, без лишних экранов" />
+        <SectionHead
+          title="Как устроен TourGo"
+          subtitle="Три шага от идеи поездки до брони у компании"
+        />
         <div className="mt-8 grid gap-4 md:grid-cols-3">
           {how.map((item) => (
             <div key={item.title} className="surface-card p-6">

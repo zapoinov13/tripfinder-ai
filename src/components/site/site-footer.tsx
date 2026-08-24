@@ -43,8 +43,8 @@ export function SiteFooter() {
               <span className="font-display text-xl font-semibold tracking-tight">TourGo</span>
             </Link>
             <p className="mt-4 text-sm text-primary-foreground/70 md:text-base">
-              Туры, экскурсии, жильё, авто, спорт и помощь в поездке в одном месте. Платите
-              напрямую выбранной компании.
+              Сравните цены компаний и купите выгоднее. Туры, экскурсии, жильё, авто и помощь в
+              одном месте. Платите напрямую выбранной фирме.
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
@@ -55,7 +55,7 @@ export function SiteFooter() {
               asChild
             >
               <Link to="/">
-                Что вам нужно?
+                Сравнить предложения
                 <ArrowRight className="size-4" />
               </Link>
             </Button>
