@@ -2,6 +2,7 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import { ArrowRight, Building2, Flame, ShieldCheck, Sparkles, Wallet } from "lucide-react";
 import type { ReactNode } from "react";
 
+import heroImage from "@/assets/hero.jpg";
 import { AiIntentBar } from "@/components/site/ai-intent-bar";
 import { SiteLayout } from "@/components/site/site-layout";
 import {
@@ -20,10 +21,11 @@ import { b2bNav, travelScenarios } from "@/data/scenarios";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "TourGo: туры, экскурсии, жильё, авто и помощь в поездке" },
+      { title: "TourGo: сравните цены на туры, экскурсии, жильё и помощь в поездке" },
       {
         name: "description",
-        content: "Всё для путешествия в одном месте. Выберите, что нужно — и ищите внутри раздела.",
+        content:
+          "Сравните предложения компаний и купите выгоднее. Туры, экскурсии, жильё, авто и помощь в одном месте. Платите напрямую выбранной фирме.",
       },
     ],
   }),
@@ -33,19 +35,25 @@ export const Route = createFileRoute("/")({
 const how = [
   {
     icon: Sparkles,
-    title: "Выберите, что нужно",
-    text: "Тур, экскурсия, жильё, авто, спорт или помощь. Поиск — уже внутри раздела.",
+    title: "Откройте нужный раздел",
+    text: "Тур, экскурсия, жильё, авто, спорт или помощь. Фильтры и поиск уже внутри.",
   },
   {
     icon: Wallet,
-    title: "Сравните цены компаний",
-    text: "Несколько предложений рядом. Смотрите состав, даты и сумму.",
+    title: "Сравните цены рядом",
+    text: "Несколько компаний на одном экране. Состав, даты и сумма без переписки в чатах.",
   },
   {
     icon: ShieldCheck,
     title: "Платите компании напрямую",
-    text: "TourGo не продаёт поездку за агентство. Договор и оплата — у выбранной фирмы.",
+    text: "TourGo: витрина. Договор и деньги у фирмы, которую выбрали вы.",
   },
+];
+
+const facts = [
+  { value: "6", label: "разделов поездки" },
+  { value: "0%", label: "комиссии туристу" },
+  { value: "24/7", label: "помощь на месте" },
 ];
 
 function Index() {
@@ -53,73 +61,111 @@ function Index() {
 
   return (
     <SiteLayout>
-      {/* Full-bleed тёплый градиент за hero: фирменный тон вместо плоского фона. */}
-      <div className="bg-gradient-to-b from-primary-soft/70 via-primary-soft/25 to-transparent">
-        <section className="container-page py-6 md:py-14">
-          <h1 className="font-display text-[1.75rem] font-semibold leading-tight tracking-tight sm:text-4xl md:text-6xl">
-            Что вам нужно?
-          </h1>
-          <p className="mt-2 max-w-xl text-base leading-snug text-foreground/70 md:mt-3 md:text-xl md:leading-relaxed">
-            Всё для путешествия в одном месте
-          </p>
+      <section className="md:container-page md:py-14">
+        <div className="relative overflow-hidden md:rounded-[2.5rem]">
+          <img
+            src={heroImage}
+            alt="Пляж и курорт: подбор туров на TourGo"
+            className="h-[min(68svh,30rem)] w-full object-cover object-[center_35%] animate-soft-zoom md:h-[32rem]"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/50 to-ink/15" />
 
-          {/* AI-подбор — главный вход, виден и на телефоне. */}
-          <div className="mt-4 max-w-2xl md:mt-6">
-            <AiIntentBar />
+          <div className="absolute inset-x-0 bottom-0 flex flex-col gap-3 px-5 pb-6 pt-16 text-primary-foreground md:gap-5 md:p-10">
+            <p className="animate-fade-up font-display text-2xl font-semibold tracking-tight md:text-3xl">
+              TourGo
+            </p>
+
+            <h1 className="animate-fade-up font-display text-[1.85rem] font-semibold leading-[1.08] tracking-tight [animation-delay:80ms] sm:text-5xl md:text-6xl">
+              Сравните цены
+              <br />и купите выгоднее
+            </h1>
+
+            <p className="animate-fade-up max-w-md text-[15px] leading-snug text-primary-foreground/80 [animation-delay:140ms] md:text-xl md:leading-relaxed">
+              Туры, жильё, авто и помощь от компаний. Платите напрямую.
+            </p>
+
+            <Link
+              to="/ai-search"
+              search={{} as never}
+              className="animate-fade-up mt-1 flex h-12 w-full items-center gap-3 rounded-2xl bg-background px-3.5 text-left text-foreground shadow-lg active:scale-[0.99] [animation-delay:200ms] md:hidden"
+            >
+              <span className="grid size-8 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground">
+                <Sparkles className="size-4" aria-hidden />
+              </span>
+              <span className="min-w-0 flex-1 truncate text-[15px] font-semibold">
+                Опишите поездку
+              </span>
+              <ArrowRight className="size-4 shrink-0 text-foreground/45" aria-hidden />
+            </Link>
+
+            <div className="animate-fade-up hidden max-w-2xl [animation-delay:200ms] md:block">
+              <AiIntentBar tone="onDark" />
+            </div>
           </div>
+        </div>
+      </section>
 
-          <div className="mt-4 grid auto-rows-fr grid-cols-2 items-stretch gap-2.5 md:mt-10 md:grid-cols-3 md:gap-4">
-            {travelScenarios.map((item) => (
-              <Link
-                key={item.id}
-                to={item.to}
-                search={{} as never}
-                className="surface-card flex h-full items-center gap-2.5 px-3 py-3.5 md:min-h-[11.5rem] md:flex-col md:items-start md:justify-between md:gap-3 md:p-6 md:transition-transform md:hover:-translate-y-1"
-              >
-                <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary-soft text-primary md:size-14 md:rounded-2xl">
-                  <item.icon className="size-[18px] md:size-7" />
-                </span>
-                <span className="min-w-0 w-full">
-                  <span className="block font-display text-[1.05rem] font-semibold leading-tight md:hidden">
-                    {item.shortTitle ?? item.title}
-                  </span>
-                  <span className="hidden font-display text-2xl font-semibold leading-snug md:block">
-                    {item.title}
-                  </span>
-                  <span className="mt-0.5 line-clamp-2 block text-xs leading-tight text-foreground/60 md:mt-1 md:line-clamp-none md:text-base md:leading-relaxed">
-                    <span className="md:hidden">{item.shortHint}</span>
-                    <span className="hidden md:inline">{item.hint}</span>
-                  </span>
-                </span>
-              </Link>
-            ))}
-          </div>
+      <section className="container-page pt-4 md:pt-0">
+        <div className="hidden grid-cols-3 gap-4 md:mt-6 md:grid">
+          {facts.map((fact) => (
+            <div key={fact.label} className="surface-card px-4 py-4 text-center">
+              <p className="font-display text-3xl font-semibold leading-none">{fact.value}</p>
+              <p className="mt-1 text-sm text-foreground/60">{fact.label}</p>
+            </div>
+          ))}
+        </div>
 
-          <Link
-            to={b2bNav.to}
-            className="mt-4 flex items-center justify-between gap-3 rounded-2xl bg-ink px-4 py-4 text-primary-foreground md:mt-8 md:rounded-[1.75rem] md:gap-4 md:px-8 md:py-6"
-          >
-            <span className="min-w-0">
-              <span className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-primary-foreground/70 md:text-sm">
-                <Building2 className="size-3.5 md:size-4" />
-                {b2bNav.title}
+        <div className="grid auto-rows-fr grid-cols-2 items-stretch gap-2.5 md:mt-10 md:grid-cols-3 md:gap-4">
+          {travelScenarios.map((item) => (
+            <Link
+              key={item.id}
+              to={item.to}
+              search={{} as never}
+              className="surface-card flex h-full min-h-[6.75rem] flex-col items-start justify-between gap-2 p-3.5 text-left md:min-h-[11.5rem] md:p-6 md:transition-transform md:hover:-translate-y-1"
+            >
+              <span className="grid size-10 place-items-center rounded-2xl bg-primary-soft text-primary md:size-14">
+                <item.icon className="size-5 md:size-7" />
               </span>
-              <span className="mt-1 block font-display text-base font-semibold leading-snug md:mt-2 md:text-2xl">
-                Вы туристическая компания?
+              <span className="min-w-0 w-full">
+                <span className="block font-display text-base font-semibold leading-tight md:hidden">
+                  {item.shortTitle ?? item.title}
+                </span>
+                <span className="hidden font-display text-2xl font-semibold leading-snug md:block">
+                  {item.title}
+                </span>
+                <span className="mt-0.5 block text-[12px] leading-snug text-foreground/60 md:mt-1 md:text-base md:leading-relaxed">
+                  <span className="md:hidden">{item.shortHint}</span>
+                  <span className="hidden md:inline">{item.hint}</span>
+                </span>
               </span>
-              <span className="mt-1 hidden text-sm leading-relaxed text-primary-foreground/80 md:block md:text-base">
-                {b2bNav.hint}
-              </span>
+            </Link>
+          ))}
+        </div>
+
+        <Link
+          to={b2bNav.to}
+          className="mt-4 flex items-center justify-between gap-3 rounded-2xl bg-ink px-4 py-4 text-primary-foreground md:mt-8 md:rounded-[1.75rem] md:gap-4 md:px-8 md:py-6"
+        >
+          <span className="min-w-0">
+            <span className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-primary-foreground/70 md:text-sm">
+              <Building2 className="size-3.5 md:size-4" />
+              {b2bNav.title}
             </span>
-            <ArrowRight className="size-5 shrink-0 md:size-6" />
-          </Link>
-        </section>
-      </div>
+            <span className="mt-1 block font-display text-base font-semibold leading-snug md:mt-2 md:text-2xl">
+              Приведите клиентов без комиссии туристу
+            </span>
+            <span className="mt-1 hidden text-sm leading-relaxed text-primary-foreground/80 md:block md:text-base">
+              {b2bNav.hint}
+            </span>
+          </span>
+          <ArrowRight className="size-5 shrink-0 md:size-6" />
+        </Link>
+      </section>
 
       <section className="container-page mt-6 md:mt-10">
         <SectionHead
           title="Куда едут чаще всего"
-          subtitle="Откройте страну — внутри туры от разных компаний"
+          subtitle="Откройте страну и сравните туры от разных компаний"
           action={
             <Button variant="outline" asChild>
               <Link to="/destinations">
@@ -176,7 +222,7 @@ function Index() {
       <section className="container-page mt-16 md:mt-24">
         <SectionHead
           title="Горящие туры"
-          subtitle="Ближайшие даты: компании уже снизили цену"
+          subtitle="Ближайшие вылеты со сниженной ценой. Успейте забронировать"
           action={
             <Button variant="outline" asChild>
               <Link to="/search" search={{ offers: "hot" } as never}>
@@ -188,7 +234,7 @@ function Index() {
         />
         <div className="mt-3 flex items-center gap-2 text-base text-foreground/70 md:hidden">
           <Flame className="size-4 text-primary" />
-          Скидки на ближайший вылет
+          Скидки на ближайший вылет. Осталось мало мест
         </div>
         <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {hotTours.map((tour) => (
@@ -205,7 +251,7 @@ function Index() {
       <section className="container-page mt-16 md:mt-24">
         <SectionHead
           title="Экскурсии и развлечения"
-          subtitle="Сафари, яхты, парки — когда вы уже на месте"
+          subtitle="Сафари, яхты и парки от местных компаний, когда вы уже на месте"
           action={
             <Button variant="outline" asChild>
               <Link to="/excursions">
@@ -238,7 +284,10 @@ function Index() {
       </section>
 
       <section className="container-page mt-16 mb-10 md:mt-24">
-        <SectionHead title="Как устроен TourGo" subtitle="Коротко, без лишних экранов" />
+        <SectionHead
+          title="Как устроен TourGo"
+          subtitle="Три шага от идеи поездки до брони у компании"
+        />
         <div className="mt-8 grid gap-4 md:grid-cols-3">
           {how.map((item) => (
             <div key={item.title} className="surface-card p-6">

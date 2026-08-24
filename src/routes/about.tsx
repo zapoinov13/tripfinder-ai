@@ -100,7 +100,7 @@ function AboutPage() {
         <section>
           <h2 className="font-display text-2xl font-semibold md:text-3xl">Шесть разделов</h2>
           <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-            Сначала выбираете, что нужно. Поиск и фильтры — уже внутри раздела.
+            Сначала выбираете, что нужно. Поиск и фильтры уже внутри раздела.
           </p>
           <div className="mt-6 grid gap-4 sm:grid-cols-2 md:grid-cols-3">
             {travelScenarios.map((item) => (

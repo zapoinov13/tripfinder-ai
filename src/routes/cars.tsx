@@ -1,12 +1,17 @@
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Search } from "lucide-react";
-import { useState } from "react";
+import { Building2, Search } from "lucide-react";
+import { useState, useSyncExternalStore } from "react";
 
 import { SiteLayout } from "@/components/site/site-layout";
 import { Button } from "@/components/ui/button";
 import { DateRangePicker } from "@/components/ui/date-picker";
 import { resortsByDestination } from "@/data/demo";
 import { carClasses, cars, formatKzt, popularCarCountries } from "@/data/scenario-catalog";
+import {
+  listPublishedVertical,
+  subscribeVerticalListings,
+  type VerticalListing,
+} from "@/lib/platform/vertical-listings";
 import { cn } from "@/lib/utils";
 
 type Search = {
@@ -17,6 +22,19 @@ type Search = {
   pickup?: string;
   dropoff?: string;
   age?: string;
+};
+
+type CarCard = {
+  id: string;
+  name: string;
+  city: string;
+  destinationId: string;
+  klass: string;
+  price: number;
+  seats: number;
+  gearbox: string;
+  deposit: string;
+  companyName?: string;
 };
 
 export const Route = createFileRoute("/cars")({
@@ -32,11 +50,24 @@ export const Route = createFileRoute("/cars")({
   head: () => ({
     meta: [
       { title: "Аренда авто без водителя · TourGo" },
-      { name: "description", content: "Машины без водителя. Страна, город, даты и класс авто." },
+      {
+        name: "description",
+        content: "Машины без водителя от компаний. Сравните цены и запросите авто.",
+      },
     ],
   }),
   component: CarsPage,
 });
+
+const EMPTY_LISTINGS: VerticalListing[] = [];
+
+function usePublishedCars() {
+  return useSyncExternalStore(
+    subscribeVerticalListings,
+    () => listPublishedVertical("car"),
+    () => EMPTY_LISTINGS,
+  );
+}
 
 function CarsPage() {
   const params = Route.useSearch();
@@ -44,22 +75,45 @@ function CarsPage() {
   const update = (patch: Search) => void navigate({ search: { ...params, ...patch } as never });
   const [geoHint, setGeoHint] = useState("");
   const [age, setAge] = useState(params.age ?? "25");
+  const published = usePublishedCars();
 
   const cities = params.destination ? (resortsByDestination[params.destination] ?? []) : [];
   const needle = (params.q ?? "").toLowerCase();
-  const list = cars.filter((item) => {
+
+  const catalog: CarCard[] = [
+    ...published.map((item) => {
+      const parts = item.detail.split("·").map((p) => p.trim());
+      return {
+        id: item.id,
+        name: item.name,
+        city: item.city,
+        destinationId: item.destinationId,
+        klass: item.kind,
+        price: item.price,
+        seats: item.seats ?? 5,
+        gearbox: parts[0] || "автомат",
+        deposit: parts[1] || "с депозитом",
+        companyName: item.companyName,
+      };
+    }),
+    ...cars,
+  ];
+
+  const list = catalog.filter((item) => {
     if (params.destination && item.destinationId !== params.destination) return false;
     if (params.city && item.city !== params.city) return false;
     if (params.klass && item.klass !== params.klass) return false;
     if (!params.destination && !params.city && !params.klass && needle) {
-      return `${item.name} ${item.city} ${item.klass}`.toLowerCase().includes(needle);
+      return `${item.name} ${item.city} ${item.klass} ${item.companyName ?? ""}`
+        .toLowerCase()
+        .includes(needle);
     }
     return true;
   });
 
   const useLocation = () => {
     if (!navigator.geolocation) {
-      setGeoHint("Геолокация недоступна — выберите страну вручную");
+      setGeoHint("Геолокация недоступна, выберите страну вручную");
       return;
     }
     navigator.geolocation.getCurrentPosition(
@@ -67,7 +121,7 @@ function CarsPage() {
         setGeoHint("Определили регион. Проверьте город и даты.");
         update({ destination: "uae", city: "Дубай" });
       },
-      () => setGeoHint("Не удалось определить место — выберите страну"),
+      () => setGeoHint("Не удалось определить место, выберите страну"),
     );
   };
 
@@ -141,7 +195,7 @@ function CarsPage() {
         >
           <DateRangePicker
             variant="field"
-            label="Получение — возврат"
+            label="Получение и возврат"
             from={params.pickup ?? ""}
             to={params.dropoff ?? ""}
             onChange={(next) => update({ pickup: next.from, dropoff: next.to })}
@@ -180,46 +234,79 @@ function CarsPage() {
           ))}
         </div>
 
-        <div
-          id="cars-results"
-          className="mt-8 grid scroll-mt-28 gap-4 sm:grid-cols-2 lg:grid-cols-3"
-        >
-          {list.map((item) => (
-            <article key={item.id} className="surface-card flex flex-col p-5">
-              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                {item.city}
-              </p>
-              <h3 className="mt-2 font-display text-xl font-semibold">{item.name}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-foreground/70">
-                {item.seats} мест · {item.gearbox} · {item.deposit}
-              </p>
-              <p className="mt-4 font-display text-lg font-semibold">
-                {formatKzt(item.price)}{" "}
-                <span className="text-sm font-medium text-foreground/60">/ день</span>
-              </p>
-              <Button className="mt-4" asChild>
-                <Link
-                  to="/request"
-                  search={requestFor(`Аренда ${item.name} в ${item.city}, без водителя`)}
+        <div id="cars-results" className="mt-8 scroll-mt-28">
+          {list.length > 0 ? (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {list.map((item) => (
+                <article key={item.id} className="surface-card flex flex-col p-5">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    {item.city}
+                  </p>
+                  <h3 className="mt-2 font-display text-xl font-semibold">{item.name}</h3>
+                  {item.companyName ? (
+                    <p className="mt-1 text-sm text-foreground/60">{item.companyName}</p>
+                  ) : null}
+                  <p className="mt-2 text-sm leading-relaxed text-foreground/70">
+                    {item.seats} мест · {item.gearbox} · {item.deposit}
+                  </p>
+                  {item.price > 0 ? (
+                    <p className="mt-4 font-display text-lg font-semibold">
+                      {formatKzt(item.price)}{" "}
+                      <span className="text-sm font-medium text-foreground/60">/ день</span>
+                    </p>
+                  ) : (
+                    <p className="mt-4 text-sm text-foreground/60">Цена по запросу</p>
+                  )}
+                  <Button className="mt-4" asChild>
+                    <Link
+                      to="/request"
+                      search={requestFor(`Аренда ${item.name} в ${item.city}, без водителя`)}
+                    >
+                      Запросить авто
+                    </Link>
+                  </Button>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <div className="surface-card grid gap-6 p-6 md:grid-cols-2 md:p-8">
+              <div>
+                <h2 className="font-display text-xl font-semibold">Пока пусто в витрине</h2>
+                <p className="mt-2 text-sm leading-relaxed text-foreground/70">
+                  Компании могут регистрироваться и добавлять авто. Оставьте заявку, если машина
+                  нужна сейчас.
+                </p>
+                <Button className="mt-4" asChild>
+                  <Link
+                    to="/request"
+                    search={requestFor(params.q || "Нужна аренда авто без водителя")}
+                  >
+                    Оставить заявку
+                  </Link>
+                </Button>
+              </div>
+              <div className="rounded-2xl bg-ink p-5 text-primary-foreground md:p-6">
+                <p className="inline-flex items-center gap-2 text-sm font-semibold text-primary-foreground/70">
+                  <Building2 className="size-4" />
+                  Для компаний
+                </p>
+                <h3 className="mt-2 font-display text-xl font-semibold">
+                  Разместите авто на TourGo
+                </h3>
+                <p className="mt-2 text-sm leading-relaxed text-primary-foreground/80">
+                  Зарегистрируйте компанию, отметьте «Аренда авто» и добавьте карточку из Instagram
+                  или сайта.
+                </p>
+                <Button
+                  className="mt-4 bg-primary-foreground text-ink hover:bg-primary-foreground/90"
+                  asChild
                 >
-                  Запросить авто
-                </Link>
-              </Button>
-            </article>
-          ))}
+                  <Link to="/company-signup">Добавить компанию</Link>
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
-        {list.length === 0 ? (
-          <div className="surface-card mt-8 p-6 text-center">
-            <p className="text-foreground/70">
-              В этом городе пока нет машин в витрине. Компании пришлют варианты по заявке.
-            </p>
-            <Button className="mt-4" asChild>
-              <Link to="/request" search={requestFor(params.q || "Нужна аренда авто без водителя")}>
-                Оставить заявку
-              </Link>
-            </Button>
-          </div>
-        ) : null}
       </div>
     </SiteLayout>
   );

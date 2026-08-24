@@ -24,7 +24,7 @@ export default defineConfig({
     server: { entry: "server" },
   },
   vite: {
-    // Capacitor plugins touch `document` at module load — keep them out of the SSR bundle.
+    // Capacitor plugins touch `document` at module load: keep them out of the SSR bundle.
     ssr: {
       external: capacitorSsrExternals,
     },
