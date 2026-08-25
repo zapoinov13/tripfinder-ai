@@ -20,6 +20,10 @@ export type VerticalOfferDraft = {
   guests?: number;
   /** Жильё: спальни. */
   bedrooms?: number;
+  /** Авто: коробка передач. */
+  transmission?: string;
+  /** Авто: депозит в тенге (0 = без депозита). */
+  deposit?: number;
   /** sport slot / stay hint / car gearbox+deposit */
   detail: string;
   sourceUrl: string;

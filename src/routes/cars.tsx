@@ -1,5 +1,5 @@
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Building2, Search } from "lucide-react";
+import { Building2, MapPin, Search } from "lucide-react";
 import { useState, useSyncExternalStore } from "react";
 
 import { SiteLayout } from "@/components/site/site-layout";
@@ -35,6 +35,9 @@ type CarCard = {
   gearbox: string;
   deposit: string;
   companyName?: string;
+  address?: string;
+  features?: string[];
+  about?: string;
 };
 
 export const Route = createFileRoute("/cars")({
@@ -83,6 +86,12 @@ function CarsPage() {
   const catalog: CarCard[] = [
     ...published.map((item) => {
       const parts = item.detail.split("·").map((p) => p.trim());
+      const deposit =
+        item.deposit !== undefined
+          ? item.deposit > 0
+            ? `депозит ${formatKzt(item.deposit)}`
+            : "без депозита"
+          : parts[1] || "с депозитом";
       return {
         id: item.id,
         name: item.name,
@@ -91,9 +100,12 @@ function CarsPage() {
         klass: item.kind,
         price: item.price,
         seats: item.seats ?? 5,
-        gearbox: parts[0] || "автомат",
-        deposit: parts[1] || "с депозитом",
+        gearbox: item.transmission || parts[0] || "автомат",
+        deposit,
         companyName: item.companyName,
+        ...(item.address ? { address: item.address } : {}),
+        ...(item.amenities?.length ? { features: item.amenities } : {}),
+        ...(item.about ? { about: item.about } : {}),
       };
     }),
     ...cars,
@@ -249,6 +261,44 @@ function CarsPage() {
                   <p className="mt-2 text-sm leading-relaxed text-foreground/70">
                     {item.seats} мест · {item.gearbox} · {item.deposit}
                   </p>
+                  {item.about ? (
+                    <p className="mt-2 line-clamp-2 text-sm leading-snug text-foreground/60">
+                      {item.about}
+                    </p>
+                  ) : null}
+                  {item.features?.length ? (
+                    <div className="mt-3 flex flex-wrap gap-1.5">
+                      {item.features.slice(0, 4).map((f) => (
+                        <span
+                          key={f}
+                          className="rounded-full bg-secondary px-2.5 py-1 text-[11px] font-medium text-foreground/70"
+                        >
+                          {f}
+                        </span>
+                      ))}
+                      {item.features.length > 4 ? (
+                        <span className="rounded-full bg-secondary px-2.5 py-1 text-[11px] font-medium text-foreground/50">
+                          +{item.features.length - 4}
+                        </span>
+                      ) : null}
+                    </div>
+                  ) : null}
+                  {item.address ? (
+                    <a
+                      href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(`${item.address}, ${item.city}`)}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-2 inline-flex items-start gap-1.5 text-sm font-medium text-primary hover:underline"
+                    >
+                      <MapPin className="mt-0.5 size-4 shrink-0" />
+                      <span>
+                        {item.address}
+                        <span className="block text-xs font-normal text-foreground/55">
+                          Пункт выдачи · маршрут в картах
+                        </span>
+                      </span>
+                    </a>
+                  ) : null}
                   {item.price > 0 ? (
                     <p className="mt-4 font-display text-lg font-semibold">
                       {formatKzt(item.price)}{" "}

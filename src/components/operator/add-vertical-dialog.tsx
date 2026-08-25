@@ -14,7 +14,14 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { destinations } from "@/data/demo";
-import { carClasses, formatKzt, sportKinds, stayAmenities, stayKinds } from "@/data/scenario-catalog";
+import {
+  carClasses,
+  carFeatures,
+  formatKzt,
+  sportKinds,
+  stayAmenities,
+  stayKinds,
+} from "@/data/scenario-catalog";
 import { ingestVerticalFromUrl } from "@/lib/platform/page-ingest";
 import {
   draftVerticalFromLink,
@@ -263,20 +270,93 @@ export function AddVerticalDialog({
                 onChange={(e) => setDraft({ ...draft, address: e.target.value })}
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="vert-detail">
-                {vertical === "sport"
-                  ? "Слот / формат"
-                  : vertical === "stay"
-                    ? "Подпись к цене"
-                    : "Коробка и депозит"}
-              </Label>
-              <Input
-                id="vert-detail"
-                value={draft.detail}
-                onChange={(e) => setDraft({ ...draft, detail: e.target.value })}
-              />
-            </div>
+            {vertical !== "car" ? (
+              <div className="space-y-2">
+                <Label htmlFor="vert-detail">
+                  {vertical === "sport" ? "Слот / формат" : "Подпись к цене"}
+                </Label>
+                <Input
+                  id="vert-detail"
+                  value={draft.detail}
+                  onChange={(e) => setDraft({ ...draft, detail: e.target.value })}
+                />
+              </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <Label htmlFor="vert-transmission">Коробка</Label>
+                    <select
+                      id="vert-transmission"
+                      value={draft.transmission ?? "Автомат"}
+                      onChange={(e) => setDraft({ ...draft, transmission: e.target.value })}
+                      className="h-10 w-full rounded-xl border border-border bg-card px-3 text-sm"
+                    >
+                      <option value="Автомат">Автомат</option>
+                      <option value="Механика">Механика</option>
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="vert-deposit">Депозит, ₸ (0 — без депозита)</Label>
+                    <Input
+                      id="vert-deposit"
+                      type="number"
+                      min={0}
+                      value={draft.deposit ?? ""}
+                      onChange={(e) => {
+                        const { deposit: _deposit, ...rest } = draft;
+                        const value = Number(e.target.value);
+                        setDraft(
+                          Number.isFinite(value) && e.target.value !== ""
+                            ? { ...rest, deposit: value }
+                            : rest,
+                        );
+                      }}
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>Что входит</Label>
+                  <div className="flex flex-wrap gap-1.5">
+                    {carFeatures.map((feature) => {
+                      const active = (draft.amenities ?? []).includes(feature);
+                      return (
+                        <button
+                          key={feature}
+                          type="button"
+                          onClick={() =>
+                            setDraft({
+                              ...draft,
+                              amenities: active
+                                ? (draft.amenities ?? []).filter((a) => a !== feature)
+                                : [...(draft.amenities ?? []), feature],
+                            })
+                          }
+                          className={
+                            active
+                              ? "rounded-full bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground"
+                              : "rounded-full border border-border bg-card px-3 py-1.5 text-xs text-foreground/70 hover:border-primary/40"
+                          }
+                        >
+                          {feature}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="vert-about-car">Описание</Label>
+                  <textarea
+                    id="vert-about-car"
+                    rows={3}
+                    placeholder="Пара предложений: состояние авто, условия выдачи, что взять с собой"
+                    value={draft.about}
+                    onChange={(e) => setDraft({ ...draft, about: e.target.value })}
+                    className="w-full resize-none rounded-xl border border-border bg-card px-3 py-2 text-sm outline-none focus:border-primary"
+                  />
+                </div>
+              </>
+            )}
             {vertical === "stay" ? (
               <>
                 <div className="grid grid-cols-2 gap-3">
