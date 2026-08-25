@@ -121,10 +121,10 @@ function Index() {
               key={item.id}
               to={item.to}
               search={{} as never}
-              className="surface-card flex h-full min-h-[6.75rem] flex-col items-start justify-between gap-2 p-3.5 text-left md:min-h-[11.5rem] md:p-6 md:transition-transform md:hover:-translate-y-1"
+              className="surface-card flex h-full items-center gap-2.5 px-3 py-3.5 text-left md:min-h-[11.5rem] md:flex-col md:items-start md:justify-between md:gap-2 md:p-6 md:transition-transform md:hover:-translate-y-1"
             >
-              <span className="grid size-10 place-items-center rounded-2xl bg-primary-soft text-primary md:size-14">
-                <item.icon className="size-5 md:size-7" />
+              <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary-soft text-primary md:size-14 md:rounded-2xl">
+                <item.icon className="size-[18px] md:size-7" />
               </span>
               <span className="min-w-0 w-full">
                 <span className="block font-display text-base font-semibold leading-tight md:hidden">
@@ -133,7 +133,7 @@ function Index() {
                 <span className="hidden font-display text-2xl font-semibold leading-snug md:block">
                   {item.title}
                 </span>
-                <span className="mt-0.5 block text-[12px] leading-snug text-foreground/60 md:mt-1 md:text-base md:leading-relaxed">
+                <span className="mt-0.5 line-clamp-2 block text-[12px] leading-snug text-foreground/60 md:mt-1 md:line-clamp-none md:text-base md:leading-relaxed">
                   <span className="md:hidden">{item.shortHint}</span>
                   <span className="hidden md:inline">{item.hint}</span>
                 </span>
