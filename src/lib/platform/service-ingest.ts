@@ -14,6 +14,12 @@ export type VerticalOfferDraft = {
   area: string;
   /** Точный адрес: показывается на карточке и открывает маршрут в картах. */
   address?: string;
+  /** Жильё: что есть внутри (Wi-Fi, кухня, бассейн...). */
+  amenities?: string[];
+  /** Жильё: вместимость. */
+  guests?: number;
+  /** Жильё: спальни. */
+  bedrooms?: number;
   /** sport slot / stay hint / car gearbox+deposit */
   detail: string;
   sourceUrl: string;

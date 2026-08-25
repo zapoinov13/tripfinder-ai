@@ -14,7 +14,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { destinations } from "@/data/demo";
-import { carClasses, formatKzt, sportKinds, stayKinds } from "@/data/scenario-catalog";
+import { carClasses, formatKzt, sportKinds, stayAmenities, stayKinds } from "@/data/scenario-catalog";
 import { ingestVerticalFromUrl } from "@/lib/platform/page-ingest";
 import {
   draftVerticalFromLink,
@@ -277,6 +277,80 @@ export function AddVerticalDialog({
                 onChange={(e) => setDraft({ ...draft, detail: e.target.value })}
               />
             </div>
+            {vertical === "stay" ? (
+              <>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <Label htmlFor="vert-guests">Гостей до</Label>
+                    <Input
+                      id="vert-guests"
+                      type="number"
+                      min={1}
+                      value={draft.guests ?? ""}
+                      onChange={(e) => {
+                        const { guests: _guests, ...rest } = draft;
+                        const value = Number(e.target.value);
+                        setDraft(value > 0 ? { ...rest, guests: value } : rest);
+                      }}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="vert-bedrooms">Спален</Label>
+                    <Input
+                      id="vert-bedrooms"
+                      type="number"
+                      min={0}
+                      value={draft.bedrooms ?? ""}
+                      onChange={(e) => {
+                        const { bedrooms: _bedrooms, ...rest } = draft;
+                        const value = Number(e.target.value);
+                        setDraft(value > 0 ? { ...rest, bedrooms: value } : rest);
+                      }}
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>Что есть</Label>
+                  <div className="flex flex-wrap gap-1.5">
+                    {stayAmenities.map((amenity) => {
+                      const active = (draft.amenities ?? []).includes(amenity);
+                      return (
+                        <button
+                          key={amenity}
+                          type="button"
+                          onClick={() =>
+                            setDraft({
+                              ...draft,
+                              amenities: active
+                                ? (draft.amenities ?? []).filter((a) => a !== amenity)
+                                : [...(draft.amenities ?? []), amenity],
+                            })
+                          }
+                          className={
+                            active
+                              ? "rounded-full bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground"
+                              : "rounded-full border border-border bg-card px-3 py-1.5 text-xs text-foreground/70 hover:border-primary/40"
+                          }
+                        >
+                          {amenity}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="vert-about">Описание</Label>
+                  <textarea
+                    id="vert-about"
+                    rows={3}
+                    placeholder="Пара предложений: что за жильё, чем удобно, что рядом"
+                    value={draft.about}
+                    onChange={(e) => setDraft({ ...draft, about: e.target.value })}
+                    className="w-full resize-none rounded-xl border border-border bg-card px-3 py-2 text-sm outline-none focus:border-primary"
+                  />
+                </div>
+              </>
+            ) : null}
             <div className="rounded-xl border border-border p-3 text-sm">
               <p className="font-semibold">{draft.name || "Без названия"}</p>
               <p className="text-muted-foreground">

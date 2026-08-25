@@ -34,6 +34,11 @@ type StayCard = {
   rating: number;
   nightsHint: string;
   companyName?: string;
+  address?: string;
+  amenities?: string[];
+  guests?: number;
+  bedrooms?: number;
+  about?: string;
 };
 
 export const Route = createFileRoute("/stays")({
@@ -90,6 +95,11 @@ function StaysPage() {
       rating: item.rating ?? 0,
       nightsHint: item.detail || "за ночь",
       companyName: item.companyName,
+      ...(item.address ? { address: item.address } : {}),
+      ...(item.amenities?.length ? { amenities: item.amenities } : {}),
+      ...(item.guests ? { guests: item.guests } : {}),
+      ...(item.bedrooms ? { bedrooms: item.bedrooms } : {}),
+      ...(item.about ? { about: item.about } : {}),
     })),
     ...stays,
   ];
@@ -243,6 +253,54 @@ function StaysPage() {
                 ) : null}
                 {item.rating > 0 ? (
                   <p className="mt-2 text-sm text-foreground/70">Рейтинг {item.rating}</p>
+                ) : null}
+                {item.guests || item.bedrooms ? (
+                  <p className="mt-2 text-sm text-foreground/70">
+                    {[
+                      item.guests ? `до ${item.guests} гостей` : "",
+                      item.bedrooms ? `${item.bedrooms} сп.` : "",
+                    ]
+                      .filter(Boolean)
+                      .join(" · ")}
+                  </p>
+                ) : null}
+                {item.about ? (
+                  <p className="mt-2 line-clamp-2 text-sm leading-snug text-foreground/60">
+                    {item.about}
+                  </p>
+                ) : null}
+                {item.amenities?.length ? (
+                  <div className="mt-3 flex flex-wrap gap-1.5">
+                    {item.amenities.slice(0, 4).map((a) => (
+                      <span
+                        key={a}
+                        className="rounded-full bg-secondary px-2.5 py-1 text-[11px] font-medium text-foreground/70"
+                      >
+                        {a}
+                      </span>
+                    ))}
+                    {item.amenities.length > 4 ? (
+                      <span className="rounded-full bg-secondary px-2.5 py-1 text-[11px] font-medium text-foreground/50">
+                        +{item.amenities.length - 4}
+                      </span>
+                    ) : null}
+                  </div>
+                ) : null}
+                {item.address ? (
+                  <a
+                    href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(`${item.address}, ${item.city}`)}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="mt-2 inline-flex items-start gap-1.5 text-sm font-medium text-primary hover:underline"
+                  >
+                    <MapPin className="mt-0.5 size-4 shrink-0" />
+                    <span>
+                      {item.address}
+                      <span className="block text-xs font-normal text-foreground/55">
+                        Открыть маршрут в картах
+                      </span>
+                    </span>
+                  </a>
                 ) : null}
                 {item.price > 0 ? (
                   <p className="mt-4 font-display text-lg font-semibold">
