@@ -75,7 +75,9 @@ export function AppTabBar() {
                 <span
                   className={cn(
                     "-mt-5 grid size-12 place-items-center rounded-full shadow-md",
-                    active ? "bg-primary text-primary-foreground" : "bg-ink text-primary-foreground",
+                    active
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-ink text-primary-foreground",
                   )}
                 >
                   <tab.icon className="size-5" aria-hidden />

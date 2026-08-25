@@ -22,7 +22,10 @@ export type VerticalOfferDraft = {
 };
 
 /** @deprecated use VerticalOfferDraft */
-export type SportOfferDraft = Omit<VerticalOfferDraft, "vertical" | "detail" | "seats" | "rating"> & {
+export type SportOfferDraft = Omit<
+  VerticalOfferDraft,
+  "vertical" | "detail" | "seats" | "rating"
+> & {
   slot: string;
 };
 
@@ -168,8 +171,7 @@ function isInstagram(url: string) {
 
 function emptyDraft(vertical: VerticalId, destinationId = "uae"): VerticalOfferDraft {
   const dest = destinations.find((d) => d.id === destinationId) ?? destinations[0]!;
-  const kind =
-    vertical === "sport" ? "gym" : vertical === "stay" ? "hotel" : "eco";
+  const kind = vertical === "sport" ? "gym" : vertical === "stay" ? "hotel" : "eco";
   return {
     vertical,
     name: "",
@@ -197,12 +199,13 @@ function baseParse(input: { url: string; text?: string }, fallbackTitle: string)
     warnings.push("Вставьте ссылку на Instagram или сайт и описание");
   }
 
-
   const sourceKind = isInstagram(url) ? ("instagram" as const) : ("website" as const);
   const blob = `${url}\n${text}`;
   const destinationId = guessDestination(blob);
   const dest = destinations.find((d) => d.id === destinationId) ?? destinations[0]!;
-  const photos = extractUrls(blob).filter((u) => /\.(jpe?g|png|webp|gif)(\?|$)/i.test(u)).slice(0, 8);
+  const photos = extractUrls(blob)
+    .filter((u) => /\.(jpe?g|png|webp|gif)(\?|$)/i.test(u))
+    .slice(0, 8);
   const name = extractTitle(text || url, url, fallbackTitle);
   const price = extractPrice(blob);
   const area = extractArea(blob);
@@ -222,7 +225,20 @@ function baseParse(input: { url: string; text?: string }, fallbackTitle: string)
   if (area) fields.push("район");
   if (photos.length) fields.push("фото");
 
-  return { url, text, blob, destinationId, dest, photos, name, price, area, fields, warnings, sourceKind };
+  return {
+    url,
+    text,
+    blob,
+    destinationId,
+    dest,
+    photos,
+    name,
+    price,
+    area,
+    fields,
+    warnings,
+    sourceKind,
+  };
 }
 
 export function draftVerticalFromLink(input: {
@@ -239,7 +255,11 @@ export function draftVerticalFromLink(input: {
   const fallback =
     vertical === "sport" ? "Спортивная услуга" : vertical === "stay" ? "Жильё" : "Авто";
   const parsed = baseParse(input, fallback);
-  if (parsed.warnings[0]?.startsWith("Вставьте") && !input.url.trim() && !(input.text ?? "").trim()) {
+  if (
+    parsed.warnings[0]?.startsWith("Вставьте") &&
+    !input.url.trim() &&
+    !(input.text ?? "").trim()
+  ) {
     return {
       draft: emptyDraft(vertical),
       fields: [],

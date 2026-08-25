@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { routeTravelIntent } from "@/lib/scenario-router";
-import { speechService } from "@/lib/speech-service";
+import { speechErrorMessage, speechService } from "@/lib/speech-service";
 import { cn } from "@/lib/utils";
 
 export function AiIntentBar({ tone = "light" }: { tone?: "light" | "onDark" }) {
@@ -28,8 +28,8 @@ export function AiIntentBar({ tone = "light" }: { tone?: "light" | "onDark" }) {
       const result = await speechService.start();
       setQuery(result.text);
       go(result.text);
-    } catch {
-      toast.error("Не удалось включить микрофон");
+    } catch (error) {
+      toast.error(speechErrorMessage(error));
     } finally {
       setListening(false);
     }
@@ -49,10 +49,7 @@ export function AiIntentBar({ tone = "light" }: { tone?: "light" | "onDark" }) {
       }}
     >
       <Sparkles
-        className={cn(
-          "size-4 shrink-0",
-          tone === "onDark" ? "text-primary-foreground" : "text-ai",
-        )}
+        className={cn("size-4 shrink-0", tone === "onDark" ? "text-primary-foreground" : "text-ai")}
       />
       <Input
         value={query}
@@ -60,8 +57,7 @@ export function AiIntentBar({ tone = "light" }: { tone?: "light" | "onDark" }) {
         placeholder="Например: Дубай на неделю для двоих"
         className={cn(
           "h-11 min-w-0 flex-1 border-0 bg-transparent px-2 text-[15px] shadow-none placeholder:truncate focus-visible:ring-0",
-          tone === "onDark" &&
-            "text-primary-foreground placeholder:text-primary-foreground/70",
+          tone === "onDark" && "text-primary-foreground placeholder:text-primary-foreground/70",
         )}
       />
       <Button

@@ -122,10 +122,15 @@ export function useTourSearch(raw: Partial<SearchParams> | Record<string, unknow
   const catalogKey = usePlatformSelector(
     (s) => `${s.tours.length}:${s.tours.map((t) => `${t.id}:${t.price}:${t.status}`).join("|")}`,
   );
+  // Вызывающие пересоздают raw на каждом рендере, поэтому сравниваем по
+  // сериализации; парсим ключ обратно, чтобы список зависимостей был полным.
+  const rawKey = JSON.stringify(raw);
   return useMemo(
-    () => searchService.search(raw),
-    // catalogKey отражает изменения каталога; raw сериализуем для стабильности
-    [catalogKey, JSON.stringify(raw)],
+    () => searchService.search(JSON.parse(rawKey) as Partial<SearchParams>),
+    // catalogKey намеренно в зависимостях: search() читает каталог из стора
+    // напрямую, и ключ форсирует пересчёт после hydrate/правок каталога.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [catalogKey, rawKey],
   );
 }
 

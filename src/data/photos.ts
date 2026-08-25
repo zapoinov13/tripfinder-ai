@@ -248,7 +248,9 @@ export const destinationPhotos = (id: string, count = 8) =>
   pickPhotos(destGalleries[id] ?? luxury, 1, count);
 
 export const cityCover = (destinationId: string, city: string, salt = 0) =>
-  cityPhotos[city] ?? destGalleries[destinationId]?.[salt % (destGalleries[destinationId]?.length || 1)] ?? destUae;
+  cityPhotos[city] ??
+  destGalleries[destinationId]?.[salt % (destGalleries[destinationId]?.length || 1)] ??
+  destUae;
 
 export const hotelPhotos = (destinationId: string, hotelIndex: number, count = 10) => {
   const pool = [...(destGalleries[destinationId] ?? luxury), ...luxury];
@@ -256,61 +258,257 @@ export const hotelPhotos = (destinationId: string, hotelIndex: number, count = 1
 };
 
 const excursionCovers: Record<string, string[]> = {
-  "exc-safari": [dubaiSafari, u("photo-1451337516015-6b6e9a44a8a3"), u("photo-1473580044384-7ba9967e16a0"), u("photo-1504280390367-361c6d9f38f4")],
-  "exc-yacht": [dubaiYacht, u("photo-1544551763-46a013bb70d5"), u("photo-1476514525535-07fb3b4ae5f1"), u("photo-1476514525535-07fb3b4ae5f1")],
-  "exc-burj": [dubaiDowntown, u("photo-1489515217757-5fd1be406fef"), u("photo-1580674684081-7617fbf3d745"), u("photo-1489515217757-5fd1be406fef")],
+  "exc-safari": [
+    dubaiSafari,
+    u("photo-1451337516015-6b6e9a44a8a3"),
+    u("photo-1473580044384-7ba9967e16a0"),
+    u("photo-1504280390367-361c6d9f38f4"),
+  ],
+  "exc-yacht": [
+    dubaiYacht,
+    u("photo-1544551763-46a013bb70d5"),
+    u("photo-1476514525535-07fb3b4ae5f1"),
+    u("photo-1476514525535-07fb3b4ae5f1"),
+  ],
+  "exc-burj": [
+    dubaiDowntown,
+    u("photo-1489515217757-5fd1be406fef"),
+    u("photo-1580674684081-7617fbf3d745"),
+    u("photo-1489515217757-5fd1be406fef"),
+  ],
   "exc-city": [dubaiOldCity, dubaiDowntown, u("photo-1580674684081-7617fbf3d745"), destUae],
-  "exc-atlantis": [dubaiPalm, u("photo-1576678927484-cc907957088c"), u("photo-1576013551627-0cc20b96c2a7"), dubaiFamily],
+  "exc-atlantis": [
+    dubaiPalm,
+    u("photo-1576678927484-cc907957088c"),
+    u("photo-1576013551627-0cc20b96c2a7"),
+    dubaiFamily,
+  ],
   "exc-transfer-dxb": [dubaiHero, u("photo-1445019980597-93fa8acb246c"), dubaiDowntown],
-  "exc-abudhabi": [u("photo-1512632578888-169bbbc64f33"), destUae, u("photo-1609137144813-7d9921338f24")],
-  "exc-ferrari": [u("photo-1577717903315-1691ae25ab3f"), u("photo-1580674684081-7617fbf3d745"), dubaiFamily],
-  "exc-louvre": [u("photo-1512632578888-169bbbc64f33"), u("photo-1609137144813-7d9921338f24"), destUae],
+  "exc-abudhabi": [
+    u("photo-1512632578888-169bbbc64f33"),
+    destUae,
+    u("photo-1609137144813-7d9921338f24"),
+  ],
+  "exc-ferrari": [
+    u("photo-1577717903315-1691ae25ab3f"),
+    u("photo-1580674684081-7617fbf3d745"),
+    dubaiFamily,
+  ],
+  "exc-louvre": [
+    u("photo-1512632578888-169bbbc64f33"),
+    u("photo-1609137144813-7d9921338f24"),
+    destUae,
+  ],
   "exc-sharjah": [dubaiOldCity, destUae, u("photo-1489515217757-5fd1be406fef")],
-  "exc-jebel": [u("photo-1506905925346-21bda4d32df4"), dubaiSafari, u("photo-1451337516015-6b6e9a44a8a3")],
-  "exc-antalya-old": [destTurkey, u("photo-1524231757912-21f4fe3a7200"), u("photo-1541432901042-2d8bd64b4a9b")],
-  "exc-antalya-yacht": [u("photo-1544551763-46a013bb70d5"), u("photo-1476514525535-07fb3b4ae5f1"), destTurkey],
+  "exc-jebel": [
+    u("photo-1506905925346-21bda4d32df4"),
+    dubaiSafari,
+    u("photo-1451337516015-6b6e9a44a8a3"),
+  ],
+  "exc-antalya-old": [
+    destTurkey,
+    u("photo-1524231757912-21f4fe3a7200"),
+    u("photo-1541432901042-2d8bd64b4a9b"),
+  ],
+  "exc-antalya-yacht": [
+    u("photo-1544551763-46a013bb70d5"),
+    u("photo-1476514525535-07fb3b4ae5f1"),
+    destTurkey,
+  ],
   "exc-antalya-land": [u("photo-1576678927484-cc907957088c"), dubaiFamily, hotel2],
-  "exc-alanya-castle": [u("photo-1541432901042-2d8bd64b4a9b"), destTurkey, u("photo-1541432901042-2d8bd64b4a9b")],
-  "exc-alanya-boat": [u("photo-1476514525535-07fb3b4ae5f1"), u("photo-1544551763-46a013bb70d5"), u("photo-1507525428034-b723cf961d3e")],
-  "exc-kemer-oly": [u("photo-1506905925346-21bda4d32df4"), destTurkey, u("photo-1524231757912-21f4fe3a7200")],
-  "exc-kemer-raft": [u("photo-1506905925346-21bda4d32df4"), u("photo-1476514525535-07fb3b4ae5f1"), destTurkey],
-  "exc-bodrum-castle": [u("photo-1541432901042-2d8bd64b4a9b"), destTurkey, u("photo-1524231757912-21f4fe3a7200")],
-  "exc-bodrum-gulf": [u("photo-1544551763-46a013bb70d5"), u("photo-1507525428034-b723cf961d3e"), u("photo-1476514525535-07fb3b4ae5f1")],
-  "exc-marmaris-dalyan": [u("photo-1544551763-46a013bb70d5"), destTurkey, u("photo-1507525428034-b723cf961d3e")],
-  "exc-phuket-phi": [u("photo-1506665531195-3566af2b4dfa"), destThailand, u("photo-1506665531195-3566af2b4dfa")],
-  "exc-phuket-old": [u("photo-1537953773345-d172ccf13cf1"), destThailand, u("photo-1537953773345-d172ccf13cf1")],
+  "exc-alanya-castle": [
+    u("photo-1541432901042-2d8bd64b4a9b"),
+    destTurkey,
+    u("photo-1541432901042-2d8bd64b4a9b"),
+  ],
+  "exc-alanya-boat": [
+    u("photo-1476514525535-07fb3b4ae5f1"),
+    u("photo-1544551763-46a013bb70d5"),
+    u("photo-1507525428034-b723cf961d3e"),
+  ],
+  "exc-kemer-oly": [
+    u("photo-1506905925346-21bda4d32df4"),
+    destTurkey,
+    u("photo-1524231757912-21f4fe3a7200"),
+  ],
+  "exc-kemer-raft": [
+    u("photo-1506905925346-21bda4d32df4"),
+    u("photo-1476514525535-07fb3b4ae5f1"),
+    destTurkey,
+  ],
+  "exc-bodrum-castle": [
+    u("photo-1541432901042-2d8bd64b4a9b"),
+    destTurkey,
+    u("photo-1524231757912-21f4fe3a7200"),
+  ],
+  "exc-bodrum-gulf": [
+    u("photo-1544551763-46a013bb70d5"),
+    u("photo-1507525428034-b723cf961d3e"),
+    u("photo-1476514525535-07fb3b4ae5f1"),
+  ],
+  "exc-marmaris-dalyan": [
+    u("photo-1544551763-46a013bb70d5"),
+    destTurkey,
+    u("photo-1507525428034-b723cf961d3e"),
+  ],
+  "exc-phuket-phi": [
+    u("photo-1506665531195-3566af2b4dfa"),
+    destThailand,
+    u("photo-1506665531195-3566af2b4dfa"),
+  ],
+  "exc-phuket-old": [
+    u("photo-1537953773345-d172ccf13cf1"),
+    destThailand,
+    u("photo-1537953773345-d172ccf13cf1"),
+  ],
   "exc-phuket-show": [u("photo-1528127269322-539801943592"), destThailand, hotel1],
-  "exc-pattaya-alc": [u("photo-1506665531195-3566af2b4dfa"), destThailand, u("photo-1537953773345-d172ccf13cf1")],
-  "exc-pattaya-islands": [u("photo-1476514525535-07fb3b4ae5f1"), u("photo-1507525428034-b723cf961d3e"), destThailand],
-  "exc-krabi-4": [u("photo-1506665531195-3566af2b4dfa"), u("photo-1506665531195-3566af2b4dfa"), destThailand],
-  "exc-samui-ang": [u("photo-1439066615861-d1af74d74000"), u("photo-1439066615861-d1af74d74000"), destThailand],
-  "exc-hurghada-orange": [u("photo-1591604129939-f1efa4d9f7fa"), destEgypt, u("photo-1544551763-46a013bb70d5")],
-  "exc-hurghada-luxor": [u("photo-1591604129939-f1efa4d9f7fa"), u("photo-1451337516015-6b6e9a44a8a3"), destEgypt],
-  "exc-hurghada-quad": [u("photo-1451337516015-6b6e9a44a8a3"), u("photo-1473580044384-7ba9967e16a0"), destEgypt],
-  "exc-sharm-ras": [u("photo-1544551763-46a013bb70d5"), destEgypt, u("photo-1591604129939-f1efa4d9f7fa")],
-  "exc-sharm-colored": [u("photo-1451337516015-6b6e9a44a8a3"), destEgypt, u("photo-1506905925346-21bda4d32df4")],
-  "exc-marsa-dolphins": [u("photo-1544551763-46a013bb70d5"), destEgypt, u("photo-1439066615861-d1af74d74000")],
-  "exc-nha-islands": [u("photo-1559592413-7cec4d0cae2b"), destVietnam, u("photo-1476514525535-07fb3b4ae5f1")],
+  "exc-pattaya-alc": [
+    u("photo-1506665531195-3566af2b4dfa"),
+    destThailand,
+    u("photo-1537953773345-d172ccf13cf1"),
+  ],
+  "exc-pattaya-islands": [
+    u("photo-1476514525535-07fb3b4ae5f1"),
+    u("photo-1507525428034-b723cf961d3e"),
+    destThailand,
+  ],
+  "exc-krabi-4": [
+    u("photo-1506665531195-3566af2b4dfa"),
+    u("photo-1506665531195-3566af2b4dfa"),
+    destThailand,
+  ],
+  "exc-samui-ang": [
+    u("photo-1439066615861-d1af74d74000"),
+    u("photo-1439066615861-d1af74d74000"),
+    destThailand,
+  ],
+  "exc-hurghada-orange": [
+    u("photo-1591604129939-f1efa4d9f7fa"),
+    destEgypt,
+    u("photo-1544551763-46a013bb70d5"),
+  ],
+  "exc-hurghada-luxor": [
+    u("photo-1591604129939-f1efa4d9f7fa"),
+    u("photo-1451337516015-6b6e9a44a8a3"),
+    destEgypt,
+  ],
+  "exc-hurghada-quad": [
+    u("photo-1451337516015-6b6e9a44a8a3"),
+    u("photo-1473580044384-7ba9967e16a0"),
+    destEgypt,
+  ],
+  "exc-sharm-ras": [
+    u("photo-1544551763-46a013bb70d5"),
+    destEgypt,
+    u("photo-1591604129939-f1efa4d9f7fa"),
+  ],
+  "exc-sharm-colored": [
+    u("photo-1451337516015-6b6e9a44a8a3"),
+    destEgypt,
+    u("photo-1506905925346-21bda4d32df4"),
+  ],
+  "exc-marsa-dolphins": [
+    u("photo-1544551763-46a013bb70d5"),
+    destEgypt,
+    u("photo-1439066615861-d1af74d74000"),
+  ],
+  "exc-nha-islands": [
+    u("photo-1559592413-7cec4d0cae2b"),
+    destVietnam,
+    u("photo-1476514525535-07fb3b4ae5f1"),
+  ],
   "exc-nha-mud": [u("photo-1584132915807-fd1f5fbc078f"), destVietnam, hotel2],
-  "exc-phu-sao": [u("photo-1583417319070-4a69db38a482"), destVietnam, u("photo-1507525428034-b723cf961d3e")],
-  "exc-phu-sunset": [u("photo-1528127269322-539801943592"), destVietnam, u("photo-1510414842594-a61c69b5ae57")],
-  "exc-danang-bana": [u("photo-1559592413-7cec4d0cae2b"), destVietnam, u("photo-1506905925346-21bda4d32df4")],
-  "exc-male-sandbank": [destMaldives, u("photo-1439066615861-d1af74d74000"), u("photo-1439066615861-d1af74d74000")],
-  "exc-male-city": [u("photo-1439066615861-d1af74d74000"), destMaldives, u("photo-1602002418082-a4443e081dd1")],
-  "exc-ari-whale": [u("photo-1544551763-46a013bb70d5"), destMaldives, u("photo-1439066615861-d1af74d74000")],
-  "exc-batumi-botan": [u("photo-1565008576549-57569a49371d"), destTurkey, u("photo-1506905925346-21bda4d32df4")],
-  "exc-batumi-canyon": [u("photo-1506905925346-21bda4d32df4"), u("photo-1476514525535-07fb3b4ae5f1"), destTurkey],
-  "exc-tbilisi-old": [u("photo-1565008576549-57569a49371d"), destTurkey, u("photo-1524231757912-21f4fe3a7200")],
+  "exc-phu-sao": [
+    u("photo-1583417319070-4a69db38a482"),
+    destVietnam,
+    u("photo-1507525428034-b723cf961d3e"),
+  ],
+  "exc-phu-sunset": [
+    u("photo-1528127269322-539801943592"),
+    destVietnam,
+    u("photo-1510414842594-a61c69b5ae57"),
+  ],
+  "exc-danang-bana": [
+    u("photo-1559592413-7cec4d0cae2b"),
+    destVietnam,
+    u("photo-1506905925346-21bda4d32df4"),
+  ],
+  "exc-male-sandbank": [
+    destMaldives,
+    u("photo-1439066615861-d1af74d74000"),
+    u("photo-1439066615861-d1af74d74000"),
+  ],
+  "exc-male-city": [
+    u("photo-1439066615861-d1af74d74000"),
+    destMaldives,
+    u("photo-1602002418082-a4443e081dd1"),
+  ],
+  "exc-ari-whale": [
+    u("photo-1544551763-46a013bb70d5"),
+    destMaldives,
+    u("photo-1439066615861-d1af74d74000"),
+  ],
+  "exc-batumi-botan": [
+    u("photo-1565008576549-57569a49371d"),
+    destTurkey,
+    u("photo-1506905925346-21bda4d32df4"),
+  ],
+  "exc-batumi-canyon": [
+    u("photo-1506905925346-21bda4d32df4"),
+    u("photo-1476514525535-07fb3b4ae5f1"),
+    destTurkey,
+  ],
+  "exc-tbilisi-old": [
+    u("photo-1565008576549-57569a49371d"),
+    destTurkey,
+    u("photo-1524231757912-21f4fe3a7200"),
+  ],
   "exc-tbilisi-wine": [u("photo-1414235077428-338989a2e8c0"), destTurkey, hotel1],
-  "exc-doha-museum": [u("photo-1609137144813-7d9921338f24"), u("photo-1609137144813-7d9921338f24"), destUae],
-  "exc-doha-desert": [u("photo-1451337516015-6b6e9a44a8a3"), dubaiSafari, u("photo-1473580044384-7ba9967e16a0")],
-  "exc-doha-transfer": [u("photo-1445019980597-93fa8acb246c"), u("photo-1609137144813-7d9921338f24"), destUae],
-  "exc-bentota-river": [u("photo-1540202404-a2f29016b523"), destThailand, u("photo-1476514525535-07fb3b4ae5f1")],
-  "exc-hikka-whale": [u("photo-1544551763-46a013bb70d5"), u("photo-1540202404-a2f29016b523"), destThailand],
-  "exc-kuta-surf": [u("photo-1507525428034-b723cf961d3e"), u("photo-1537996194471-e657df975ab4"), destVietnam],
-  "exc-seminyak-sunset": [u("photo-1510414842594-a61c69b5ae57"), u("photo-1555400038-63f5ba517a47"), destVietnam],
-  "exc-ubud-rice": [u("photo-1539367628448-4bc5c9d171c8"), u("photo-1518548419970-58e3b4079ab2"), destVietnam],
-  "exc-ubud-swing": [u("photo-1555400038-63f5ba517a47"), u("photo-1537996194471-e657df975ab4"), destVietnam],
+  "exc-doha-museum": [
+    u("photo-1609137144813-7d9921338f24"),
+    u("photo-1609137144813-7d9921338f24"),
+    destUae,
+  ],
+  "exc-doha-desert": [
+    u("photo-1451337516015-6b6e9a44a8a3"),
+    dubaiSafari,
+    u("photo-1473580044384-7ba9967e16a0"),
+  ],
+  "exc-doha-transfer": [
+    u("photo-1445019980597-93fa8acb246c"),
+    u("photo-1609137144813-7d9921338f24"),
+    destUae,
+  ],
+  "exc-bentota-river": [
+    u("photo-1540202404-a2f29016b523"),
+    destThailand,
+    u("photo-1476514525535-07fb3b4ae5f1"),
+  ],
+  "exc-hikka-whale": [
+    u("photo-1544551763-46a013bb70d5"),
+    u("photo-1540202404-a2f29016b523"),
+    destThailand,
+  ],
+  "exc-kuta-surf": [
+    u("photo-1507525428034-b723cf961d3e"),
+    u("photo-1537996194471-e657df975ab4"),
+    destVietnam,
+  ],
+  "exc-seminyak-sunset": [
+    u("photo-1510414842594-a61c69b5ae57"),
+    u("photo-1555400038-63f5ba517a47"),
+    destVietnam,
+  ],
+  "exc-ubud-rice": [
+    u("photo-1539367628448-4bc5c9d171c8"),
+    u("photo-1518548419970-58e3b4079ab2"),
+    destVietnam,
+  ],
+  "exc-ubud-swing": [
+    u("photo-1555400038-63f5ba517a47"),
+    u("photo-1537996194471-e657df975ab4"),
+    destVietnam,
+  ],
 };
 
 export const excursionGallery = (id: string, destinationId: string, salt = 0) => {

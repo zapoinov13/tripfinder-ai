@@ -59,7 +59,12 @@ function SettingsContent() {
   const isOperator = user.role.startsWith("OPERATOR");
 
   return (
-    <DashShell brand="TourGo" items={profileNav} title="Данные туриста" subtitle="Имя, город и уведомления">
+    <DashShell
+      brand="TourGo"
+      items={profileNav}
+      title="Данные туриста"
+      subtitle="Имя, город и уведомления"
+    >
       <div className="grid max-w-2xl gap-6">
         <div className="surface-card space-y-4 p-6">
           <h2 className="font-display text-lg font-semibold">Личные данные</h2>

@@ -1,13 +1,5 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
-import {
-  BadgeCheck,
-  Globe,
-  Instagram,
-  MessageCircle,
-  Phone,
-  Send,
-  Star,
-} from "lucide-react";
+import { BadgeCheck, Globe, Instagram, MessageCircle, Phone, Send, Star } from "lucide-react";
 
 import { SiteLayout } from "@/components/site/site-layout";
 import { Badge } from "@/components/ui/badge";
@@ -192,11 +184,7 @@ function CompanyPage() {
                       params={{ tourId: t.id }}
                       className="overflow-hidden rounded-2xl border border-border transition-colors hover:border-primary/40"
                     >
-                      <img
-                        src={tourCover(t, hotel)}
-                        alt=""
-                        className="h-32 w-full object-cover"
-                      />
+                      <img src={tourCover(t, hotel)} alt="" className="h-32 w-full object-cover" />
                       <div className="p-4">
                         <p className="font-medium">{t.title || hotel.name}</p>
                         <p className="mt-1 text-xs text-muted-foreground">

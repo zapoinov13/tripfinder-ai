@@ -13,8 +13,10 @@ export function SiteLayout({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <SiteHeader compact={compactApp} />
-      <main className={cn("flex-1", tabPadding)}>{children}</main>
-      {!compactApp ? <SiteFooter /> : null}
+      {/* Запас под фиксированный таб-бар живёт в футере (его тёмный фон закрашивает
+          зазор); на main он нужен только в нативном приложении, где футера нет. */}
+      <main className={cn("flex-1", compactApp ? tabPadding : undefined)}>{children}</main>
+      {!compactApp ? <SiteFooter className={tabPadding} /> : null}
     </div>
   );
 }

@@ -55,7 +55,9 @@ const DEFAULT_INCLUDED: Record<(typeof OFFER_INCLUDE_OPTIONS)[number]["key"], bo
   excursions: false,
 };
 
-function buildIncludesText(included: Record<(typeof OFFER_INCLUDE_OPTIONS)[number]["key"], boolean>) {
+function buildIncludesText(
+  included: Record<(typeof OFFER_INCLUDE_OPTIONS)[number]["key"], boolean>,
+) {
   return OFFER_INCLUDE_OPTIONS.filter((item) => included[item.key])
     .map((item) => item.label)
     .join(", ");
@@ -78,7 +80,9 @@ function hotelOptionsForOffer(
   for (const hotel of platformHotels) {
     if (hotel.destinationId === destinationId) map.set(hotel.id, hotel);
   }
-  return [...map.values()].sort((a, b) => b.rating - a.rating || a.name.localeCompare(b.name, "ru"));
+  return [...map.values()].sort(
+    (a, b) => b.rating - a.rating || a.name.localeCompare(b.name, "ru"),
+  );
 }
 
 function OperatorRequestsPage() {
@@ -195,10 +199,7 @@ function OfferDialog({
     .filter((t) => t.operatorOrgId === orgId && t.status === "active")
     .slice(0, 40);
 
-  const tourHotelIds = useMemo(
-    () => myTours.map((t) => t.hotelId).filter(Boolean),
-    [myTours],
-  );
+  const tourHotelIds = useMemo(() => myTours.map((t) => t.hotelId).filter(Boolean), [myTours]);
   const hotelOptions = useMemo(
     () => hotelOptionsForOffer(orgId, request.destinationId, state.hotels ?? [], tourHotelIds),
     [orgId, request.destinationId, state.hotels, tourHotelIds],
@@ -241,10 +242,9 @@ function OfferDialog({
   };
 
   const hotelLabel = () => {
-    const names = [
-      ...selectedHotelIds.map((id) => getHotel(id).name),
-      customHotel.trim(),
-    ].filter(Boolean);
+    const names = [...selectedHotelIds.map((id) => getHotel(id).name), customHotel.trim()].filter(
+      Boolean,
+    );
     return names.join(", ");
   };
 
@@ -352,9 +352,7 @@ function OfferDialog({
                       onClick={() => toggleHotel(hotel.id)}
                       className={cn(
                         "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition-colors",
-                        active
-                          ? "bg-primary/10 ring-1 ring-primary/20"
-                          : "hover:bg-secondary/80",
+                        active ? "bg-primary/10 ring-1 ring-primary/20" : "hover:bg-secondary/80",
                       )}
                     >
                       <span

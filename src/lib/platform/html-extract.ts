@@ -21,14 +21,8 @@ function decodeEntities(value: string) {
 
 function metaContent(html: string, key: string): string {
   const patterns = [
-    new RegExp(
-      `<meta[^>]+(?:property|name)=["']${key}["'][^>]+content=["']([^"']+)["']`,
-      "i",
-    ),
-    new RegExp(
-      `<meta[^>]+content=["']([^"']+)["'][^>]+(?:property|name)=["']${key}["']`,
-      "i",
-    ),
+    new RegExp(`<meta[^>]+(?:property|name)=["']${key}["'][^>]+content=["']([^"']+)["']`, "i"),
+    new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]+(?:property|name)=["']${key}["']`, "i"),
   ];
   for (const re of patterns) {
     const m = html.match(re);
@@ -40,7 +34,9 @@ function metaContent(html: string, key: string): string {
 function tagText(html: string, tag: string): string {
   const m = html.match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`, "i"));
   if (!m?.[1]) return "";
-  return decodeEntities(m[1].replace(/<[^>]+>/g, " ")).replace(/\s+/g, " ").trim();
+  return decodeEntities(m[1].replace(/<[^>]+>/g, " "))
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function absolutize(src: string, base: string): string | null {

@@ -36,7 +36,8 @@ function Calendar({
       captionLayout={captionLayout}
       formatters={{
         formatMonthDropdown: (date) => date.toLocaleString("ru-RU", { month: "short" }),
-        formatCaption: (date) => date.toLocaleDateString("ru-RU", { month: "long", year: "numeric" }),
+        formatCaption: (date) =>
+          date.toLocaleDateString("ru-RU", { month: "long", year: "numeric" }),
         formatWeekdayName: (date) => WEEKDAYS[(date.getDay() + 6) % 7] ?? "",
         ...formatters,
       }}

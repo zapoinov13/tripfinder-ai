@@ -68,7 +68,11 @@ function DestinationPage() {
   return (
     <SiteLayout>
       <section className="relative">
-        <img src={dest.image} alt={dest.country} className="h-[22rem] w-full object-cover md:h-[28rem]" />
+        <img
+          src={dest.image}
+          alt={dest.country}
+          className="h-[22rem] w-full object-cover md:h-[28rem]"
+        />
         <div className="absolute inset-0 media-scrim-strong" />
         <div className="container-page absolute inset-x-0 bottom-0 pb-8 pt-20">
           <Link
@@ -101,9 +105,7 @@ function DestinationPage() {
       ) : null}
 
       <section className="container-page mt-12">
-        <h2 className="font-display text-2xl font-semibold md:text-3xl">
-          Курорты: {dest.country}
-        </h2>
+        <h2 className="font-display text-2xl font-semibold md:text-3xl">Курорты: {dest.country}</h2>
         <p className="mt-2 text-muted-foreground">
           Выберите курорт, чтобы посмотреть подходящие туры
         </p>

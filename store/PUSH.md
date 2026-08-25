@@ -17,18 +17,22 @@ supabase functions deploy delete-account --project-ref mgyufoyornzbwvgdfojb
 
 Dashboard → Edge Functions → Secrets:
 
-| Secret | Значение |
-|--------|----------|
-| `FCM_SERVER_KEY` | Server key из Firebase Console (Cloud Messaging) |
+| Secret                     | Значение                                            |
+| -------------------------- | --------------------------------------------------- |
+| `FCM_SERVICE_ACCOUNT_JSON` | Полный JSON сервисного аккаунта Firebase (см. ниже) |
 
-Без `FCM_SERVER_KEY` уведомления сохраняются in-app, push на телефон не уходит.
+Без `FCM_SERVICE_ACCOUNT_JSON` уведомления сохраняются in-app, push на телефон не уходит.
+
+> Legacy `FCM_SERVER_KEY` больше не используется: Google отключила
+> `/fcm/send` в июне 2024, функция работает через FCM HTTP v1.
 
 ## Firebase (Android + iOS через FCM)
 
 1. [Firebase Console](https://console.firebase.google.com) → Add project `TourGo`
 2. Add Android app `com.tourgo.app` → скачать `google-services.json` → `android/app/`
 3. Add iOS app `com.tourgo.app` → скачать `GoogleService-Info.plist` → Xcode
-4. Project Settings → Cloud Messaging → **Server key** → Supabase secret `FCM_SERVER_KEY`
+4. Project Settings → Service accounts → **Generate new private key** →
+   скачанный JSON целиком вставить в Supabase secret `FCM_SERVICE_ACCOUNT_JSON`
 5. Apple: загрузить APNs key в Firebase → Cloud Messaging → Apple app configuration
 
 ## iOS native
@@ -48,5 +52,5 @@ npm run cap:ios
 ## Админ
 
 - URL: https://tripfinder-ai.vercel.app/admin
-- Login: `zapoinov@bk.ru` / `zapoinov@bk.ru`
-- Создать/обновить: `npm run ensure:admin` (нужен service role)
+- Login: аккаунт владельца платформы (пароль в вашем менеджере паролей, в репозитории не хранится)
+- Создать/обновить: `OWNER_EMAIL=... OWNER_PASSWORD=... npm run ensure:admin` (нужен service role)

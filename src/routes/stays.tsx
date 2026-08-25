@@ -6,13 +6,7 @@ import { SiteLayout } from "@/components/site/site-layout";
 import { Button } from "@/components/ui/button";
 import { DateRangePicker } from "@/components/ui/date-picker";
 import { destinations, resortsByDestination } from "@/data/demo";
-import {
-  formatKzt,
-  popularStayCities,
-  stayAreas,
-  stayKinds,
-  stays,
-} from "@/data/scenario-catalog";
+import { formatKzt, popularStayCities, stayAreas, stayKinds, stays } from "@/data/scenario-catalog";
 import {
   listPublishedVertical,
   subscribeVerticalListings,
@@ -106,7 +100,9 @@ function StaysPage() {
     const needle = (params.city || city || "").trim().toLowerCase();
     if (!needle) return true;
     return (
-      `${item.city} ${item.area} ${item.name} ${item.companyName ?? ""}`.toLowerCase().includes(needle) ||
+      `${item.city} ${item.area} ${item.name} ${item.companyName ?? ""}`
+        .toLowerCase()
+        .includes(needle) ||
       popularStayCities.some(
         (place) =>
           place.city.toLowerCase() === item.city.toLowerCase() &&
@@ -251,7 +247,9 @@ function StaysPage() {
                 {item.price > 0 ? (
                   <p className="mt-4 font-display text-lg font-semibold">
                     {formatKzt(item.price)}{" "}
-                    <span className="text-sm font-medium text-foreground/60">{item.nightsHint}</span>
+                    <span className="text-sm font-medium text-foreground/60">
+                      {item.nightsHint}
+                    </span>
                   </p>
                 ) : (
                   <p className="mt-4 text-sm text-foreground/60">Цена по запросу</p>
@@ -283,7 +281,9 @@ function StaysPage() {
                 <Building2 className="size-4" />
                 Для компаний
               </p>
-              <h3 className="mt-2 font-display text-xl font-semibold">Разместите жильё на TourGo</h3>
+              <h3 className="mt-2 font-display text-xl font-semibold">
+                Разместите жильё на TourGo
+              </h3>
               <p className="mt-2 text-sm leading-relaxed text-primary-foreground/80">
                 Зарегистрируйте компанию, отметьте «Отели» и добавьте карточку из Instagram или
                 сайта.

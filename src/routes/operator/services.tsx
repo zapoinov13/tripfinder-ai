@@ -99,9 +99,7 @@ function OperatorServicesPage() {
           Как добавить «{verticalLabel(tab)}» за 2 минуты
         </h2>
         <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm leading-relaxed text-foreground/70">
-          <li>
-            Зарегистрируйте компанию и отметьте услугу «{current.service}».
-          </li>
+          <li>Зарегистрируйте компанию и отметьте услугу «{current.service}».</li>
           <li>
             Вставьте ссылку на сайт: сервер прочитает HTML. Для Instagram добавьте bio или пост.
           </li>
@@ -114,9 +112,7 @@ function OperatorServicesPage() {
       {items.length === 0 ? (
         <div className="surface-card p-8 text-center">
           <p className="font-display text-xl font-semibold">Пока нет опубликованных карточек</p>
-          <p className="mt-2 text-sm text-foreground/70">
-            Добавьте первую из Instagram или сайта.
-          </p>
+          <p className="mt-2 text-sm text-foreground/70">Добавьте первую из Instagram или сайта.</p>
           <div className="mt-4 flex flex-wrap justify-center gap-3">
             <Button onClick={() => setAdding(true)}>Добавить из ссылки</Button>
             <Button variant="outline" asChild>
@@ -137,7 +133,9 @@ function OperatorServicesPage() {
                 {item.city}
                 {item.area ? ` · ${item.area}` : ""}
               </p>
-              {item.detail ? <p className="mt-2 text-sm text-foreground/70">{item.detail}</p> : null}
+              {item.detail ? (
+                <p className="mt-2 text-sm text-foreground/70">{item.detail}</p>
+              ) : null}
               {item.seats ? (
                 <p className="mt-1 text-sm text-foreground/70">{item.seats} мест</p>
               ) : null}

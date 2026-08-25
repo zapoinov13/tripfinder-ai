@@ -1,13 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import {
-  Heart,
-  MapPin,
-  Plane,
-  Scale,
-  Star,
-  UtensilsCrossed,
-  Waves,
-} from "lucide-react";
+import { Heart, MapPin, Plane, Scale, Star, UtensilsCrossed, Waves } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { PhotoCount } from "@/components/media/photo-gallery";
@@ -155,7 +147,8 @@ export function TourCard({
             <Heart className={cn("size-4", fav && "fill-current")} />
           </button>
         </div>
-        <div className="absolute inset-x-3 bottom-3 z-20 flex flex-wrap items-end justify-between gap-1.5">
+        {/* pointer-events-none: чипы информационные, тап сквозь них открывает тур. */}
+        <div className="pointer-events-none absolute inset-x-3 bottom-3 z-20 flex flex-wrap items-end justify-between gap-1.5">
           <div className="flex flex-wrap gap-1.5">
             <span className="rounded-full bg-card/95 px-2.5 py-1 text-[11px] font-semibold shadow-sm">
               {nightsLabel(tour.nights)}
@@ -169,7 +162,10 @@ export function TourCard({
         {shots.length > 2 ? (
           <div className="absolute inset-x-3 bottom-12 z-20 hidden gap-1.5 sm:flex">
             {shots.slice(1, 4).map((img, i) => (
-              <span key={`${img}-${i}`} className="h-12 w-16 overflow-hidden rounded-lg ring-1 ring-primary-foreground/40">
+              <span
+                key={`${img}-${i}`}
+                className="h-12 w-16 overflow-hidden rounded-lg ring-1 ring-primary-foreground/40"
+              >
                 <img src={img} alt="" className="size-full object-cover" />
               </span>
             ))}
@@ -260,7 +256,9 @@ export function TourCard({
               </div>
             )}
             <div className="truncate text-xs text-muted-foreground">
-              {lockedPremium ? "Для подписчиков" : `${guestsLabel(tour.adults, tour.children)} · ${operator.name}`}
+              {lockedPremium
+                ? "Для подписчиков"
+                : `${guestsLabel(tour.adults, tour.children)} · ${operator.name}`}
             </div>
           </div>
           {layout === "row" ? (

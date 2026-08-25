@@ -1,8 +1,7 @@
 /** Единственный production-проект TourGo. Lovable Cloud иногда подставляет свой пустой проект. */
 export const TOURGO_SUPABASE_PROJECT_ID = "mgyufoyornzbwvgdfojb";
 export const TOURGO_SUPABASE_URL = "https://mgyufoyornzbwvgdfojb.supabase.co";
-export const TOURGO_SUPABASE_PUBLISHABLE_KEY =
-  "sb_publishable_cykIutJS18rku4zxUBMkLw_LqXt9hag";
+export const TOURGO_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_cykIutJS18rku4zxUBMkLw_LqXt9hag";
 
 /** Встроенная пустая БД Lovable: не использовать для каталога TourGo. */
 const LOVABLE_BUILTIN_PROJECT_ID = "hpernnwfdlpfaaphofmg";
@@ -37,10 +36,11 @@ function isTourGoProject(projectId: string | undefined, url: string | undefined)
 /** Предпочитаем env, но всегда возвращаем TourGo, если Lovable подставил другой проект. */
 export function resolveSupabaseConfig(): ResolvedSupabaseConfig {
   const envUrl = readEnv("VITE_SUPABASE_URL") ?? readEnv("SUPABASE_URL");
-  const envKey =
-    readEnv("VITE_SUPABASE_PUBLISHABLE_KEY") ?? readEnv("SUPABASE_PUBLISHABLE_KEY");
+  const envKey = readEnv("VITE_SUPABASE_PUBLISHABLE_KEY") ?? readEnv("SUPABASE_PUBLISHABLE_KEY");
   const envProjectId =
-    readEnv("VITE_SUPABASE_PROJECT_ID") ?? readEnv("SUPABASE_PROJECT_ID") ?? projectIdFromUrl(envUrl);
+    readEnv("VITE_SUPABASE_PROJECT_ID") ??
+    readEnv("SUPABASE_PROJECT_ID") ??
+    projectIdFromUrl(envUrl);
 
   if (
     envUrl &&

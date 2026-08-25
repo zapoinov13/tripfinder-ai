@@ -43,7 +43,13 @@ export function TouristAccountGate({
   }
 
   if (!isAuthenticated || !user) {
-    return <GuestAccountScreen kind={kind} {...(title !== undefined ? { title } : {})} {...(description !== undefined ? { description } : {})} />;
+    return (
+      <GuestAccountScreen
+        kind={kind}
+        {...(title !== undefined ? { title } : {})}
+        {...(description !== undefined ? { description } : {})}
+      />
+    );
   }
 
   const touristRoles: Role[] = ["TOURIST", "PREMIUM_TOURIST"];
@@ -88,7 +94,10 @@ function GuestAccountScreen({
   description?: string;
 }) {
   const { favorites } = useTourState();
-  const favTours = favorites.map((id) => getTour(id)).filter(Boolean).slice(0, 4);
+  const favTours = favorites
+    .map((id) => getTour(id))
+    .filter(Boolean)
+    .slice(0, 4);
 
   const copy =
     kind === "trips"

@@ -76,12 +76,7 @@ async function main() {
   await captureSet(browser, "Pixel 7", androidPhone);
 
   for (const shot of captures) {
-    await normalizeScreenshot(
-      sharp,
-      path.join(androidPhone, shot.file),
-      1080,
-      1920,
-    );
+    await normalizeScreenshot(sharp, path.join(androidPhone, shot.file), 1080, 1920);
   }
 
   await browser.close();

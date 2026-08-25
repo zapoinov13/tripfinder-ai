@@ -36,7 +36,9 @@ export function SalesChart({ points }: { points: SalesChartPoint[] }) {
           axisLine={false}
           fontSize={12}
           unit={unit}
-          tickFormatter={(v) => String(Math.round((v * scale) / (unit === "M" ? 1_000_000 : 1_000)))}
+          tickFormatter={(v) =>
+            String(Math.round((v * scale) / (unit === "M" ? 1_000_000 : 1_000)))
+          }
         />
         <Tooltip
           formatter={(value: number) => [

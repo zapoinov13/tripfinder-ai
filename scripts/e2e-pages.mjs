@@ -12,9 +12,9 @@ const arg = (name, fallback) => {
 const PORT = arg("port", "9336");
 const BASE = arg("base", "http://localhost:8081");
 
-const created = await fetch(`http://127.0.0.1:${PORT}/json/new?about:blank`, { method: "PUT" }).then(
-  (r) => r.json(),
-);
+const created = await fetch(`http://127.0.0.1:${PORT}/json/new?about:blank`, {
+  method: "PUT",
+}).then((r) => r.json());
 const ws = new WebSocket(created.webSocketDebuggerUrl);
 await new Promise((r) => ws.addEventListener("open", r, { once: true }));
 
@@ -38,9 +38,7 @@ ws.addEventListener("message", (e) => {
     }
   }
   if (m.method === "Runtime.consoleAPICalled" && m.params.type === "error") {
-    const text = (m.params.args ?? [])
-      .map((a) => String(a.value ?? a.description ?? ""))
-      .join(" ");
+    const text = (m.params.args ?? []).map((a) => String(a.value ?? a.description ?? "")).join(" ");
     if (!text.includes("Hydration") && !text.includes("hydrating")) errors.push(text.slice(0, 160));
   }
 });

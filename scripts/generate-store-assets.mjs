@@ -69,7 +69,10 @@ async function iconBuffer(size, padding = 0) {
 
 async function splashBuffer(width, height) {
   const logoSize = Math.round(Math.min(width, height) * 0.22);
-  const logo = await sharp(sourceIcon).resize(logoSize, logoSize, { fit: "contain" }).png().toBuffer();
+  const logo = await sharp(sourceIcon)
+    .resize(logoSize, logoSize, { fit: "contain" })
+    .png()
+    .toBuffer();
   return sharp({
     create: {
       width,
@@ -94,7 +97,10 @@ async function main() {
   await writePng(await iconBuffer(512), path.join(storeIcons, "icon-512.png"));
   await writePng(await iconBuffer(192), path.join(storeIcons, "icon-192.png"));
 
-  const iosIcon = path.join(root, "ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png");
+  const iosIcon = path.join(
+    root,
+    "ios/App/App/Assets.xcassets/AppIcon.appiconset/AppIcon-512@2x.png",
+  );
   await writePng(icon1024, iosIcon);
 
   for (const [density, size] of Object.entries(androidMipmaps)) {
@@ -126,7 +132,11 @@ async function main() {
     await writePng(await splashBuffer(w, h), path.join(androidRes, folder, "splash.png"));
   }
 
-  if (await sharp(sourceFeature).metadata().catch(() => null)) {
+  if (
+    await sharp(sourceFeature)
+      .metadata()
+      .catch(() => null)
+  ) {
     const feature = await sharp(sourceFeature)
       .resize(1024, 500, { fit: "cover", position: "centre" })
       .png()

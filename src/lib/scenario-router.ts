@@ -55,7 +55,8 @@ function pickKind(query: string, items: ReadonlyArray<{ id: string; label: strin
 function detectScenario(query: string): TravelScenarioId {
   const n = query.toLowerCase();
   const withDriver = n.includes("водител") && !n.includes("без водителя");
-  if (withDriver || n.includes("гид") || n.includes("фотограф") || n.includes("помощь")) return "help";
+  if (withDriver || n.includes("гид") || n.includes("фотограф") || n.includes("помощь"))
+    return "help";
   if (
     n.includes("аренд") ||
     n.includes("прокат") ||
@@ -67,7 +68,13 @@ function detectScenario(query: string): TravelScenarioId {
   ) {
     return "cars";
   }
-  if (sportKinds.some((item) => n.includes(item.id) || n.includes(item.label.toLowerCase())) || n.includes("спорт") || n.includes("фитнес") || n.includes("тренаж") || n.includes("зал")) {
+  if (
+    sportKinds.some((item) => n.includes(item.id) || n.includes(item.label.toLowerCase())) ||
+    n.includes("спорт") ||
+    n.includes("фитнес") ||
+    n.includes("тренаж") ||
+    n.includes("зал")
+  ) {
     return "sport";
   }
   if (
@@ -122,7 +129,10 @@ export function routeTravelIntent(query: string): ScenarioRoute {
     else if (q.includes("отел") || q.includes("hotel")) search["kind"] = "hotel";
   }
   if (item.id === "cars") {
-    const klass = pickKind(query, carClasses.map((row) => ({ id: row.id, label: row.label })));
+    const klass = pickKind(
+      query,
+      carClasses.map((row) => ({ id: row.id, label: row.label })),
+    );
     if (klass) search["klass"] = klass;
   }
   return { to: item.to, search };

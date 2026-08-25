@@ -5,6 +5,7 @@
 import { chromium } from "playwright";
 
 const BASE = process.env.SMOKE_URL ?? "https://tripfinder-ai.vercel.app";
+const REVIEW_PASSWORD = process.env.REVIEW_PASSWORD ?? "";
 
 const publicRoutes = [
   "/",
@@ -73,7 +74,10 @@ async function checkRoute(page, path) {
     issues.push({ path, type: "title", message: title || "(empty)" });
   }
 
-  const bodyText = await page.locator("body").innerText().catch(() => "");
+  const bodyText = await page
+    .locator("body")
+    .innerText()
+    .catch(() => "");
   if (/Application error|Something went wrong|Internal Server Error/i.test(bodyText)) {
     issues.push({ path, type: "crash", message: "Error page visible" });
   }
@@ -85,9 +89,7 @@ async function checkRoute(page, path) {
   }
 
   for (const e of consoleErrors) {
-    if (
-      !/ResizeObserver|favicon|Failed to load resource|net::ERR|images\.unsplash/i.test(e)
-    ) {
+    if (!/ResizeObserver|favicon|Failed to load resource|net::ERR|images\.unsplash/i.test(e)) {
       issues.push({ path, type: "console", message: e.slice(0, 200) });
     }
   }
@@ -96,7 +98,7 @@ async function checkRoute(page, path) {
 async function testLogin(page) {
   await page.goto(`${BASE}/login`, { waitUntil: "networkidle", timeout: 45000 });
   await page.fill("#email", "tourist@test.tourgo.app");
-  await page.fill("#password", "Test1234!");
+  await page.fill("#password", REVIEW_PASSWORD);
   await page.getByRole("button", { name: /Войти/i }).click();
   await page.waitForTimeout(2500);
 
@@ -163,7 +165,10 @@ async function testSearchSubmit(page) {
 async function main() {
   console.log("Smoke testing", BASE);
   const browser = await chromium.launch({ headless: true });
-  const context = await browser.newContext({ locale: "ru-RU", viewport: { width: 1280, height: 800 } });
+  const context = await browser.newContext({
+    locale: "ru-RU",
+    viewport: { width: 1280, height: 800 },
+  });
   const page = await context.newPage();
 
   for (const path of publicRoutes) {
@@ -185,8 +190,9 @@ async function main() {
 
   const unique = issues.filter(
     (item, idx, arr) =>
-      arr.findIndex((x) => x.path === item.path && x.type === item.type && x.message === item.message) ===
-      idx,
+      arr.findIndex(
+        (x) => x.path === item.path && x.type === item.type && x.message === item.message,
+      ) === idx,
   );
 
   if (unique.length) {

@@ -131,8 +131,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
+        // media="print" делает загрузку шрифтов неблокирующей: страница
+        // рендерится системными шрифтами сразу, а на медленной сети или
+        // офлайн (нативный бандл) первый кадр не ждёт fonts.googleapis.com.
+        // Скрипт в RootDocument переключает media на all после загрузки.
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Sora:wght@500;600;700&display=swap",
+        media: "print",
+        id: "gf-stylesheet",
       },
       {
         rel: "stylesheet",
@@ -154,6 +160,13 @@ function RootShell({ children }: { children: ReactNode }) {
     <html lang="en">
       <head>
         <HeadContent />
+        {/* Включаем шрифты после их загрузки; до этого рендер не блокируется. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              'var l=document.getElementById("gf-stylesheet");if(l){l.addEventListener("load",function(){l.media="all"});if(l.sheet)l.media="all";}',
+          }}
+        />
       </head>
       <body>
         {children}

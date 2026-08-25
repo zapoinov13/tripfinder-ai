@@ -136,7 +136,8 @@ function AdminOperatorsPage() {
                         {o.city} · {o.email}
                       </div>
                       <div className="mt-1 text-xs text-muted-foreground">
-                        БИН {o.registrationNumber || "нет"} · {o.contactPerson || "контакт не указан"}
+                        БИН {o.registrationNumber || "нет"} ·{" "}
+                        {o.contactPerson || "контакт не указан"}
                       </div>
                     </TableCell>
                     <TableCell>

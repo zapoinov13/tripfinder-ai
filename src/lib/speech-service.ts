@@ -1,12 +1,33 @@
 export type SpeechTranscript = {
   text: string;
   confidence: number;
-  provider: "mock" | "web-speech";
+  provider: "web-speech";
 };
 
 export type SpeechListenHandle = {
   stop: () => Promise<string>;
 };
+
+export type SpeechErrorCode = "unsupported" | "not-allowed" | "no-speech" | "failed";
+
+export class SpeechError extends Error {
+  code: SpeechErrorCode;
+
+  constructor(code: SpeechErrorCode) {
+    super(code);
+    this.name = "SpeechError";
+    this.code = code;
+  }
+}
+
+export function speechErrorMessage(error: unknown): string {
+  const code = error instanceof SpeechError ? error.code : "failed";
+  if (code === "unsupported")
+    return "Голосовой ввод не поддерживается этим браузером — напишите текстом";
+  if (code === "not-allowed") return "Разрешите доступ к микрофону в настройках браузера";
+  if (code === "no-speech") return "Ничего не расслышали — попробуйте ещё раз";
+  return "Не удалось включить микрофон";
+}
 
 export interface SpeechService {
   start(): Promise<SpeechTranscript>;
@@ -14,47 +35,6 @@ export interface SpeechService {
   isSupported(): boolean;
   /** Живая диктовка: текст приходит по мере речи, stop() заканчивает фразу. */
   listen(onPartial: (text: string) => void): SpeechListenHandle;
-}
-
-const mockText =
-  "Хочу из Алматы в Дубай на 7 дней. Нас двое взрослых и двое детей 5 лет и 1 год. Бюджет до 1,5 млн тенге. Важно JBR или Marina, море рядом, трансфер, сафари и русскоязычная поддержка.";
-
-export class MockSpeechService implements SpeechService {
-  isSupported() {
-    return true;
-  }
-
-  async start(): Promise<SpeechTranscript> {
-    await new Promise((resolve) => setTimeout(resolve, 700));
-    return { text: mockText, confidence: 0.92, provider: "mock" };
-  }
-
-  async stop() {
-    return Promise.resolve();
-  }
-
-  listen(onPartial: (text: string) => void): SpeechListenHandle {
-    let stopped = false;
-    const words = mockText.split(" ");
-    let i = 0;
-    const timer = setInterval(() => {
-      if (stopped) return;
-      i = Math.min(words.length, i + 3);
-      onPartial(words.slice(0, i).join(" "));
-      if (i >= words.length) {
-        clearInterval(timer);
-      }
-    }, 180);
-    return {
-      stop: async () => {
-        stopped = true;
-        clearInterval(timer);
-        const text = words.slice(0, Math.max(i, 8)).join(" ");
-        onPartial(text);
-        return text;
-      },
-    };
-  }
 }
 
 type RecogCtor = new () => {
@@ -85,6 +65,13 @@ function getRecogCtor(): RecogCtor | undefined {
   return w.SpeechRecognition || w.webkitSpeechRecognition;
 }
 
+function toCode(raw?: string): SpeechErrorCode {
+  if (raw === "not-allowed" || raw === "service-not-allowed" || raw === "audio-capture")
+    return "not-allowed";
+  if (raw === "no-speech") return "no-speech";
+  return "failed";
+}
+
 export class WebSpeechService implements SpeechService {
   private recognition: InstanceType<RecogCtor> | null = null;
 
@@ -93,37 +80,49 @@ export class WebSpeechService implements SpeechService {
   }
 
   async start(): Promise<SpeechTranscript> {
-    if (!this.isSupported()) {
-      return new MockSpeechService().start();
-    }
     const Ctor = getRecogCtor();
-    return new Promise((resolve) => {
-      const recognition = new Ctor!();
+    if (!Ctor) throw new SpeechError("unsupported");
+    return new Promise((resolve, reject) => {
+      const recognition = new Ctor();
       this.recognition = recognition;
       recognition.lang = "ru-RU";
       recognition.continuous = false;
       recognition.interimResults = false;
+      let settled = false;
       recognition.onresult = (event) => {
         const last = event.results[event.results.length - 1];
-        const text = last?.[0]?.transcript ?? "";
-        resolve({
-          text,
-          confidence: last?.[0]?.confidence ?? 0.8,
-          provider: "web-speech",
-        });
+        const text = last?.[0]?.transcript?.trim() ?? "";
+        settled = true;
+        if (!text) {
+          reject(new SpeechError("no-speech"));
+          return;
+        }
+        resolve({ text, confidence: last?.[0]?.confidence ?? 0.8, provider: "web-speech" });
       };
-      recognition.onerror = () => {
-        void new MockSpeechService().start().then(resolve);
+      recognition.onerror = (event) => {
+        if (settled) return;
+        settled = true;
+        reject(new SpeechError(toCode(event?.error)));
       };
-      recognition.start();
+      recognition.onend = () => {
+        if (settled) return;
+        settled = true;
+        reject(new SpeechError("no-speech"));
+      };
+      try {
+        recognition.start();
+      } catch {
+        if (!settled) {
+          settled = true;
+          reject(new SpeechError("failed"));
+        }
+      }
     });
   }
 
   listen(onPartial: (text: string) => void): SpeechListenHandle {
-    if (!this.isSupported()) {
-      return new MockSpeechService().listen(onPartial);
-    }
-    const Ctor = getRecogCtor()!;
+    const Ctor = getRecogCtor();
+    if (!Ctor) throw new SpeechError("unsupported");
     const recognition = new Ctor();
     this.recognition = recognition;
     recognition.lang = "ru-RU";
@@ -156,7 +155,7 @@ export class WebSpeechService implements SpeechService {
     try {
       recognition.start();
     } catch {
-      finish("");
+      throw new SpeechError("failed");
     }
 
     return {
@@ -181,10 +180,4 @@ export class WebSpeechService implements SpeechService {
   }
 }
 
-function createSpeechService(): SpeechService {
-  if (typeof window === "undefined") return new MockSpeechService();
-  const web = new WebSpeechService();
-  return web.isSupported() ? web : new MockSpeechService();
-}
-
-export const speechService: SpeechService = createSpeechService();
+export const speechService: SpeechService = new WebSpeechService();

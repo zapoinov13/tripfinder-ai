@@ -2,6 +2,8 @@
 /** Extended smoke: footer, mobile, forms, operator/admin gates */
 import { chromium, devices } from "playwright";
 
+const REVIEW_PASSWORD = process.env.REVIEW_PASSWORD ?? "";
+
 const BASE = process.env.SMOKE_URL ?? "https://tripfinder-ai.vercel.app";
 const issues = [];
 
@@ -53,7 +55,10 @@ async function main() {
   // Company public page
   await page2.goto(`${BASE}/company/family-travel`, { waitUntil: "networkidle", timeout: 45000 });
   const companyBody = await page2.locator("body").innerText();
-  if (/Application error|404|не найден/i.test(companyBody) && !companyBody.match(/Family|Travel|тур/i)) {
+  if (
+    /Application error|404|не найден/i.test(companyBody) &&
+    !companyBody.match(/Family|Travel|тур/i)
+  ) {
     record("/company/family-travel", "content", "Company page empty or error");
   }
 
@@ -83,7 +88,7 @@ async function main() {
   // Operator login
   await page2.goto(`${BASE}/login`, { waitUntil: "networkidle" });
   await page2.fill("#email", "operator@test.tourgo.app");
-  await page2.fill("#password", "Test1234!");
+  await page2.fill("#password", REVIEW_PASSWORD);
   await page2.getByRole("button", { name: /Войти/i }).click();
   await page2.waitForTimeout(2500);
   if (!page2.url().includes("/operator")) {

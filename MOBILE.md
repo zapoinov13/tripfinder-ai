@@ -6,7 +6,10 @@
 
 - **Capacitor 8**. оболочка iOS + Android (`ios/`, `android/`)
 - **App ID:** `com.tourgo.app`
-- **Production URL:** приложение грузит `https://tripfinder-ai.vercel.app`
+- **Локальный веб-бандл:** `npm run cap:build` собирает SPA в `dist/client`,
+  оболочка грузит его с устройства (Apple Guideline 4.2 — не «обёртка над сайтом»).
+  Server functions (AI-чат, premium) ходят на `https://tripfinder-ai.vercel.app`,
+  каталог и авторизация — напрямую в Supabase
 - **Tab bar:** Главная · Поиск · Поездки · Профиль
 - **Компактный UI** в нативном приложении (без лишнего лендинга)
 - **Deep links:** `https://tripfinder-ai.vercel.app/..` и `tourgo://path`
@@ -19,8 +22,8 @@
 ## Быстрый старт
 
 ```bash
-# 1. Сборка веб-приложения + sync в нативные проекты
-npm run cap:sync
+# 1. Сборка локального SPA-бандла + sync в нативные проекты
+npm run cap:sync        # = npm run cap:build && npx cap sync
 
 # 2. iOS (нужен Mac + Xcode)
 npm run cap:ios
@@ -59,21 +62,22 @@ npm run cap:ios
 
 ## Публикация в сторы (когда будете готовы платить)
 
-| Шаг | iOS | Android |
-|-----|-----|---------|
-| Аккаунт | Apple Developer $99/год | Google Play $25 разово |
-| Сборка | Xcode → Archive → TestFlight | Android Studio → Signed AAB |
-| Материалы | `store/metadata.json` | то же |
-| Privacy URL | https://tripfinder-ai.vercel.app/privacy | то же |
-| Test accounts | см. `store/metadata.json` | то же |
+| Шаг           | iOS                                      | Android                     |
+| ------------- | ---------------------------------------- | --------------------------- |
+| Аккаунт       | Apple Developer $99/год                  | Google Play $25 разово      |
+| Сборка        | Xcode → Archive → TestFlight             | Android Studio → Signed AAB |
+| Материалы     | `store/metadata.json`                    | то же                       |
+| Privacy URL   | https://tripfinder-ai.vercel.app/privacy | то же                       |
+| Test accounts | см. `store/metadata.json`                | то же                       |
 
 ## Тестовые аккаунты для модераторов
 
-| Роль | Email | Пароль |
-|------|-------|--------|
-| Турист | tourist@test.tourgo.app | Test1234! |
-| Турфирма | operator@test.tourgo.app | Test1234! |
+| Роль     | Email                    | Пароль             |
+| -------- | ------------------------ | ------------------ |
+| Турист   | tourist@test.tourgo.app  | `$REVIEW_PASSWORD` |
+| Турфирма | operator@test.tourgo.app | `$REVIEW_PASSWORD` |
 
+Пароль задаётся при `REVIEW_PASSWORD=... npm run review:users` и в репозитории не хранится.
 Аккаунты уже в demo-seed. работают без Supabase. Для production Supabase см. `scripts/supabase-review-accounts.sql`.
 
 ## Apple Sign-In

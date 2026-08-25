@@ -6,10 +6,7 @@ import { SiteLayout } from "@/components/site/site-layout";
 import { Button } from "@/components/ui/button";
 import { destinations } from "@/data/demo";
 import { formatKzt, sportKinds, sports } from "@/data/scenario-catalog";
-import {
-  listPublishedSports,
-  subscribeSportListings,
-} from "@/lib/platform/sport-listings";
+import { listPublishedSports, subscribeSportListings } from "@/lib/platform/sport-listings";
 import { cn } from "@/lib/utils";
 
 type Search = { destination?: string; city?: string; kind?: string; q?: string };

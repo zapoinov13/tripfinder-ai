@@ -33,7 +33,9 @@ export function getBonusPoints() {
   return readPoints();
 }
 
-export function redeemPromoCode(code: string): { ok: true; points: number } | { ok: false; reason: "empty" | "unknown" | "used" } {
+export function redeemPromoCode(
+  code: string,
+): { ok: true; points: number } | { ok: false; reason: "empty" | "unknown" | "used" } {
   const normalized = code.trim().toUpperCase().replace(/\s+/g, "");
   if (!normalized) return { ok: false, reason: "empty" };
   const reward = PROMO_CODES[normalized];

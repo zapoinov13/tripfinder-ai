@@ -74,7 +74,8 @@ function humanDay(iso: string) {
 }
 
 function resolveDestinationId(item: SupplierFeedItem): string {
-  const hay = `${item.destination ?? ""} ${item.country ?? ""} ${item.city ?? ""} ${item.title}`.toLowerCase();
+  const hay =
+    `${item.destination ?? ""} ${item.country ?? ""} ${item.city ?? ""} ${item.title}`.toLowerCase();
   const hit = destinations.find(
     (d) =>
       hay.includes(d.id) ||
@@ -199,7 +200,6 @@ function normalizeItem(raw: unknown, fallbackCurrency: Currency): SupplierFeedIt
   } as SupplierFeedItem;
 }
 
-
 /** Parse JSON feed (object with tours[] or bare array). */
 export function parseSupplierFeed(input: unknown): {
   doc: SupplierFeedDocument;
@@ -260,7 +260,7 @@ function toPlatformTour(
   const destinationId = resolveDestinationId(item);
   const dest = destinations.find((d) => d.id === destinationId) ?? destinations[0]!;
   const mealCode = normalizeMealType(item.meal ?? "AI") as MealCode;
-  const nights = item.nights && item.nights > 0 ? item.nights : existing?.nights ?? 7;
+  const nights = item.nights && item.nights > 0 ? item.nights : (existing?.nights ?? 7);
   const start =
     item.date_start ??
     existing?.departure ??
@@ -268,12 +268,13 @@ function toPlatformTour(
   const end =
     item.date_end ??
     new Date(new Date(start).getTime() + nights * 86400000).toISOString().slice(0, 10);
-  const tags: TourTag[] = item.hot_deal ? ["hot"] : existing?.tags.filter((t) => t !== "hot") ?? [];
+  const tags: TourTag[] = item.hot_deal
+    ? ["hot"]
+    : (existing?.tags.filter((t) => t !== "hot") ?? []);
   if (item.hot_deal && !tags.includes("hot")) tags.push("hot");
 
   const hotelId = existing?.hotelId ?? `hotel-feed-${uid()}`;
-  const status =
-    item.status === "archived" || item.status === "draft" ? "inactive" : "active";
+  const status = item.status === "archived" || item.status === "draft" ? "inactive" : "active";
 
   return {
     id: existing?.id ?? uid(),
@@ -309,7 +310,9 @@ function toPlatformTour(
     operatorOrgId: orgId,
     title: item.title,
     description: item.description ?? existing?.description ?? "",
-    photos: item.photos?.length ? item.photos : existing?.photos ?? (dest.image ? [dest.image] : []),
+    photos: item.photos?.length
+      ? item.photos
+      : (existing?.photos ?? (dest.image ? [dest.image] : [])),
     videos: item.videos ?? existing?.videos ?? [],
     includes: item.includes ?? existing?.includes ?? [],
     excludes: item.excludes ?? existing?.excludes ?? [],

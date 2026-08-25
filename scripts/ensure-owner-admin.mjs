@@ -1,8 +1,11 @@
 #!/usr/bin/env node
 /**
- * Ensures zapoinov@bk.ru exists in Supabase Auth with PLATFORM_ADMIN role.
+ * Ensures the platform owner exists in Supabase Auth with PLATFORM_ADMIN role.
  *
- * SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... node scripts/ensure-owner-admin.mjs
+ * Пароль НИКОГДА не хранится в репозитории — только в переменной окружения.
+ *
+ * SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... \
+ * OWNER_EMAIL=... OWNER_PASSWORD=... node scripts/ensure-owner-admin.mjs
  */
 import { createClient } from "@supabase/supabase-js";
 
@@ -14,9 +17,21 @@ if (!url || !serviceKey) {
   process.exit(1);
 }
 
-const email = "zapoinov@bk.ru";
-const password = "zapoinov@bk.ru";
-const name = "Юрий Запойнов";
+const email = (process.env.OWNER_EMAIL ?? "").trim().toLowerCase();
+const password = process.env.OWNER_PASSWORD ?? "";
+const name = process.env.OWNER_NAME ?? "Владелец платформы";
+
+if (!email) {
+  console.error("Set OWNER_EMAIL");
+  process.exit(1);
+}
+
+if (password.length < 12) {
+  console.error(
+    "Set OWNER_PASSWORD (минимум 12 символов). Пароль администратора не должен попадать в репозиторий.",
+  );
+  process.exit(1);
+}
 
 const admin = createClient(url, serviceKey, {
   auth: { autoRefreshToken: false, persistSession: false },
@@ -60,4 +75,4 @@ const { error: profileError } = await admin.from("profiles").upsert(
 
 if (profileError) throw new Error(profileError.message);
 
-console.log("Admin ready:", email, "/", password, "→ /admin");
+console.log("Admin ready:", email, "→ /admin");

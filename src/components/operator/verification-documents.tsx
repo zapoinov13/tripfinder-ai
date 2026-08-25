@@ -39,7 +39,9 @@ export function VerificationDocumentsPanel({
     try {
       const next = await readVerificationFile(type, file);
       onChange(upsertVerificationFile(files, next));
-      toast.success(`${verificationDocumentTypes.find((item) => item.id === type)?.label} загружен`);
+      toast.success(
+        `${verificationDocumentTypes.find((item) => item.id === type)?.label} загружен`,
+      );
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Не удалось загрузить файл");
     }
@@ -73,8 +75,8 @@ export function VerificationDocumentsPanel({
           </Badge>
         </div>
         <p className="mt-1 text-sm text-muted-foreground">
-          Нужно свидетельство о регистрации. Остальные документы усиливают доверие, если они у
-          вас есть. Срок проверки: до 2 рабочих дней.
+          Нужно свидетельство о регистрации. Остальные документы усиливают доверие, если они у вас
+          есть. Срок проверки: до 2 рабочих дней.
         </p>
 
         <div className="mt-3 space-y-2">

@@ -1,7 +1,13 @@
 /**
  * Apply in Supabase Dashboard → SQL Editor after foundation migration.
  * Creates demo auth users + profiles + sample catalog rows.
- * Password for all demo users: demo1234
+ *
+ * Пароль демо-пользователей НЕ хранится в репозитории. Перед запуском задайте:
+ *
+ *   set tourgo.demo_password = 'ваш-пароль-минимум-12-символов';
+ *
+ * Владелец платформы этим сидом НЕ создаётся — используйте
+ * `OWNER_EMAIL=... OWNER_PASSWORD=... npm run ensure:admin`.
  */
 create extension if not exists pgcrypto;
 
@@ -18,16 +24,20 @@ do $$
 declare
   u record;
   uid uuid;
+  demo_pass text := nullif(current_setting('tourgo.demo_password', true), '');
 begin
+  if demo_pass is null or length(demo_pass) < 12 then
+    raise exception 'Set tourgo.demo_password (>= 12 chars) before running seed.sql';
+  end if;
+
   for u in
     select * from (values
-      ('aaaaaaaa-bbbb-cccc-dddd-000000000001'::uuid, 'tourist@tourgo.demo', 'Айгерим Турист', 'Алматы', 'TOURIST', null::uuid, 'demo1234'),
-      ('aaaaaaaa-bbbb-cccc-dddd-000000000002'::uuid, 'premium@tourgo.demo', 'Данияр Premium', 'Астана', 'PREMIUM_TOURIST', null::uuid, 'demo1234'),
-      ('aaaaaaaa-bbbb-cccc-dddd-000000000003'::uuid, 'operator@tourgo.demo', 'Алишер Оператор', 'Алматы', 'OPERATOR_ADMIN', '11111111-1111-1111-1111-111111111101'::uuid, 'demo1234'),
-      ('aaaaaaaa-bbbb-cccc-dddd-000000000004'::uuid, 'pending@tourgo.demo', 'Новый Оператор', 'Шымкент', 'OPERATOR_ADMIN', '11111111-1111-1111-1111-111111111105'::uuid, 'demo1234'),
-      ('aaaaaaaa-bbbb-cccc-dddd-000000000005'::uuid, 'admin@tourgo.demo', 'Admin TourGo', 'Алматы', 'PLATFORM_ADMIN', null::uuid, 'demo1234'),
-      ('aaaaaaaa-bbbb-cccc-dddd-000000000007'::uuid, 'zapoinov@bk.ru', 'Юрий Запойнов', 'Алматы', 'PLATFORM_ADMIN', null::uuid, 'zapoinov@bk.ru'),
-      ('aaaaaaaa-bbbb-cccc-dddd-000000000006'::uuid, 'manager@tourgo.demo', 'Менеджер Оператор', 'Алматы', 'OPERATOR_MANAGER', '11111111-1111-1111-1111-111111111101'::uuid, 'demo1234')
+      ('aaaaaaaa-bbbb-cccc-dddd-000000000001'::uuid, 'tourist@tourgo.demo', 'Айгерим Турист', 'Алматы', 'TOURIST', null::uuid, demo_pass),
+      ('aaaaaaaa-bbbb-cccc-dddd-000000000002'::uuid, 'premium@tourgo.demo', 'Данияр Premium', 'Астана', 'PREMIUM_TOURIST', null::uuid, demo_pass),
+      ('aaaaaaaa-bbbb-cccc-dddd-000000000003'::uuid, 'operator@tourgo.demo', 'Алишер Оператор', 'Алматы', 'OPERATOR_ADMIN', '11111111-1111-1111-1111-111111111101'::uuid, demo_pass),
+      ('aaaaaaaa-bbbb-cccc-dddd-000000000004'::uuid, 'pending@tourgo.demo', 'Новый Оператор', 'Шымкент', 'OPERATOR_ADMIN', '11111111-1111-1111-1111-111111111105'::uuid, demo_pass),
+      ('aaaaaaaa-bbbb-cccc-dddd-000000000005'::uuid, 'admin@tourgo.demo', 'Admin TourGo', 'Алматы', 'PLATFORM_ADMIN', null::uuid, demo_pass),
+      ('aaaaaaaa-bbbb-cccc-dddd-000000000006'::uuid, 'manager@tourgo.demo', 'Менеджер Оператор', 'Алматы', 'OPERATOR_MANAGER', '11111111-1111-1111-1111-111111111101'::uuid, demo_pass)
     ) as t(id, email, name, city, role, org_id, pass)
   loop
     select id into uid from auth.users where email = u.email limit 1;

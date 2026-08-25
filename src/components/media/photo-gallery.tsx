@@ -63,7 +63,11 @@ export function PhotoGallery({
                 shown.length === 2 && "md:row-span-2",
               )}
             >
-              <SafeImage src={img} alt={`${alt} фото ${i + 2}`} className="size-full object-cover" />
+              <SafeImage
+                src={img}
+                alt={`${alt} фото ${i + 2}`}
+                className="size-full object-cover"
+              />
               {isLast ? (
                 <span className="absolute inset-0 grid place-items-center bg-ink/55 text-sm font-semibold text-primary-foreground">
                   +{extra + 1} фото

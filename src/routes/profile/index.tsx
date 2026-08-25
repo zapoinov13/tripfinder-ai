@@ -78,7 +78,8 @@ function TouristCabinet() {
       refresh();
       return;
     }
-    if (result.reason === "used") toast.error(locale === "kk" ? "Бұл код қолданылған" : "Этот код уже использован");
+    if (result.reason === "used")
+      toast.error(locale === "kk" ? "Бұл код қолданылған" : "Этот код уже использован");
     else toast.error(t.promoBad);
   };
 
@@ -129,24 +130,14 @@ function TouristCabinet() {
               hint={t.promoHint}
               onClick={() => setPromoOpen(true)}
             />
-            <MenuLink
-              icon={History}
-              title={t.history}
-              hint={t.historyHint}
-              to="/profile/trips"
-            />
+            <MenuLink icon={History} title={t.history} hint={t.historyHint} to="/profile/trips" />
             <MenuRow
               icon={Gift}
               title={t.gift}
               hint={t.giftHint}
               onClick={() => setGiftOpen(true)}
             />
-            <MenuLink
-              icon={UserRound}
-              title={t.data}
-              hint={t.dataHint}
-              to="/profile/settings"
-            />
+            <MenuLink icon={UserRound} title={t.data} hint={t.dataHint} to="/profile/settings" />
             <a
               href={SUPPORT_MAILTO}
               className="flex w-full items-center gap-3 px-4 py-3.5 text-left transition-colors hover:bg-secondary/60 active:bg-secondary"

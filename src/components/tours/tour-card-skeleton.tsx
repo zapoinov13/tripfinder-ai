@@ -6,9 +6,7 @@ export function TourCardSkeleton({ layout = "row" }: { layout?: "row" | "grid" }
     <div
       className={cn(
         "surface-card overflow-hidden",
-        layout === "row"
-          ? "grid sm:grid-cols-[minmax(0,280px)_minmax(0,1fr)]"
-          : "flex flex-col",
+        layout === "row" ? "grid sm:grid-cols-[minmax(0,280px)_minmax(0,1fr)]" : "flex flex-col",
       )}
     >
       <Skeleton className="aspect-[4/3] w-full rounded-none" />

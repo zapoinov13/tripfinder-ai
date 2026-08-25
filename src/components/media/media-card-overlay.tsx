@@ -30,12 +30,7 @@ export function MediaCardCaption({
   children: ReactNode;
 }) {
   return (
-    <div
-      className={cn(
-        "absolute inset-x-0 bottom-0 z-[1] p-4 pt-14 sm:p-6 sm:pt-20",
-        className,
-      )}
-    >
+    <div className={cn("absolute inset-x-0 bottom-0 z-[1] p-4 pt-14 sm:p-6 sm:pt-20", className)}>
       {children}
     </div>
   );

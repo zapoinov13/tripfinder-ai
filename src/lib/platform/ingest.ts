@@ -10,11 +10,16 @@ function guessDestination(text: string): string {
       lower.includes(d.id) ||
       lower.includes(d.country.toLowerCase()) ||
       lower.includes(d.city.toLowerCase()) ||
-      (d.id === "uae" && (lower.includes("дубай") || lower.includes("dubai") || lower.includes("оаэ"))) ||
-      (d.id === "turkey" && (lower.includes("турц") || lower.includes("антал") || lower.includes("antaly"))) ||
-      (d.id === "egypt" && (lower.includes("егип") || lower.includes("хургад") || lower.includes("sharm"))) ||
-      (d.id === "thailand" && (lower.includes("таиланд") || lower.includes("пхукет") || lower.includes("phuket"))) ||
-      (d.id === "georgia" && (lower.includes("груз") || lower.includes("батуми") || lower.includes("тбилис"))),
+      (d.id === "uae" &&
+        (lower.includes("дубай") || lower.includes("dubai") || lower.includes("оаэ"))) ||
+      (d.id === "turkey" &&
+        (lower.includes("турц") || lower.includes("антал") || lower.includes("antaly"))) ||
+      (d.id === "egypt" &&
+        (lower.includes("егип") || lower.includes("хургад") || lower.includes("sharm"))) ||
+      (d.id === "thailand" &&
+        (lower.includes("таиланд") || lower.includes("пхукет") || lower.includes("phuket"))) ||
+      (d.id === "georgia" &&
+        (lower.includes("груз") || lower.includes("батуми") || lower.includes("тбилис"))),
   );
   return hit?.id ?? "uae";
 }
@@ -53,13 +58,15 @@ function extractMeal(text: string): MealCode | undefined {
 }
 
 function extractFromCity(text: string): string | undefined {
-  const m = text.match(/(?:вылет|из|from)\s*[:\-]?\s*(Алматы|Астана|Шымкент|Актау|Атырау|Москва|Ташкент)/i);
+  const m = text.match(
+    /(?:вылет|из|from)\s*[:-]?\s*(Алматы|Астана|Шымкент|Актау|Атырау|Москва|Ташкент)/i,
+  );
   return m?.[1];
 }
 
 function extractHotel(text: string): string | undefined {
   const m =
-    text.match(/(?:отель|hotel)\s*[:\-]?\s*([^\n,·|]{3,60})/i) ||
+    text.match(/(?:отель|hotel)\s*[:-]?\s*([^\n,·|]{3,60})/i) ||
     text.match(/\b([A-Z][A-Za-z0-9 &''-]{2,40}\s(?:Hotel|Resort|Spa|Palace|Inn))\b/);
   return m?.[1]?.trim();
 }
@@ -143,7 +150,9 @@ export function draftFromUrl(
 
   const title = titleFromPage || slugTitle;
   const photoUrls = pageText
-    ? extractUrls(pageText).filter((u) => /\.(jpe?g|png|webp|gif)(\?|$)/i.test(u)).slice(0, 8)
+    ? extractUrls(pageText)
+        .filter((u) => /\.(jpe?g|png|webp|gif)(\?|$)/i.test(u))
+        .slice(0, 8)
     : [];
 
   if (pageText && !price) warnings.push("Цену на странице не нашли, проверьте вручную");
@@ -180,14 +189,19 @@ export function draftFromUrl(
 /**
  * Build a tour draft from a Telegram post / channel message / pasted text + links.
  */
-export function draftFromTelegram(input: {
-  text: string;
-  sourceLink?: string;
-}): { draft: TourDraft; fields: string[]; warnings: string[] } {
+export function draftFromTelegram(input: { text: string; sourceLink?: string }): {
+  draft: TourDraft;
+  fields: string[];
+  warnings: string[];
+} {
   const text = input.text.trim();
   const warnings: string[] = [];
   if (!text) {
-    return { draft: emptyDraft(), fields: [], warnings: ["Вставьте текст поста или описание тура"] };
+    return {
+      draft: emptyDraft(),
+      fields: [],
+      warnings: ["Вставьте текст поста или описание тура"],
+    };
   }
 
   const urls = extractUrls(text);
@@ -213,8 +227,7 @@ export function draftFromTelegram(input: {
 
   const start = dates.start ?? draft.dateStart;
   const end =
-    dates.end ??
-    new Date(new Date(start).getTime() + nights * 86400000).toISOString().slice(0, 10);
+    dates.end ?? new Date(new Date(start).getTime() + nights * 86400000).toISOString().slice(0, 10);
 
   const next: TourDraft = {
     ...draft,

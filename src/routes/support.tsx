@@ -19,7 +19,9 @@ function SupportPage() {
   return (
     <SiteLayout>
       <div className="container-page max-w-2xl py-10 md:py-14">
-        <h1 className="font-display text-3xl font-semibold tracking-tight md:text-4xl">Поддержка</h1>
+        <h1 className="font-display text-3xl font-semibold tracking-tight md:text-4xl">
+          Поддержка
+        </h1>
         <p className="mt-3 text-sm text-muted-foreground md:text-base">
           Ответим по заявкам, бронированиям и работе приложения. Обычно в течение 1 рабочего дня.
         </p>

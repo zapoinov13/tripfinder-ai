@@ -1,9 +1,6 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
-import {
-  TOURGO_SUPABASE_PROJECT_ID,
-  resolveSupabaseConfig,
-} from "@/lib/supabase/config";
+import { TOURGO_SUPABASE_PROJECT_ID, resolveSupabaseConfig } from "@/lib/supabase/config";
 
 export { TOURGO_SUPABASE_PROJECT_ID } from "@/lib/supabase/config";
 
