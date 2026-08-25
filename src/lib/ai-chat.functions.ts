@@ -66,7 +66,7 @@ export const aiChat = createServerFn({ method: "POST" })
     const { bucket, limit } = clientBucket();
     try {
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-      const { data: allowed, error } = await supabaseAdmin.rpc("consume_ai_quota", {
+      const { data: allowed, error } = await supabaseAdmin.rpc("consume_ai_quota" as never, {
         p_bucket: bucket,
         p_chars: chars,
         p_max_requests: limit.requests,
