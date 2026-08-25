@@ -220,33 +220,41 @@ function Index() {
         </div>
       </section>
 
-      <section className="container-page mt-10 md:mt-14">
-        <SectionHead
-          title="Горящие туры"
-          subtitle="Ближайшие вылеты со сниженной ценой. Успейте забронировать"
-          action={
-            <Button variant="outline" asChild>
-              <Link to="/search" search={{ offers: "hot" } as never}>
-                Смотреть остальные
-                <ArrowRight className="size-4" />
-              </Link>
-            </Button>
-          }
-        />
-        <div className="mt-3 flex items-center gap-2 text-base text-foreground/70 md:hidden">
-          <Flame className="size-4 text-primary" />
-          Скидки на ближайший вылет.            Осталось мало мест
+      <section className="mt-10 bg-gradient-to-b from-primary-soft/60 via-primary-soft/25 to-transparent md:mt-14">
+        {/* Тёплая полоса выделяет горящие туры среди остальных секций. */}
+        <div className="container-page py-6 md:py-8">
+          <div className="inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-1 text-xs font-semibold uppercase tracking-[0.08em] text-primary-foreground">
+            <Flame className="size-3.5" />
+            Осталось мало мест
+          </div>
+          <div className="mt-3">
+            <SectionHead
+              title="Горящие туры"
+              subtitle="Компании уже снизили цену на ближайшие вылеты. Такие предложения разбирают за пару дней"
+              action={
+                <Button variant="outline" asChild>
+                  <Link to="/search" search={{ offers: "hot" } as never}>
+                    Смотреть остальные
+                    <ArrowRight className="size-4" />
+                  </Link>
+                </Button>
+              }
+            />
+          </div>
+          {/* Мобильный: горизонтальная карусель, как у экскурсий ниже. */}
+          <div className="-mx-4 mt-5 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:grid sm:grid-cols-2 sm:overflow-visible sm:pb-0 md:mx-0 md:mt-6 md:gap-4 md:px-0 lg:grid-cols-4">
+            {hotTours.map((tour) => (
+              <div key={tour.id} className="w-[82%] shrink-0 snap-start sm:w-auto">
+                <TourCard tour={tour} layout="grid" />
+              </div>
+            ))}
+          </div>
+          <SeeRestLink
+            to="/search"
+            search={{ offers: "hot" }}
+            label="Смотреть остальные горящие туры"
+          />
         </div>
-        <div className="mt-5 grid gap-4 sm:grid-cols-2 md:mt-6 lg:grid-cols-4">
-          {hotTours.map((tour) => (
-            <TourCard key={tour.id} tour={tour} layout="grid" />
-          ))}
-        </div>
-        <SeeRestLink
-          to="/search"
-          search={{ offers: "hot" }}
-          label="Смотреть остальные горящие туры"
-        />
       </section>
 
       <section className="container-page mt-10 md:mt-14">
