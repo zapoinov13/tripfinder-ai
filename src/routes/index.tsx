@@ -67,11 +67,11 @@ function Index() {
           <img
             src={heroImage}
             alt="Пляж и курорт: подбор туров на TourGo"
-            className="h-[min(42svh,21rem)] w-full object-cover object-[center_35%] animate-soft-zoom md:h-[32rem]"
+            className="h-[min(31svh,16rem)] w-full object-cover object-[center_35%] animate-soft-zoom md:h-[32rem]"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/50 to-ink/15" />
 
-          <div className="absolute inset-x-0 bottom-0 flex flex-col px-5 pb-5 pt-10 text-primary-foreground md:p-10">
+          <div className="absolute inset-x-0 bottom-0 flex flex-col px-5 pb-4 pt-6 text-primary-foreground md:p-10">
             <p className="animate-fade-up hidden font-display text-2xl font-semibold tracking-tight md:mb-5 md:block md:text-3xl">
               TourGo
             </p>
@@ -81,14 +81,14 @@ function Index() {
               <br />и купите выгоднее
             </h1>
 
-            <p className="animate-fade-up mt-2 max-w-md text-[14px] leading-snug text-primary-foreground/85 [animation-delay:140ms] md:mt-5 md:text-xl md:leading-relaxed">
+            <p className="animate-fade-up mt-1.5 max-w-md text-[14px] leading-snug text-primary-foreground/85 [animation-delay:140ms] md:mt-5 md:text-xl md:leading-relaxed">
               Туры, жильё, авто и помощь от компаний.  Платите напрямую.
             </p>
 
             <Link
               to="/ai-search"
               search={{} as never}
-              className="animate-fade-up mt-4 flex h-12 w-full items-center gap-3 rounded-2xl bg-background px-3.5 text-left text-foreground shadow-lg active:scale-[0.99] [animation-delay:200ms] md:hidden"
+              className="animate-fade-up mt-3 flex h-12 w-full items-center gap-3 rounded-2xl bg-background px-3.5 text-left text-foreground shadow-lg active:scale-[0.99] [animation-delay:200ms] md:hidden"
             >
               <span className="grid size-8 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground">
                 <Sparkles className="size-4" aria-hidden />
@@ -106,7 +106,7 @@ function Index() {
         </div>
       </section>
 
-      <section className="container-page pt-4 md:pt-0">
+      <section className="container-page pt-3 md:pt-0">
         <div className="hidden grid-cols-3 gap-4 md:mt-6 md:grid">
           {facts.map((fact) => (
             <div key={fact.label} className="surface-card px-4 py-4 text-center">
@@ -116,13 +116,13 @@ function Index() {
           ))}
         </div>
 
-        <div className="grid auto-rows-fr grid-cols-2 items-stretch gap-2.5 md:mt-10 md:grid-cols-3 md:gap-4">
+        <div className="grid auto-rows-fr grid-cols-2 items-stretch gap-2 md:mt-10 md:grid-cols-3 md:gap-4">
           {travelScenarios.map((item) => (
             <Link
               key={item.id}
               to={item.to}
               search={{} as never}
-              className="surface-card flex h-full items-center gap-2.5 px-3 py-3.5 text-left md:min-h-[11.5rem] md:flex-col md:items-start md:justify-between md:gap-2 md:p-6 md:transition-transform md:hover:-translate-y-1"
+              className="surface-card flex h-full items-center gap-2.5 px-3 py-3 text-left md:min-h-[11.5rem] md:flex-col md:items-start md:justify-between md:gap-2 md:p-6 md:transition-transform md:hover:-translate-y-1"
             >
               <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary-soft text-primary md:size-14 md:rounded-2xl">
                 <item.icon className="size-[18px] md:size-7" />
@@ -145,7 +145,7 @@ function Index() {
 
         <Link
           to={b2bNav.to}
-          className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-ink text-[15px] font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-ink/90 active:scale-[0.99] md:mt-8 md:h-14 md:w-auto md:px-8 md:text-base"
+          className="mt-3 flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-ink text-[15px] font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-ink/90 active:scale-[0.99] md:mt-8 md:h-14 md:w-auto md:px-8 md:text-base"
         >
           <Building2 className="size-4 md:size-5" />
           {b2bNav.title}
