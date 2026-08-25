@@ -63,24 +63,25 @@ function Index() {
     <SiteLayout>
       <section className="md:container-page md:py-14">
         <div className="relative overflow-hidden md:rounded-[2.5rem]">
+          {/* Мобильный hero компактный: плитки выбора должны попадать в первый экран. */}
           <img
             src={heroImage}
             alt="Пляж и курорт: подбор туров на TourGo"
-            className="h-[min(68svh,30rem)] w-full object-cover object-[center_35%] animate-soft-zoom md:h-[32rem]"
+            className="h-[min(38svh,19rem)] w-full object-cover object-[center_35%] animate-soft-zoom md:h-[32rem]"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/50 to-ink/15" />
 
-          <div className="absolute inset-x-0 bottom-0 flex flex-col gap-3 px-5 pb-6 pt-16 text-primary-foreground md:gap-5 md:p-10">
-            <p className="animate-fade-up font-display text-2xl font-semibold tracking-tight md:text-3xl">
+          <div className="absolute inset-x-0 bottom-0 flex flex-col gap-2.5 px-5 pb-5 pt-10 text-primary-foreground md:gap-5 md:p-10">
+            <p className="animate-fade-up hidden font-display text-2xl font-semibold tracking-tight md:block md:text-3xl">
               TourGo
             </p>
 
-            <h1 className="animate-fade-up font-display text-[1.85rem] font-semibold leading-[1.08] tracking-tight [animation-delay:80ms] sm:text-5xl md:text-6xl">
+            <h1 className="animate-fade-up font-display text-[1.6rem] font-semibold leading-[1.08] tracking-tight [animation-delay:80ms] sm:text-5xl md:text-6xl">
               Сравните цены
               <br />и купите выгоднее
             </h1>
 
-            <p className="animate-fade-up max-w-md text-[15px] leading-snug text-primary-foreground/80 [animation-delay:140ms] md:text-xl md:leading-relaxed">
+            <p className="animate-fade-up hidden max-w-md text-[15px] leading-snug text-primary-foreground/80 [animation-delay:140ms] md:block md:text-xl md:leading-relaxed">
               Туры, жильё, авто и помощь от компаний. Платите напрямую.
             </p>
 
