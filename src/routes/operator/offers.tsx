@@ -1,12 +1,5 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
-import {
-  CalendarDays,
-  HandCoins,
-  Inbox,
-  MessageCircle,
-  Trophy,
-  Users,
-} from "lucide-react";
+import { CalendarDays, HandCoins, Inbox, MessageCircle, Trophy, Users } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { TabPills } from "@/components/admin";
