@@ -11,7 +11,6 @@ import { Button } from "@/components/ui/button";
 import { destinations, formatPrice, hotTours } from "@/data/demo";
 import { getFeaturedExcursions } from "@/data/excursions";
 import { b2bNav, travelScenarios } from "@/data/scenarios";
-import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -95,15 +94,10 @@ function Index() {
                 key={item.id}
                 to={item.to}
                 search={{} as never}
-                className="flex h-[4.25rem] items-center gap-2.5 rounded-2xl bg-card px-2.5 ring-1 ring-black/[0.06] md:surface-card md:h-auto md:min-h-[11.5rem] md:flex-col md:items-start md:justify-between md:gap-2 md:p-6 md:ring-0 md:transition-transform md:hover:-translate-y-1"
+                className="flex h-[4.25rem] items-center gap-3 rounded-2xl bg-card px-3 ring-1 ring-black/[0.06] md:surface-card md:h-auto md:min-h-[11.5rem] md:flex-col md:items-start md:justify-between md:gap-5 md:p-6 md:ring-0 md:transition-transform md:hover:-translate-y-1"
               >
-                <span
-                  className={cn(
-                    "grid size-9 shrink-0 place-items-center rounded-lg text-white md:size-14 md:rounded-2xl",
-                    item.iconBg,
-                  )}
-                >
-                  <item.icon className="size-[18px] md:size-7" strokeWidth={2.25} />
+                <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-ink text-primary-foreground md:size-12 md:rounded-2xl">
+                  <item.icon className="size-5 md:size-[1.35rem]" strokeWidth={1.75} aria-hidden />
                 </span>
                 <span className="min-w-0">
                   <span className="block truncate font-display text-[13.5px] font-semibold leading-none md:hidden">
@@ -112,7 +106,7 @@ function Index() {
                   <span className="hidden font-display text-2xl font-semibold leading-snug md:block">
                     {item.title}
                   </span>
-                  <span className="mt-1 block truncate text-[11px] leading-none text-foreground/55 md:mt-1 md:text-base md:leading-relaxed md:whitespace-normal">
+                  <span className="mt-1 block truncate text-[11px] leading-none text-foreground/55 md:mt-1.5 md:text-base md:leading-relaxed md:whitespace-normal md:text-foreground/65">
                     <span className="md:hidden">{item.shortHint}</span>
                     <span className="hidden md:inline">{item.hint}</span>
                   </span>
@@ -135,6 +129,11 @@ function Index() {
         <SectionHead
           title="Куда едут чаще всего"
           subtitle="Внутри каждой страны живые цены сразу от нескольких компаний"
+          action={
+            <Button variant="outline" asChild>
+              <Link to="/destinations">Все направления</Link>
+            </Button>
+          }
         />
         {/* Мобильный: окно 2x2 со свайпом вбок, тем же жестом, что туры и экскурсии. */}
         <div className="-mx-4 mt-5 grid snap-x snap-mandatory grid-flow-col grid-rows-2 auto-cols-[44%] gap-2.5 overflow-x-auto scroll-pl-4 px-4 pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:mx-0 md:mt-6 md:auto-cols-auto md:grid-flow-row md:grid-cols-5 md:gap-4 md:overflow-visible md:px-0 md:pb-0">

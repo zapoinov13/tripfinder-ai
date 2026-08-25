@@ -11,8 +11,6 @@ export type TravelScenario = {
   hint: string;
   shortHint: string;
   icon: LucideIcon;
-  /** Градиент чипа иконки: у каждой категории свой цвет для быстрого сканирования. */
-  iconBg: string;
 };
 
 export const travelScenarios: TravelScenario[] = [
@@ -24,7 +22,6 @@ export const travelScenarios: TravelScenario[] = [
     hint: "Пакеты от разных компаний, цены рядом",
     shortHint: "Сравнение цен",
     icon: Globe2,
-    iconBg: "bg-gradient-to-br from-orange-500 to-red-500",
   },
   {
     id: "excursions",
@@ -34,7 +31,6 @@ export const travelScenarios: TravelScenario[] = [
     hint: "Сафари, яхты, билеты и парки на месте",
     shortHint: "Сафари и билеты",
     icon: Ticket,
-    iconBg: "bg-gradient-to-br from-violet-500 to-purple-600",
   },
   {
     id: "stays",
@@ -44,7 +40,6 @@ export const travelScenarios: TravelScenario[] = [
     hint: "Отели, квартиры и виллы под ваш бюджет",
     shortHint: "Отели и виллы",
     icon: Home,
-    iconBg: "bg-gradient-to-br from-emerald-500 to-teal-600",
   },
   {
     id: "cars",
@@ -55,7 +50,6 @@ export const travelScenarios: TravelScenario[] = [
     hint: "Машины без водителя на нужные даты",
     shortHint: "Без водителя",
     icon: CarFront,
-    iconBg: "bg-gradient-to-br from-sky-500 to-blue-600",
   },
   {
     id: "sport",
@@ -65,7 +59,6 @@ export const travelScenarios: TravelScenario[] = [
     hint: "Залы, падел, тренировки в поездке",
     shortHint: "Залы и падел",
     icon: Dumbbell,
-    iconBg: "bg-gradient-to-br from-lime-500 to-green-600",
   },
   {
     id: "help",
@@ -76,7 +69,6 @@ export const travelScenarios: TravelScenario[] = [
     hint: "Водитель, гид, бронь и срочные задачи",
     shortHint: "Водитель и гид",
     icon: LifeBuoy,
-    iconBg: "bg-gradient-to-br from-rose-500 to-pink-600",
   },
 ];
 
