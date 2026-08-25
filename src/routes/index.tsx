@@ -67,28 +67,28 @@ function Index() {
           <img
             src={heroImage}
             alt="Пляж и курорт: подбор туров на TourGo"
-            className="h-[min(38svh,19rem)] w-full object-cover object-[center_35%] animate-soft-zoom md:h-[32rem]"
+            className="h-[min(42svh,21rem)] w-full object-cover object-[center_35%] animate-soft-zoom md:h-[32rem]"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/50 to-ink/15" />
 
-          <div className="absolute inset-x-0 bottom-0 flex flex-col gap-2.5 px-5 pb-5 pt-10 text-primary-foreground md:gap-5 md:p-10">
-            <p className="animate-fade-up hidden font-display text-2xl font-semibold tracking-tight md:block md:text-3xl">
+          <div className="absolute inset-x-0 bottom-0 flex flex-col px-5 pb-5 pt-10 text-primary-foreground md:p-10">
+            <p className="animate-fade-up hidden font-display text-2xl font-semibold tracking-tight md:mb-5 md:block md:text-3xl">
               TourGo
             </p>
 
-            <h1 className="animate-fade-up font-display text-[1.6rem] font-semibold leading-[1.08] tracking-tight [animation-delay:80ms] sm:text-5xl md:text-6xl">
+            <h1 className="animate-fade-up font-display text-[1.7rem] font-semibold leading-[1.1] tracking-tight [animation-delay:80ms] sm:text-5xl md:text-6xl">
               Сравните цены
               <br />и купите выгоднее
             </h1>
 
-            <p className="animate-fade-up hidden max-w-md text-[15px] leading-snug text-primary-foreground/80 [animation-delay:140ms] md:block md:text-xl md:leading-relaxed">
+            <p className="animate-fade-up mt-2 max-w-md text-[14px] leading-snug text-primary-foreground/85 [animation-delay:140ms] md:mt-5 md:text-xl md:leading-relaxed">
               Туры, жильё, авто и помощь от компаний. Платите напрямую.
             </p>
 
             <Link
               to="/ai-search"
               search={{} as never}
-              className="animate-fade-up mt-1 flex h-12 w-full items-center gap-3 rounded-2xl bg-background px-3.5 text-left text-foreground shadow-lg active:scale-[0.99] [animation-delay:200ms] md:hidden"
+              className="animate-fade-up mt-4 flex h-12 w-full items-center gap-3 rounded-2xl bg-background px-3.5 text-left text-foreground shadow-lg active:scale-[0.99] [animation-delay:200ms] md:hidden"
             >
               <span className="grid size-8 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground">
                 <Sparkles className="size-4" aria-hidden />
