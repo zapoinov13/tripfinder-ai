@@ -147,7 +147,8 @@ export function TourCard({
             <Heart className={cn("size-4", fav && "fill-current")} />
           </button>
         </div>
-        <div className="absolute inset-x-3 bottom-3 z-20 flex flex-wrap items-end justify-between gap-1.5">
+        {/* pointer-events-none: чипы информационные, тап сквозь них открывает тур. */}
+        <div className="pointer-events-none absolute inset-x-3 bottom-3 z-20 flex flex-wrap items-end justify-between gap-1.5">
           <div className="flex flex-wrap gap-1.5">
             <span className="rounded-full bg-card/95 px-2.5 py-1 text-[11px] font-semibold shadow-sm">
               {nightsLabel(tour.nights)}
