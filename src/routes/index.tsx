@@ -135,11 +135,6 @@ function Index() {
         <SectionHead
           title="Куда едут чаще всего"
           subtitle="Внутри каждой страны живые цены сразу от нескольких компаний"
-          action={
-            <Button variant="outline" asChild>
-              <Link to="/destinations">Все направления</Link>
-            </Button>
-          }
         />
         {/* Мобильный: окно 2x2 со свайпом вбок, тем же жестом, что туры и экскурсии. */}
         <div className="-mx-4 mt-5 grid snap-x snap-mandatory grid-flow-col grid-rows-2 auto-cols-[44%] gap-2.5 overflow-x-auto scroll-pl-4 px-4 pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:mx-0 md:mt-6 md:auto-cols-auto md:grid-flow-row md:grid-cols-5 md:gap-4 md:overflow-visible md:px-0 md:pb-0">
