@@ -1,11 +1,13 @@
 import type { CompanyVerificationFile, VerificationDocumentId } from "./types";
 
-export const verificationDocumentTypes: Array<{
+export type VerificationDocumentType = {
   id: VerificationDocumentId;
   label: string;
   description: string;
   required: boolean;
-}> = [
+};
+
+export const verificationDocumentTypes: VerificationDocumentType[] = [
   {
     id: "registration",
     label: "Свидетельство о регистрации",
@@ -24,7 +26,38 @@ export const verificationDocumentTypes: Array<{
     description: "Полис страхования туроператора или турагента перед туристами",
     required: false,
   },
+  {
+    id: "commercial_license",
+    label: "Коммерческая лицензия / разрешение",
+    description: "Лицензия или разрешение на вашу деятельность (зал, корт, прокат), если требуется",
+    required: false,
+  },
 ];
+
+const TRAVEL_SERVICES = new Set([
+  "Туры",
+  "Отели",
+  "Экскурсии",
+  "Трансферы",
+  "Индивидуальные поездки",
+  "Помощь туристам на месте",
+]);
+
+/**
+ * Какие документы показывать компании: зависит от её услуг.
+ * Спорт-залу не нужна турлицензия, турагенту — коммерческая.
+ */
+export function verificationDocumentTypesFor(services: string[]): VerificationDocumentType[] {
+  const isTravel = services.some((s) => TRAVEL_SERVICES.has(s));
+  const isOther = services.some((s) => !TRAVEL_SERVICES.has(s));
+  return verificationDocumentTypes.filter((doc) => {
+    if (doc.id === "registration") return true;
+    if (doc.id === "tourism_license" || doc.id === "liability_insurance") {
+      return isTravel || services.length === 0;
+    }
+    return isOther;
+  });
+}
 
 const MAX_FILE_BYTES = 5 * 1024 * 1024;
 const ALLOWED_MIME = new Set(["application/pdf", "image/jpeg", "image/png", "image/webp"]);

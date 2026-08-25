@@ -255,6 +255,15 @@ export function AddVerticalDialog({
               </div>
             </div>
             <div className="space-y-2">
+              <Label htmlFor="vert-address">Адрес</Label>
+              <Input
+                id="vert-address"
+                placeholder="Улица, дом — турист откроет маршрут в картах"
+                value={draft.address ?? ""}
+                onChange={(e) => setDraft({ ...draft, address: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
               <Label htmlFor="vert-detail">
                 {vertical === "sport"
                   ? "Слот / формат"

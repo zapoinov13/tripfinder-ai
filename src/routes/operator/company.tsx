@@ -39,7 +39,7 @@ import { useAuth, useRequireAuth } from "@/lib/platform/auth";
 import {
   clientCountryOptions,
   companyCountryOptions,
-  companyServiceOptions,
+  companyServiceGroups,
   hasRequiredVerificationDocuments,
   languageOptions,
   submitForVerification,
@@ -374,13 +374,16 @@ function OperatorCompanyPage() {
             title="Чем занимаетесь"
             description="Помогает туристу понять, подходите ли вы под его запрос."
           >
-            <ChipGroup
-              label="Услуги"
-              options={companyServiceOptions}
-              selected={form.services ?? []}
-              disabled={readOnly}
-              onToggle={(v) => toggleList("services", v)}
-            />
+            {companyServiceGroups.map((group) => (
+              <ChipGroup
+                key={group.label}
+                label={`Услуги · ${group.label}`}
+                options={group.options}
+                selected={form.services ?? []}
+                disabled={readOnly}
+                onToggle={(v) => toggleList("services", v)}
+              />
+            ))}
             <ChipGroup
               label="Где работаете"
               options={companyCountryOptions}
@@ -435,6 +438,7 @@ function OperatorCompanyPage() {
             description="Знак «Проверенная компания» повышает доверие и конверсию."
           >
             <VerificationDocumentsPanel
+              services={form.services ?? []}
               companyName={form.name}
               companySummary={[form.city, form.country, (form.services ?? []).join(", ")]
                 .filter(Boolean)

@@ -12,6 +12,8 @@ export type VerticalOfferDraft = {
   kind: string;
   price: number;
   area: string;
+  /** Точный адрес: показывается на карточке и открывает маршрут в картах. */
+  address?: string;
   /** sport slot / stay hint / car gearbox+deposit */
   detail: string;
   sourceUrl: string;

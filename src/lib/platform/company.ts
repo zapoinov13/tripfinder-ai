@@ -9,19 +9,35 @@ export {
   removeVerificationFile,
   upsertVerificationFile,
   verificationDocumentTypes,
+  verificationDocumentTypesFor,
 } from "./verification-documents";
 export type { VerificationDocumentId } from "./types";
 
-export const companyServiceOptions = [
+/** Туристические услуги: для них действуют турлицензия и страховка. */
+export const travelServiceOptions = [
   "Туры",
   "Отели",
   "Экскурсии",
   "Трансферы",
   "Аренда авто",
   "Индивидуальные поездки",
-  "Спорт",
   "Помощь туристам на месте",
 ];
+
+/** Спорт-услуги: подтверждаются коммерческой лицензией, а не турдокументами. */
+export const sportServiceOptions = [
+  "Тренажёрный зал",
+  "Падел и теннис",
+  "Групповые тренировки",
+  "Аренда спортплощадок",
+];
+
+export const companyServiceGroups = [
+  { label: "Путешествия", options: travelServiceOptions },
+  { label: "Спорт и активности", options: sportServiceOptions },
+];
+
+export const companyServiceOptions = companyServiceGroups.flatMap((g) => g.options);
 
 export const companyCountryOptions = [
   "ОАЭ",

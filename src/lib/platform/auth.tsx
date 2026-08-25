@@ -524,41 +524,69 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (error || !data.user) {
           return { ok: false, error: error?.message ?? "Ошибка регистрации" };
         }
-        const { data: org, error: orgErr } = await sb
-          .from("organizations")
-          .insert({
-            name: input.company.name,
-            legal_name: input.company.legalName,
-            registration_number: input.company.registrationNumber,
-            country: input.company.country,
-            city: input.company.city,
-            address: input.company.address,
-            phone: input.company.phone,
-            email: input.company.email || email,
-            website: input.company.website,
-            contact_person: input.company.contactPerson,
-            status: "PENDING_APPROVAL",
-            plan_code: "START",
-          })
-          .select("*")
-          .single();
-        if (orgErr || !org) {
-          return { ok: false, error: orgErr?.message ?? "Не удалось создать организацию" };
+
+        // При включённом подтверждении email signUp не даёт сессию, а без неё
+        // любые вставки летят анонимно и режутся RLS. Пробуем войти сразу;
+        // если и это не дало сессию — просим подтвердить почту.
+        if (!data.session) {
+          const { data: signIn } = await sb.auth.signInWithPassword({ email, password });
+          if (!signIn.session) {
+            return {
+              ok: false,
+              error:
+                "Подтвердите email по ссылке из письма, затем войдите и создайте компанию заново.",
+            };
+          }
         }
-        await sb.from("profiles").upsert({
-          id: data.user.id,
-          email,
-          name: input.name.trim() || input.company.contactPerson || "Поставщик",
-          city: input.company.city || "Алматы",
-          role: "OPERATOR_ADMIN",
-          organization_id: org.id,
-          status: "active",
+
+        // Организация + профиль + членство создаются атомарно на сервере:
+        // по частям это невозможно (RLS и защита профиля мешают друг другу).
+        // Типы Supabase перегенерируются позже: функции ещё нет в Database,
+        // поэтому аргументы и результат типизируем вручную.
+        const registerCompanyRpc = sb.rpc as unknown as (
+          fn: "register_company",
+          args: Record<string, string>,
+        ) => PromiseLike<{
+          data: {
+            id: string;
+            name: string;
+            legal_name: string;
+            registration_number: string;
+            country: string;
+            city: string;
+            address: string;
+            phone: string;
+            email: string;
+            website: string;
+            contact_person: string;
+            status: Organization["status"];
+            plan_code: Organization["planCode"];
+            additional_tour_limit: number;
+            advertising_balance: number;
+            promotion_balance: number;
+            created_at: string;
+          } | null;
+          error: { message: string } | null;
+        }>;
+        const { data: org, error: orgErr } = await registerCompanyRpc("register_company", {
+          p_name: input.company.name,
+          p_legal_name: input.company.legalName,
+          p_registration_number: input.company.registrationNumber,
+          p_country: input.company.country,
+          p_city: input.company.city,
+          p_address: input.company.address,
+          p_phone: input.company.phone,
+          p_email: input.company.email || email,
+          p_website: input.company.website,
+          p_contact_person: input.company.contactPerson,
         });
-        await sb.from("organization_members").insert({
-          organization_id: org.id,
-          user_id: data.user.id,
-          role: "OPERATOR_ADMIN",
-        });
+        if (orgErr || !org) {
+          const message =
+            orgErr?.message === "already_in_organization"
+              ? "У этого аккаунта уже есть компания"
+              : (orgErr?.message ?? "Не удалось создать организацию");
+          return { ok: false, error: message };
+        }
         setState((s) => ({
           ...s,
           organizations: [
