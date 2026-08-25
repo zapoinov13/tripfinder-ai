@@ -82,7 +82,8 @@ function Index() {
             </h1>
 
             <p className="animate-fade-up mt-2 max-w-md text-[14px] leading-snug text-primary-foreground/85 [animation-delay:140ms] md:mt-5 md:text-xl md:leading-relaxed">
-              Туры, жильё, авто и помощь от компаний. Платите напрямую.
+              Туры, жильё, авто и помощь от компаний. 
+              Платите напрямую.
             </p>
 
             <Link
@@ -235,7 +236,7 @@ function Index() {
         />
         <div className="mt-3 flex items-center gap-2 text-base text-foreground/70 md:hidden">
           <Flame className="size-4 text-primary" />
-          Скидки на ближайший вылет. Осталось мало мест
+          Скидки на ближайший вылет.            Осталось мало мест
         </div>
         <div className="mt-5 grid gap-4 sm:grid-cols-2 md:mt-6 lg:grid-cols-4">
           {hotTours.map((tour) => (
