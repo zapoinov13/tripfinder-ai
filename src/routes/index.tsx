@@ -45,12 +45,6 @@ const how = [
   },
 ];
 
-const facts = [
-  { value: "6", label: "разделов поездки" },
-  { value: "0%", label: "комиссии туристу" },
-  { value: "24/7", label: "помощь на месте" },
-];
-
 function Index() {
   const featuredExcursions = getFeaturedExcursions(6);
 
@@ -95,15 +89,6 @@ function Index() {
             <span className="text-[15px] font-semibold leading-none">Опишите поездку</span>
           </Link>
 
-          <div className="hidden grid-cols-3 gap-4 md:mt-6 md:grid">
-            {facts.map((fact) => (
-              <div key={fact.label} className="surface-card px-4 py-4 text-center">
-                <p className="font-display text-3xl font-semibold leading-none">{fact.value}</p>
-                <p className="mt-1 text-sm text-foreground/60">{fact.label}</p>
-              </div>
-            ))}
-          </div>
-
           <div className="mt-3 grid grid-cols-2 gap-2 md:mt-10 md:grid-cols-3 md:gap-4">
             {travelScenarios.map((item) => (
               <Link
@@ -146,7 +131,7 @@ function Index() {
         </section>
       </div>
 
-      <section className="container-page mt-10 md:mt-10">
+      <section className="container-page mt-8 md:mt-10">
         <SectionHead
           title="Куда едут чаще всего"
           subtitle="Внутри каждой страны живые цены сразу от нескольких компаний"
