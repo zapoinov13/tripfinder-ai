@@ -5,12 +5,6 @@ import type { ReactNode } from "react";
 import heroImage from "@/assets/hero.jpg";
 import { AiIntentBar } from "@/components/site/ai-intent-bar";
 import { SiteLayout } from "@/components/site/site-layout";
-import {
-  MediaCardCaption,
-  mediaBodyClass,
-  mediaMetaClass,
-  mediaTitleClass,
-} from "@/components/media/media-card-overlay";
 import { SafeImage } from "@/components/media/safe-image";
 import { TourCard } from "@/components/tours/tour-card";
 import { Button } from "@/components/ui/button";
@@ -166,48 +160,34 @@ function Index() {
             </Button>
           }
         />
-        <div className="mt-5 grid grid-cols-2 gap-3 md:mt-6 md:gap-4">
+        {/* Мобильный: окно 2x2 со свайпом вбок, тем же жестом, что туры и экскурсии. */}
+        <div className="-mx-4 mt-5 grid snap-x snap-mandatory grid-flow-col grid-rows-2 auto-cols-[44%] gap-2.5 overflow-x-auto scroll-pl-4 px-4 pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:mx-0 md:mt-6 md:auto-cols-auto md:grid-flow-row md:grid-cols-5 md:gap-4 md:overflow-visible md:px-0 md:pb-0">
           {destinations.map((dest) => (
             <Link
               key={dest.id}
               to="/search"
               search={{ destination: dest.id } as never}
-              className="hover-lift group relative overflow-hidden rounded-3xl"
+              className="hover-lift group relative block snap-start overflow-hidden rounded-2xl md:rounded-3xl"
             >
-              <img
+              <SafeImage
                 src={dest.image}
                 alt={dest.country}
                 loading="lazy"
-                className="h-48 w-full object-cover transition-transform duration-700 group-hover:scale-105 sm:h-64 md:h-72"
+                className="h-44 w-full object-cover transition-transform duration-700 group-hover:scale-105 md:h-56"
               />
               <div className="absolute inset-0 media-scrim-strong" />
-              {dest.photos?.filter((p) => !p.includes("images.unsplash.com")).slice(1, 4).length ? (
-                <div className="absolute right-2 top-2 z-[2] flex gap-1 sm:right-3 sm:top-3">
-                  {dest.photos
-                    .filter((p) => !p.includes("images.unsplash.com"))
-                    .slice(1, 4)
-                    .map((img, i) => (
-                      <SafeImage
-                        key={`${dest.id}-${i}`}
-                        src={img}
-                        alt=""
-                        className="size-7 rounded-md object-cover shadow-sm ring-1 ring-white/50 sm:size-10 sm:rounded-lg"
-                      />
-                    ))}
-                </div>
-              ) : null}
-              <MediaCardCaption>
-                <h3 className={mediaTitleClass("md")}>
+              <div className="absolute inset-x-0 bottom-0 p-3 text-primary-foreground md:p-4">
+                <h3 className="font-display text-[15px] font-semibold leading-tight md:text-lg">
                   {dest.flag} {dest.country}
                 </h3>
-                <p className={mediaBodyClass()}>{dest.blurb}</p>
-                <p className={mediaMetaClass()}>
+                <p className="mt-0.5 text-[11px] leading-tight text-primary-foreground/80 md:text-sm">
                   {dest.tours} предложений · {dest.city}
                 </p>
-              </MediaCardCaption>
+              </div>
             </Link>
           ))}
         </div>
+        <SeeRestLink to="/destinations" label="Все направления" />
       </section>
 
       <section className="mt-10 bg-gradient-to-b from-primary-soft/60 via-primary-soft/25 to-transparent md:mt-14">
