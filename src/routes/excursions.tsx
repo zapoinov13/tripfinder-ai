@@ -1,7 +1,6 @@
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import {
   ArrowLeft,
-  ArrowRight,
   Car,
   ChevronRight,
   Clock,
@@ -757,7 +756,6 @@ function ExcursionSheet({
                 onClick={onClose}
               >
                 Получить предложения
-                <ArrowRight className="size-4" />
               </Link>
             </Button>
             <Button variant="outline" asChild>

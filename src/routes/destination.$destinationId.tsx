@@ -1,5 +1,5 @@
 import { Link, createFileRoute, notFound } from "@tanstack/react-router";
-import { ArrowRight, MapPin } from "lucide-react";
+import { MapPin } from "lucide-react";
 
 import {
   MediaCardCaption,
@@ -125,7 +125,6 @@ function DestinationPage() {
                 <span className="flex items-center gap-2">
                   <MapPin className="size-4 shrink-0 opacity-90" />
                   <span className={mediaTitleClass("sm")}>{resort.name}</span>
-                  <ArrowRight className="size-4 opacity-80 transition-transform group-hover:translate-x-1" />
                 </span>
                 <span className={mediaBodyClass()}>{resort.blurb}</span>
                 <span className={mediaMetaClass()}>{formatNumber(resort.tours)} туров</span>
@@ -145,7 +144,7 @@ function DestinationPage() {
           </div>
           <Button variant="outline" asChild className="mt-8">
             <Link to="/search" search={{ destination: dest.id } as never}>
-              Все туры <ArrowRight className="size-4" />
+              Все туры
             </Link>
           </Button>
         </section>

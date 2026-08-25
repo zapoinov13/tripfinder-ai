@@ -1,5 +1,5 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { AlertTriangle, ArrowRight } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 
 import {
   KpiLinkCard,
@@ -131,7 +131,6 @@ function AdminDashboard() {
                       <span className="block font-medium">{item.title}</span>
                       <span className="block truncate text-muted-foreground">{item.detail}</span>
                     </span>
-                    <ArrowRight className="size-4 shrink-0 text-muted-foreground" />
                   </Link>
                 </li>
               ))}

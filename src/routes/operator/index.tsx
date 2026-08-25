@@ -1,6 +1,5 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import {
-  ArrowRight,
   BadgeCheck,
   Building2,
   Cable,
@@ -207,10 +206,7 @@ function OperatorDashboard() {
       actions={
         openRequests > 0 ? (
           <Button size="sm" asChild>
-            <Link to="/operator/requests">
-              Ответить на заявки
-              <ArrowRight className="size-4" />
-            </Link>
+            <Link to="/operator/requests">Ответить на заявки</Link>
           </Button>
         ) : (
           <Button size="sm" variant="outline" asChild>

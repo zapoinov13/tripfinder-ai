@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowRight, Mail, Plane } from "lucide-react";
+import { Mail, Plane } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { b2bNav, travelScenarios } from "@/data/scenarios";
@@ -54,10 +54,7 @@ export function SiteFooter() {
               className="bg-primary-foreground text-ink hover:bg-primary-foreground/90"
               asChild
             >
-              <Link to="/">
-                Сравнить предложения
-                <ArrowRight className="size-4" />
-              </Link>
+              <Link to="/">Сравнить предложения</Link>
             </Button>
             <Button
               size="lg"

@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, ArrowRight, Check } from "lucide-react";
+import { ArrowLeft, Check } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -401,7 +401,6 @@ function CompanySignupPage() {
                   }}
                 >
                   Далее
-                  <ArrowRight className="size-4" />
                 </Button>
               ) : (
                 <div className="space-y-2 text-right">

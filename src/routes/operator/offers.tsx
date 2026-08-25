@@ -1,6 +1,5 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import {
-  ArrowRight,
   CalendarDays,
   HandCoins,
   Inbox,
@@ -122,10 +121,7 @@ function OperatorOffersPage() {
             отели, цену и условия. Отправленное предложение сохранится здесь.
           </p>
           <Button className="mt-5" asChild>
-            <Link to="/operator/requests">
-              Смотреть заявки
-              <ArrowRight className="size-4" />
-            </Link>
+            <Link to="/operator/requests">Смотреть заявки</Link>
           </Button>
         </div>
       ) : (
