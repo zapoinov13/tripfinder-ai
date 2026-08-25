@@ -20,6 +20,7 @@ type SportCard = {
   price: number;
   area: string;
   slot: string;
+  address?: string;
   companyName?: string;
 };
 
@@ -65,6 +66,7 @@ function SportPage() {
       price: item.price,
       area: item.area,
       slot: item.detail,
+      ...(item.address ? { address: item.address } : {}),
       companyName: item.companyName,
     })),
     ...sports,
@@ -176,6 +178,22 @@ function SportPage() {
                   <p className="mt-1 text-sm text-foreground/60">{item.companyName}</p>
                 ) : null}
                 {item.slot ? <p className="mt-2 text-sm text-foreground/70">{item.slot}</p> : null}
+                {item.address ? (
+                  <a
+                    href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(`${item.address}, ${item.city}`)}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="mt-2 inline-flex items-start gap-1.5 text-sm font-medium text-primary hover:underline"
+                  >
+                    <MapPin className="mt-0.5 size-4 shrink-0" />
+                    <span>
+                      {item.address}
+                      <span className="block text-xs font-normal text-foreground/55">
+                        Открыть маршрут в картах
+                      </span>
+                    </span>
+                  </a>
+                ) : null}
                 {item.price > 0 ? (
                   <p className="mt-4 font-display text-lg font-semibold">{formatKzt(item.price)}</p>
                 ) : (

@@ -88,7 +88,8 @@ export type Organization = {
   verificationSubmittedAt?: string;
 };
 
-export type VerificationDocumentId = "registration" | "tourism_license" | "liability_insurance";
+export type VerificationDocumentId =
+  "registration" | "tourism_license" | "liability_insurance" | "commercial_license";
 
 export type CompanyVerificationFile = {
   type: VerificationDocumentId;

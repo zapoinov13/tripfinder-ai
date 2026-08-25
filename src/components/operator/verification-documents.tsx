@@ -10,6 +10,7 @@ import {
   removeVerificationFile,
   upsertVerificationFile,
   verificationDocumentTypes,
+  verificationDocumentTypesFor,
 } from "@/lib/platform/company";
 import type { CompanyVerificationFile, VerificationDocumentId } from "@/lib/platform/types";
 import { cn } from "@/lib/utils";
@@ -21,6 +22,8 @@ type VerificationDocumentsPanelProps = {
   onChange: (files: CompanyVerificationFile[]) => void;
   readOnly?: boolean;
   showPreview?: boolean;
+  /** Услуги компании: от них зависит список документов. */
+  services?: string[];
 };
 
 export function VerificationDocumentsPanel({
@@ -30,7 +33,9 @@ export function VerificationDocumentsPanel({
   onChange,
   readOnly = false,
   showPreview = true,
+  services = [],
 }: VerificationDocumentsPanelProps) {
+  const documentTypes = verificationDocumentTypesFor(services);
   const inputRefs = useRef<Partial<Record<VerificationDocumentId, HTMLInputElement | null>>>({});
 
   const upload = async (type: VerificationDocumentId, fileList: FileList | null) => {
@@ -80,7 +85,7 @@ export function VerificationDocumentsPanel({
         </p>
 
         <div className="mt-3 space-y-2">
-          {verificationDocumentTypes.map((doc) => {
+          {documentTypes.map((doc) => {
             const uploaded = files.find((file) => file.type === doc.id);
             return (
               <div
