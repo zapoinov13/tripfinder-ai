@@ -232,9 +232,9 @@ function Index() {
             />
           </div>
           {/* Мобильный: горизонтальная карусель, как у экскурсий ниже. */}
-          <div className="-mx-4 mt-5 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:grid sm:grid-cols-2 sm:overflow-visible sm:pb-0 md:mx-0 md:mt-6 md:gap-4 md:px-0 lg:grid-cols-4">
+          <div className="-mx-4 mt-5 flex snap-x snap-mandatory scroll-pl-4 gap-4 overflow-x-auto px-4 pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:grid sm:grid-cols-2 sm:overflow-visible sm:pb-0 md:mx-0 md:mt-6 md:gap-4 md:px-0 lg:grid-cols-4">
             {hotTours.map((tour) => (
-              <div key={tour.id} className="w-[82%] shrink-0 snap-start sm:w-auto">
+              <div key={tour.id} className="w-[85%] shrink-0 snap-start snap-always sm:w-auto">
                 <TourCard tour={tour} layout="grid" />
               </div>
             ))}
@@ -261,13 +261,13 @@ function Index() {
           }
         />
         {/* Мобильный: горизонтальная карусель со snap, чтобы не раздувать страницу. */}
-        <div className="-mx-4 mt-5 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:mx-0 md:mt-6 md:grid md:grid-cols-3 md:gap-4 md:overflow-visible md:px-0 md:pb-0">
+        <div className="-mx-4 mt-5 flex snap-x snap-mandatory scroll-pl-4 gap-4 overflow-x-auto px-4 pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:mx-0 md:mt-6 md:grid md:grid-cols-3 md:gap-4 md:overflow-visible md:px-0 md:pb-0">
           {featuredExcursions.map((item) => (
             <Link
               key={item.id}
               to="/excursions"
               search={{ destination: item.destinationId, city: item.city } as never}
-              className="hover-lift surface-card w-[76%] shrink-0 snap-start overflow-hidden p-0 sm:w-[46%] md:w-auto"
+              className="hover-lift surface-card w-[85%] shrink-0 snap-start snap-always overflow-hidden p-0 sm:w-[46%] md:w-auto"
             >
               <div className="relative">
                 <img
