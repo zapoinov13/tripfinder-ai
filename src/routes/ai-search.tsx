@@ -88,6 +88,13 @@ function AiSearchPage() {
             <textarea
               value={query}
               onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={(e) => {
+                // Enter отправляет запрос; перенос строки остаётся на Shift+Enter.
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  go();
+                }
+              }}
               rows={3}
               placeholder="Например: хочу в Дубай на неделю"
               className="min-w-0 flex-1 resize-none rounded-2xl border border-border bg-card px-4 py-3 text-base shadow-sm outline-none focus:border-primary"

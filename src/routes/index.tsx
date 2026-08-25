@@ -81,7 +81,7 @@ function Index() {
           <Link
             to="/ai-search"
             search={{} as never}
-            className="-mt-5 flex h-12 shrink-0 items-center gap-3 rounded-2xl bg-card px-3 shadow-[0_8px_24px_rgba(15,23,42,0.12)] ring-1 ring-black/5 md:hidden"
+            className="mt-3 flex h-12 shrink-0 items-center gap-3 rounded-2xl bg-card px-3 shadow-[0_8px_24px_rgba(15,23,42,0.12)] ring-1 ring-black/5 md:hidden"
           >
             <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-primary text-primary-foreground">
               <Sparkles className="size-4" aria-hidden />
@@ -137,9 +137,7 @@ function Index() {
           subtitle="Внутри каждой страны живые цены сразу от нескольких компаний"
           action={
             <Button variant="outline" asChild>
-              <Link to="/destinations">
-                Все направления
-              </Link>
+              <Link to="/destinations">Все направления</Link>
             </Button>
           }
         />
@@ -215,9 +213,7 @@ function Index() {
           subtitle="Сафари, яхты и парки от местных компаний по их ценам, без наценки посредников"
           action={
             <Button variant="outline" asChild>
-              <Link to="/excursions">
-                Смотреть остальные
-              </Link>
+              <Link to="/excursions">Смотреть остальные</Link>
             </Button>
           }
         />

@@ -8,7 +8,7 @@ export type ScenarioRoute = {
 };
 
 const placeAliases: Array<{ destination: string; city?: string; tokens: string[] }> = [
-  { destination: "uae", city: "Дубай", tokens: ["дубай", "dubai"] },
+  { destination: "uae", city: "Дубай", tokens: ["дуба", "dubai"] },
   { destination: "uae", city: "Абу-Даби", tokens: ["абу-даби", "абу даби", "abu dhabi"] },
   { destination: "uae", city: "Шарджа", tokens: ["шардж", "sharjah"] },
   { destination: "uae", tokens: ["оаэ", "uae", "эмират"] },
@@ -24,7 +24,7 @@ const placeAliases: Array<{ destination: string; city?: string; tokens: string[]
   { destination: "georgia", tokens: ["груз", "georgia"] },
   { destination: "maldives", tokens: ["мальдив", "maldives"] },
   { destination: "vietnam", tokens: ["вьетнам", "vietnam"] },
-  { destination: "egypt", tokens: ["египет", "egypt"] },
+  { destination: "egypt", tokens: ["египт", "египет", "egypt"] },
 ];
 
 export function placeFromQuery(query: string): { destination?: string; city?: string } {
