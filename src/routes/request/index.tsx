@@ -1,6 +1,6 @@
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowRight, BadgeCheck, Send, ShieldCheck, Users } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { SiteLayout } from "@/components/site/site-layout";
@@ -47,6 +47,8 @@ export const Route = createFileRoute("/request/")({
 
 const cities = ["Алматы", "Астана", "Шымкент", "Актау", "Ташкент", "Бишкек"];
 
+const DRAFT_KEY = "tourgo:trip-request-draft";
+
 function todayPlus(days: number) {
   return new Date(Date.now() + days * 86400000).toISOString().slice(0, 10);
 }
@@ -74,13 +76,74 @@ function RequestPage() {
   const [phone, setPhone] = useState("");
   const [sending, setSending] = useState(false);
 
+  // Гостя отправляем логиниться, а заявку сохраняем: после входа он
+  // возвращается сюда (?next=) и черновик подставляется обратно.
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem(DRAFT_KEY);
+      if (!raw) return;
+      sessionStorage.removeItem(DRAFT_KEY);
+      const draft = JSON.parse(raw) as Partial<{
+        fromCity: string;
+        destinationId: string;
+        dateStart: string;
+        dateEnd: string;
+        adults: number;
+        children: number;
+        budget: number;
+        wishes: string;
+        name: string;
+        phone: string;
+      }>;
+      if (draft.fromCity) setFromCity(draft.fromCity);
+      if (draft.destinationId) setDestinationId(draft.destinationId);
+      if (draft.dateStart) setDateStart(draft.dateStart);
+      if (draft.dateEnd) setDateEnd(draft.dateEnd);
+      if (typeof draft.adults === "number") setAdults(draft.adults);
+      if (typeof draft.children === "number") setChildren(draft.children);
+      if (typeof draft.budget === "number") setBudget(draft.budget);
+      if (draft.wishes) setWishes(draft.wishes);
+      if (draft.name) setNameEdit(draft.name);
+      if (draft.phone) setPhone(draft.phone);
+    } catch {
+      // повреждённый черновик просто игнорируем
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const destination = destinations.find((d) => d.id === destinationId);
   const destinationLabel = search.city?.trim() || destination?.city || "Дубай";
 
   const submit = () => {
     if (!isAuthenticated || !user) {
-      toast("Войдите, чтобы турфирмы могли отправить вам предложения");
-      void navigate({ to: "/login" });
+      try {
+        sessionStorage.setItem(
+          DRAFT_KEY,
+          JSON.stringify({
+            fromCity,
+            destinationId,
+            dateStart,
+            dateEnd,
+            adults,
+            children,
+            budget,
+            wishes,
+            name: name.trim(),
+            phone,
+          }),
+        );
+      } catch {
+        // приватный режим без sessionStorage: вернёмся хотя бы на страницу
+      }
+      toast("Войдите: заявка сохранена и отправится после входа");
+      const params = new URLSearchParams();
+      if (kind === "assistance") params.set("kind", "assistance");
+      if (search.destination) params.set("destination", search.destination);
+      if (search.city) params.set("city", search.city);
+      void navigate({
+        to: "/login",
+        search: { next: `/request${params.size ? `?${params.toString()}` : ""}` } as never,
+      });
       return;
     }
     if (!name.trim() || parsePhoneDigits(phone).length < 11) {

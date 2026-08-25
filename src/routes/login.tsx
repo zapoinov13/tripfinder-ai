@@ -1,4 +1,4 @@
-import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
+import { Link, createFileRoute, useNavigate, useRouter } from "@tanstack/react-router";
 import { LogIn } from "lucide-react";
 import { useState } from "react";
 
@@ -19,12 +19,19 @@ export const Route = createFileRoute("/login")({
       { name: "description", content: "Войдите в личный кабинет TourGo." },
     ],
   }),
+  validateSearch: (search: Record<string, unknown>): { next?: string } =>
+    // Только внутренние пути: внешний redirect после логина недопустим.
+    typeof search["next"] === "string" && search["next"].startsWith("/")
+      ? { next: search["next"] }
+      : {},
   component: LoginPage,
 });
 
 function LoginPage() {
   const { login, user } = useAuth();
   const navigate = useNavigate();
+  const router = useRouter();
+  const { next } = Route.useSearch();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -36,7 +43,10 @@ function LoginPage() {
       : user.role.startsWith("OPERATOR")
         ? "/operator"
         : "/profile";
-    queueMicrotask(() => navigate({ to }));
+    queueMicrotask(() => {
+      if (next) router.history.push(next);
+      else void navigate({ to });
+    });
   }
 
   return (
@@ -61,7 +71,10 @@ function LoginPage() {
               ? getState().users.find((x) => x.id === sessionUserId)
               : getState().users.find((x) => x.email === email.trim().toLowerCase());
             if (u) migrateAnonymousToUser(u.id);
-            navigate({ to: getPostLoginPath(u?.role) });
+            // Пользователя вернём туда, откуда его отправили логиниться
+            // (например, недозаполненная заявка), иначе в кабинет по роли.
+            if (next) router.history.push(next);
+            else navigate({ to: getPostLoginPath(u?.role) });
           } finally {
             setBusy(false);
           }
