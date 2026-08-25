@@ -24,7 +24,6 @@ const tabs = [
     label: "Поиск",
     to: "/ai-search",
     icon: Search,
-    featured: true,
     match: (path: string) => path === "/ai-search",
   },
   {
@@ -57,7 +56,6 @@ export function AppTabBar() {
       <div className="grid grid-cols-4 items-end">
         {tabs.map((tab) => {
           const active = tab.match(pathname);
-          const featured = "featured" in tab && tab.featured;
           return (
             <Link
               key={tab.id}
@@ -65,26 +63,10 @@ export function AppTabBar() {
               search={{} as never}
               className={cn(
                 "flex min-h-[3.5rem] flex-col items-center justify-center gap-0.5 px-1 py-2 text-[11px] font-medium transition-colors active:opacity-70",
-                featured && "relative",
-                !featured && (active ? "text-primary" : "text-muted-foreground"),
-                featured && !active && "text-muted-foreground",
-                featured && active && "text-primary",
+                active ? "text-primary" : "text-muted-foreground",
               )}
             >
-              {featured ? (
-                <span
-                  className={cn(
-                    "-mt-5 grid size-12 place-items-center rounded-full shadow-md",
-                    active
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-ink text-primary-foreground",
-                  )}
-                >
-                  <tab.icon className="size-5" aria-hidden />
-                </span>
-              ) : (
-                <tab.icon className={cn("size-[22px]", active && "stroke-[2.35px]")} aria-hidden />
-              )}
+              <tab.icon className={cn("size-[22px]", active && "stroke-[2.35px]")} aria-hidden />
               <span className={cn(active && "font-semibold")}>{tab.label}</span>
             </Link>
           );
