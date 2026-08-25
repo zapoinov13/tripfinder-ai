@@ -76,7 +76,7 @@ function Index() {
             </h1>
 
             <p className="animate-fade-up mt-1.5 max-w-md text-[14px] leading-snug text-primary-foreground [animation-delay:140ms] [text-shadow:0_1px_10px_rgba(10,15,30,0.6)] md:mt-5 md:text-xl md:leading-relaxed">
-              Туры, жильё, авто и помощь от компаний.  Платите напрямую.
+              Туры, жильё, авто и помощь от компаний
             </p>
 
             <Link
