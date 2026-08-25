@@ -236,7 +236,7 @@ function Index() {
         />
         <div className="mt-3 flex items-center gap-2 text-base text-foreground/70 md:hidden">
           <Flame className="size-4 text-primary" />
-          Скидки на ближайший вылет. Осталось мало мест
+          Скидки на ближайший вылет.            Осталось мало мест
         </div>
         <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {hotTours.map((tour) => (
