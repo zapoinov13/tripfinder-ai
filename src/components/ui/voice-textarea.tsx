@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { Textarea } from "@/components/ui/textarea";
-import { speechService } from "@/lib/speech-service";
+import { speechErrorMessage, speechService } from "@/lib/speech-service";
 import { cn } from "@/lib/utils";
 
 export function VoiceTextarea({
@@ -52,9 +52,9 @@ export function VoiceTextarea({
     setListening(true);
     try {
       session.current = speechService.listen((spoken) => merge(spoken));
-    } catch {
+    } catch (error) {
       setListening(false);
-      toast.error("Не удалось включить микрофон. Разрешите доступ в браузере.");
+      toast.error(speechErrorMessage(error));
     }
   };
 

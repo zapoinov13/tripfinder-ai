@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { SiteLayout } from "@/components/site/site-layout";
 import { Button } from "@/components/ui/button";
 import { routeTravelIntent } from "@/lib/scenario-router";
-import { speechService } from "@/lib/speech-service";
+import { speechErrorMessage, speechService } from "@/lib/speech-service";
 
 const examples = [
   "Хочу в Дубай на неделю",
@@ -56,8 +56,8 @@ function AiSearchPage() {
       const result = await speechService.start();
       setQuery(result.text);
       go(result.text);
-    } catch {
-      toast.error("Не удалось включить микрофон");
+    } catch (error) {
+      toast.error(speechErrorMessage(error));
     } finally {
       setListening(false);
     }
