@@ -145,21 +145,11 @@ function Index() {
 
         <Link
           to={b2bNav.to}
-          className="mt-4 flex items-center justify-between gap-3 rounded-2xl bg-ink px-4 py-4 text-primary-foreground md:mt-8 md:rounded-[1.75rem] md:gap-4 md:px-8 md:py-6"
+          className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-ink text-[15px] font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-ink/90 active:scale-[0.99] md:mt-8 md:h-14 md:w-auto md:px-8 md:text-base"
         >
-          <span className="min-w-0">
-            <span className="inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-primary-foreground/70 md:text-sm">
-              <Building2 className="size-3.5 md:size-4" />
-              {b2bNav.title}
-            </span>
-            <span className="mt-1 block font-display text-base font-semibold leading-snug md:mt-2 md:text-2xl">
-              Приведите клиентов без комиссии туристу
-            </span>
-            <span className="mt-1 hidden text-sm leading-relaxed text-primary-foreground/80 md:block md:text-base">
-              {b2bNav.hint}
-            </span>
-          </span>
-          <ArrowRight className="size-5 shrink-0 md:size-6" />
+          <Building2 className="size-4 md:size-5" />
+          {b2bNav.title}
+          <ArrowRight className="size-4 md:size-5" />
         </Link>
       </section>
 
