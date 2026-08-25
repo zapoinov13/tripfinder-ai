@@ -35,18 +35,18 @@ export const Route = createFileRoute("/")({
 const how = [
   {
     icon: Sparkles,
-    title: "Откройте нужный раздел",
-    text: "Тур, экскурсия, жильё, авто, спорт или помощь. Фильтры и поиск уже внутри.",
+    title: "Скажите, что нужно",
+    text: "Опишите поездку своими словами: AI откроет нужный раздел и покажет подходящие варианты.",
   },
   {
     icon: Wallet,
-    title: "Сравните цены рядом",
-    text: "Несколько компаний на одном экране. Состав, даты и сумма без переписки в чатах.",
+    title: "Сравните и выберите",
+    text: "Один и тот же тур у разных компаний стоит по-разному. У нас эта разница видна сразу, без переписки в чатах.",
   },
   {
     icon: ShieldCheck,
-    title: "Платите компании напрямую",
-    text: "TourGo: витрина. Договор и деньги у фирмы, которую выбрали вы.",
+    title: "Бронируйте напрямую",
+    text: "Договор и оплата у выбранной компании. TourGo не берёт комиссию с туриста: цена не растёт.",
   },
 ];
 
@@ -166,7 +166,7 @@ function Index() {
       <section className="container-page mt-6 md:mt-10">
         <SectionHead
           title="Куда едут чаще всего"
-          subtitle="Откройте страну и сравните туры от разных компаний"
+          subtitle="Внутри каждой страны живые цены сразу от нескольких компаний"
           action={
             <Button variant="outline" asChild>
               <Link to="/destinations">
@@ -176,7 +176,7 @@ function Index() {
             </Button>
           }
         />
-        <div className="mt-8 grid grid-cols-2 gap-3 md:gap-4">
+        <div className="mt-5 grid grid-cols-2 gap-3 md:mt-6 md:gap-4">
           {destinations.map((dest) => (
             <Link
               key={dest.id}
@@ -220,7 +220,7 @@ function Index() {
         </div>
       </section>
 
-      <section className="container-page mt-16 md:mt-24">
+      <section className="container-page mt-10 md:mt-14">
         <SectionHead
           title="Горящие туры"
           subtitle="Ближайшие вылеты со сниженной ценой. Успейте забронировать"
@@ -237,7 +237,7 @@ function Index() {
           <Flame className="size-4 text-primary" />
           Скидки на ближайший вылет. Осталось мало мест
         </div>
-        <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-5 grid gap-4 sm:grid-cols-2 md:mt-6 lg:grid-cols-4">
           {hotTours.map((tour) => (
             <TourCard key={tour.id} tour={tour} layout="grid" />
           ))}
@@ -249,10 +249,10 @@ function Index() {
         />
       </section>
 
-      <section className="container-page mt-16 md:mt-24">
+      <section className="container-page mt-10 md:mt-14">
         <SectionHead
           title="Экскурсии и развлечения"
-          subtitle="Сафари, яхты и парки от местных компаний, когда вы уже на месте"
+          subtitle="Сафари, яхты и парки от местных компаний по их ценам, без наценки посредников"
           action={
             <Button variant="outline" asChild>
               <Link to="/excursions">
@@ -262,7 +262,7 @@ function Index() {
             </Button>
           }
         />
-        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-5 grid gap-4 sm:grid-cols-2 md:mt-6 lg:grid-cols-3">
           {featuredExcursions.map((item) => (
             <Link
               key={item.id}
@@ -284,21 +284,62 @@ function Index() {
         <SeeRestLink to="/excursions" label="Смотреть остальные экскурсии" />
       </section>
 
-      <section className="container-page mt-16 mb-10 md:mt-24">
-        <SectionHead
-          title="Как устроен TourGo"
-          subtitle="Три шага от идеи поездки до брони у компании"
-        />
-        <div className="mt-8 grid gap-4 md:grid-cols-3">
-          {how.map((item) => (
-            <div key={item.title} className="surface-card p-6">
-              <span className="grid size-11 place-items-center rounded-2xl bg-primary-soft text-primary">
-                <item.icon className="size-5" />
-              </span>
-              <h3 className="mt-4 font-display text-lg font-semibold">{item.title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-foreground/70">{item.text}</p>
+      <section className="container-page mt-10 mb-10 md:mt-14">
+        <div className="rounded-3xl bg-ink px-5 py-7 text-primary-foreground md:rounded-[2rem] md:px-10 md:py-10">
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <h2 className="font-display text-[1.65rem] font-semibold leading-snug tracking-tight md:text-4xl md:leading-[1.15]">
+                Как устроен TourGo
+              </h2>
+              <p className="mt-1.5 max-w-xl text-base leading-snug text-primary-foreground/70">
+                Три шага, чтобы купить ту же поездку дешевле
+              </p>
             </div>
-          ))}
+          </div>
+
+          <ol className="mt-6 grid gap-3 md:mt-8 md:grid-cols-3 md:gap-4">
+            {how.map((item, i) => (
+              <li
+                key={item.title}
+                className="relative rounded-2xl bg-primary-foreground/[0.06] p-4 ring-1 ring-primary-foreground/10 md:p-5"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground md:size-10">
+                    <item.icon className="size-[18px] md:size-5" />
+                  </span>
+                  <span className="font-display text-3xl font-semibold text-primary-foreground/25 md:text-4xl">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                </div>
+                <h3 className="mt-3 font-display text-base font-semibold md:text-lg">
+                  {item.title}
+                </h3>
+                <p className="mt-1.5 text-sm leading-relaxed text-primary-foreground/70">
+                  {item.text}
+                </p>
+              </li>
+            ))}
+          </ol>
+
+          <div className="mt-6 flex flex-col gap-2.5 sm:flex-row md:mt-8">
+            <Button size="lg" className="w-full sm:w-auto" asChild>
+              <Link to="/ai-search" search={{} as never}>
+                <Sparkles className="size-4" />
+                Подобрать поездку
+              </Link>
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              className="w-full border-primary-foreground/25 bg-transparent text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground sm:w-auto"
+              asChild
+            >
+              <Link to="/search" search={{ offers: "hot" } as never}>
+                <Flame className="size-4" />
+                Горящие туры
+              </Link>
+            </Button>
+          </div>
         </div>
       </section>
     </SiteLayout>
@@ -339,7 +380,7 @@ function SeeRestLink({
   label: string;
 }) {
   return (
-    <div className="mt-6 flex justify-center md:mt-8">
+    <div className="mt-4 flex justify-center md:mt-6">
       <Button variant="outline" size="lg" className="w-full sm:w-auto" asChild>
         <Link to={to} search={(search ?? {}) as never}>
           {label}

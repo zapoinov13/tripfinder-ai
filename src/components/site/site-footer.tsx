@@ -33,7 +33,7 @@ const columns = [
 export function SiteFooter() {
   return (
     <footer className="mt-16 bg-ink text-primary-foreground md:mt-24">
-      <div className="container-page py-12 md:py-16">
+      <div className="container-page py-8 md:py-12">
         <div className="flex flex-col gap-8 border-b border-primary-foreground/10 pb-10 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-xl">
             <Link to="/" className="inline-flex items-center gap-2">
