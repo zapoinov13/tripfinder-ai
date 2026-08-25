@@ -4,6 +4,7 @@ import { ArrowRight, Mail, Plane } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { b2bNav, travelScenarios } from "@/data/scenarios";
 import { SUPPORT_EMAIL, SUPPORT_MAILTO } from "@/lib/contact";
+import { cn } from "@/lib/utils";
 
 const columns = [
   {
@@ -30,9 +31,9 @@ const columns = [
   },
 ];
 
-export function SiteFooter() {
+export function SiteFooter({ className }: { className?: string }) {
   return (
-    <footer className="mt-16 bg-ink text-primary-foreground md:mt-24">
+    <footer className={cn("mt-10 bg-ink text-primary-foreground md:mt-14", className)}>
       <div className="container-page py-8 md:py-12">
         <div className="flex flex-col gap-8 border-b border-primary-foreground/10 pb-10 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-xl">

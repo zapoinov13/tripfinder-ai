@@ -283,7 +283,7 @@ function Index() {
         <SeeRestLink to="/excursions" label="Смотреть остальные экскурсии" />
       </section>
 
-      <section className="container-page mt-10 mb-10 md:mt-14">
+      <section className="container-page mt-10 md:mt-14">
         <div className="rounded-3xl bg-ink px-5 py-7 text-primary-foreground md:rounded-[2rem] md:px-10 md:py-10">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
