@@ -2,6 +2,7 @@
 /* styles.css уже в src/: сканируем текущую папку, не src/src */
 @source ".";
 @import "tw-animate-css";
+@import "leaflet/dist/leaflet.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -343,4 +344,10 @@ html.native-app body {
   .media-caption {
     letter-spacing: -0.01em;
   }
+}
+
+/* Leaflet custom hotel pin: kill default white square behind divIcon */
+.tourgo-hotel-map-pin {
+  background: transparent !important;
+  border: none !important;
 }

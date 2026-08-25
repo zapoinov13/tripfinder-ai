@@ -22,6 +22,7 @@ import {
 import { useEffect, useState } from "react";
 
 import { SiteLayout } from "@/components/site/site-layout";
+import { HotelMap } from "@/components/maps/hotel-map";
 import { PhotoGallery } from "@/components/media/photo-gallery";
 import { Button } from "@/components/ui/button";
 import {
@@ -370,12 +371,7 @@ function TourPage() {
                   {hotel.district} · {hotel.distanceToSea} м до моря
                 </p>
               </div>
-              <div className="relative h-64 bg-[linear-gradient(135deg,var(--secondary),var(--primary-soft))]">
-                <div className="absolute inset-0 opacity-40 [background-image:linear-gradient(var(--border)_1px,transparent_1px),linear-gradient(90deg,var(--border)_1px,transparent_1px)] [background-size:36px_36px]" />
-                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow-lift">
-                  {hotel.name}
-                </div>
-              </div>
+              <HotelMap hotel={hotel} />
             </section>
 
             <section className="gradient-ai overflow-hidden rounded-3xl p-5 md:p-8">

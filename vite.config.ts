@@ -15,6 +15,7 @@ const capacitorSsrExternals = [
   "@capacitor/status-bar",
   "@capacitor/keyboard",
   "@capacitor-community/apple-sign-in",
+  "leaflet",
 ];
 
 export default defineConfig({
