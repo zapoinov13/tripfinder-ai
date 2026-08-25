@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { routeTravelIntent } from "@/lib/scenario-router";
-import { speechService } from "@/lib/speech-service";
+import { speechErrorMessage, speechService } from "@/lib/speech-service";
 import { cn } from "@/lib/utils";
 
 export function AiIntentBar({ tone = "light" }: { tone?: "light" | "onDark" }) {
@@ -28,8 +28,8 @@ export function AiIntentBar({ tone = "light" }: { tone?: "light" | "onDark" }) {
       const result = await speechService.start();
       setQuery(result.text);
       go(result.text);
-    } catch {
-      toast.error("Не удалось включить микрофон");
+    } catch (error) {
+      toast.error(speechErrorMessage(error));
     } finally {
       setListening(false);
     }

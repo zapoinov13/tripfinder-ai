@@ -28,7 +28,7 @@ import { saveAiSearch } from "@/lib/platform/ai-services";
 import { searchService } from "@/lib/platform/search-service";
 import { getState } from "@/lib/platform/store";
 import { originCities, PRICE_MAX, PRICE_MIN, toSearchLink } from "@/lib/search";
-import { speechService } from "@/lib/speech-service";
+import { speechErrorMessage, speechService } from "@/lib/speech-service";
 import { cn } from "@/lib/utils";
 
 type DestOption = { value: string; label: string; destination: string; city: string };
@@ -290,9 +290,9 @@ export function SearchPanel({
         setAiQuery(spoken);
         setParsedAi(null);
       });
-    } catch {
+    } catch (error) {
       setRecording(false);
-      toast.error("Не удалось включить микрофон. Разрешите доступ в браузере.");
+      toast.error(speechErrorMessage(error));
     }
   };
 
