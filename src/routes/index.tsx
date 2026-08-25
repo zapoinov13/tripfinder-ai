@@ -63,19 +63,19 @@ function Index() {
             alt="Пляж и курорт: подбор туров на TourGo"
             className="h-[min(31svh,16rem)] w-full object-cover object-[center_35%] animate-soft-zoom md:h-[32rem]"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/50 to-ink/15" />
+          <div className="absolute inset-0 bg-gradient-to-t from-ink/95 via-ink/60 to-ink/25" />
 
           <div className="absolute inset-x-0 bottom-0 flex flex-col px-5 pb-4 pt-6 text-primary-foreground md:p-10">
             <p className="animate-fade-up hidden font-display text-2xl font-semibold tracking-tight md:mb-5 md:block md:text-3xl">
               TourGo
             </p>
 
-            <h1 className="animate-fade-up font-display text-[1.7rem] font-semibold leading-[1.1] tracking-tight [animation-delay:80ms] sm:text-5xl md:text-6xl">
+            <h1 className="animate-fade-up font-display text-[1.7rem] font-semibold leading-[1.1] tracking-tight [animation-delay:80ms] [text-shadow:0_2px_14px_rgba(10,15,30,0.55)] sm:text-5xl md:text-6xl">
               Сравните цены
               <br />и купите выгоднее
             </h1>
 
-            <p className="animate-fade-up mt-1.5 max-w-md text-[14px] leading-snug text-primary-foreground/85 [animation-delay:140ms] md:mt-5 md:text-xl md:leading-relaxed">
+            <p className="animate-fade-up mt-1.5 max-w-md text-[14px] leading-snug text-primary-foreground [animation-delay:140ms] [text-shadow:0_1px_10px_rgba(10,15,30,0.6)] md:mt-5 md:text-xl md:leading-relaxed">
               Туры, жильё, авто и помощь от компаний.  Платите напрямую.
             </p>
 
