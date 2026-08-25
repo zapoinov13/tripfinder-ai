@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { destinations, formatPrice, hotTours } from "@/data/demo";
 import { getFeaturedExcursions } from "@/data/excursions";
 import { b2bNav, travelScenarios } from "@/data/scenarios";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -118,8 +119,13 @@ function Index() {
               search={{} as never}
               className="surface-card flex h-full items-center gap-2.5 px-3 py-3 text-left md:min-h-[11.5rem] md:flex-col md:items-start md:justify-between md:gap-2 md:p-6 md:transition-transform md:hover:-translate-y-1"
             >
-              <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary-soft text-primary md:size-14 md:rounded-2xl">
-                <item.icon className="size-[18px] md:size-7" />
+              <span
+                className={cn(
+                  "grid size-10 shrink-0 place-items-center rounded-xl text-white shadow-sm md:size-14 md:rounded-2xl",
+                  item.iconBg,
+                )}
+              >
+                <item.icon className="size-5 md:size-7" strokeWidth={2.2} />
               </span>
               <span className="min-w-0 w-full">
                 <span className="block font-display text-base font-semibold leading-tight md:hidden">
