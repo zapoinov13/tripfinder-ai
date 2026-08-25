@@ -1,5 +1,5 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { ArrowRight, Building2, Flame, ShieldCheck, Sparkles, Wallet } from "lucide-react";
+import { ArrowRight, Building2, Clock, Flame, ShieldCheck, Sparkles, Wallet } from "lucide-react";
 import type { ReactNode } from "react";
 
 import heroImage from "@/assets/hero.jpg";
@@ -14,7 +14,7 @@ import {
 import { SafeImage } from "@/components/media/safe-image";
 import { TourCard } from "@/components/tours/tour-card";
 import { Button } from "@/components/ui/button";
-import { destinations, hotTours } from "@/data/demo";
+import { destinations, formatPrice, hotTours } from "@/data/demo";
 import { getFeaturedExcursions } from "@/data/excursions";
 import { b2bNav, travelScenarios } from "@/data/scenarios";
 
@@ -57,7 +57,7 @@ const facts = [
 ];
 
 function Index() {
-  const featuredExcursions = getFeaturedExcursions(3);
+  const featuredExcursions = getFeaturedExcursions(6);
 
   return (
     <SiteLayout>
@@ -82,8 +82,7 @@ function Index() {
             </h1>
 
             <p className="animate-fade-up mt-2 max-w-md text-[14px] leading-snug text-primary-foreground/85 [animation-delay:140ms] md:mt-5 md:text-xl md:leading-relaxed">
-              Туры, жильё, авто и помощь от компаний. 
-              Платите напрямую.
+              Туры, жильё, авто и помощь от компаний.  Платите напрямую.
             </p>
 
             <Link
@@ -263,21 +262,42 @@ function Index() {
             </Button>
           }
         />
-        <div className="mt-5 grid gap-4 sm:grid-cols-2 md:mt-6 lg:grid-cols-3">
+        {/* Мобильный: горизонтальная карусель со snap, чтобы не раздувать страницу. */}
+        <div className="-mx-4 mt-5 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:mx-0 md:mt-6 md:grid md:grid-cols-3 md:gap-4 md:overflow-visible md:px-0 md:pb-0">
           {featuredExcursions.map((item) => (
             <Link
               key={item.id}
               to="/excursions"
               search={{ destination: item.destinationId, city: item.city } as never}
-              className="hover-lift surface-card overflow-hidden p-0"
+              className="hover-lift surface-card w-[76%] shrink-0 snap-start overflow-hidden p-0 sm:w-[46%] md:w-auto"
             >
-              <img src={item.image} alt="" className="h-40 w-full object-cover" />
+              <div className="relative">
+                <img
+                  src={item.image}
+                  alt=""
+                  loading="lazy"
+                  className="h-40 w-full object-cover md:h-44"
+                />
+                <span className="absolute left-2.5 top-2.5 rounded-full bg-ink/70 px-2.5 py-1 text-[11px] font-semibold text-primary-foreground backdrop-blur-sm">
+                  {item.category}
+                </span>
+                <span className="absolute bottom-2.5 right-2.5 rounded-full bg-background px-2.5 py-1 text-xs font-bold shadow-md">
+                  от {formatPrice(item.price)}
+                </span>
+              </div>
               <div className="p-4">
                 <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                   {item.city}
                 </p>
-                <h3 className="mt-1 font-display text-lg font-semibold">{item.title}</h3>
-                <p className="mt-2 text-sm text-foreground/70">{item.duration}</p>
+                <h3 className="mt-1 line-clamp-2 font-display text-[1.05rem] font-semibold leading-snug md:text-lg">
+                  {item.title}
+                </h3>
+                <div className="mt-2 flex min-w-0 items-center gap-1.5 text-[13px] text-foreground/60">
+                  <Clock className="size-3.5 shrink-0" />
+                  <span className="shrink-0">{item.duration}</span>
+                  <span className="shrink-0">·</span>
+                  <span className="truncate">{item.company}</span>
+                </div>
               </div>
             </Link>
           ))}
