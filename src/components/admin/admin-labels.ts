@@ -19,7 +19,7 @@ export const roleLabel: Record<Role, string> = {
 
 export const userStatusLabel: Record<UserStatus, string> = {
   active: "Активен",
-  suspended: "Заблокирован",
+  suspended: "Заморожен",
 };
 
 export const orgStatusLabel: Record<OrganizationStatus, string> = {
