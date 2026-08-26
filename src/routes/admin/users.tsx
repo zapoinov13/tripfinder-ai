@@ -1,4 +1,5 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
+import { Building2, ShieldCheck, Users } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
@@ -29,11 +30,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { formatNumber } from "@/data/demo";
 import { appendAudit } from "@/lib/platform/catalog";
 import { useAuth, useRequireAuth } from "@/lib/platform/auth";
 import type { Role } from "@/lib/platform-contracts";
 import { usePlatformStore } from "@/lib/platform/hooks";
 import { setState } from "@/lib/platform/store";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/admin/users")({
   head: () => ({ meta: [{ title: "Пользователи · Админ TourGo" }] }),
@@ -102,20 +106,61 @@ function AdminUsersPage() {
       title="Пользователи"
       subtitle="Туристы и команда платформы. Бизнес-аккаунты — в разделе «Партнёры»."
     >
-      <div className="mb-4 flex flex-wrap items-center gap-3">
-        <TabPills
-          value={tab}
-          onChange={(v) => {
-            setTab(v);
+      <div className="mb-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <button
+          type="button"
+          onClick={() => {
+            setTab("tourists");
             setRole("all");
           }}
-          items={[
-            { value: "tourists", label: "Туристы", count: counts.tourists },
-            { value: "staff", label: "Команда платформы", count: counts.staff },
-          ]}
-        />
-        <Link to="/admin/operators" className="text-sm font-medium text-primary hover:underline">
-          Сотрудники партнёров ({counts.partners}) — в разделе «Партнёры» →
+          className={cn(
+            "surface-card p-4 text-left transition-colors",
+            tab === "tourists"
+              ? "border-primary ring-2 ring-primary/20"
+              : "hover:border-primary/30",
+          )}
+        >
+          <span className="grid size-8 place-items-center rounded-lg bg-primary-soft text-primary">
+            <Users className="size-4" />
+          </span>
+          <p className="mt-2.5 text-xs text-muted-foreground">Туристы</p>
+          <p className="font-display text-xl font-semibold tabular-nums">
+            {formatNumber(counts.tourists)}
+          </p>
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setTab("staff");
+            setRole("all");
+          }}
+          className={cn(
+            "surface-card p-4 text-left transition-colors",
+            tab === "staff" ? "border-primary ring-2 ring-primary/20" : "hover:border-primary/30",
+          )}
+        >
+          <span className="grid size-8 place-items-center rounded-lg bg-secondary text-foreground">
+            <ShieldCheck className="size-4" />
+          </span>
+          <p className="mt-2.5 text-xs text-muted-foreground">Команда платформы</p>
+          <p className="font-display text-xl font-semibold tabular-nums">
+            {formatNumber(counts.staff)}
+          </p>
+        </button>
+        <Link
+          to="/admin/operators"
+          className="surface-card col-span-2 flex items-center gap-3 p-4 transition-colors hover:border-primary/30 lg:col-span-2"
+        >
+          <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-secondary text-foreground">
+            <Building2 className="size-4" />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-xs text-muted-foreground">Сотрудники партнёров</span>
+            <span className="block font-display text-xl font-semibold tabular-nums">
+              {formatNumber(counts.partners)}
+            </span>
+          </span>
+          <span className="shrink-0 text-sm font-medium text-primary">В разделе «Партнёры» →</span>
         </Link>
       </div>
 
@@ -149,7 +194,58 @@ function AdminUsersPage() {
       />
 
       {users.length === 0 ? (
-        <EmptyState title="Никого не нашли" description="Измените поиск или фильтры" />
+        q.trim() || role !== "all" || status !== "all" ? (
+          <div className="surface-card flex flex-col items-center gap-3 p-10 text-center">
+            <span className="grid size-12 place-items-center rounded-2xl bg-secondary text-muted-foreground">
+              <Users className="size-6" />
+            </span>
+            <div>
+              <p className="font-display text-base font-semibold">Никого не нашли</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                По этому поиску и фильтрам совпадений нет.
+              </p>
+            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                setQ("");
+                setRole("all");
+                setStatus("all");
+              }}
+            >
+              Сбросить фильтры
+            </Button>
+          </div>
+        ) : tab === "tourists" ? (
+          <div className="surface-card flex flex-col items-center gap-3 p-10 text-center">
+            <span className="grid size-12 place-items-center rounded-2xl bg-primary-soft text-primary">
+              <Users className="size-6" />
+            </span>
+            <div className="max-w-md">
+              <p className="font-display text-base font-semibold">Туристов пока нет</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Здесь появится каждый, кто зарегистрируется на сайте или в приложении: имя, город,
+                статус и дата регистрации. Отсюда же можно замораживать и удалять аккаунты.
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className="surface-card flex flex-col items-center gap-3 p-10 text-center">
+            <span className="grid size-12 place-items-center rounded-2xl bg-secondary text-muted-foreground">
+              <ShieldCheck className="size-6" />
+            </span>
+            <div className="max-w-md">
+              <p className="font-display text-base font-semibold">
+                Команда платформы пока не видна
+              </p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Админы и менеджеры платформы подтянутся из базы после входа. Ваш аккаунт управляется
+                через Supabase.
+              </p>
+            </div>
+          </div>
+        )
       ) : (
         <div className="surface-card overflow-x-auto">
           <Table>
@@ -167,10 +263,31 @@ function AdminUsersPage() {
               {users.map((u) => (
                 <TableRow key={u.id}>
                   <TableCell>
-                    <div className="font-medium">{u.name}</div>
-                    <div className="text-xs text-muted-foreground">{u.email}</div>
+                    <div className="flex items-center gap-3">
+                      <span
+                        className={cn(
+                          "grid size-9 shrink-0 place-items-center rounded-full font-display text-sm font-semibold",
+                          u.status === "suspended"
+                            ? "bg-secondary text-muted-foreground"
+                            : "bg-primary-soft text-primary",
+                        )}
+                      >
+                        {(u.name || u.email).slice(0, 1).toUpperCase()}
+                      </span>
+                      <div className="min-w-0">
+                        <div className="truncate font-medium">
+                          {u.name}
+                          {u.id === user.id ? (
+                            <span className="ml-1.5 rounded-full bg-secondary px-2 py-0.5 text-[10px] font-semibold text-muted-foreground">
+                              вы
+                            </span>
+                          ) : null}
+                        </div>
+                        <div className="truncate text-xs text-muted-foreground">{u.email}</div>
+                      </div>
+                    </div>
                   </TableCell>
-                  <TableCell>{u.city}</TableCell>
+                  <TableCell className="text-sm">{u.city}</TableCell>
                   <TableCell>
                     <Select
                       value={u.role}
