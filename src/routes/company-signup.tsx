@@ -1,14 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, Check } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-import {
-  VerificationDocumentsPanel,
-  canSubmitVerification,
-  verificationSubmitHint,
-  verificationSubmitLabel,
-} from "@/components/operator/verification-documents";
 import { SiteLayout } from "@/components/site/site-layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,12 +15,9 @@ import {
   companyCountryOptions,
   companyCategories,
   findOrgByEmail,
-  hasRequiredVerificationDocuments,
   languageOptions,
-  submitForVerification,
   updateCompanyProfile,
 } from "@/lib/platform/company";
-import type { CompanyVerificationFile } from "@/lib/platform/types";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/company-signup")({
@@ -66,17 +57,17 @@ const steps = [
   },
   {
     title: "Языки",
-    hint: "Туристы видят, на каком языке с ними поговорят.",
-  },
-  {
-    title: "Проверка",
-    hint: "Загрузите документы. После проверки появится знак «Проверенная компания».",
+    hint: "Туристы видят, на каком языке с ними поговорят. Документы на проверку загрузите потом в кабинете.",
   },
 ];
 
+const DRAFT_KEY = "tourgo:company-signup-draft";
+
 function CompanySignupPage() {
   const navigate = useNavigate();
-  const { registerOperator } = useAuth();
+  const { registerOperator, registerCompanyForCurrentUser, isAuthenticated, organization } =
+    useAuth();
+  const [pendingEmail, setPendingEmail] = useState("");
   const [step, setStep] = useState(0);
   const [saving, setSaving] = useState(false);
 
@@ -104,10 +95,67 @@ function CompanySignupPage() {
   const [countries, setCountries] = useState<string[]>(["ОАЭ"]);
   const [clientCountries, setClientCountries] = useState<string[]>(["Казахстан"]);
   const [languages, setLanguages] = useState<string[]>(["Русский"]);
-  const [verificationFiles, setVerificationFiles] = useState<CompanyVerificationFile[]>([]);
 
   const toggle = (list: string[], set: (v: string[]) => void, value: string) =>
     set(list.includes(value) ? list.filter((v) => v !== value) : [...list, value]);
+
+  // Пользователь подтвердил почту и вернулся: достраиваем компанию из черновика.
+  useEffect(() => {
+    if (!isAuthenticated || organization) return;
+    let raw: string | null = null;
+    try {
+      raw = sessionStorage.getItem(DRAFT_KEY);
+    } catch {
+      return;
+    }
+    if (!raw) return;
+    try {
+      const draft = JSON.parse(raw) as {
+        person: typeof person;
+        company: typeof company;
+        categories: string[];
+        services: string[];
+        countries: string[];
+        clientCountries: string[];
+        languages: string[];
+      };
+      sessionStorage.removeItem(DRAFT_KEY);
+      const contactPerson =
+        `${draft.person.firstName} ${draft.person.lastName}`.trim() || draft.company.name;
+      void registerCompanyForCurrentUser({
+        name: draft.company.name,
+        legalName: draft.company.legalName || draft.company.name,
+        registrationNumber: draft.company.registrationNumber,
+        country: draft.company.country,
+        city: draft.company.city,
+        address: draft.company.address,
+        phone: draft.company.phone || draft.person.phone,
+        email: draft.company.email || draft.person.email,
+        website: draft.company.website,
+        contactPerson,
+      }).then((res) => {
+        if (!res.ok) {
+          toast.error(res.error ?? "Не удалось создать компанию");
+          return;
+        }
+        const org = findOrgByEmail(draft.company.email || draft.person.email);
+        if (org) {
+          updateCompanyProfile(org.id, {
+            services: draft.services,
+            countries: draft.countries,
+            clientCountries: draft.clientCountries,
+            languages: draft.languages,
+            about: draft.company.about,
+          });
+        }
+        toast.success("Почта подтверждена, компания создана. Добро пожаловать в кабинет!");
+        void navigate({ to: "/operator" });
+      });
+    } catch {
+      /* повреждённый черновик игнорируем */
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated]);
 
   const canContinue = () => {
     if (step === 0) {
@@ -126,32 +174,51 @@ function CompanySignupPage() {
   };
 
   const submit = async () => {
-    if (verificationFiles.length > 0 && !hasRequiredVerificationDocuments(verificationFiles)) {
-      toast.error("Загрузите свидетельство о регистрации, чтобы отправить документы на проверку.");
-      return;
-    }
-
     setSaving(true);
     const contactPerson = `${person.firstName} ${person.lastName}`.trim();
-    const res = await registerOperator({
-      name: contactPerson || company.name,
-      email: person.email,
-      ...(person.password ? { password: person.password } : {}),
-      company: {
-        name: company.name,
-        legalName: company.legalName || company.name,
-        registrationNumber: company.registrationNumber,
-        country: company.country,
-        city: company.city,
-        address: "",
-        phone: company.phone || person.phone,
-        email: company.email || person.email,
-        website: company.website,
-        contactPerson,
-      },
-    });
+    const companyInput = {
+      name: company.name,
+      legalName: company.legalName || company.name,
+      registrationNumber: company.registrationNumber,
+      country: company.country,
+      city: company.city,
+      address: company.address,
+      phone: company.phone || person.phone,
+      email: company.email || person.email,
+      website: company.website,
+      contactPerson,
+    };
+    const res = isAuthenticated
+      ? await registerCompanyForCurrentUser(companyInput)
+      : await registerOperator({
+          name: contactPerson || company.name,
+          email: person.email,
+          ...(person.password ? { password: person.password } : {}),
+          company: companyInput,
+        });
     setSaving(false);
     if (!res.ok) {
+      if (res.error === "CONFIRM_EMAIL") {
+        // Компания достроится сама после подтверждения почты и входа.
+        try {
+          sessionStorage.setItem(
+            DRAFT_KEY,
+            JSON.stringify({
+              person: { ...person, password: "" },
+              company,
+              categories,
+              services,
+              countries,
+              clientCountries,
+              languages,
+            }),
+          );
+        } catch {
+          // без sessionStorage просто попросим пройти визард заново
+        }
+        setPendingEmail(person.email);
+        return;
+      }
       toast.error(res.error ?? "Не удалось создать компанию");
       return;
     }
@@ -165,17 +232,54 @@ function CompanySignupPage() {
         languages,
         about: company.about,
       });
-      if (verificationFiles.length > 0) submitForVerification(org.id, verificationFiles);
+    }
+    try {
+      sessionStorage.removeItem(DRAFT_KEY);
+    } catch {
+      /* noop */
     }
     toast.success(
-      verificationFiles.length
-        ? "Компания создана. Документы отправлены на проверку. Обычно до 2 рабочих дней."
-        : "Компания создана. Кабинет открыт. Документы можно добавить позже.",
+      "Компания создана, кабинет открыт. Документы на проверку — в разделе «Компания».",
     );
     void navigate({ to: "/operator" });
   };
 
   const current = steps[step]!;
+
+  // Подтверждение почты включено в Supabase: показываем понятный экран
+  // вместо тоста. Черновик компании сохранён и достроится после входа.
+  if (pendingEmail) {
+    return (
+      <SiteLayout>
+        <div className="container-page py-16">
+          <div className="surface-card mx-auto max-w-lg p-8 text-center">
+            <span className="mx-auto grid size-14 place-items-center rounded-2xl bg-primary-soft text-primary">
+              <Check className="size-7" />
+            </span>
+            <h1 className="mt-5 font-display text-2xl font-semibold">Подтвердите почту</h1>
+            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+              Мы отправили письмо на{" "}
+              <span className="font-semibold text-foreground">{pendingEmail}</span>. Перейдите по
+              ссылке из письма, затем войдите — компания создастся автоматически, все данные визарда
+              сохранены.
+            </p>
+            <Button className="mt-6 w-full" size="lg" asChild>
+              <Link to="/login" search={{ next: "/company-signup" } as never}>
+                Я подтвердил почту — войти
+              </Link>
+            </Button>
+            <button
+              type="button"
+              onClick={() => setPendingEmail("")}
+              className="mt-3 text-sm font-medium text-primary hover:underline"
+            >
+              Изменить данные
+            </button>
+          </div>
+        </div>
+      </SiteLayout>
+    );
+  }
 
   return (
     <SiteLayout>
@@ -430,22 +534,6 @@ function CompanySignupPage() {
               />
             ) : null}
 
-            {step === 6 ? (
-              <VerificationDocumentsPanel
-                companyName={company.name}
-                companySummary={[
-                  company.city,
-                  company.country,
-                  services.length ? services.join(", ") : "",
-                ]
-                  .filter(Boolean)
-                  .join(" · ")}
-                files={verificationFiles}
-                onChange={setVerificationFiles}
-                services={services}
-              />
-            ) : null}
-
             <div className="flex items-center justify-between gap-3 border-t border-border pt-5">
               <Button
                 variant="ghost"
@@ -471,15 +559,12 @@ function CompanySignupPage() {
                 </Button>
               ) : (
                 <div className="space-y-2 text-right">
-                  <Button
-                    onClick={() => void submit()}
-                    disabled={saving || !canSubmitVerification(verificationFiles)}
-                  >
+                  <Button onClick={() => void submit()} disabled={saving}>
                     <Check className="size-4" />
-                    {verificationSubmitLabel(verificationFiles)}
+                    {saving ? "Создаём…" : "Создать компанию"}
                   </Button>
                   <p className="text-xs text-muted-foreground">
-                    {verificationSubmitHint(verificationFiles)}
+                    Кабинет откроется сразу. Документы на проверку — потом, в разделе «Компания».
                   </p>
                 </div>
               )}
