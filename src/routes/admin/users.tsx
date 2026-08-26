@@ -71,7 +71,7 @@ function AdminUsersPage() {
       brand="TourGo Админ"
       items={nav}
       title="Пользователи"
-      subtitle="Поиск, роли и блокировка"
+      subtitle="Поиск, роли, заморозка и удаление"
     >
       <FilterBar
         search={q}
@@ -96,7 +96,7 @@ function AdminUsersPage() {
             options: [
               { value: "all", label: "Все статусы" },
               { value: "active", label: "Активен" },
-              { value: "suspended", label: "Заблокирован" },
+              { value: "suspended", label: "Заморожен" },
             ],
           },
         ]}
@@ -167,35 +167,69 @@ function AdminUsersPage() {
                     {new Date(u.createdAt).toLocaleDateString("ru-RU")}
                   </TableCell>
                   <TableCell>
-                    <ConfirmAction
-                      triggerLabel={u.status === "active" ? "Заблокировать" : "Восстановить"}
-                      title={
-                        u.status === "active"
-                          ? "Заблокировать пользователя?"
-                          : "Восстановить доступ?"
-                      }
-                      description={`${u.name} (${u.email})`}
-                      confirmLabel={u.status === "active" ? "Заблокировать" : "Восстановить"}
-                      destructive={u.status === "active"}
-                      onConfirm={() => {
-                        const next = u.status === "active" ? "suspended" : "active";
-                        setState((s) => ({
-                          ...s,
-                          users: s.users.map((x) => (x.id === u.id ? { ...x, status: next } : x)),
-                        }));
-                        appendAudit({
-                          actorId: user.id,
-                          action: next === "suspended" ? "user_suspend" : "user_restore",
-                          entityType: "user",
-                          entityId: u.id,
-                        });
-                        toast.success(
-                          next === "suspended"
-                            ? "Пользователь заблокирован"
-                            : "Пользователь восстановлен",
-                        );
-                      }}
-                    />
+                    {u.id === user.id ? (
+                      <span className="text-xs text-muted-foreground">Это вы</span>
+                    ) : (
+                      <div className="flex flex-wrap justify-end gap-2">
+                        <ConfirmAction
+                          triggerLabel={u.status === "active" ? "Заморозить" : "Разморозить"}
+                          title={
+                            u.status === "active"
+                              ? "Заморозить пользователя?"
+                              : "Разморозить пользователя?"
+                          }
+                          description={
+                            u.status === "active"
+                              ? `${u.name} (${u.email}) не сможет войти, пока вы не разморозите аккаунт. Данные сохраняются.`
+                              : `${u.name} (${u.email}) снова сможет входить и пользоваться платформой.`
+                          }
+                          confirmLabel={u.status === "active" ? "Заморозить" : "Разморозить"}
+                          destructive={u.status === "active"}
+                          onConfirm={() => {
+                            const next = u.status === "active" ? "suspended" : "active";
+                            setState((s) => ({
+                              ...s,
+                              users: s.users.map((x) =>
+                                x.id === u.id ? { ...x, status: next } : x,
+                              ),
+                            }));
+                            appendAudit({
+                              actorId: user.id,
+                              action: next === "suspended" ? "user_suspend" : "user_restore",
+                              entityType: "user",
+                              entityId: u.id,
+                            });
+                            toast.success(
+                              next === "suspended"
+                                ? "Пользователь заморожен: вход закрыт"
+                                : "Пользователь разморожен",
+                            );
+                          }}
+                        />
+                        <ConfirmAction
+                          triggerLabel="Удалить"
+                          title="Удалить пользователя?"
+                          description={`${u.name} (${u.email}) исчезнет из списка навсегда. Действие нельзя отменить.`}
+                          confirmLabel="Удалить"
+                          destructive
+                          onConfirm={() => {
+                            setState((s) => ({
+                              ...s,
+                              users: s.users.filter((x) => x.id !== u.id),
+                              members: s.members.filter((m) => m.userId !== u.id),
+                            }));
+                            appendAudit({
+                              actorId: user.id,
+                              action: "user_delete",
+                              entityType: "user",
+                              entityId: u.id,
+                              meta: { email: u.email, role: u.role },
+                            });
+                            toast.success("Пользователь удалён");
+                          }}
+                        />
+                      </div>
+                    )}
                   </TableCell>
                 </TableRow>
               ))}
