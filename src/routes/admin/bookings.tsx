@@ -6,8 +6,10 @@ import {
   ConfirmAction,
   EmptyState,
   FilterBar,
+  KpiLinkCard,
   StatusBadge,
   bookingStatusLabel,
+  orgName,
   toneForBookingStatus,
   tourTitle,
   userName,
@@ -23,7 +25,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { formatPrice } from "@/data/demo";
+import { formatNumber, formatPrice } from "@/data/demo";
 import { appendAudit } from "@/lib/platform/catalog";
 import { useAuth, useRequireAuth } from "@/lib/platform/auth";
 import { usePlatformStore } from "@/lib/platform/hooks";
@@ -81,6 +83,35 @@ function AdminBookingsPage() {
       title="Бронирования"
       subtitle="Все заказы на платформе"
     >
+      <div className="mb-6 grid gap-4 sm:grid-cols-3">
+        <KpiLinkCard label="Всего заказов" value={formatNumber(state.bookings.length)} />
+        <KpiLinkCard
+          label="Оплачено"
+          value={formatPrice(
+            state.bookings
+              .filter((b) => b.paymentStatus === "paid")
+              .reduce((s, b) => s + b.price, 0),
+          )}
+          hint="сумма оплаченных заказов"
+        />
+        <KpiLinkCard
+          label="Требуют внимания"
+          value={formatNumber(
+            state.bookings.filter((b) =>
+              ["PENDING", "PRICE_CHECK", "AWAITING_PAYMENT", "CONFIRMING"].includes(b.status),
+            ).length,
+          )}
+          hint="ждут подтверждения или оплаты"
+          tone={
+            state.bookings.some((b) =>
+              ["PENDING", "PRICE_CHECK", "AWAITING_PAYMENT", "CONFIRMING"].includes(b.status),
+            )
+              ? "warning"
+              : "default"
+          }
+        />
+      </div>
+
       <FilterBar
         search={q}
         onSearchChange={setQ}
@@ -116,6 +147,7 @@ function AdminBookingsPage() {
               <TableRow>
                 <TableHead>Турист</TableHead>
                 <TableHead>Тур</TableHead>
+                <TableHead>Компания</TableHead>
                 <TableHead>Цена</TableHead>
                 <TableHead>Статус</TableHead>
                 <TableHead>Дата</TableHead>
@@ -130,7 +162,21 @@ function AdminBookingsPage() {
                     <div className="text-xs text-muted-foreground">{b.id.slice(0, 10)}…</div>
                   </TableCell>
                   <TableCell>{tourTitle(b.tourOfferId)}</TableCell>
-                  <TableCell>{formatPrice(b.price)}</TableCell>
+                  <TableCell className="text-sm">
+                    {b.organizationId ? orgName(b.organizationId) : "—"}
+                  </TableCell>
+                  <TableCell>
+                    <div>{formatPrice(b.price)}</div>
+                    <div
+                      className={
+                        b.paymentStatus === "paid"
+                          ? "text-xs text-success"
+                          : "text-xs text-muted-foreground"
+                      }
+                    >
+                      {b.paymentStatus === "paid" ? "оплачено" : "не оплачено"}
+                    </div>
+                  </TableCell>
                   <TableCell>
                     <StatusBadge
                       label={bookingStatusLabel[b.status] ?? b.status}

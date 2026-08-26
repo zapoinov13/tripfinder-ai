@@ -42,7 +42,6 @@ import { Route as AdminAuditLogsRouteImport } from './routes/admin/audit-logs'
 import { Route as AdminBookingsRouteImport } from './routes/admin/bookings'
 import { Route as AdminOperatorsRouteImport } from './routes/admin/operators'
 import { Route as AdminPaymentsRouteImport } from './routes/admin/payments'
-import { Route as AdminPremiumRouteImport } from './routes/admin/premium'
 import { Route as AdminPromotionsRouteImport } from './routes/admin/promotions'
 import { Route as AdminPushRouteImport } from './routes/admin/push'
 import { Route as AdminSettingsRouteImport } from './routes/admin/settings'
@@ -240,11 +239,6 @@ const AdminPaymentsRoute = AdminPaymentsRouteImport.update({
   path: '/admin/payments',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminPremiumRoute = AdminPremiumRouteImport.update({
-  id: '/admin/premium',
-  path: '/admin/premium',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AdminPromotionsRoute = AdminPromotionsRouteImport.update({
   id: '/admin/promotions',
   path: '/admin/promotions',
@@ -435,7 +429,6 @@ export interface FileRoutesByFullPath {
   '/admin/bookings': typeof AdminBookingsRoute
   '/admin/operators': typeof AdminOperatorsRoute
   '/admin/payments': typeof AdminPaymentsRoute
-  '/admin/premium': typeof AdminPremiumRoute
   '/admin/promotions': typeof AdminPromotionsRoute
   '/admin/push': typeof AdminPushRoute
   '/admin/settings': typeof AdminSettingsRoute
@@ -501,7 +494,6 @@ export interface FileRoutesByTo {
   '/admin/bookings': typeof AdminBookingsRoute
   '/admin/operators': typeof AdminOperatorsRoute
   '/admin/payments': typeof AdminPaymentsRoute
-  '/admin/premium': typeof AdminPremiumRoute
   '/admin/promotions': typeof AdminPromotionsRoute
   '/admin/push': typeof AdminPushRoute
   '/admin/settings': typeof AdminSettingsRoute
@@ -569,7 +561,6 @@ export interface FileRoutesById {
   '/admin/bookings': typeof AdminBookingsRoute
   '/admin/operators': typeof AdminOperatorsRoute
   '/admin/payments': typeof AdminPaymentsRoute
-  '/admin/premium': typeof AdminPremiumRoute
   '/admin/promotions': typeof AdminPromotionsRoute
   '/admin/push': typeof AdminPushRoute
   '/admin/settings': typeof AdminSettingsRoute
@@ -638,7 +629,6 @@ export interface FileRouteTypes {
     | '/admin/bookings'
     | '/admin/operators'
     | '/admin/payments'
-    | '/admin/premium'
     | '/admin/promotions'
     | '/admin/push'
     | '/admin/settings'
@@ -704,7 +694,6 @@ export interface FileRouteTypes {
     | '/admin/bookings'
     | '/admin/operators'
     | '/admin/payments'
-    | '/admin/premium'
     | '/admin/promotions'
     | '/admin/push'
     | '/admin/settings'
@@ -771,7 +760,6 @@ export interface FileRouteTypes {
     | '/admin/bookings'
     | '/admin/operators'
     | '/admin/payments'
-    | '/admin/premium'
     | '/admin/promotions'
     | '/admin/push'
     | '/admin/settings'
@@ -839,7 +827,6 @@ export interface RootRouteChildren {
   AdminBookingsRoute: typeof AdminBookingsRoute
   AdminOperatorsRoute: typeof AdminOperatorsRoute
   AdminPaymentsRoute: typeof AdminPaymentsRoute
-  AdminPremiumRoute: typeof AdminPremiumRoute
   AdminPromotionsRoute: typeof AdminPromotionsRoute
   AdminPushRoute: typeof AdminPushRoute
   AdminSettingsRoute: typeof AdminSettingsRoute
@@ -1098,13 +1085,6 @@ declare module '@tanstack/react-router' {
       path: '/admin/payments'
       fullPath: '/admin/payments'
       preLoaderRoute: typeof AdminPaymentsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin/premium': {
-      id: '/admin/premium'
-      path: '/admin/premium'
-      fullPath: '/admin/premium'
-      preLoaderRoute: typeof AdminPremiumRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/promotions': {
@@ -1384,7 +1364,6 @@ const rootRouteChildren: RootRouteChildren = {
   AdminBookingsRoute: AdminBookingsRoute,
   AdminOperatorsRoute: AdminOperatorsRoute,
   AdminPaymentsRoute: AdminPaymentsRoute,
-  AdminPremiumRoute: AdminPremiumRoute,
   AdminPromotionsRoute: AdminPromotionsRoute,
   AdminPushRoute: AdminPushRoute,
   AdminSettingsRoute: AdminSettingsRoute,

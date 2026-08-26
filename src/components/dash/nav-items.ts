@@ -6,7 +6,6 @@ import {
   CreditCard,
   Dumbbell,
   Gauge,
-  Gem,
   HandCoins,
   Heart,
   Inbox,
@@ -79,7 +78,6 @@ export function useOperatorNav(orgId?: string): DashItem[] {
 /** Страницы, требующие PLATFORM_ADMIN: менеджеру их не показываем. */
 const adminOnlyRoutes = new Set([
   "/admin/payments",
-  "/admin/premium",
   "/admin/promotions",
   "/admin/audit-logs",
   "/admin/ai-keys",
@@ -93,7 +91,6 @@ const adminNavBase: DashItem[] = [
   { label: "Туры", to: "/admin/tours", icon: Luggage },
   { label: "Бронирования", to: "/admin/bookings", icon: Ticket },
   { label: "Платежи", to: "/admin/payments", icon: Receipt },
-  { label: "Premium", to: "/admin/premium", icon: Gem },
   { label: "Продвижение", to: "/admin/promotions", icon: Megaphone },
   { label: "API", to: "/admin/api-monitoring", icon: Cable },
   { label: "Push", to: "/admin/push", icon: Bell },

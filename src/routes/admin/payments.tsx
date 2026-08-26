@@ -6,6 +6,7 @@ import {
   FilterBar,
   KpiLinkCard,
   StatusBadge,
+  orgName,
   paymentStatusLabel,
   paymentTypeLabel,
   toneForPaymentStatus,
@@ -119,6 +120,7 @@ function AdminPaymentsPage() {
               <TableRow>
                 <TableHead>ID</TableHead>
                 <TableHead>Пользователь</TableHead>
+                <TableHead>Компания</TableHead>
                 <TableHead>Тип</TableHead>
                 <TableHead>Сумма</TableHead>
                 <TableHead>Статус</TableHead>
@@ -130,6 +132,9 @@ function AdminPaymentsPage() {
                 <TableRow key={p.id}>
                   <TableCell className="text-xs">{p.providerPaymentId}</TableCell>
                   <TableCell>{userName(p.userId)}</TableCell>
+                  <TableCell className="text-sm">
+                    {p.organizationId ? orgName(p.organizationId) : "—"}
+                  </TableCell>
                   <TableCell>{paymentTypeLabel[p.type] ?? p.type}</TableCell>
                   <TableCell>{formatPrice(p.amount)}</TableCell>
                   <TableCell>

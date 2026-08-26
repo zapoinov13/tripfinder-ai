@@ -209,12 +209,14 @@ async function loadUserData(userId: string): Promise<UserDataResult> {
 
   const isAdmin = String((profileRes.data as Row | null)?.["role"] ?? "").startsWith("PLATFORM");
 
-  const [allProfilesRes, auditRes] = isAdmin
+  const [allProfilesRes, auditRes, paymentsRes] = isAdmin
     ? await Promise.all([
         sb.from("profiles").select("*").order("created_at", { ascending: false }).limit(500),
         sb.from("audit_logs").select("*").order("created_at", { ascending: false }).limit(200),
+        // Раздел «Платежи» в админке: без этого он показывал только демо-данные.
+        sb.from("payments").select("*").order("created_at", { ascending: false }).limit(300),
       ])
-    : [null, null];
+    : [null, null, null];
 
   setState(
     (s) => {
@@ -441,6 +443,28 @@ async function loadUserData(userId: string): Promise<UserDataResult> {
             role: str(r["role"], "TOURIST") as PlatformState["users"][number]["role"],
             status: str(r["status"], "active") as PlatformState["users"][number]["status"],
             ...(r["organization_id"] ? { organizationId: str(r["organization_id"]) } : {}),
+            createdAt: str(r["created_at"]),
+          })),
+        };
+      }
+
+      if (paymentsRes?.data) {
+        const rows = paymentsRes.data as Row[];
+        next = {
+          ...next,
+          payments: rows.map((r) => ({
+            id: str(r["id"]),
+            userId: str(r["user_id"]),
+            ...(r["organization_id"] ? { organizationId: str(r["organization_id"]) } : {}),
+            amount: num(r["amount"]),
+            currency: str(r["currency"], "KZT") as PlatformState["payments"][number]["currency"],
+            type: str(r["type"], "booking") as PlatformState["payments"][number]["type"],
+            provider: (r["provider"] === "balance"
+              ? "balance"
+              : "mock") as PlatformState["payments"][number]["provider"],
+            providerPaymentId: str(r["provider_payment_id"], str(r["id"])),
+            status: str(r["status"], "pending") as PlatformState["payments"][number]["status"],
+            ...(r["metadata"] ? { metadata: r["metadata"] as Record<string, unknown> } : {}),
             createdAt: str(r["created_at"]),
           })),
         };
