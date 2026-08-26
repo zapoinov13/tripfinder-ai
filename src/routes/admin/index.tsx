@@ -4,6 +4,7 @@ import type { ComponentType } from "react";
 import {
   AlertTriangle,
   Building2,
+  CheckCircle2,
   Inbox,
   Luggage,
   Megaphone,
@@ -14,7 +15,7 @@ import {
   Wallet,
 } from "lucide-react";
 
-import { auditActionLabel, eventLabel, formatRelativeRu, orgName } from "@/components/admin";
+import { auditActionLabel, formatRelativeRu, orgName, userName } from "@/components/admin";
 import { useAdminNav } from "@/components/dash/nav-items";
 import { DashShell } from "@/components/dash/dash-shell";
 import { Button } from "@/components/ui/button";
@@ -54,6 +55,30 @@ type LoadState =
   | { status: "loading" }
   | { status: "live"; stats: AdminOverviewStats }
   | { status: "fallback"; reason: string };
+
+/** Человеческая строка «что именно и кто» для записи аудита. */
+function auditDetail(log: {
+  actorId?: string;
+  entityType: string;
+  entityId?: string;
+  meta?: Record<string, unknown>;
+}): string {
+  const parts: string[] = [];
+  const meta = log.meta ?? {};
+  const pick = (key: string) => {
+    const v = meta[key];
+    return typeof v === "string" && v ? v : null;
+  };
+  const target = pick("email") ?? pick("name");
+  if (target) parts.push(target);
+  else if (log.entityType === "organization" && log.entityId) parts.push(orgName(log.entityId));
+  else if (log.entityType === "user" && log.entityId) parts.push(userName(log.entityId));
+  if (typeof meta["amount"] === "number") parts.push(formatPrice(meta["amount"]));
+  if (pick("plan")) parts.push(`тариф ${pick("plan")}`);
+  if (pick("status")) parts.push(String(pick("status")));
+  if (log.actorId) parts.push(`— ${userName(log.actorId)}`);
+  return parts.join(" · ");
+}
 
 function StatTile({
   icon: Icon,
@@ -415,24 +440,33 @@ function AdminDashboard() {
         </div>
       ) : null}
 
-      <div className="mt-6 grid gap-4 lg:grid-cols-2">
+      <div className="mt-6 grid items-start gap-4 lg:grid-cols-2">
         <div className="surface-card p-6">
-          <div className="flex items-center gap-2">
-            <AlertTriangle className="size-4 text-amber-600" />
-            <h2 className="font-display text-lg font-semibold">Требует внимания</h2>
-          </div>
+          <h2 className="font-display text-lg font-semibold">Требует внимания</h2>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            Заявки партнёров на одобрение, ошибки API и платежей
+          </p>
           {attention.length === 0 ? (
-            <p className="mt-4 text-sm text-muted-foreground">
-              Сейчас всё спокойно, срочных задач нет.
-            </p>
+            <div className="mt-4 flex items-center gap-3 rounded-2xl bg-success/8 p-4">
+              <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-success/15 text-success">
+                <CheckCircle2 className="size-5" />
+              </span>
+              <div>
+                <p className="text-sm font-semibold">Всё спокойно</p>
+                <p className="text-xs text-muted-foreground">
+                  Нет заявок на одобрение, ошибок API и неудачных платежей.
+                </p>
+              </div>
+            </div>
           ) : (
             <ul className="mt-4 space-y-2">
               {attention.slice(0, 8).map((item, i) => (
                 <li key={`${item.to}-${i}`}>
                   <Link
                     to={item.to}
-                    className="flex items-center justify-between gap-3 rounded-xl bg-secondary/70 px-3 py-2.5 text-sm hover:bg-secondary"
+                    className="flex items-center gap-3 rounded-xl border border-premium/25 bg-premium/8 px-3 py-2.5 text-sm hover:bg-premium/15"
                   >
+                    <AlertTriangle className="size-4 shrink-0 text-premium" />
                     <span className="min-w-0">
                       <span className="block font-medium">{item.title}</span>
                       <span className="block truncate text-muted-foreground">{item.detail}</span>
@@ -442,43 +476,67 @@ function AdminDashboard() {
               ))}
             </ul>
           )}
-          <div className="mt-4 flex flex-wrap gap-2">
+          <p className="mt-5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            Быстрые переходы
+          </p>
+          <div className="mt-2 flex flex-wrap gap-2">
             <Button size="sm" variant="outline" asChild>
-              <Link to="/admin/operators">Компании</Link>
+              <Link to="/admin/operators">
+                <Building2 className="size-3.5" />
+                Партнёры
+              </Link>
             </Button>
             <Button size="sm" variant="outline" asChild>
-              <Link to="/admin/api-monitoring">API</Link>
+              <Link to="/admin/promotions">
+                <Megaphone className="size-3.5" />
+                Продвижение
+              </Link>
             </Button>
             <Button size="sm" variant="outline" asChild>
-              <Link to="/admin/audit-logs">Аудит</Link>
+              <Link to="/admin/api-monitoring">
+                <RefreshCw className="size-3.5" />
+                Мониторинг API
+              </Link>
             </Button>
           </div>
         </div>
 
         <div className="surface-card p-6">
-          <h2 className="font-display text-lg font-semibold">Последние действия</h2>
-          <ul className="mt-4 max-h-80 space-y-2 overflow-y-auto text-sm">
-            {state.auditLogs.slice(0, 12).map((log) => (
-              <li key={log.id} className="rounded-xl bg-secondary/50 px-3 py-2">
-                <span className="font-medium">{auditActionLabel[log.action] ?? log.action}</span>
-                <span className="mt-0.5 block text-xs text-muted-foreground">
-                  {formatRelativeRu(log.createdAt)}
-                </span>
-              </li>
-            ))}
-            {state.auditLogs.length === 0 ? (
-              <li className="text-muted-foreground">Записей аудита пока нет</li>
-            ) : null}
-          </ul>
-          <h2 className="mt-6 font-display text-lg font-semibold">События</h2>
-          <ul className="mt-3 max-h-40 space-y-1 overflow-y-auto text-sm text-muted-foreground">
-            {state.analyticsEvents.slice(0, 8).map((e) => (
-              <li key={e.id}>
-                {eventLabel[e.type] ?? e.type} · {formatRelativeRu(e.createdAt)}
-              </li>
-            ))}
-            {state.analyticsEvents.length === 0 ? <li>Событий пока нет</li> : null}
-          </ul>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h2 className="font-display text-lg font-semibold">Последние действия</h2>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                Кто и что сделал в админке и кабинетах
+              </p>
+            </div>
+            <Link
+              to="/admin/audit-logs"
+              className="text-sm font-medium text-primary hover:underline"
+            >
+              Весь журнал →
+            </Link>
+          </div>
+          {state.auditLogs.length === 0 ? (
+            <p className="mt-4 text-sm text-muted-foreground">Записей пока нет</p>
+          ) : (
+            <ul className="mt-4 max-h-96 divide-y divide-border overflow-y-auto text-sm">
+              {state.auditLogs.slice(0, 10).map((log) => (
+                <li key={log.id} className="flex items-start justify-between gap-3 py-2.5">
+                  <div className="min-w-0">
+                    <p className="font-medium">{auditActionLabel[log.action] ?? log.action}</p>
+                    {auditDetail(log) ? (
+                      <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                        {auditDetail(log)}
+                      </p>
+                    ) : null}
+                  </div>
+                  <span className="shrink-0 text-xs text-muted-foreground">
+                    {formatRelativeRu(log.createdAt)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       </div>
     </DashShell>
