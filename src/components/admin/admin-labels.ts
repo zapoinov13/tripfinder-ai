@@ -157,6 +157,9 @@ export const eventLabel: Record<string, string> = {
   REQUEST_CREATED: "Заявки",
   OFFER_SENT: "Предложения",
   MESSAGE_SENT: "Сообщения",
+  COMPANY_PAGE_VIEW: "Просмотры компаний",
+  COMPANY_CONTACT_CLICK: "Клики по контактам",
+  COMPANY_CHECKIN: "Визиты из приложения",
 };
 
 export type BadgeTone = "neutral" | "success" | "warning" | "danger" | "info" | "premium";

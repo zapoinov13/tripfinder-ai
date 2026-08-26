@@ -209,7 +209,7 @@ async function loadUserData(userId: string): Promise<UserDataResult> {
 
   const isAdmin = String((profileRes.data as Row | null)?.["role"] ?? "").startsWith("PLATFORM");
 
-  const [allProfilesRes, auditRes, paymentsRes, promoRes] = isAdmin
+  const [allProfilesRes, auditRes, paymentsRes, promoRes, eventsRes] = isAdmin
     ? await Promise.all([
         sb.from("profiles").select("*").order("created_at", { ascending: false }).limit(500),
         sb.from("audit_logs").select("*").order("created_at", { ascending: false }).limit(200),
@@ -217,8 +217,14 @@ async function loadUserData(userId: string): Promise<UserDataResult> {
         sb.from("payments").select("*").order("created_at", { ascending: false }).limit(300),
         // Раздел «Продвижение»: админ видит кампании всех компаний.
         sb.from("promotions").select("*").order("started_at", { ascending: false }).limit(300),
+        // Раздел «Аналитика»: события всей платформы.
+        sb
+          .from("analytics_events")
+          .select("*")
+          .order("created_at", { ascending: false })
+          .limit(1000),
       ])
-    : [null, null, null, null];
+    : [null, null, null, null, null];
 
   setState(
     (s) => {
@@ -487,6 +493,20 @@ async function loadUserData(userId: string): Promise<UserDataResult> {
             status: str(r["status"], "ACTIVE") as PlatformState["promotions"][number]["status"],
             startedAt: str(r["started_at"]),
             expiresAt: str(r["expires_at"]),
+          })),
+        };
+      }
+
+      if (eventsRes?.data) {
+        const rows = eventsRes.data as Row[];
+        next = {
+          ...next,
+          analyticsEvents: rows.map((r) => ({
+            id: str(r["id"]),
+            type: str(r["type"]),
+            ...(r["user_id"] ? { userId: str(r["user_id"]) } : {}),
+            payload: (r["payload"] as Record<string, unknown>) ?? {},
+            createdAt: str(r["created_at"]),
           })),
         };
       }
