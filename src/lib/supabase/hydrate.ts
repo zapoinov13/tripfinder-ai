@@ -207,7 +207,22 @@ async function loadUserData(userId: string): Promise<UserDataResult> {
     sb.from("company_reviews").select("*").order("created_at", { ascending: false }).limit(500),
   ]);
 
-  const isAdmin = String((profileRes.data as Row | null)?.["role"] ?? "").startsWith("PLATFORM");
+  const profileRow = profileRes.data as Row | null;
+  const isAdmin = String(profileRow?.["role"] ?? "").startsWith("PLATFORM");
+  const isOperator =
+    String(profileRow?.["role"] ?? "").startsWith("OPERATOR") &&
+    Boolean(profileRow?.["organization_id"]);
+
+  // Бизнес видит события своей компании (просмотры страницы, контакты, визиты):
+  // RLS отдаёт участнику организации только строки с payload.companyId его компании.
+  const orgEventsRes =
+    !isAdmin && isOperator
+      ? await sb
+          .from("analytics_events")
+          .select("*")
+          .order("created_at", { ascending: false })
+          .limit(1000)
+      : null;
 
   const [allProfilesRes, auditRes, paymentsRes, promoRes, eventsRes] = isAdmin
     ? await Promise.all([
@@ -508,6 +523,23 @@ async function loadUserData(userId: string): Promise<UserDataResult> {
             payload: (r["payload"] as Record<string, unknown>) ?? {},
             createdAt: str(r["created_at"]),
           })),
+        };
+      }
+
+      if (orgEventsRes?.data) {
+        // Union по id: серверные события компании поверх локально записанных.
+        const rows = orgEventsRes.data as Row[];
+        const server = rows.map((r) => ({
+          id: str(r["id"]),
+          type: str(r["type"]),
+          ...(r["user_id"] ? { userId: str(r["user_id"]) } : {}),
+          payload: (r["payload"] as Record<string, unknown>) ?? {},
+          createdAt: str(r["created_at"]),
+        }));
+        const serverIds = new Set(server.map((e) => e.id));
+        next = {
+          ...next,
+          analyticsEvents: [...server, ...next.analyticsEvents.filter((e) => !serverIds.has(e.id))],
         };
       }
 

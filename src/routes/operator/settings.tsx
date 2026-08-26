@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth, useRequireAuth } from "@/lib/platform/auth";
+import { isBusinessOnlyServices } from "@/lib/platform/company-categories";
 import { usePlatformStore } from "@/lib/platform/hooks";
 import { setState } from "@/lib/platform/store";
 import { getSupabase } from "@/lib/supabase/client";
@@ -45,6 +46,7 @@ function OperatorSettingsPage() {
   const role = user.role === "OPERATOR_MANAGER" ? "OPERATOR_MANAGER" : "OPERATOR_ADMIN";
   const access = roleCopy[role];
   const plan = state.config.operatorPlans.find((p) => p.code === organization.planCode);
+  const businessOnly = isBusinessOnlyServices(organization.services);
   const isOwner = user.role === "OPERATOR_ADMIN";
   const verified = organization.status === "APPROVED";
 
@@ -155,7 +157,7 @@ function OperatorSettingsPage() {
           </p>
           <p className="text-sm text-muted-foreground">{access.text}</p>
           <ul className="space-y-2 text-sm text-muted-foreground">
-            <li>Заявки, туры, сообщения: да</li>
+            <li>{businessOnly ? "Объявления и статистика: да" : "Заявки, туры, сообщения: да"}</li>
             <li>Страница компании и сотрудники: {isOwner ? "да" : "только просмотр"}</li>
             <li>Тариф: {isOwner ? "да" : "нет, меняет владелец"}</li>
           </ul>
@@ -169,7 +171,7 @@ function OperatorSettingsPage() {
           <p className="font-medium">{organization.name}</p>
           <p className="text-sm text-muted-foreground">
             {verified
-              ? "Проверена TourGo. Знак виден туристам."
+              ? "Проверена TourGo. Знак виден клиентам."
               : "Ещё на проверке. Кабинет уже открыт."}
           </p>
           <p className="text-sm text-muted-foreground">
@@ -196,7 +198,7 @@ function OperatorSettingsPage() {
             ) : null}
             <Button size="sm" variant="outline" asChild>
               <Link to="/company/$companyId" params={{ companyId: organization.id }}>
-                Как видит турист
+                Как видит клиент
               </Link>
             </Button>
           </div>
@@ -206,7 +208,11 @@ function OperatorSettingsPage() {
       <section className="surface-card mt-6 flex flex-wrap items-center justify-between gap-3 p-6">
         <div>
           <p className="font-medium">Выйти из кабинета</p>
-          <p className="mt-1 text-sm text-muted-foreground">Туры и заявки останутся на месте.</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {businessOnly
+              ? "Объявления и страница компании останутся на месте."
+              : "Туры и заявки останутся на месте."}
+          </p>
         </div>
         <Button variant="outline" onClick={() => void logout()}>
           <LogOut className="size-4" />

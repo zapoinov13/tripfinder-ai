@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 
 import { useOptionalAuth } from "@/lib/platform/auth";
+import { isBusinessOnlyServices } from "@/lib/platform/company-categories";
 import { usePlatformStore } from "@/lib/platform/hooks";
 
 import type { DashItem } from "./dash-shell";
@@ -47,9 +48,25 @@ const operatorNavBase: DashItem[] = [
 /** Static nav (no live badges). Prefer `useOperatorNav()` inside the cabinet. */
 export const operatorNav = operatorNavBase;
 
+/** Разделы турфирмы, бессмысленные для «бизнеса без туров» (зал, прокат, жильё). */
+const tourOnlyRoutes = new Set([
+  "/operator/requests",
+  "/operator/offers",
+  "/operator/tours",
+  "/operator/messages",
+  "/operator/bookings",
+]);
+
 export function useOperatorNav(orgId?: string): DashItem[] {
   const state = usePlatformStore();
   if (!orgId) return operatorNavBase;
+
+  const org = state.organizations.find((o) => o.id === orgId);
+  if (org && isBusinessOnlyServices(org.services)) {
+    return operatorNavBase
+      .filter((item) => !tourOnlyRoutes.has(item.to))
+      .map((item) => (item.to === "/operator/services" ? { ...item, label: "Объявления" } : item));
+  }
 
   const answered = new Set(
     state.requestOffers.filter((o) => o.organizationId === orgId).map((o) => o.requestId),

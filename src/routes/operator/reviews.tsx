@@ -39,7 +39,7 @@ function OperatorReviewsPage() {
       brand={organization.name}
       items={nav}
       title="Отзывы"
-      subtitle="Отвечайте туристам публично: ответ виден на странице компании."
+      subtitle="Отвечайте клиентам публично: ответ виден на странице компании."
     >
       <div className="surface-card flex flex-wrap items-center gap-6 p-6">
         <div>
@@ -67,7 +67,7 @@ function OperatorReviewsPage() {
           </p>
         </div>
         <p className="max-w-md text-sm text-muted-foreground">
-          Высокий рейтинг и вежливые ответы повышают доверие. Турист видит ответ под отзывом на
+          Высокий рейтинг и вежливые ответы повышают доверие. Клиент видит ответ под отзывом на
           вашей странице.
         </p>
       </div>
@@ -76,7 +76,7 @@ function OperatorReviewsPage() {
         <div className="surface-card mt-6 p-8 text-center">
           <Star className="mx-auto size-10 text-muted-foreground" />
           <p className="mt-4 text-muted-foreground">
-            Отзывов пока нет. Турист сможет оставить отзыв после того, как выберет ваше предложение.
+            Отзывов пока нет. Клиенты оставляют отзывы на странице вашей компании.
           </p>
         </div>
       ) : (
@@ -176,13 +176,13 @@ function ReviewCard({
         <div className="border-t border-border px-5 py-4">
           <p className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             <MessageSquare className="size-3.5" />
-            {review.reply ? "Изменить ответ" : "Ответить туристу"}
+            {review.reply ? "Изменить ответ" : "Ответить клиенту"}
           </p>
           <Textarea
             className="mt-3 min-h-[96px] resize-y"
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
-            placeholder="Спасибо за отзыв! Рады, что поездка прошла хорошо…"
+            placeholder="Спасибо за отзыв! Будем рады видеть вас снова…"
           />
           <div className="mt-3 flex flex-wrap gap-2">
             <Button size="sm" disabled={saving} onClick={submit}>

@@ -1,4 +1,4 @@
-import { Link, createFileRoute } from "@tanstack/react-router";
+import { Navigate, Link, createFileRoute } from "@tanstack/react-router";
 import { CalendarDays, HandCoins, Inbox, MessageCircle, Trophy, Users } from "lucide-react";
 import { useMemo, useState } from "react";
 
@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatPrice } from "@/data/demo";
 import { useAuth, useRequireAuth } from "@/lib/platform/auth";
+import { isBusinessOnlyServices } from "@/lib/platform/company-categories";
 import { usePlatformStore } from "@/lib/platform/hooks";
 import { peopleLabel } from "@/lib/platform/requests";
 import type { RequestOffer, RequestOfferStatus, TripRequest } from "@/lib/platform/types";
@@ -77,6 +78,9 @@ function OperatorOffersPage() {
   const filtered = tab === "all" ? offers : offers.filter((o) => o.status === tab);
 
   if (!allowed || !organization) return null;
+  if (isBusinessOnlyServices(organization.services)) {
+    return <Navigate to="/operator/services" />;
+  }
 
   const winRate =
     counts.CHOSEN + counts.DECLINED > 0

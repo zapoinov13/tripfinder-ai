@@ -17,6 +17,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/lib/platform/auth";
 import { TourStateProvider } from "@/lib/tour-state";
+import { hydrateVerticalListingsFromSupabase } from "@/lib/platform/vertical-listings";
 import { hydrateCatalogFromSupabase } from "@/lib/supabase/hydrate";
 import { isSupabaseConfigured } from "@/lib/supabase/client";
 
@@ -188,6 +189,8 @@ function RootComponent() {
           console.warn("[supabase] catalog hydrate skipped", res.reason);
         }
       });
+      // Объявления бизнесов (спорт, жильё, авто) — общие для всех устройств.
+      void hydrateVerticalListingsFromSupabase();
     }
   }, []);
 

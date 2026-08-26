@@ -32,6 +32,7 @@ import { useOperatorNav } from "@/components/dash/nav-items";
 import { Button } from "@/components/ui/button";
 import { formatNumber, formatPrice, nightsLabel, tourCover } from "@/data/demo";
 import { useAuth, useRequireAuth } from "@/lib/platform/auth";
+import { isBusinessOnlyServices } from "@/lib/platform/company-categories";
 import {
   computeOperatorAnalytics,
   deltaLabel,
@@ -104,7 +105,51 @@ function OperatorAnalyticsPage() {
     return { views, clicks, checkins: checkinEvents.length, recentVisits };
   }, [organization, period, state.analyticsEvents, state.users]);
 
+  // «Бизнес без туров»: динамика страницы компании вместо туровых метрик.
+  const bizStats = useMemo(() => {
+    if (!organization) return null;
+    const all = state.analyticsEvents.filter((e) => e.payload?.["companyId"] === organization.id);
+    const days = period === 0 ? 30 : period;
+    const now = Date.now();
+    const since = now - days * 24 * 60 * 60 * 1000;
+    const prevSince = since - days * 24 * 60 * 60 * 1000;
+    const inWindow = (e: (typeof all)[number], from: number, to: number) => {
+      const t = new Date(e.createdAt).getTime();
+      return t >= from && t < to;
+    };
+    const cur = all.filter((e) => (period === 0 ? true : inWindow(e, since, now + 1)));
+    const prev = period === 0 ? [] : all.filter((e) => inWindow(e, prevSince, since));
+    const count = (list: typeof all, type: string) => list.filter((e) => e.type === type).length;
+
+    const dayFmt = new Intl.DateTimeFormat("ru-RU", { day: "numeric", month: "short" });
+    const trend: { day: string; views: number; actions: number }[] = [];
+    for (let i = days - 1; i >= 0; i--) {
+      const start = now - (i + 1) * 24 * 60 * 60 * 1000;
+      const end = now - i * 24 * 60 * 60 * 1000;
+      const bucket = all.filter((e) => inWindow(e, start, end));
+      trend.push({
+        day: dayFmt.format(new Date(end)).replace(".", ""),
+        views: bucket.filter((e) => e.type === "COMPANY_PAGE_VIEW").length,
+        actions: bucket.filter(
+          (e) => e.type === "COMPANY_CONTACT_CLICK" || e.type === "COMPANY_CHECKIN",
+        ).length,
+      });
+    }
+    return {
+      views: count(cur, "COMPANY_PAGE_VIEW"),
+      viewsPrev: count(prev, "COMPANY_PAGE_VIEW"),
+      clicks: count(cur, "COMPANY_CONTACT_CLICK"),
+      clicksPrev: count(prev, "COMPANY_CONTACT_CLICK"),
+      checkins: count(cur, "COMPANY_CHECKIN"),
+      checkinsPrev: count(prev, "COMPANY_CHECKIN"),
+      trend,
+      hasTrend: trend.some((p) => p.views || p.actions),
+    };
+  }, [organization, period, state.analyticsEvents]);
+
   if (!allowed || !organization || !data) return null;
+
+  const businessOnly = isBusinessOnlyServices(organization.services);
 
   const sortedTours = [...data.topTours].sort((a, b) => {
     if (tourSort === "bookings") return b.bookings - a.bookings;
@@ -114,6 +159,203 @@ function OperatorAnalyticsPage() {
 
   const cityMax = data.cities[0]?.views || 1;
   const trendHasData = data.trend.some((p) => p.views || p.offers || p.picks || p.revenue);
+
+  const pageStatsSection = pageStats ? (
+    <section className="surface-card mt-6 p-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 className="font-display text-lg font-semibold">Страница компании</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Кто заходит на вашу визитку и куда нажимает: маршрут, WhatsApp, звонки.
+          </p>
+        </div>
+        <Button variant="outline" size="sm" asChild>
+          <Link to="/company/$companyId" params={{ companyId: organization.id }}>
+            Открыть страницу
+          </Link>
+        </Button>
+      </div>
+      <div className="mt-4 grid gap-3 sm:grid-cols-3 xl:grid-cols-6">
+        <PageStat label="Просмотры страницы" value={pageStats.views} />
+        <PageStat label="Маршрут (карта)" value={pageStats.clicks["map"] ?? 0} />
+        <PageStat label="WhatsApp" value={pageStats.clicks["whatsapp"] ?? 0} />
+        <PageStat label="Позвонить" value={pageStats.clicks["phone"] ?? 0} />
+        <PageStat label="Instagram" value={pageStats.clicks["instagram"] ?? 0} />
+        <PageStat label="Пришли из приложения" value={pageStats.checkins} />
+      </div>
+      {pageStats.recentVisits.length > 0 ? (
+        <div className="mt-4 rounded-2xl border border-success/25 bg-success/5 p-4">
+          <p className="text-sm font-semibold">Последние визиты</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            Клиенты нажали «Я здесь» на вашей странице — пришли по факту.
+          </p>
+          <ul className="mt-3 space-y-1.5 text-sm">
+            {pageStats.recentVisits.map((v) => (
+              <li key={v.id} className="flex items-center justify-between gap-3">
+                <span className="truncate font-medium">{v.name}</span>
+                <span className="shrink-0 text-xs text-muted-foreground">
+                  {new Date(v.at).toLocaleDateString("ru-RU", {
+                    day: "numeric",
+                    month: "short",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+      {pageStats.views === 0 ? (
+        <p className="mt-3 text-xs text-muted-foreground">
+          Пока тихо. Заполните страницу (адрес, часы, фото) и поделитесь ссылкой — клики начнут
+          считаться автоматически.
+        </p>
+      ) : null}
+    </section>
+  ) : null;
+
+  const periodTabs = (
+    <TabPills
+      value={String(period)}
+      onChange={(v) => setPeriod(Number(v) as AnalyticsPeriod)}
+      items={[
+        { value: "7", label: "7 дней" },
+        { value: "30", label: "30 дней" },
+        { value: "0", label: "Всё время" },
+      ]}
+    />
+  );
+
+  if (businessOnly && bizStats) {
+    return (
+      <DashShell
+        brand={organization.name}
+        items={nav}
+        title="Статистика"
+        subtitle="Просмотры страницы, клики по контактам и визиты клиентов."
+        actions={
+          <Button variant="outline" size="sm" asChild>
+            <Link to="/operator/promotion">
+              <Megaphone className="size-3.5" />
+              Продвижение
+            </Link>
+          </Button>
+        }
+      >
+        {periodTabs}
+
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <MetricCard
+            label="Просмотры страницы"
+            value={formatNumber(bizStats.views)}
+            delta={period === 0 ? null : deltaLabel(bizStats.views, bizStats.viewsPrev)}
+            up={bizStats.views >= bizStats.viewsPrev}
+            hint="открыли вашу компанию"
+          />
+          <MetricCard
+            label="Клики по контактам"
+            value={formatNumber(bizStats.clicks)}
+            delta={period === 0 ? null : deltaLabel(bizStats.clicks, bizStats.clicksPrev)}
+            up={bizStats.clicks >= bizStats.clicksPrev}
+            hint="WhatsApp, звонки, маршрут"
+          />
+          <MetricCard
+            label="Визиты «Я здесь»"
+            value={formatNumber(bizStats.checkins)}
+            delta={period === 0 ? null : deltaLabel(bizStats.checkins, bizStats.checkinsPrev)}
+            up={bizStats.checkins >= bizStats.checkinsPrev}
+            hint="пришли по факту"
+            emphasis={bizStats.checkins > 0}
+          />
+          <MetricCard
+            label="Рейтинг компании"
+            value={data.rating ? `${data.rating.average} ★` : "-"}
+            delta={null}
+            up={Boolean(data.rating && data.rating.average >= 4)}
+            hint={data.rating ? `${data.rating.count} отзывов` : "отзывов пока нет"}
+          />
+        </div>
+
+        <section className="surface-card mt-6 overflow-hidden">
+          <div className="border-b border-border bg-secondary/20 px-5 py-4 md:px-6">
+            <h2 className="font-display text-lg font-semibold">Динамика за период</h2>
+            <p className="mt-0.5 text-sm text-muted-foreground">
+              Просмотры страницы и действия клиентов (контакты + визиты) по дням.
+            </p>
+          </div>
+          <div className="p-5 md:p-6">
+            {bizStats.hasTrend ? (
+              <div className="h-72">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={bizStats.trend} margin={{ left: -8, right: 8, top: 8 }}>
+                    <defs>
+                      <linearGradient id="biz-views" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="var(--muted-foreground)" stopOpacity={0.2} />
+                        <stop offset="100%" stopColor="var(--muted-foreground)" stopOpacity={0} />
+                      </linearGradient>
+                      <linearGradient id="biz-actions" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="var(--primary)" stopOpacity={0.35} />
+                        <stop offset="100%" stopColor="var(--primary)" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+                    <XAxis dataKey="day" tickLine={false} axisLine={false} fontSize={12} />
+                    <YAxis allowDecimals={false} tickLine={false} axisLine={false} fontSize={12} />
+                    <Tooltip
+                      formatter={(value, name) => [
+                        formatNumber(Number(value)),
+                        name === "views" ? "Просмотры" : "Действия",
+                      ]}
+                      contentStyle={{
+                        borderRadius: 12,
+                        border: "1px solid var(--border)",
+                        fontSize: 12,
+                      }}
+                    />
+                    <Legend formatter={(value) => (value === "views" ? "Просмотры" : "Действия")} />
+                    <Area
+                      type="monotone"
+                      dataKey="views"
+                      stroke="var(--muted-foreground)"
+                      strokeWidth={1.5}
+                      fill="url(#biz-views)"
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="actions"
+                      stroke="var(--primary)"
+                      strokeWidth={2.5}
+                      fill="url(#biz-actions)"
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-16 text-center">
+                <Eye className="size-10 text-muted-foreground" />
+                <p className="mt-4 font-medium">За этот период событий пока мало</p>
+                <p className="mt-1 max-w-md text-sm text-muted-foreground">
+                  Опубликуйте объявления и делитесь страницей компании — просмотры и действия
+                  клиентов появятся на графике автоматически.
+                </p>
+                <div className="mt-4 flex flex-wrap justify-center gap-2">
+                  <Button size="sm" asChild>
+                    <Link to="/operator/services">Мои объявления</Link>
+                  </Button>
+                  <Button size="sm" variant="outline" asChild>
+                    <Link to="/operator/company">Страница компании</Link>
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        </section>
+
+        {pageStatsSection}
+      </DashShell>
+    );
+  }
 
   return (
     <DashShell
@@ -130,15 +372,7 @@ function OperatorAnalyticsPage() {
         </Button>
       }
     >
-      <TabPills
-        value={String(period)}
-        onChange={(v) => setPeriod(Number(v) as AnalyticsPeriod)}
-        items={[
-          { value: "7", label: "7 дней" },
-          { value: "30", label: "30 дней" },
-          { value: "0", label: "Всё время" },
-        ]}
-      />
+      {periodTabs}
 
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <MetricCard
@@ -196,60 +430,7 @@ function OperatorAnalyticsPage() {
         />
       </div>
 
-      {pageStats ? (
-        <section className="surface-card mt-6 p-6">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <h2 className="font-display text-lg font-semibold">Страница компании</h2>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Кто заходит на вашу визитку и куда нажимает: маршрут, WhatsApp, звонки.
-              </p>
-            </div>
-            <Button variant="outline" size="sm" asChild>
-              <Link to="/company/$companyId" params={{ companyId: organization.id }}>
-                Открыть страницу
-              </Link>
-            </Button>
-          </div>
-          <div className="mt-4 grid gap-3 sm:grid-cols-3 xl:grid-cols-6">
-            <PageStat label="Просмотры страницы" value={pageStats.views} />
-            <PageStat label="Маршрут (карта)" value={pageStats.clicks["map"] ?? 0} />
-            <PageStat label="WhatsApp" value={pageStats.clicks["whatsapp"] ?? 0} />
-            <PageStat label="Позвонить" value={pageStats.clicks["phone"] ?? 0} />
-            <PageStat label="Instagram" value={pageStats.clicks["instagram"] ?? 0} />
-            <PageStat label="Пришли из приложения" value={pageStats.checkins} />
-          </div>
-          {pageStats.recentVisits.length > 0 ? (
-            <div className="mt-4 rounded-2xl border border-success/25 bg-success/5 p-4">
-              <p className="text-sm font-semibold">Последние визиты</p>
-              <p className="mt-0.5 text-xs text-muted-foreground">
-                Клиенты нажали «Я здесь» на вашей странице — пришли по факту.
-              </p>
-              <ul className="mt-3 space-y-1.5 text-sm">
-                {pageStats.recentVisits.map((v) => (
-                  <li key={v.id} className="flex items-center justify-between gap-3">
-                    <span className="truncate font-medium">{v.name}</span>
-                    <span className="shrink-0 text-xs text-muted-foreground">
-                      {new Date(v.at).toLocaleDateString("ru-RU", {
-                        day: "numeric",
-                        month: "short",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ) : null}
-          {pageStats.views === 0 ? (
-            <p className="mt-3 text-xs text-muted-foreground">
-              Пока тихо. Заполните страницу (адрес, часы, фото) и поделитесь ссылкой — клики начнут
-              считаться автоматически.
-            </p>
-          ) : null}
-        </section>
-      ) : null}
+      {pageStatsSection}
 
       {data.insights.length > 0 ? (
         <div className="mt-6 grid gap-3 md:grid-cols-2">

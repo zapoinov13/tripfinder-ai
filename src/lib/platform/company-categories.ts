@@ -141,6 +141,19 @@ export function categoriesOfServices(services: string[]): Set<CompanyCategoryId>
   return out;
 }
 
+/**
+ * «Бизнес без туров»: спорт, жильё или авто без туров и экскурсий.
+ * Такой кабинет живёт объявлениями и страницей компании, а не турами.
+ */
+export function isBusinessOnlyServices(services: string[] | undefined): boolean {
+  const cats = categoriesOfServices(services ?? []);
+  return (
+    (cats.has("sport") || cats.has("stays") || cats.has("cars")) &&
+    !cats.has("tours") &&
+    !cats.has("excursions")
+  );
+}
+
 /** Туристические категории: для них действуют турлицензия и страховка. */
 export const travelCategoryIds: ReadonlySet<CompanyCategoryId> = new Set([
   "tours",

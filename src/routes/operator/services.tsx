@@ -37,7 +37,7 @@ export const Route = createFileRoute("/operator/services")({
       ? { tab: search["tab"] }
       : {}),
   }),
-  head: () => ({ meta: [{ title: "Жильё, авто и спорт · TourGo" }] }),
+  head: () => ({ meta: [{ title: "Объявления · TourGo" }] }),
   component: OperatorServicesPage,
 });
 
@@ -73,10 +73,10 @@ function OperatorServicesPage() {
 
   return (
     <DashShell
-      brand="TourGo Компания"
+      brand={organization.name}
       items={nav}
-      title="Жильё, авто и спорт"
-      subtitle="Добавляйте карточки из Instagram или сайта"
+      title="Объявления"
+      subtitle="Жильё, авто и спорт: карточки из Instagram или сайта попадают в витрины TourGo"
       actions={
         <Button onClick={() => setAdding(true)}>
           <Plus className="size-4" />
@@ -110,7 +110,7 @@ function OperatorServicesPage() {
             Вставьте ссылку на сайт: сервер прочитает HTML. Для Instagram добавьте bio или пост.
           </li>
           <li>
-            Проверьте карточку и опубликуйте. Туристы увидят её в разделе «{verticalLabel(tab)}».
+            Проверьте карточку и опубликуйте. Клиенты увидят её в разделе «{verticalLabel(tab)}».
           </li>
         </ol>
       </div>

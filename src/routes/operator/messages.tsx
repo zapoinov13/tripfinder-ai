@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { Navigate, createFileRoute } from "@tanstack/react-router";
 import { MessageSquare } from "lucide-react";
 import { useState } from "react";
 
@@ -7,6 +7,7 @@ import { useOperatorNav } from "@/components/dash/nav-items";
 import { ThreadView } from "@/components/messages/thread-view";
 import { Badge } from "@/components/ui/badge";
 import { useAuth, useRequireAuth } from "@/lib/platform/auth";
+import { isBusinessOnlyServices } from "@/lib/platform/company-categories";
 import { usePlatformStore } from "@/lib/platform/hooks";
 import { getCompanyThreads } from "@/lib/platform/messages";
 import { cn } from "@/lib/utils";
@@ -32,6 +33,9 @@ function OperatorMessagesPage() {
   const [openKey, setOpenKey] = useState<string | null>(null);
 
   if (!allowed || !organization || !user) return null;
+  if (isBusinessOnlyServices(organization.services)) {
+    return <Navigate to="/operator/services" />;
+  }
 
   void state.requestMessages.length;
   const threads = getCompanyThreads(organization.id);

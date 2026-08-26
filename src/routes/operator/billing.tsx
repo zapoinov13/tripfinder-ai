@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { formatNumber, formatPrice } from "@/data/demo";
 import { mockPaymentProvider } from "@/lib/platform/adapters";
 import { useAuth, useRequireAuth } from "@/lib/platform/auth";
+import { isBusinessOnlyServices } from "@/lib/platform/company-categories";
 import { appendAudit, pushNotification } from "@/lib/platform/catalog";
 import { usePlatformStore } from "@/lib/platform/hooks";
 import { nowIso, setState, uid } from "@/lib/platform/store";
@@ -82,6 +83,8 @@ function OperatorBillingPage() {
     );
   }
 
+  // «Бизнес без туров»: без лимитов туров и туровых формулировок.
+  const businessOnly = isBusinessOnlyServices(organization.services);
   const plans = state.config.operatorPlans;
   const current = plans.find((p) => p.code === organization.planCode) ?? plans[0]!;
   const currentCopy = catalog[current.code];
@@ -151,7 +154,9 @@ function OperatorBillingPage() {
       user.id,
       "subscription_expiry",
       `Тариф «${catalog[code].title}»`,
-      `Кабинет переключён на «${catalog[code].title}». Лимит активных туров: ${plan.tourLimit}.`,
+      businessOnly
+        ? `Кабинет переключён на «${catalog[code].title}».`
+        : `Кабинет переключён на «${catalog[code].title}». Лимит активных туров: ${plan.tourLimit}.`,
     );
     toast.success(`Тариф «${catalog[code].title}» включён на 30 дней`);
   };
@@ -161,22 +166,32 @@ function OperatorBillingPage() {
       brand={organization.name}
       items={nav}
       title="Тариф"
-      subtitle="За кабинет и лимит туров. Турист платит вам за поездку, не TourGo."
+      subtitle={
+        businessOnly
+          ? "За кабинет компании. Клиент платит вам напрямую, не TourGo."
+          : "За кабинет и лимит туров. Турист платит вам за поездку, не TourGo."
+      }
     >
       <div className="surface-card mb-6 grid gap-5 p-6 md:grid-cols-[minmax(0,1fr)_220px] md:items-center">
         <div>
           <p className="text-sm text-muted-foreground">Сейчас у вас</p>
           <p className="mt-1 font-display text-2xl font-semibold">{currentCopy.title}</p>
           <p className="mt-2 text-sm text-muted-foreground">{currentCopy.forWhom}</p>
-          <p className="mt-4 text-sm">
-            Активных туров: {formatNumber(activeTours)} из {formatNumber(limit)}
-          </p>
-          <div className="mt-2 h-2 overflow-hidden rounded-full bg-secondary">
-            <div
-              className={cn("h-full rounded-full", usedPct >= 90 ? "bg-primary" : "bg-success")}
-              style={{ width: `${Math.max(6, usedPct)}%` }}
-            />
-          </div>
+          {businessOnly ? (
+            <p className="mt-4 text-sm">Объявления в витринах — без лимита по количеству.</p>
+          ) : (
+            <>
+              <p className="mt-4 text-sm">
+                Активных туров: {formatNumber(activeTours)} из {formatNumber(limit)}
+              </p>
+              <div className="mt-2 h-2 overflow-hidden rounded-full bg-secondary">
+                <div
+                  className={cn("h-full rounded-full", usedPct >= 90 ? "bg-primary" : "bg-success")}
+                  style={{ width: `${Math.max(6, usedPct)}%` }}
+                />
+              </div>
+            </>
+          )}
           {sub ? (
             <p className="mt-3 text-xs text-muted-foreground">
               Оплачен до {new Date(sub.expiresAt).toLocaleDateString("ru-RU")}
@@ -191,7 +206,9 @@ function OperatorBillingPage() {
         <div className="rounded-2xl bg-secondary/60 p-4 text-sm">
           <p className="font-medium">Что входит в тариф</p>
           <p className="mt-2 text-muted-foreground">
-            Кабинет, заявки, страница компании и лимит активных туров.
+            {businessOnly
+              ? "Кабинет, объявления, страница компании и статистика визитов."
+              : "Кабинет, заявки, страница компании и лимит активных туров."}
           </p>
           <p className="mt-3 font-medium">Что отдельно</p>
           <p className="mt-2 text-muted-foreground">
@@ -202,7 +219,9 @@ function OperatorBillingPage() {
 
       <h2 className="font-display text-lg font-semibold">Выберите тариф</h2>
       <p className="mt-1 text-sm text-muted-foreground">
-        Лимит туров, заметность и способ обновления каталога (вручную или API).
+        {businessOnly
+          ? "Заметность в витринах и инструменты продвижения компании."
+          : "Лимит туров, заметность и способ обновления каталога (вручную или API)."}
       </p>
       <div className="mt-4 grid gap-5 lg:grid-cols-3">
         {plans.map((plan) => {
@@ -232,7 +251,9 @@ function OperatorBillingPage() {
               </div>
               <p className="mt-3 font-display text-3xl font-semibold">{formatPrice(plan.price)}</p>
               <p className="mt-1 text-sm text-muted-foreground">
-                в месяц · до {formatNumber(plan.tourLimit)} активных туров
+                {businessOnly
+                  ? "в месяц · объявления без лимита"
+                  : `в месяц · до ${formatNumber(plan.tourLimit)} активных туров`}
               </p>
               <p className="mt-3 text-sm text-muted-foreground">{copy.forWhom}</p>
               <ul className="mt-4 space-y-2 text-sm">
@@ -243,9 +264,11 @@ function OperatorBillingPage() {
                   </li>
                 ))}
               </ul>
-              <p className="mt-4 text-xs text-muted-foreground">
-                Около {formatPrice(perTour)} за слот тура в месяц
-              </p>
+              {businessOnly ? null : (
+                <p className="mt-4 text-xs text-muted-foreground">
+                  Около {formatPrice(perTour)} за слот тура в месяц
+                </p>
+              )}
               <Button
                 className="mt-6 w-full"
                 variant={on ? "secondary" : "default"}

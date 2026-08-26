@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { Navigate, createFileRoute } from "@tanstack/react-router";
 import { Check, Inbox, Send, Star, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -22,6 +22,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { formatPrice, getHotel, hotels, type Hotel } from "@/data/demo";
 import { useAuth, useRequireAuth } from "@/lib/platform/auth";
+import { isBusinessOnlyServices } from "@/lib/platform/company-categories";
 import { usePlatformStore } from "@/lib/platform/hooks";
 import { mealPlainLabel, peopleLabel, declineRequest, sendOffer } from "@/lib/platform/requests";
 import type { TripRequest } from "@/lib/platform/types";
@@ -107,6 +108,9 @@ function OperatorRequestsPage() {
   }, [state.tripRequests, state.requestOffers, organization]);
 
   if (!allowed || !organization) return null;
+  if (isBusinessOnlyServices(organization.services)) {
+    return <Navigate to="/operator/services" />;
+  }
 
   return (
     <DashShell

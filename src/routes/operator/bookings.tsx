@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { Navigate, createFileRoute } from "@tanstack/react-router";
 
 import { DashShell } from "@/components/dash/dash-shell";
 import { useOperatorNav } from "@/components/dash/nav-items";
@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/table";
 import { formatPrice, getHotel, getTour } from "@/data/demo";
 import { useAuth, useRequireAuth } from "@/lib/platform/auth";
+import { isBusinessOnlyServices } from "@/lib/platform/company-categories";
 import { setBookingStatus } from "@/lib/platform/booking";
 import { usePlatformStore } from "@/lib/platform/hooks";
 
@@ -27,6 +28,9 @@ function OperatorBookingsPage() {
   const nav = useOperatorNav(organization?.id);
   const state = usePlatformStore();
   if (!allowed || !organization || !user) return null;
+  if (isBusinessOnlyServices(organization.services)) {
+    return <Navigate to="/operator/services" />;
+  }
 
   const bookings = state.bookings.filter((b) => b.organizationId === organization.id);
 

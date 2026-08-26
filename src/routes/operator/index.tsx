@@ -26,20 +26,42 @@ import {
 import { formatNumber, formatPrice, getHotel } from "@/data/demo";
 import { useAutoApiSync } from "@/lib/platform/api-sync";
 import { useAuth, useRequireAuth } from "@/lib/platform/auth";
-import { categoriesOfServices } from "@/lib/platform/company-categories";
+import { categoriesOfServices, isBusinessOnlyServices } from "@/lib/platform/company-categories";
 import { usePlatformStore } from "@/lib/platform/hooks";
+import {
+  carClassLabel,
+  sportKindLabel,
+  stayKindLabel,
+  verticalLabel,
+  type VerticalId,
+} from "@/lib/platform/service-ingest";
 import { listOrgVertical } from "@/lib/platform/vertical-listings";
 import type { Booking, Organization } from "@/lib/platform/types";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/operator/")({
   head: () => ({
-    meta: [{ title: "Кабинет турфирмы · TourGo" }],
+    meta: [{ title: "Кабинет компании · TourGo" }],
   }),
   component: OperatorDashboard,
 });
 
 const monthFmt = new Intl.DateTimeFormat("ru-RU", { month: "short" });
+
+function listingKindLabel(vertical: VerticalId, kind: string) {
+  if (vertical === "sport") return sportKindLabel(kind);
+  if (vertical === "stay") return stayKindLabel(kind);
+  return carClassLabel(kind);
+}
+
+/** «1 объявление», «2 объявления», «5 объявлений» */
+function listingsCountLabel(n: number) {
+  const mod10 = n % 10;
+  const mod100 = n % 100;
+  if (mod10 === 1 && mod100 !== 11) return `${n} объявление`;
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return `${n} объявления`;
+  return `${n} объявлений`;
+}
 
 function buildSalesPoints(bookings: Booking[]): SalesChartPoint[] {
   const paid = bookings.filter((b) => ["PAID", "CONFIRMED", "COMPLETED"].includes(b.status));
@@ -121,16 +143,20 @@ function setupSteps(
           },
         ]
       : []),
-    {
-      done: openRequests === 0,
-      title: "Ответить на заявки туристов",
-      text:
-        openRequests > 0
-          ? `${openRequests} заявок ждут вашего предложения.`
-          : "Новых заявок пока нет.",
-      to: "/operator/requests",
-      cta: openRequests > 0 ? "Ответить" : "Смотреть",
-    },
+    ...(businessOnly
+      ? []
+      : [
+          {
+            done: openRequests === 0,
+            title: "Ответить на заявки туристов",
+            text:
+              openRequests > 0
+                ? `${openRequests} заявок ждут вашего предложения.`
+                : "Новых заявок пока нет.",
+            to: "/operator/requests",
+            cta: openRequests > 0 ? "Ответить" : "Смотреть",
+          },
+        ]),
   ];
 }
 
@@ -190,53 +216,82 @@ function OperatorDashboard() {
     (s) => s.status === "published",
   ).length;
   // «Бизнес без туров» (спортзал, прокат, жильё): вместо туров — объявления.
-  const cats = categoriesOfServices(organization.services ?? []);
-  const businessOnly =
-    (cats.has("sport") || cats.has("stays") || cats.has("cars")) &&
-    !cats.has("tours") &&
-    !cats.has("excursions");
+  const businessOnly = isBusinessOnlyServices(organization.services);
   const steps = setupSteps(organization, openRequests, active.length, sportCount, businessOnly);
+
+  // Живая статистика страницы компании (просмотры, контакты, визиты).
+  const companyEvents = state.analyticsEvents.filter(
+    (e) => e.payload?.["companyId"] === organization.id,
+  );
+  const pageViews = companyEvents.filter((e) => e.type === "COMPANY_PAGE_VIEW").length;
+  const contactClicks = companyEvents.filter((e) => e.type === "COMPANY_CONTACT_CLICK").length;
+  const checkins = companyEvents.filter((e) => e.type === "COMPANY_CHECKIN");
+  const myListings = listOrgVertical(organization.id);
+  const publishedListings = myListings.filter((l) => l.status === "published");
   const pendingSteps = steps.filter((step) => !step.done);
   const topTours = [...orgTours].sort((a, b) => b.bookings - a.bookings).slice(0, 6);
 
-  const quickActions = [
-    {
-      label: "Заявки",
-      hint: openRequests > 0 ? `${openRequests} новых` : "Открыть",
-      to: "/operator/requests",
-      icon: Inbox,
-      highlight: openRequests > 0,
-    },
-    businessOnly
-      ? {
-          label: "Мои объявления",
-          hint: `${sportCount} опубликовано`,
+  const quickActions = businessOnly
+    ? ([
+        {
+          label: "Объявления",
+          hint: `${publishedListings.length} опубликовано`,
           to: "/operator/services",
           icon: Luggage,
           highlight: false,
-        }
-      : {
+        },
+        {
+          label: "Компания",
+          hint: verified ? "Проверена" : "Профиль",
+          to: "/operator/company",
+          icon: Building2,
+          highlight: false,
+        },
+        {
+          label: "Продвижение",
+          hint: formatPrice(organization.promotionBalance),
+          to: "/operator/promotion",
+          icon: Megaphone,
+          highlight: false,
+        },
+        {
+          label: "Статистика",
+          hint: `${formatNumber(pageViews)} просмотров`,
+          to: "/operator/analytics",
+          icon: TrendingUp,
+          highlight: false,
+        },
+      ] as const)
+    : ([
+        {
+          label: "Заявки",
+          hint: openRequests > 0 ? `${openRequests} новых` : "Открыть",
+          to: "/operator/requests",
+          icon: Inbox,
+          highlight: openRequests > 0,
+        },
+        {
           label: "Туры",
           hint: `${active.length} активных`,
           to: "/operator/tours",
           icon: Luggage,
           highlight: false,
         },
-    {
-      label: "Компания",
-      hint: verified ? "Проверена" : "Профиль",
-      to: "/operator/company",
-      icon: Building2,
-      highlight: false,
-    },
-    {
-      label: "Продвижение",
-      hint: formatPrice(organization.promotionBalance),
-      to: "/operator/promotion",
-      icon: Megaphone,
-      highlight: false,
-    },
-  ] as const;
+        {
+          label: "Компания",
+          hint: verified ? "Проверена" : "Профиль",
+          to: "/operator/company",
+          icon: Building2,
+          highlight: false,
+        },
+        {
+          label: "Продвижение",
+          hint: formatPrice(organization.promotionBalance),
+          to: "/operator/promotion",
+          icon: Megaphone,
+          highlight: false,
+        },
+      ] as const);
 
   return (
     <DashShell
@@ -246,7 +301,7 @@ function OperatorDashboard() {
       subtitle={
         verified
           ? businessOnly
-            ? `${organization.name} · тариф ${organization.planCode} · ${formatNumber(sportCount)} объявлений`
+            ? `${organization.name} · тариф ${organization.planCode} · ${listingsCountLabel(sportCount)}`
             : `${organization.name} · тариф ${organization.planCode} · ${formatNumber(active.length)} туров`
           : openRequests > 0
             ? `${organization.name} · ${openRequests} новых заявок`
@@ -317,26 +372,56 @@ function OperatorDashboard() {
         ))}
       </div>
 
-      <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-        <KpiCard
-          label="Новые заявки"
-          value={formatNumber(openRequests)}
-          hint={openRequests > 0 ? "ждут ответа" : "всё отвечено"}
-          emphasis={openRequests > 0}
-        />
-        <KpiCard
-          label="Мои предложения"
-          value={formatNumber(myOffers.length)}
-          hint={`выбрали вас ${chosenOffers}`}
-        />
-        <KpiCard
-          label="Активные туры"
-          value={formatNumber(active.length)}
-          hint={`лимит ${plan ? plan.tourLimit + organization.additionalTourLimit : "нет"}`}
-        />
-        <KpiCard label="Просмотры" value={formatNumber(views)} />
-        <KpiCard label="Продажи" value={formatPrice(revenue)} />
-      </div>
+      {businessOnly ? (
+        <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <KpiCard
+            label="Просмотры страницы"
+            value={formatNumber(pageViews)}
+            hint="открыли вашу компанию"
+          />
+          <KpiCard
+            label="Клики по контактам"
+            value={formatNumber(contactClicks)}
+            hint="WhatsApp, звонки, маршрут"
+          />
+          <KpiCard
+            label="Визиты из приложения"
+            value={formatNumber(checkins.length)}
+            hint="нажали «Я здесь»"
+            emphasis={checkins.length > 0}
+          />
+          <KpiCard
+            label="Объявления"
+            value={formatNumber(publishedListings.length)}
+            hint={
+              myListings.length > publishedListings.length
+                ? `скрыто ${myListings.length - publishedListings.length}`
+                : "опубликованы в витрине"
+            }
+          />
+        </div>
+      ) : (
+        <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+          <KpiCard
+            label="Новые заявки"
+            value={formatNumber(openRequests)}
+            hint={openRequests > 0 ? "ждут ответа" : "всё отвечено"}
+            emphasis={openRequests > 0}
+          />
+          <KpiCard
+            label="Мои предложения"
+            value={formatNumber(myOffers.length)}
+            hint={`выбрали вас ${chosenOffers}`}
+          />
+          <KpiCard
+            label="Активные туры"
+            value={formatNumber(active.length)}
+            hint={`лимит ${plan ? plan.tourLimit + organization.additionalTourLimit : "нет"}`}
+          />
+          <KpiCard label="Просмотры" value={formatNumber(views)} />
+          <KpiCard label="Продажи" value={formatPrice(revenue)} />
+        </div>
+      )}
 
       <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(280px,1fr)]">
         <div className="space-y-6">
@@ -386,6 +471,54 @@ function OperatorDashboard() {
                 ))}
               </ul>
             </section>
+          ) : businessOnly ? (
+            <section className="surface-card p-6">
+              <div className="flex items-center justify-between gap-3">
+                <h2 className="font-display text-lg font-semibold">Жизнь страницы</h2>
+                <Button variant="outline" size="sm" asChild>
+                  <Link to="/operator/analytics">Вся статистика</Link>
+                </Button>
+              </div>
+              {checkins.length > 0 || pageViews > 0 ? (
+                <div className="mt-5 space-y-2">
+                  {checkins.slice(0, 8).map((e) => (
+                    <div
+                      key={e.id}
+                      className="flex items-center justify-between gap-3 rounded-xl border border-border px-4 py-3 text-sm"
+                    >
+                      <span className="font-medium">
+                        {String(e.payload?.["userName"] ?? "Гость")}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        отметился «Я здесь» ·{" "}
+                        {new Date(e.createdAt).toLocaleDateString("ru-RU", {
+                          day: "numeric",
+                          month: "short",
+                        })}
+                      </span>
+                    </div>
+                  ))}
+                  {checkins.length === 0 ? (
+                    <p className="rounded-xl border border-dashed border-border px-4 py-6 text-center text-sm text-muted-foreground">
+                      Страницу уже смотрят ({formatNumber(pageViews)}), визитов из приложения пока
+                      нет. Повесьте QR на входе — клиенты будут отмечаться «Я здесь».
+                    </p>
+                  ) : null}
+                </div>
+              ) : (
+                <div className="mt-5 flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-secondary/20 px-6 py-12 text-center">
+                  <TrendingUp className="size-8 text-muted-foreground/70" />
+                  <p className="mt-3 font-medium">Пока нет просмотров</p>
+                  <p className="mt-1 max-w-sm text-sm text-muted-foreground">
+                    Опубликуйте объявления и делитесь страницей компании — здесь появятся просмотры,
+                    клики по контактам и визиты клиентов.
+                  </p>
+                  <Button size="sm" className="mt-4" asChild>
+                    <Link to="/operator/services">Добавить объявление</Link>
+                  </Button>
+                </div>
+              )}
+            </section>
           ) : (
             <section className="surface-card p-6">
               <div className="flex items-center justify-between gap-3">
@@ -433,12 +566,14 @@ function OperatorDashboard() {
                     : "Не отправлена"}
               </dd>
             </div>
-            <div className="flex items-start justify-between gap-3">
-              <dt className="text-muted-foreground">Каталог API</dt>
-              <dd className="font-medium">
-                {api?.status === "connected" ? "Подключён" : "Не настроен"}
-              </dd>
-            </div>
+            {businessOnly ? null : (
+              <div className="flex items-start justify-between gap-3">
+                <dt className="text-muted-foreground">Каталог API</dt>
+                <dd className="font-medium">
+                  {api?.status === "connected" ? "Подключён" : "Не настроен"}
+                </dd>
+              </div>
+            )}
             <div className="flex items-start justify-between gap-3">
               <dt className="text-muted-foreground">Баланс продвижения</dt>
               <dd className="font-medium tabular-nums">
@@ -448,7 +583,7 @@ function OperatorDashboard() {
           </dl>
 
           <div className="mt-auto space-y-2 pt-6">
-            {api?.status !== "connected" ? (
+            {!businessOnly && api?.status !== "connected" ? (
               <Button variant="outline" size="sm" className="w-full" asChild>
                 <Link to="/operator/tours" search={{ add: "api" }}>
                   <Cable className="size-4" />
@@ -463,63 +598,130 @@ function OperatorDashboard() {
         </aside>
       </div>
 
-      <section className="surface-card mt-6 overflow-hidden">
-        <div className="flex flex-wrap items-center justify-between gap-3 p-6 pb-4">
-          <div>
-            <h2 className="font-display text-lg font-semibold">Лучшие туры</h2>
-            <p className="mt-1 text-sm text-muted-foreground">По количеству бронирований</p>
-          </div>
-          {topTours.length > 0 ? (
+      {businessOnly ? (
+        <section className="surface-card mt-6 overflow-hidden">
+          <div className="flex flex-wrap items-center justify-between gap-3 p-6 pb-4">
+            <div>
+              <h2 className="font-display text-lg font-semibold">Мои объявления</h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Что клиенты видят в витринах «Спорт», «Жильё» и «Авто»
+              </p>
+            </div>
             <Button variant="outline" size="sm" asChild>
-              <Link to="/operator/tours">Все туры</Link>
+              <Link to="/operator/services">Управлять</Link>
             </Button>
-          ) : null}
-        </div>
-
-        {topTours.length > 0 ? (
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Тур</TableHead>
-                  <TableHead>Просмотры</TableHead>
-                  <TableHead>Брони</TableHead>
-                  <TableHead className="text-right">Цена</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {topTours.map((tour) => {
-                  const hotel = getHotel(tour.hotelId);
-                  return (
-                    <TableRow key={tour.id}>
+          </div>
+          {myListings.length > 0 ? (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Объявление</TableHead>
+                    <TableHead>Город</TableHead>
+                    <TableHead>Статус</TableHead>
+                    <TableHead className="text-right">Цена</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {myListings.slice(0, 6).map((l) => (
+                    <TableRow key={l.id}>
                       <TableCell className="font-medium">
-                        {hotel.name}
+                        {l.name}
                         <span className="block text-xs text-muted-foreground">
-                          {hotel.city} · {tour.nights} ночей
+                          {verticalLabel(l.vertical)} · {listingKindLabel(l.vertical, l.kind)}
                         </span>
                       </TableCell>
-                      <TableCell>{formatNumber(tour.views)}</TableCell>
-                      <TableCell>{tour.bookings}</TableCell>
-                      <TableCell className="text-right">{formatPrice(tour.price)}</TableCell>
+                      <TableCell>{l.city}</TableCell>
+                      <TableCell>
+                        <span
+                          className={cn(
+                            "text-xs font-medium",
+                            l.status === "published" ? "text-success" : "text-muted-foreground",
+                          )}
+                        >
+                          {l.status === "published" ? "Опубликовано" : "Скрыто"}
+                        </span>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {l.price > 0 ? formatPrice(l.price) : "по запросу"}
+                      </TableCell>
                     </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          ) : (
+            <div className="border-t border-border px-6 py-10 text-center">
+              <Luggage className="mx-auto size-8 text-muted-foreground/70" />
+              <p className="mt-3 font-medium">Объявлений пока нет</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Добавьте первую карточку — жильё, авто или спорт — и она появится в витрине.
+              </p>
+              <Button size="sm" className="mt-4" asChild>
+                <Link to="/operator/services">Добавить объявление</Link>
+              </Button>
+            </div>
+          )}
+        </section>
+      ) : (
+        <section className="surface-card mt-6 overflow-hidden">
+          <div className="flex flex-wrap items-center justify-between gap-3 p-6 pb-4">
+            <div>
+              <h2 className="font-display text-lg font-semibold">Лучшие туры</h2>
+              <p className="mt-1 text-sm text-muted-foreground">По количеству бронирований</p>
+            </div>
+            {topTours.length > 0 ? (
+              <Button variant="outline" size="sm" asChild>
+                <Link to="/operator/tours">Все туры</Link>
+              </Button>
+            ) : null}
           </div>
-        ) : (
-          <div className="border-t border-border px-6 py-10 text-center">
-            <Luggage className="mx-auto size-8 text-muted-foreground/70" />
-            <p className="mt-3 font-medium">Туров пока нет</p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Добавьте первый тур, чтобы попасть в поиск TourGo.
-            </p>
-            <Button size="sm" className="mt-4" asChild>
-              <Link to="/operator/tours">Добавить тур</Link>
-            </Button>
-          </div>
-        )}
-      </section>
+
+          {topTours.length > 0 ? (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Тур</TableHead>
+                    <TableHead>Просмотры</TableHead>
+                    <TableHead>Брони</TableHead>
+                    <TableHead className="text-right">Цена</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {topTours.map((tour) => {
+                    const hotel = getHotel(tour.hotelId);
+                    return (
+                      <TableRow key={tour.id}>
+                        <TableCell className="font-medium">
+                          {hotel.name}
+                          <span className="block text-xs text-muted-foreground">
+                            {hotel.city} · {tour.nights} ночей
+                          </span>
+                        </TableCell>
+                        <TableCell>{formatNumber(tour.views)}</TableCell>
+                        <TableCell>{tour.bookings}</TableCell>
+                        <TableCell className="text-right">{formatPrice(tour.price)}</TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+          ) : (
+            <div className="border-t border-border px-6 py-10 text-center">
+              <Luggage className="mx-auto size-8 text-muted-foreground/70" />
+              <p className="mt-3 font-medium">Туров пока нет</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Добавьте первый тур, чтобы попасть в поиск TourGo.
+              </p>
+              <Button size="sm" className="mt-4" asChild>
+                <Link to="/operator/tours">Добавить тур</Link>
+              </Button>
+            </div>
+          )}
+        </section>
+      )}
     </DashShell>
   );
 }
