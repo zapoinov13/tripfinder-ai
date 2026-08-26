@@ -45,7 +45,6 @@ import { Route as AdminPaymentsRouteImport } from './routes/admin/payments'
 import { Route as AdminPromotionsRouteImport } from './routes/admin/promotions'
 import { Route as AdminPushRouteImport } from './routes/admin/push'
 import { Route as AdminSettingsRouteImport } from './routes/admin/settings'
-import { Route as AdminToursRouteImport } from './routes/admin/tours'
 import { Route as AdminUsersRouteImport } from './routes/admin/users'
 import { Route as CompanyCompanyIdRouteImport } from './routes/company.$companyId'
 import { Route as DestinationDestinationIdRouteImport } from './routes/destination.$destinationId'
@@ -254,11 +253,6 @@ const AdminSettingsRoute = AdminSettingsRouteImport.update({
   path: '/admin/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AdminToursRoute = AdminToursRouteImport.update({
-  id: '/admin/tours',
-  path: '/admin/tours',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AdminUsersRoute = AdminUsersRouteImport.update({
   id: '/admin/users',
   path: '/admin/users',
@@ -432,7 +426,6 @@ export interface FileRoutesByFullPath {
   '/admin/promotions': typeof AdminPromotionsRoute
   '/admin/push': typeof AdminPushRoute
   '/admin/settings': typeof AdminSettingsRoute
-  '/admin/tours': typeof AdminToursRoute
   '/admin/users': typeof AdminUsersRoute
   '/company/$companyId': typeof CompanyCompanyIdRoute
   '/destination/$destinationId': typeof DestinationDestinationIdRoute
@@ -497,7 +490,6 @@ export interface FileRoutesByTo {
   '/admin/promotions': typeof AdminPromotionsRoute
   '/admin/push': typeof AdminPushRoute
   '/admin/settings': typeof AdminSettingsRoute
-  '/admin/tours': typeof AdminToursRoute
   '/admin/users': typeof AdminUsersRoute
   '/company/$companyId': typeof CompanyCompanyIdRoute
   '/destination/$destinationId': typeof DestinationDestinationIdRoute
@@ -564,7 +556,6 @@ export interface FileRoutesById {
   '/admin/promotions': typeof AdminPromotionsRoute
   '/admin/push': typeof AdminPushRoute
   '/admin/settings': typeof AdminSettingsRoute
-  '/admin/tours': typeof AdminToursRoute
   '/admin/users': typeof AdminUsersRoute
   '/company/$companyId': typeof CompanyCompanyIdRoute
   '/destination/$destinationId': typeof DestinationDestinationIdRoute
@@ -632,7 +623,6 @@ export interface FileRouteTypes {
     | '/admin/promotions'
     | '/admin/push'
     | '/admin/settings'
-    | '/admin/tours'
     | '/admin/users'
     | '/company/$companyId'
     | '/destination/$destinationId'
@@ -697,7 +687,6 @@ export interface FileRouteTypes {
     | '/admin/promotions'
     | '/admin/push'
     | '/admin/settings'
-    | '/admin/tours'
     | '/admin/users'
     | '/company/$companyId'
     | '/destination/$destinationId'
@@ -763,7 +752,6 @@ export interface FileRouteTypes {
     | '/admin/promotions'
     | '/admin/push'
     | '/admin/settings'
-    | '/admin/tours'
     | '/admin/users'
     | '/company/$companyId'
     | '/destination/$destinationId'
@@ -830,7 +818,6 @@ export interface RootRouteChildren {
   AdminPromotionsRoute: typeof AdminPromotionsRoute
   AdminPushRoute: typeof AdminPushRoute
   AdminSettingsRoute: typeof AdminSettingsRoute
-  AdminToursRoute: typeof AdminToursRoute
   AdminUsersRoute: typeof AdminUsersRoute
   CompanyCompanyIdRoute: typeof CompanyCompanyIdRoute
   DestinationDestinationIdRoute: typeof DestinationDestinationIdRoute
@@ -1108,13 +1095,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminSettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/admin/tours': {
-      id: '/admin/tours'
-      path: '/admin/tours'
-      fullPath: '/admin/tours'
-      preLoaderRoute: typeof AdminToursRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/admin/users': {
       id: '/admin/users'
       path: '/admin/users'
@@ -1367,7 +1347,6 @@ const rootRouteChildren: RootRouteChildren = {
   AdminPromotionsRoute: AdminPromotionsRoute,
   AdminPushRoute: AdminPushRoute,
   AdminSettingsRoute: AdminSettingsRoute,
-  AdminToursRoute: AdminToursRoute,
   AdminUsersRoute: AdminUsersRoute,
   CompanyCompanyIdRoute: CompanyCompanyIdRoute,
   DestinationDestinationIdRoute: DestinationDestinationIdRoute,

@@ -321,7 +321,7 @@ function AdminDashboard() {
           label="Активные туры"
           value={formatNumber(stats.tours.active)}
           hint={`в каталоге ${formatNumber(stats.tours.total)}`}
-          to="/admin/tours"
+          to="/admin/operators"
         />
         <StatTile
           icon={Smartphone}
