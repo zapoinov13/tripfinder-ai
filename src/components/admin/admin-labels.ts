@@ -126,6 +126,7 @@ export const auditActionLabel: Record<string, string> = {
   store_reset: "Сброс данных",
   seed: "Инициализация платформы",
   push_broadcast: "Push-рассылка",
+  platform_config_update: "Изменены настройки платформы",
 };
 
 export const auditEntityLabel: Record<string, string> = {

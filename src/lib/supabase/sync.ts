@@ -487,6 +487,26 @@ function collectOps(prev: PlatformState, next: PlatformState): Op[] {
     });
   }
 
+  // Конфиг платформы (тарифы, цена Premium, цены продвижения, ранжирование):
+  // правки из админки уходят в platform_config, иначе жили бы только в браузере.
+  if (JSON.stringify(prev.config) !== JSON.stringify(next.config)) {
+    const c = next.config;
+    ops.push(async () => {
+      const { error } = await sb
+        .from("platform_config")
+        .update({
+          premium_monthly_price: c.premiumMonthlyPrice,
+          premium_currency: c.premiumCurrency,
+          operator_plans: c.operatorPlans,
+          promotion_prices: c.promotionPrices,
+          ranking_weights: c.rankingWeights,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", 1);
+      report("platform_config.update", error);
+    });
+  }
+
   const events = diff(prev.analyticsEvents, next.analyticsEvents, () => true);
   for (const e of events.added) {
     if (!isUuid(e.id)) continue;
