@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/table";
 import { formatNumber, formatPrice, getHotel } from "@/data/demo";
 import { useAuth, useRequireAuth } from "@/lib/platform/auth";
+import { categoriesOfServices } from "@/lib/platform/company-categories";
 import { usePlatformStore } from "@/lib/platform/hooks";
 import { listOrgVertical } from "@/lib/platform/vertical-listings";
 import type { Booking, Organization } from "@/lib/platform/types";
@@ -71,6 +72,7 @@ function setupSteps(
   openRequests: number,
   activeTours: number,
   sportCount: number,
+  businessOnly: boolean,
 ) {
   const needsDocs =
     org.status === "PENDING_APPROVAL" &&
@@ -93,21 +95,26 @@ function setupSteps(
       to: "/operator/company",
       cta: "Открыть",
     },
-    {
-      done: activeTours > 0,
-      title: "Добавить первый тур",
-      text: "Без туров компания не попадёт в поиск TourGo.",
-      to: "/operator/tours",
-      cta: "Добавить",
-    },
-    ...(org.services?.includes("Спорт") ||
+    ...(businessOnly
+      ? []
+      : [
+          {
+            done: activeTours > 0,
+            title: "Добавить первый тур",
+            text: "Без туров компания не попадёт в поиск TourGo.",
+            to: "/operator/tours",
+            cta: "Добавить",
+          },
+        ]),
+    ...(businessOnly ||
+    org.services?.includes("Спорт") ||
     org.services?.includes("Отели") ||
     org.services?.includes("Аренда авто")
       ? [
           {
             done: sportCount > 0,
-            title: "Добавить услугу из Instagram или сайта",
-            text: "Жильё, авто или спорт: ссылка + текст bio, затем публикация в витрине.",
+            title: "Добавить первое объявление",
+            text: "Жильё, авто или спорт: ссылка из Instagram или сайта + описание, затем публикация в витрине.",
             to: "/operator/services",
             cta: "Добавить",
           },
@@ -161,7 +168,13 @@ function OperatorDashboard() {
   const sportCount = listOrgVertical(organization.id).filter(
     (s) => s.status === "published",
   ).length;
-  const steps = setupSteps(organization, openRequests, active.length, sportCount);
+  // «Бизнес без туров» (спортзал, прокат, жильё): вместо туров — объявления.
+  const cats = categoriesOfServices(organization.services ?? []);
+  const businessOnly =
+    (cats.has("sport") || cats.has("stays") || cats.has("cars")) &&
+    !cats.has("tours") &&
+    !cats.has("excursions");
+  const steps = setupSteps(organization, openRequests, active.length, sportCount, businessOnly);
   const pendingSteps = steps.filter((step) => !step.done);
   const topTours = [...orgTours].sort((a, b) => b.bookings - a.bookings).slice(0, 6);
 
@@ -173,13 +186,21 @@ function OperatorDashboard() {
       icon: Inbox,
       highlight: openRequests > 0,
     },
-    {
-      label: "Туры",
-      hint: `${active.length} активных`,
-      to: "/operator/tours",
-      icon: Luggage,
-      highlight: false,
-    },
+    businessOnly
+      ? {
+          label: "Мои объявления",
+          hint: `${sportCount} опубликовано`,
+          to: "/operator/services",
+          icon: Luggage,
+          highlight: false,
+        }
+      : {
+          label: "Туры",
+          hint: `${active.length} активных`,
+          to: "/operator/tours",
+          icon: Luggage,
+          highlight: false,
+        },
     {
       label: "Компания",
       hint: verified ? "Проверена" : "Профиль",
@@ -200,18 +221,26 @@ function OperatorDashboard() {
     <DashShell
       brand={organization.name}
       items={nav}
-      title="Кабинет турфирмы"
+      title={businessOnly ? "Кабинет компании" : "Кабинет турфирмы"}
       subtitle={
         verified
-          ? `${organization.name} · тариф ${organization.planCode} · ${formatNumber(active.length)} туров`
+          ? businessOnly
+            ? `${organization.name} · тариф ${organization.planCode} · ${formatNumber(sportCount)} объявлений`
+            : `${organization.name} · тариф ${organization.planCode} · ${formatNumber(active.length)} туров`
           : openRequests > 0
             ? `${organization.name} · ${openRequests} новых заявок`
-            : `${organization.name} · заявки, туры и страница компании`
+            : businessOnly
+              ? `${organization.name} · объявления, заявки и страница компании`
+              : `${organization.name} · заявки, туры и страница компании`
       }
       actions={
         openRequests > 0 ? (
           <Button size="sm" asChild>
             <Link to="/operator/requests">Ответить на заявки</Link>
+          </Button>
+        ) : businessOnly ? (
+          <Button size="sm" variant="outline" asChild>
+            <Link to="/operator/services">Добавить объявление</Link>
           </Button>
         ) : (
           <Button size="sm" variant="outline" asChild>

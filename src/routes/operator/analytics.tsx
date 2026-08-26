@@ -78,6 +78,24 @@ function OperatorAnalyticsPage() {
     ],
   );
 
+  const pageStats = useMemo(() => {
+    if (!organization) return null;
+    const since = period === 0 ? 0 : Date.now() - period * 24 * 60 * 60 * 1000;
+    const events = state.analyticsEvents.filter(
+      (e) =>
+        e.payload?.["companyId"] === organization.id &&
+        (since === 0 || new Date(e.createdAt).getTime() >= since),
+    );
+    const views = events.filter((e) => e.type === "COMPANY_PAGE_VIEW").length;
+    const clicks: Record<string, number> = {};
+    for (const e of events) {
+      if (e.type !== "COMPANY_CONTACT_CLICK") continue;
+      const channel = typeof e.payload?.["channel"] === "string" ? e.payload["channel"] : "other";
+      clicks[channel] = (clicks[channel] ?? 0) + 1;
+    }
+    return { views, clicks };
+  }, [organization, period, state.analyticsEvents]);
+
   if (!allowed || !organization || !data) return null;
 
   const sortedTours = [...data.topTours].sort((a, b) => {
@@ -169,6 +187,41 @@ function OperatorAnalyticsPage() {
           hint={data.rating ? `${data.rating.count} отзывов` : "отзывов пока нет"}
         />
       </div>
+
+      {pageStats ? (
+        <section className="surface-card mt-6 p-6">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="font-display text-lg font-semibold">Страница компании</h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Кто заходит на вашу визитку и куда нажимает: маршрут, WhatsApp, звонки.
+              </p>
+            </div>
+            <Button variant="outline" size="sm" asChild>
+              <Link to="/company/$companyId" params={{ companyId: organization.id }}>
+                Открыть страницу
+              </Link>
+            </Button>
+          </div>
+          <div className="mt-4 grid gap-3 sm:grid-cols-3 xl:grid-cols-6">
+            <PageStat label="Просмотры страницы" value={pageStats.views} />
+            <PageStat label="Маршрут (карта)" value={pageStats.clicks["map"] ?? 0} />
+            <PageStat label="WhatsApp" value={pageStats.clicks["whatsapp"] ?? 0} />
+            <PageStat label="Позвонить" value={pageStats.clicks["phone"] ?? 0} />
+            <PageStat label="Instagram" value={pageStats.clicks["instagram"] ?? 0} />
+            <PageStat
+              label="Telegram и сайт"
+              value={(pageStats.clicks["telegram"] ?? 0) + (pageStats.clicks["website"] ?? 0)}
+            />
+          </div>
+          {pageStats.views === 0 ? (
+            <p className="mt-3 text-xs text-muted-foreground">
+              Пока тихо. Заполните страницу (адрес, часы, фото) и поделитесь ссылкой — клики начнут
+              считаться автоматически.
+            </p>
+          ) : null}
+        </section>
+      ) : null}
 
       {data.insights.length > 0 ? (
         <div className="mt-6 grid gap-3 md:grid-cols-2">
@@ -506,6 +559,15 @@ function OperatorAnalyticsPage() {
         </div>
       </div>
     </DashShell>
+  );
+}
+
+function PageStat({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="rounded-2xl border border-border bg-secondary/30 p-4">
+      <p className="text-xs text-muted-foreground">{label}</p>
+      <p className="mt-1 font-display text-xl font-semibold tabular-nums">{formatNumber(value)}</p>
+    </div>
   );
 }
 

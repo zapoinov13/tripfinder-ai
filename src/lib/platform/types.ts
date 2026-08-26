@@ -81,6 +81,11 @@ export type Organization = {
   whatsapp?: string;
   instagram?: string;
   telegram?: string;
+  /** Часы работы: показываются на публичной странице. */
+  workingHours?: string;
+  /** Текущая акция и срок её действия (ISO-дата). */
+  promoText?: string;
+  promoUntil?: string;
   /** Названия загруженных документов для проверки компании. */
   documents?: string[];
   /** Загруженные файлы для проверки (хранятся локально / в профиле). */

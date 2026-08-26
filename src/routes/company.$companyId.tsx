@@ -1,12 +1,25 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { BadgeCheck, Globe, Instagram, MessageCircle, Phone, Send, Star } from "lucide-react";
+import {
+  BadgeCheck,
+  Clock,
+  Globe,
+  Instagram,
+  MapPin,
+  MessageCircle,
+  Percent,
+  Phone,
+  Send,
+  Star,
+} from "lucide-react";
+import { useEffect } from "react";
 
 import { SiteLayout } from "@/components/site/site-layout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatPrice, nightsLabel, tourCover } from "@/data/demo";
 import { youtubeEmbed } from "@/lib/image-file";
-import { getHotel } from "@/lib/platform/catalog";
+import { useAuth } from "@/lib/platform/auth";
+import { getHotel, trackEvent } from "@/lib/platform/catalog";
 import { usePlatformStore } from "@/lib/platform/hooks";
 import { getCompanyRating, getCompanyReviews } from "@/lib/platform/messages";
 import { cn } from "@/lib/utils";
@@ -24,7 +37,17 @@ const fmtDate = (iso: string) =>
 function CompanyPage() {
   const { companyId } = Route.useParams();
   const state = usePlatformStore();
+  const { user } = useAuth();
   const company = state.organizations.find((o) => o.id === companyId);
+  const userId = user?.id;
+
+  // Просмотр страницы: один раз за визит, свои сотрудники не считаются.
+  useEffect(() => {
+    if (!company) return;
+    if (user && user.organizationId === company.id) return;
+    trackEvent("COMPANY_PAGE_VIEW", userId, { companyId: company.id });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [companyId]);
 
   if (!company) {
     return (
@@ -48,6 +71,19 @@ function CompanyPage() {
   const videos = company.videos ?? [];
   const verified = company.status === "APPROVED";
   const wa = company.whatsapp?.replace(/\D/g, "") || company.phone?.replace(/\D/g, "") || "";
+  const mapsUrl = company.address
+    ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
+        `${company.address}, ${company.city}`,
+      )}`
+    : "";
+  const today = new Date().toISOString().slice(0, 10);
+  const promoActive = Boolean(
+    company.promoText?.trim() && (!company.promoUntil || company.promoUntil >= today),
+  );
+  const trackClick = (channel: string) => {
+    if (user && user.organizationId === company.id) return;
+    trackEvent("COMPANY_CONTACT_CLICK", userId, { companyId: company.id, channel });
+  };
 
   return (
     <SiteLayout>
@@ -100,9 +136,27 @@ function CompanyPage() {
           <div className="flex flex-wrap gap-2">
             {wa ? (
               <Button variant="outline" asChild>
-                <a href={`https://wa.me/${wa}`} target="_blank" rel="noreferrer">
+                <a
+                  href={`https://wa.me/${wa}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={() => trackClick("whatsapp")}
+                >
                   <MessageCircle className="size-4" />
                   WhatsApp
+                </a>
+              </Button>
+            ) : null}
+            {mapsUrl ? (
+              <Button variant="outline" asChild>
+                <a
+                  href={mapsUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={() => trackClick("map")}
+                >
+                  <MapPin className="size-4" />
+                  Маршрут
                 </a>
               </Button>
             ) : null}
@@ -117,6 +171,27 @@ function CompanyPage() {
 
       <div className="container-page grid gap-6 py-10 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
         <div className="space-y-6">
+          {promoActive ? (
+            <section className="overflow-hidden rounded-3xl border border-premium/30 bg-[linear-gradient(120deg,oklch(0.97_0.03_85),oklch(0.98_0.015_60))] p-6">
+              <div className="flex items-start gap-3">
+                <span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-premium/15 text-premium">
+                  <Percent className="size-5" />
+                </span>
+                <div className="min-w-0">
+                  <p className="font-display text-lg font-semibold">Акция</p>
+                  <p className="mt-1 whitespace-pre-wrap text-sm leading-relaxed">
+                    {company.promoText}
+                  </p>
+                  {company.promoUntil ? (
+                    <p className="mt-2 text-xs font-medium text-premium">
+                      Действует до {fmtDate(company.promoUntil)}
+                    </p>
+                  ) : null}
+                </div>
+              </div>
+            </section>
+          ) : null}
+
           {company.about ? (
             <section className="surface-card p-6">
               <h2 className="font-display text-lg font-semibold">О компании</h2>
@@ -253,18 +328,43 @@ function CompanyPage() {
           <section className="surface-card p-6">
             <h2 className="font-display text-lg font-semibold">Контакты</h2>
             <ul className="mt-4 space-y-3 text-sm">
+              {company.address ? (
+                <ContactRow
+                  icon={MapPin}
+                  label={`${company.address}, ${company.city}`}
+                  href={mapsUrl}
+                  onClick={() => trackClick("map")}
+                />
+              ) : null}
+              {company.workingHours ? (
+                <li className="flex items-center gap-2 text-foreground">
+                  <Clock className="size-4 shrink-0 text-muted-foreground" />
+                  <span>{company.workingHours}</span>
+                </li>
+              ) : null}
               {company.phone ? (
-                <ContactRow icon={Phone} label={company.phone} href={`tel:${company.phone}`} />
+                <ContactRow
+                  icon={Phone}
+                  label={company.phone}
+                  href={`tel:${company.phone}`}
+                  onClick={() => trackClick("phone")}
+                />
               ) : null}
               {company.whatsapp ? (
                 <ContactRow
                   icon={MessageCircle}
                   label="WhatsApp"
                   href={`https://wa.me/${company.whatsapp.replace(/\D/g, "")}`}
+                  onClick={() => trackClick("whatsapp")}
                 />
               ) : null}
               {company.telegram ? (
-                <ContactRow icon={Send} label="Telegram" href={company.telegram} />
+                <ContactRow
+                  icon={Send}
+                  label="Telegram"
+                  href={company.telegram}
+                  onClick={() => trackClick("telegram")}
+                />
               ) : null}
               {company.instagram ? (
                 <ContactRow
@@ -275,14 +375,33 @@ function CompanyPage() {
                       ? company.instagram
                       : `https://instagram.com/${company.instagram.replace(/^@/, "")}`
                   }
+                  onClick={() => trackClick("instagram")}
                 />
               ) : null}
               {company.website ? (
-                <ContactRow icon={Globe} label={company.website} href={company.website} />
+                <ContactRow
+                  icon={Globe}
+                  label={company.website}
+                  href={company.website}
+                  onClick={() => trackClick("website")}
+                />
               ) : null}
             </ul>
+            {mapsUrl ? (
+              <Button variant="outline" size="sm" className="mt-4 w-full" asChild>
+                <a
+                  href={mapsUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={() => trackClick("map")}
+                >
+                  <MapPin className="size-3.5" />
+                  Как добраться — Google Карты
+                </a>
+              </Button>
+            ) : null}
             <p className="mt-4 text-xs text-muted-foreground">
-              Тур продаёт эта компания. TourGo помогает найти и сравнить предложения.
+              Услуги оказывает эта компания. TourGo помогает найти и сравнить предложения.
             </p>
           </section>
 
@@ -307,10 +426,12 @@ function ContactRow({
   icon: Icon,
   label,
   href,
+  onClick,
 }: {
   icon: typeof Phone;
   label: string;
   href: string;
+  onClick?: () => void;
 }) {
   return (
     <li>
@@ -318,6 +439,7 @@ function ContactRow({
         href={href}
         target="_blank"
         rel="noreferrer"
+        onClick={onClick}
         className="flex items-center gap-2 text-foreground hover:text-primary"
       >
         <Icon className="size-4 text-muted-foreground" />
