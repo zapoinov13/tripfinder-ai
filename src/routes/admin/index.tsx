@@ -1,14 +1,20 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
-import { AlertTriangle, RefreshCw } from "lucide-react";
-
+import type { ComponentType } from "react";
 import {
-  KpiLinkCard,
-  auditActionLabel,
-  eventLabel,
-  formatRelativeRu,
-  orgName,
-} from "@/components/admin";
+  AlertTriangle,
+  Building2,
+  Inbox,
+  Luggage,
+  Megaphone,
+  RefreshCw,
+  Smartphone,
+  Ticket,
+  Users,
+  Wallet,
+} from "lucide-react";
+
+import { auditActionLabel, eventLabel, formatRelativeRu, orgName } from "@/components/admin";
 import { useAdminNav } from "@/components/dash/nav-items";
 import { DashShell } from "@/components/dash/dash-shell";
 import { Button } from "@/components/ui/button";
@@ -48,6 +54,46 @@ type LoadState =
   | { status: "loading" }
   | { status: "live"; stats: AdminOverviewStats }
   | { status: "fallback"; reason: string };
+
+function StatTile({
+  icon: Icon,
+  label,
+  value,
+  hint,
+  to,
+  emphasis,
+}: {
+  icon: ComponentType<{ className?: string }>;
+  label: string;
+  value: string;
+  hint: string;
+  to: string;
+  emphasis?: boolean;
+}) {
+  return (
+    <Link
+      to={to}
+      className={
+        emphasis
+          ? "surface-card block border-primary/30 bg-primary/[0.04] p-4 ring-1 ring-primary/15 transition-colors hover:border-primary/40"
+          : "surface-card block p-4 transition-colors hover:border-primary/30"
+      }
+    >
+      <span
+        className={
+          emphasis
+            ? "grid size-8 place-items-center rounded-lg bg-primary text-primary-foreground"
+            : "grid size-8 place-items-center rounded-lg bg-secondary text-foreground"
+        }
+      >
+        <Icon className="size-4" />
+      </span>
+      <p className="mt-2.5 truncate text-xs text-muted-foreground">{label}</p>
+      <p className="mt-0.5 truncate font-display text-xl font-semibold tabular-nums">{value}</p>
+      <p className="mt-0.5 truncate text-[11px] text-muted-foreground">{hint}</p>
+    </Link>
+  );
+}
 
 function AdminDashboard() {
   const { allowed } = useRequireAuth(["PLATFORM_ADMIN", "PLATFORM_MANAGER"]);
@@ -124,15 +170,24 @@ function AdminDashboard() {
       title="Обзор платформы"
       subtitle="Живая статистика из базы: пользователи, компании, лиды и бронирования"
     >
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-muted-foreground">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+        <p className="inline-flex items-center gap-2 text-xs text-muted-foreground">
+          <span
+            className={
+              load.status === "live"
+                ? "size-2 rounded-full bg-success"
+                : load.status === "loading"
+                  ? "size-2 animate-pulse rounded-full bg-premium"
+                  : "size-2 rounded-full bg-destructive"
+            }
+          />
           {load.status === "loading"
             ? "Загружаем статистику из базы…"
             : load.status === "live"
-              ? `Данные из базы на ${new Date(stats.generatedAt).toLocaleString("ru-RU")}`
+              ? `Живые данные · ${new Date(stats.generatedAt).toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" })}`
               : "Показаны локальные данные"}
         </p>
-        <Button size="sm" variant="outline" onClick={refresh} disabled={load.status === "loading"}>
+        <Button size="sm" variant="ghost" onClick={refresh} disabled={load.status === "loading"}>
           <RefreshCw className="mr-1.5 size-3.5" />
           Обновить
         </Button>
@@ -154,144 +209,213 @@ function AdminDashboard() {
         </div>
       ) : null}
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <KpiLinkCard
-          label="Зарегистрировано пользователей"
-          value={formatNumber(stats.users.total)}
-          to="/admin/users"
-          hint={`+${formatNumber(stats.users.new7d)} за 7 дней · туристов ${formatNumber(stats.users.tourists)}`}
-        />
-        <KpiLinkCard
-          label="Скачивания приложения"
-          value={formatNumber(stats.installs.total)}
-          to="/admin/push"
-          hint={`iOS ${formatNumber(stats.installs.ios)} · Android ${formatNumber(stats.installs.android)} · Web ${formatNumber(stats.installs.web)}`}
-        />
-        <KpiLinkCard
-          label="Бизнесы на платформе"
-          value={formatNumber(stats.companies.total)}
-          to="/admin/operators"
-          hint={
-            stats.companies.pending
-              ? `${formatNumber(stats.companies.approved)} одобрено · ${formatNumber(stats.companies.pending)} на проверке`
-              : `${formatNumber(stats.companies.approved)} одобрено`
-          }
-          tone={stats.companies.pending ? "warning" : "default"}
-        />
-        <KpiLinkCard
-          label="Заявки туристов (лиды)"
+      {/* Три главные цифры платформы — тёмная лента, как фирменный блок на главной. */}
+      <div className="overflow-hidden rounded-3xl bg-ink text-primary-foreground">
+        <div className="grid divide-y divide-primary-foreground/10 sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+          <Link
+            to="/admin/users"
+            className="group p-6 transition-colors hover:bg-primary-foreground/5 md:p-7"
+          >
+            <div className="flex items-center gap-2 text-sm text-primary-foreground/60">
+              <Users className="size-4" />
+              Пользователи
+            </div>
+            <p className="mt-3 font-display text-4xl font-semibold tabular-nums tracking-tight">
+              {formatNumber(stats.users.total)}
+            </p>
+            <p className="mt-2 text-sm text-primary-foreground/60">
+              туристов {formatNumber(stats.users.tourists)} · +{formatNumber(stats.users.new7d)} за
+              7 дней
+            </p>
+          </Link>
+          <Link
+            to="/admin/operators"
+            className="group p-6 transition-colors hover:bg-primary-foreground/5 md:p-7"
+          >
+            <div className="flex items-center gap-2 text-sm text-primary-foreground/60">
+              <Building2 className="size-4" />
+              Партнёры
+            </div>
+            <p className="mt-3 font-display text-4xl font-semibold tabular-nums tracking-tight">
+              {formatNumber(stats.companies.total)}
+            </p>
+            <p className="mt-2 text-sm text-primary-foreground/60">
+              {stats.companies.pending > 0 ? (
+                <span className="font-medium text-premium">
+                  {formatNumber(stats.companies.pending)} ждут одобрения
+                </span>
+              ) : (
+                `${formatNumber(stats.companies.approved)} одобрено`
+              )}
+            </p>
+          </Link>
+          <Link
+            to="/admin/bookings"
+            className="group p-6 transition-colors hover:bg-primary-foreground/5 md:p-7"
+          >
+            <div className="flex items-center gap-2 text-sm text-primary-foreground/60">
+              <Wallet className="size-4" />
+              Оборот (GMV)
+            </div>
+            <p className="mt-3 font-display text-4xl font-semibold tabular-nums tracking-tight">
+              {formatPrice(stats.bookings.gmv)}
+            </p>
+            <p className="mt-2 text-sm text-primary-foreground/60">
+              доход платформы {formatPrice(revenueTotal)}
+            </p>
+          </Link>
+        </div>
+      </div>
+
+      {/* Остальные метрики — компактные плитки с иконками. */}
+      <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
+        <StatTile
+          icon={Inbox}
+          label="Заявки (лиды)"
           value={formatNumber(stats.requests.total)}
+          hint={`${formatNumber(stats.requests.open)} открыто`}
           to="/admin/bookings"
-          hint={`${formatNumber(stats.requests.open)} открыто · предложений ${formatNumber(stats.offers.total)}`}
+          emphasis={stats.requests.open > 0}
         />
-        <KpiLinkCard
+        <StatTile
+          icon={Megaphone}
+          label="Предложений"
+          value={formatNumber(stats.offers.total)}
+          hint="ответы компаний"
+          to="/admin/bookings"
+        />
+        <StatTile
+          icon={Ticket}
           label="Бронирования"
           value={formatNumber(stats.bookings.total)}
+          hint={`${formatNumber(stats.bookings.paid)} оплачено`}
           to="/admin/bookings"
-          hint={`${formatNumber(stats.bookings.paid)} оплачено · +${formatNumber(stats.bookings.new30d)} за 30 дней`}
         />
-        <KpiLinkCard
-          label="Сумма бронирований (GMV)"
-          value={formatPrice(stats.bookings.gmv)}
-          to="/admin/bookings"
-          hint={`Оплачено ${formatPrice(stats.bookings.paidSum)}`}
-        />
-        <KpiLinkCard
+        <StatTile
+          icon={Luggage}
           label="Активные туры"
           value={formatNumber(stats.tours.active)}
+          hint={`в каталоге ${formatNumber(stats.tours.total)}`}
           to="/admin/tours"
-          hint={`Всего в каталоге ${formatNumber(stats.tours.total)}`}
         />
-        <KpiLinkCard
+        <StatTile
+          icon={Smartphone}
+          label="Установки"
+          value={formatNumber(stats.installs.total)}
+          hint={`iOS ${formatNumber(stats.installs.ios)} · Android ${formatNumber(stats.installs.android)}`}
+          to="/admin/push"
+        />
+        <StatTile
+          icon={Wallet}
           label="Доход платформы"
           value={formatPrice(revenueTotal)}
-          to="/admin/payments"
           hint={
             revenueEntries.length
-              ? revenueEntries
-                  .slice(0, 2)
-                  .map(([t, v]) => `${revenueLabel[t] ?? t}: ${formatPrice(v)}`)
-                  .join(" · ")
-              : "Оплаченных платежей пока нет"
+              ? `${revenueLabel[revenueEntries[0]![0]] ?? revenueEntries[0]![0]}: ${formatPrice(revenueEntries[0]![1])}`
+              : "платежей пока нет"
           }
+          to="/admin/payments"
         />
       </div>
 
-      <div className="surface-card mt-8 overflow-x-auto">
-        <div className="flex flex-wrap items-center justify-between gap-2 px-6 pt-6">
-          <h2 className="font-display text-lg font-semibold">Категории бизнесов</h2>
-          <p className="text-xs text-muted-foreground">
-            Лид — заявка, дошедшая до компании (предложение или переписка)
-          </p>
-        </div>
-        <Table className="mt-4">
-          <TableHeader>
-            <TableRow>
-              <TableHead>Категория</TableHead>
-              <TableHead className="text-right">Компаний</TableHead>
-              <TableHead className="text-right">Лидов</TableHead>
-              <TableHead className="text-right">Предложений</TableHead>
-              <TableHead className="text-right">Броней</TableHead>
-              <TableHead className="text-right">Сумма броней</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {categories.map((c) => (
-              <TableRow key={c.id}>
-                <TableCell className="font-medium">{c.label}</TableCell>
-                <TableCell className="text-right">{formatNumber(c.companies)}</TableCell>
-                <TableCell className="text-right">{formatNumber(c.leads)}</TableCell>
-                <TableCell className="text-right">{formatNumber(c.offers)}</TableCell>
-                <TableCell className="text-right">{formatNumber(c.bookingsCount)}</TableCell>
-                <TableCell className="text-right">{formatPrice(c.bookingsSum)}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-
-      <div className="surface-card mt-6 overflow-x-auto">
-        <div className="px-6 pt-6">
-          <h2 className="font-display text-lg font-semibold">Топ компаний по активности</h2>
-        </div>
-        {topCompanies.length === 0 ? (
-          <p className="px-6 py-6 text-sm text-muted-foreground">
-            Компаний пока нет — статистика появится после первых регистраций.
-          </p>
-        ) : (
-          <Table className="mt-4">
-            <TableHeader>
-              <TableRow>
-                <TableHead>Компания</TableHead>
-                <TableHead className="text-right">Лидов</TableHead>
-                <TableHead className="text-right">Броней</TableHead>
-                <TableHead className="text-right">Сумма броней</TableHead>
-                <TableHead className="text-right">Рейтинг</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {topCompanies.map((o) => (
-                <TableRow key={o.id}>
-                  <TableCell>
-                    <div className="font-medium">{o.name}</div>
-                    <div className="text-xs text-muted-foreground">
-                      {o.city || "город не указан"}
+      {categories.some((c) => c.companies > 0) ? (
+        <div className="surface-card mt-6 p-6">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 className="font-display text-lg font-semibold">Категории бизнесов</h2>
+            <p className="text-xs text-muted-foreground">
+              Лид — заявка, дошедшая до компании (предложение или переписка)
+            </p>
+          </div>
+          <ul className="mt-5 space-y-4">
+            {categories
+              .filter((c) => c.companies > 0)
+              .map((c) => {
+                const max = Math.max(...categories.map((x) => x.companies), 1);
+                return (
+                  <li key={c.id}>
+                    <div className="mb-1.5 flex items-baseline justify-between gap-3 text-sm">
+                      <span className="font-medium">{c.label}</span>
+                      <span className="shrink-0 text-muted-foreground">
+                        {formatNumber(c.companies)} комп. · {formatNumber(c.leads)} лидов ·{" "}
+                        {formatNumber(c.bookingsCount)} броней
+                        {c.bookingsSum > 0 ? ` · ${formatPrice(c.bookingsSum)}` : ""}
+                      </span>
                     </div>
-                  </TableCell>
-                  <TableCell className="text-right">{formatNumber(o.leads)}</TableCell>
-                  <TableCell className="text-right">{formatNumber(o.bookingsCount)}</TableCell>
-                  <TableCell className="text-right">{formatPrice(o.bookingsSum)}</TableCell>
-                  <TableCell className="text-right">
-                    {o.reviews ? `${o.rating} (${formatNumber(o.reviews)})` : "—"}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        )}
-      </div>
+                    <div className="h-2 overflow-hidden rounded-full bg-secondary">
+                      <div
+                        className="h-full rounded-full bg-primary"
+                        style={{ width: `${Math.max(6, (c.companies / max) * 100)}%` }}
+                      />
+                    </div>
+                  </li>
+                );
+              })}
+          </ul>
+        </div>
+      ) : (
+        <div className="surface-card mt-6 flex flex-col items-center gap-3 p-8 text-center sm:flex-row sm:text-left">
+          <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-primary-soft text-primary">
+            <Building2 className="size-6" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="font-display text-base font-semibold">
+              Категории заполнятся с первыми партнёрами
+            </p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Здесь появится разбивка по турам, экскурсиям, жилью, авто и спорту: компании, лиды и
+              брони по каждой категории.
+            </p>
+          </div>
+          <Button size="sm" variant="outline" asChild>
+            <Link to="/admin/operators">Партнёры</Link>
+          </Button>
+        </div>
+      )}
 
-      <div className="mt-8 grid gap-6 lg:grid-cols-2">
+      {topCompanies.length > 0 ? (
+        <div className="surface-card mt-6 overflow-x-auto">
+          <div className="px-6 pt-6">
+            <h2 className="font-display text-lg font-semibold">Топ компаний по активности</h2>
+          </div>
+          {topCompanies.length === 0 ? (
+            <p className="px-6 py-6 text-sm text-muted-foreground">
+              Компаний пока нет — статистика появится после первых регистраций.
+            </p>
+          ) : (
+            <Table className="mt-4">
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Компания</TableHead>
+                  <TableHead className="text-right">Лидов</TableHead>
+                  <TableHead className="text-right">Броней</TableHead>
+                  <TableHead className="text-right">Сумма броней</TableHead>
+                  <TableHead className="text-right">Рейтинг</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {topCompanies.map((o) => (
+                  <TableRow key={o.id}>
+                    <TableCell>
+                      <div className="font-medium">{o.name}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {o.city || "город не указан"}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right">{formatNumber(o.leads)}</TableCell>
+                    <TableCell className="text-right">{formatNumber(o.bookingsCount)}</TableCell>
+                    <TableCell className="text-right">{formatPrice(o.bookingsSum)}</TableCell>
+                    <TableCell className="text-right">
+                      {o.reviews ? `${o.rating} (${formatNumber(o.reviews)})` : "—"}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </div>
+      ) : null}
+
+      <div className="mt-6 grid gap-4 lg:grid-cols-2">
         <div className="surface-card p-6">
           <div className="flex items-center gap-2">
             <AlertTriangle className="size-4 text-amber-600" />
