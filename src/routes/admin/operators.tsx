@@ -158,6 +158,7 @@ function AdminOperatorsPage() {
                 <TableRow>
                   <TableHead>Сотрудник</TableHead>
                   <TableHead>Компания</TableHead>
+                  <TableHead>Город</TableHead>
                   <TableHead>Роль</TableHead>
                   <TableHead>Статус</TableHead>
                   <TableHead>Создан</TableHead>
@@ -173,6 +174,9 @@ function AdminOperatorsPage() {
                     </TableCell>
                     <TableCell className="text-sm">
                       {u.organizationId ? orgName(u.organizationId) : "без компании"}
+                    </TableCell>
+                    <TableCell className="text-sm">
+                      {state.organizations.find((o) => o.id === u.organizationId)?.city ?? u.city}
                     </TableCell>
                     <TableCell className="text-sm">{roleLabel[u.role]}</TableCell>
                     <TableCell>

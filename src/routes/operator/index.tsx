@@ -141,6 +141,24 @@ function OperatorDashboard() {
   const nav = useOperatorNav(organization?.id);
   // Фид компании подтягивается сам, пока открыт кабинет.
   useAutoApiSync(organization ? [organization.id] : []);
+  if (allowed && user && !organization) {
+    // Партнёр без компании: старая регистрация оборвалась или админ перевёл
+    // аккаунт в партнёры вручную. Дорегистрация создаст компанию сразу.
+    return (
+      <div className="grid min-h-screen place-items-center px-6">
+        <div className="surface-card max-w-md p-8 text-center">
+          <h1 className="font-display text-xl font-semibold">Завершите регистрацию компании</h1>
+          <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+            Аккаунт партнёра есть, а компании ещё нет. Заполните короткую анкету — название,
+            категорию и город — и кабинет откроется сразу.
+          </p>
+          <Button className="mt-5" asChild>
+            <Link to="/company-signup">Создать компанию</Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
   if (!allowed || !user || !organization) {
     return <div className="grid min-h-screen place-items-center text-sm">Нет доступа…</div>;
   }

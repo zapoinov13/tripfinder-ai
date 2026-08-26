@@ -221,6 +221,33 @@ function AdminUsersPage() {
                       <span className="text-xs text-muted-foreground">Это вы</span>
                     ) : canEdit(u) ? (
                       <div className="flex flex-wrap justify-end gap-2">
+                        {tab === "tourists" ? (
+                          <ConfirmAction
+                            triggerLabel="В партнёры"
+                            title="Перевести в партнёры?"
+                            description={`${u.name} (${u.email}) станет админом компании и попадёт в раздел «Партнёры» → «Сотрудники». При следующем входе он завершит регистрацию компании (название, категория, город).`}
+                            confirmLabel="Перевести"
+                            variant="outline"
+                            onConfirm={() => {
+                              setState((s) => ({
+                                ...s,
+                                users: s.users.map((x) =>
+                                  x.id === u.id ? { ...x, role: "OPERATOR_ADMIN" as Role } : x,
+                                ),
+                              }));
+                              appendAudit({
+                                actorId: user.id,
+                                action: "user_to_partner",
+                                entityType: "user",
+                                entityId: u.id,
+                                meta: { email: u.email },
+                              });
+                              toast.success(
+                                "Переведён в партнёры. Теперь он в разделе «Партнёры» → «Сотрудники».",
+                              );
+                            }}
+                          />
+                        ) : null}
                         <ConfirmAction
                           triggerLabel={u.status === "active" ? "Заморозить" : "Разморозить"}
                           title={
