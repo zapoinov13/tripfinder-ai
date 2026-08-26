@@ -20,6 +20,14 @@ export type ParsedTravelQuery = {
   currency: "KZT";
   meals: string[];
   preferences: string[];
+  /** Что реально упомянуто в тексте: без флага merge не должен перетирать текущие фильтры дефолтами. */
+  detected: {
+    origin: boolean;
+    adults: boolean;
+    children: boolean;
+    duration: boolean;
+    budget: boolean;
+  };
 };
 
 export type AiChip = {
@@ -44,13 +52,13 @@ const extraDestinationAliases: Record<string, string[]> = {
     "шарджа",
     "фуджейра",
   ],
-  turkey: ["турци", "turkey", "antalya", "антalya", "алания", "белек", "кемер"],
+  turkey: ["турци", "turkey", "antalya", "антали", "анталь", "алания", "белек", "кемер"],
   thailand: ["тайланд", "thailand", "пхукет", "phuket", "паттайя", "samui", "самуи"],
   egypt: ["египет", "egypt", "хургада", "hurghada", "шарм", "sharm"],
   maldives: ["мальдив", "maldives", "атолл"],
   vietnam: ["вьетнам", "vietnam", "нячанг", "nha trang", "фукуок"],
-  georgia: ["грузи", "georgia", "батumi", "тбилиси"],
-  qatar: ["кatar", "катар", "doha", "доха"],
+  georgia: ["грузи", "georgia", "batumi", "батуми", "тбилиси"],
+  qatar: ["qatar", "катар", "doha", "доха"],
   srilanka: ["шри-ланка", "шри ланка", "srilanka", "цейлон"],
   indonesia: ["бали", "bali", "индонез", "indonesia"],
 };
@@ -130,8 +138,10 @@ const parseBudget = (query: string) => {
   );
   if (numericMatch) return Number(numericMatch[1]!.replace(/\s/g, ""));
 
-  return 1500000;
+  return null;
 };
+
+const DEFAULT_BUDGET = 1500000;
 
 const parseAges = (query: string) =>
   Array.from(query.matchAll(/(\d{1,2})\s*(?:год|года|лет)/gi))
@@ -155,22 +165,40 @@ export function parseTravelQuery(query: string): ParsedTravelQuery {
   const normalized = query.toLowerCase();
   const { destination, city } = findDestination(query);
   const childAges = parseAges(query);
+  const childrenMatch = normalized.match(/(\d{1,2})\s*(?:дет|реб)/);
   const children =
     childAges.length ||
-    (/(двое|2)\s+(?:дет|реб)/.test(normalized)
-      ? 2
-      : /(один|1)\s+(?:реб|дет)/.test(normalized)
-        ? 1
-        : 0);
-  const adults = /(?:жена|муж|супруг|супруга|двое взрослых|2 взрослых)/.test(normalized) ? 2 : 2;
+    (childrenMatch
+      ? Number(childrenMatch[1])
+      : /двое\s+(?:дет|реб)/.test(normalized)
+        ? 2
+        : /(?:один|одним)\s+(?:реб|дит)/.test(normalized)
+          ? 1
+          : 0);
+  const adultsMatch = normalized.match(/(\d{1,2})\s*взросл/);
+  const adultsDetected =
+    Boolean(adultsMatch) ||
+    /(?:жена|муж|супруг|супруга|вдвоём|вдвоем|двое взрослых)/.test(normalized);
+  const adults = adultsMatch ? Math.max(1, Number(adultsMatch[1])) : 2;
   const durationMatch = normalized.match(/(\d{1,2})\s*(?:дней|дня|день|ноч|недел)/);
-  const duration = durationMatch ? Number(durationMatch[1]) : /недел/.test(normalized) ? 7 : 7;
+  const duration = durationMatch
+    ? /недел/.test(durationMatch[0]!)
+      ? Number(durationMatch[1]) * 7
+      : Number(durationMatch[1])
+    : /недел/.test(normalized)
+      ? 7
+      : 7;
+  const budget = parseBudget(query);
   const meals = mealAliases
     .filter((m) => m.matches.some((alias) => normalized.includes(alias)))
     .map((m) => m.code);
   const preferences = preferenceMap
     .filter((p) => p.matches.some((match) => normalized.includes(match)))
     .map((p) => p.key);
+
+  const originDetected = /ташкент|бишкек|моск|петербург|спб|астан|шымкент|aktau|актау/.test(
+    normalized,
+  );
 
   return {
     originalQuery: query.trim(),
@@ -186,7 +214,7 @@ export function parseTravelQuery(query: string): ParsedTravelQuery {
               ? "Астана"
               : normalized.includes("шымкент")
                 ? "Шымкент"
-                : normalized.includes("акtau") || normalized.includes("актау")
+                : normalized.includes("aktau") || normalized.includes("актау")
                   ? "Актау"
                   : "Алматы",
     destination,
@@ -195,10 +223,17 @@ export function parseTravelQuery(query: string): ParsedTravelQuery {
     children,
     childAges: childAges.length ? childAges : Array.from({ length: children }, () => 7),
     duration,
-    budgetMax: Math.min(PRICE_MAX, Math.max(PRICE_MIN, parseBudget(query))),
+    budgetMax: Math.min(PRICE_MAX, Math.max(PRICE_MIN, budget ?? DEFAULT_BUDGET)),
     currency: "KZT",
     meals: meals.length ? meals : [],
     preferences,
+    detected: {
+      origin: originDetected,
+      adults: adultsDetected,
+      children: children > 0,
+      duration: Boolean(durationMatch) || /недел/.test(normalized),
+      budget: budget !== null,
+    },
   };
 }
 
@@ -263,19 +298,22 @@ export function mergeParsedIntoSearchParams(
           ? ["8-14"]
           : ["14+"];
 
+  const children = parsed.detected.children ? parsed.children : current.children;
   return {
     q: parsed.originalQuery || current.q,
-    from: parsed.origin || current.from,
+    from: parsed.detected.origin ? parsed.origin : current.from,
     destination: parsed.destination
       ? resolveDestinationId(parsed.destination)
       : current.destination,
     city: parsed.city || current.city,
-    adults: parsed.adults || current.adults,
-    children: parsed.children ?? current.children,
-    childAges: parsed.childAges.slice(0, parsed.children),
-    priceMax: Math.min(current.priceMax, parsed.budgetMax),
+    adults: parsed.detected.adults ? parsed.adults : current.adults,
+    children,
+    childAges: parsed.detected.children
+      ? parsed.childAges.slice(0, parsed.children)
+      : current.childAges.slice(0, children),
+    priceMax: parsed.detected.budget ? parsed.budgetMax : current.priceMax,
     meals: parsed.meals.length ? parsed.meals : current.meals,
-    nights: parsed.duration ? nights : current.nights,
+    nights: parsed.detected.duration ? nights : current.nights,
     amenities: Array.from(new Set([...current.amenities, ...pref.amenities])),
     offers: Array.from(new Set([...current.offers, ...pref.offers])),
     stars: pref.stars.length

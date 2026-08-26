@@ -16,9 +16,13 @@ export type SalesChartPoint = {
 export function SalesChart({ points }: { points: SalesChartPoint[] }) {
   if (points.length === 0) return null;
 
-  const max = Math.max(...points.map((p) => p.value), 1);
+  // points.value приходит в миллионах тенге.
+  const max = Math.max(...points.map((p) => p.value), 0);
   const unit = max >= 1 ? "M" : "K";
-  const scale = max >= 1 ? 1_000_000 : 1_000;
+  const tickValue = (v: number) => {
+    const scaled = unit === "M" ? v : v * 1000;
+    return Number.isInteger(scaled) ? String(scaled) : scaled.toFixed(1);
+  };
 
   return (
     <ResponsiveContainer width="100%" height="100%">
@@ -36,13 +40,11 @@ export function SalesChart({ points }: { points: SalesChartPoint[] }) {
           axisLine={false}
           fontSize={12}
           unit={unit}
-          tickFormatter={(v) =>
-            String(Math.round((v * scale) / (unit === "M" ? 1_000_000 : 1_000)))
-          }
+          tickFormatter={tickValue}
         />
         <Tooltip
           formatter={(value: number) => [
-            `${Math.round(value * scale).toLocaleString("ru-RU")} ₸`,
+            `${Math.round(value * 1_000_000).toLocaleString("ru-RU")} ₸`,
             "Продажи",
           ]}
           contentStyle={{

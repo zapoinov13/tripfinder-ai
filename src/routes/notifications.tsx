@@ -3,6 +3,7 @@ import { Bell, CheckCircle2 } from "lucide-react";
 
 import { SiteLayout } from "@/components/site/site-layout";
 import { Button } from "@/components/ui/button";
+import { SUPPORT_EMAIL } from "@/lib/contact";
 import { useAuth } from "@/lib/platform/auth";
 import { usePlatformStore } from "@/lib/platform/hooks";
 import { setState } from "@/lib/platform/store";
@@ -104,7 +105,7 @@ function NotificationsPage() {
               {[
                 "In-app уведомления включены",
                 "Push на iOS/Android после FCM",
-                "Email через support@tourgo.app",
+                `Email через ${SUPPORT_EMAIL}`,
               ].map((item) => (
                 <li key={item} className="flex items-center gap-2">
                   <CheckCircle2 className="size-4 text-success" />

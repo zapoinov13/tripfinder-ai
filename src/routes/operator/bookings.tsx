@@ -66,20 +66,26 @@ function OperatorBookingsPage() {
                     <TableCell>{formatPrice(b.price)}</TableCell>
                     <TableCell>{b.status}</TableCell>
                     <TableCell className="space-x-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => setBookingStatus(b.id, "COMPLETED", user.id)}
-                      >
-                        Complete
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => setBookingStatus(b.id, "CANCELLED", user.id)}
-                      >
-                        Cancel
-                      </Button>
+                      {b.status !== "COMPLETED" &&
+                      b.status !== "CANCELLED" &&
+                      b.status !== "FAILED" ? (
+                        <>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setBookingStatus(b.id, "COMPLETED", user.id)}
+                          >
+                            Complete
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => setBookingStatus(b.id, "CANCELLED", user.id)}
+                          >
+                            Cancel
+                          </Button>
+                        </>
+                      ) : null}
                     </TableCell>
                   </TableRow>
                 );

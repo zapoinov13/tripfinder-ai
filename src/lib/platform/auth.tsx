@@ -251,6 +251,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // profile trigger may lag: keep auth uid session with email from auth
         const { data } = await sb.auth.getUser();
         if (data.user) {
+          // Если локальный пользователь уже создан (например, регистрация
+          // оператора ещё пишет организацию), не затираем его роль дефолтом.
+          const existing = getState().users.find((u) => u.id === data.user!.id);
+          if (existing) {
+            setState((s) => ({ ...s, session: { userId: existing.id, createdAt: nowIso() } }), {
+              silent: true,
+            });
+            return;
+          }
           upsertLocalUser({
             id: data.user.id,
             email: data.user.email ?? "",
@@ -325,6 +334,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (profile?.status === "suspended") {
         await sb.auth.signOut();
         return { ok: false, error: "Аккаунт приостановлен" };
+      }
+      if ((profile?.status as string) === "deleted") {
+        await sb.auth.signOut();
+        return { ok: false, error: "Аккаунт удалён" };
       }
       if (profile) upsertLocalUser(profile);
       else {
@@ -465,8 +478,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (!remoteDeleted) {
         await sb.from("profiles").update({ status: "deleted" }).eq("id", current);
-        await sb.auth.signOut();
       }
+      // Всегда чистим токены: после удаления на сервере getSession не должен
+      // воскрешать сессию удалённого пользователя при следующем запуске.
+      await sb.auth.signOut();
     }
 
     setState((s) => ({
@@ -527,7 +542,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (error || !data.user) {
           return { ok: false, error: error?.message ?? "Ошибка регистрации" };
         }
-        await sb.from("profiles").upsert({
+        // При включённом подтверждении email signUp не даёт сессию: анонимный
+        // upsert профиля срежет RLS, а локальная «сессия» будет фиктивной.
+        if (!data.session) {
+          const { data: signIn } = await sb.auth.signInWithPassword({ email, password });
+          if (!signIn.session) {
+            return {
+              ok: false,
+              error: "Подтвердите email по ссылке из письма, затем войдите.",
+            };
+          }
+        }
+        const { error: profileErr } = await sb.from("profiles").upsert({
           id: data.user.id,
           email,
           name: input.name.trim(),
@@ -535,6 +561,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           role: "TOURIST",
           status: "active",
         });
+        if (profileErr) console.warn("[supabase] profiles.upsert", profileErr.message);
         upsertLocalUser({
           id: data.user.id,
           email,
@@ -727,6 +754,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const config = getState().config;
     const sb = getSupabase();
 
+    // Сначала активация на сервере: локальный Premium без серверной записи
+    // рассинхронизирует профиль и даёт подписку «бесплатно» при сбое.
+    if (sb) {
+      try {
+        const { activatePremiumSubscription } = await import("@/lib/premium.functions");
+        await activatePremiumSubscription();
+      } catch (err) {
+        console.warn("[premium] server activation failed", err);
+        return { ok: false, error: "Не удалось активировать Premium" };
+      }
+    }
+
     setState((s) => ({
       ...s,
       users: s.users.map((u) =>
@@ -759,16 +798,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         ...s.subscriptions.filter((sub) => sub.userId !== current),
       ],
     }));
-
-    if (sb) {
-      try {
-        const { activatePremiumSubscription } = await import("@/lib/premium.functions");
-        await activatePremiumSubscription();
-      } catch (err) {
-        console.warn("[premium] server activation failed", err);
-        return { ok: false, error: "Не удалось активировать Premium" };
-      }
-    }
 
     pushNotification(
       current,
@@ -856,6 +885,10 @@ export function useRequireAuth(roles?: Role[]) {
   useEffect(() => setHydrated(true), []);
 
   if (typeof window === "undefined" || !hydrated) return { allowed: false, user: null };
+  if (user && user.status === "suspended") {
+    queueMicrotask(() => navigate({ to: "/login" }));
+    return { allowed: false, user: null };
+  }
   if (!isAuthenticated || !user) {
     // После входа возвращаем туда, куда человек шёл (избранное, профиль...).
     const next = `${window.location.pathname}${window.location.search}`;

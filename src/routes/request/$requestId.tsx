@@ -67,6 +67,8 @@ function RequestStatusPage() {
   }
 
   const chosen = offers.find((o) => o.id === request.chosenOfferId);
+  // Управлять заявкой (видеть телефон, выбирать предложение) может только владелец.
+  const isOwner = Boolean(user && user.id === request.userId);
 
   return (
     <SiteLayout>
@@ -124,8 +126,11 @@ function RequestStatusPage() {
           <div className="surface-card mt-6 border-success/40 bg-success/5 p-6">
             <h2 className="font-display text-lg font-semibold">Вы выбрали предложение</h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              {orgName(state, chosen.organizationId)} получила уведомление и свяжется с вами по
-              телефону {formatPhone(request.contactPhone) || request.contactPhone}.
+              {orgName(state, chosen.organizationId)} получила уведомление и свяжется с вами
+              {isOwner
+                ? ` по телефону ${formatPhone(request.contactPhone) || request.contactPhone}`
+                : " по указанному в заявке телефону"}
+              .
             </p>
             {user ? (
               <ReviewBox
@@ -170,9 +175,12 @@ function RequestStatusPage() {
               offer={offer}
               company={orgName(state, offer.organizationId)}
               rating={orgRating(offer.organizationId)}
-              canChoose={request.status !== "CHOSEN"}
+              canChoose={isOwner && request.status !== "CHOSEN" && request.status !== "CLOSED"}
               chosen={offer.id === request.chosenOfferId}
-              onChoose={() => chooseOffer(request.id, offer.id)}
+              onChoose={() => {
+                if (!isOwner) return;
+                chooseOffer(request.id, offer.id);
+              }}
               onMessage={() => {
                 if (!user) {
                   toast.error("Войдите, чтобы написать турфирме");

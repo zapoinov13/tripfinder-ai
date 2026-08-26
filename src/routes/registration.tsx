@@ -9,6 +9,8 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/lib/platform/auth";
 import { DEMO_PASSWORD } from "@/lib/platform/seed";
+import { getState } from "@/lib/platform/store";
+import { migrateAnonymousToUser } from "@/lib/platform/user-data";
 
 export const Route = createFileRoute("/registration")({
   head: () => ({
@@ -68,7 +70,10 @@ function RegistrationPage() {
                     setError(res.error ?? "Ошибка");
                     return;
                   }
-                  navigate({ to: "/profile" });
+                  // Переносим избранное/сравнение, накопленные до регистрации.
+                  const sessionUserId = getState().session?.userId;
+                  if (sessionUserId) migrateAnonymousToUser(sessionUserId);
+                  void navigate({ to: "/profile" });
                 }}
               >
                 <div className="space-y-2">

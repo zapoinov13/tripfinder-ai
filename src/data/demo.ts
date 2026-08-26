@@ -683,7 +683,13 @@ export const tours: Tour[] = Array.from({ length: 200 }, (_, i) => {
   };
 });
 
-const PLATFORM_STORE_KEYS = ["tourgo:dubai-platform-v1", "tourgo:platform-v1"];
+// Актуальный ключ стора платформы (см. STORE_KEY в src/lib/platform/seed.ts) — первым,
+// иначе getTour/getHotel читают устаревшие снапшоты и цены расходятся с выдачей.
+const PLATFORM_STORE_KEYS = [
+  "tourgo:dubai-platform-v2",
+  "tourgo:dubai-platform-v1",
+  "tourgo:platform-v1",
+];
 
 function readPlatformStore() {
   if (typeof window === "undefined") return null;
@@ -760,7 +766,16 @@ export const nightsLabel = (n: number) => {
   return `${n} ночей`;
 };
 
+const adultsWord = (n: number) => (n % 10 === 1 && n % 100 !== 11 ? "взрослый" : "взрослых");
+const childrenWord = (n: number) => {
+  const mod10 = n % 10;
+  const mod100 = n % 100;
+  if (mod10 === 1 && mod100 !== 11) return "ребёнок";
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return "ребёнка";
+  return "детей";
+};
+
 export const guestsLabel = (adults: number, children: number) =>
   children > 0
-    ? `${adults} взрослых + ${children} ${children === 1 ? "ребёнок" : "детей"}`
-    : `${adults} взрослых`;
+    ? `${adults} ${adultsWord(adults)} + ${children} ${childrenWord(children)}`
+    : `${adults} ${adultsWord(adults)}`;

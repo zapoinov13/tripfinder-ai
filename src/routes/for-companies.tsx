@@ -2,6 +2,7 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import {
   BadgeCheck,
   Building2,
+  CheckCircle2,
   FileText,
   Inbox,
   MessageCircle,
@@ -196,18 +197,18 @@ function ForCompaniesPage() {
             Какие услуги вы предлагаете?
           </h2>
           <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-            Если вы называете цену за тур, экскурсию, жильё, авто или помощь на месте, отметьте свои
-            услуги и получайте заявки.
+            Если вы называете цену за тур, экскурсию, жильё, авто или помощь на месте — свои услуги
+            вы отметите при регистрации компании и начнёте получать заявки.
           </p>
           <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {travelScenarios.map((item) => (
-              <label
+              <div
                 key={item.id}
                 className="flex items-center gap-3 rounded-2xl border border-border bg-card px-4 py-3 text-sm font-semibold"
               >
-                <input type="checkbox" defaultChecked className="size-4 accent-primary" />
+                <CheckCircle2 className="size-4 text-primary" />
                 {item.title}
-              </label>
+              </div>
             ))}
           </div>
           <p className="mt-4 text-sm text-muted-foreground">

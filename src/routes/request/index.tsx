@@ -108,7 +108,6 @@ function RequestPage() {
     } catch {
       // повреждённый черновик просто игнорируем
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const destination = destinations.find((d) => d.id === destinationId);
@@ -151,23 +150,29 @@ function RequestPage() {
       return;
     }
     setSending(true);
-    const request = createTripRequest({
-      userId: user.id,
-      kind,
-      fromCity,
-      destinationId,
-      destinationLabel,
-      dateStart,
-      dateEnd,
-      adults,
-      children,
-      budget,
-      wishes,
-      contactName: name.trim(),
-      contactPhone: phone.trim(),
-    });
-    collectOffersFromCatalog(request.id);
-    void navigate({ to: "/request/$requestId", params: { requestId: request.id } });
+    try {
+      const request = createTripRequest({
+        userId: user.id,
+        kind,
+        fromCity,
+        destinationId,
+        destinationLabel,
+        dateStart,
+        dateEnd,
+        adults,
+        children,
+        budget,
+        wishes,
+        contactName: name.trim(),
+        contactPhone: phone.trim(),
+      });
+      collectOffersFromCatalog(request.id);
+      void navigate({ to: "/request/$requestId", params: { requestId: request.id } });
+    } catch (err) {
+      console.warn("[request] submit failed", err);
+      toast.error("Не удалось отправить заявку, попробуйте ещё раз");
+      setSending(false);
+    }
   };
 
   return (

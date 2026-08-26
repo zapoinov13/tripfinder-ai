@@ -96,6 +96,10 @@ async function checkRoute(page, path) {
 }
 
 async function testLogin(page) {
+  if (!REVIEW_PASSWORD) {
+    console.log("  (login skipped: REVIEW_PASSWORD not set)");
+    return;
+  }
   await page.goto(`${BASE}/login`, { waitUntil: "networkidle", timeout: 45000 });
   await page.fill("#email", "tourist@test.tourgo.app");
   await page.fill("#password", REVIEW_PASSWORD);
@@ -122,10 +126,11 @@ async function testLogin(page) {
 async function testHomeButtons(page) {
   await page.goto(`${BASE}/`, { waitUntil: "networkidle", timeout: 45000 });
 
+  // Шапка теперь строится из travelScenarios (src/data/scenarios.ts).
   const headerLinks = [
     { name: "Туры", href: "/search" },
-    { name: "Направления", href: "/destinations" },
-    { name: "Заявка", href: "/request" },
+    { name: "Экскурсии", href: "/excursions" },
+    { name: "Жильё", href: "/stays" },
   ];
 
   for (const link of headerLinks) {

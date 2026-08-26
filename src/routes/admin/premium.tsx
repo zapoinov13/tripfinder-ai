@@ -32,11 +32,18 @@ function AdminPremiumPage() {
   const { user } = useAuth();
   const nav = useAdminNav();
   const state = usePlatformStore();
-  const [price, setPrice] = useState(String(state.config.premiumMonthlyPrice));
+  // Первый рендер идёт по серверному сиду; persisted-конфиг приезжает после
+  // гидрации, поэтому фиксировать цену в useState нельзя (см. promotions.tsx).
+  const [priceEdit, setPriceEdit] = useState<string | null>(null);
+  const price = priceEdit ?? String(state.config.premiumMonthlyPrice);
   if (!allowed || !user) return null;
 
+  const now = Date.now();
   const subs = state.subscriptions.filter(
-    (s) => s.planId === "premium-monthly" && s.status === "active",
+    (s) =>
+      s.planId === "premium-monthly" &&
+      s.status === "active" &&
+      (!s.expiresAt || new Date(s.expiresAt).getTime() > now),
   );
   const mrr = subs.length * state.config.premiumMonthlyPrice;
 
@@ -57,7 +64,7 @@ function AdminPremiumPage() {
         <div className="surface-card space-y-4 p-6">
           <div className="space-y-2">
             <Label>Цена за месяц (₸)</Label>
-            <Input value={price} onChange={(e) => setPrice(e.target.value)} />
+            <Input value={price} onChange={(e) => setPriceEdit(e.target.value)} />
           </div>
           <Button
             onClick={() => {

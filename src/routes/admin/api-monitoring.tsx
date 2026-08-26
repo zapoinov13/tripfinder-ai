@@ -58,6 +58,8 @@ function AdminApiMonitoringPage() {
         meta: { status: log.status },
       });
       toast[log.status === "success" ? "success" : "error"](log.message);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Синхронизация не удалась");
     } finally {
       setBusyId(null);
     }
