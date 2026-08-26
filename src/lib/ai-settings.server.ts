@@ -6,7 +6,9 @@ export async function assertPlatformAdmin(supabase: SupabaseClient, userId: stri
   const { data, error } = await supabase.from("profiles").select("role").eq("id", userId).single();
   if (error || !data) throw new Error("Forbidden");
   const role = String((data as { role?: string }).role ?? "");
-  if (!role.startsWith("PLATFORM_")) throw new Error("Forbidden");
+  // Управление AI-провайдером и ключами — только владелец платформы,
+  // UI /admin/ai-keys ограничен той же ролью.
+  if (role !== "PLATFORM_ADMIN") throw new Error("Forbidden");
 }
 
 export async function readSettings(): Promise<AiSettings & { updatedAt: string | null }> {

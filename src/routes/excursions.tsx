@@ -225,10 +225,14 @@ function ExcursionsPage() {
                 type="button"
                 variant="outline"
                 onClick={() => {
-                  if (!navigator.geolocation) return;
-                  navigator.geolocation.getCurrentPosition(() => {
+                  if (!navigator.geolocation) {
                     go({ destination: "uae", city: "Дубай" });
-                  });
+                    return;
+                  }
+                  navigator.geolocation.getCurrentPosition(
+                    () => go({ destination: "uae", city: "Дубай" }),
+                    () => go({ destination: "uae", city: "Дубай" }),
+                  );
                 }}
               >
                 <MapPin className="size-4" />
@@ -246,9 +250,9 @@ function ExcursionsPage() {
                 { label: "🏙 Обзорные экскурсии", q: "обзор" },
                 { label: "🎢 Парки развлечений", q: "парк" },
                 { label: "🎟 Билеты", q: "билет" },
-                { label: "🌊 Водные развлечения", q: "яхт" },
+                { label: "🌊 Водные развлечения", q: "снорклинг" },
                 { label: "🚌 Поездки в другой город", q: "город" },
-                { label: "🚁 Необычные развлечения", q: "сафари" },
+                { label: "🚁 Необычные развлечения", q: "вертолёт" },
               ].map((item) => (
                 <button
                   key={item.label}
@@ -757,7 +761,7 @@ function ExcursionSheet({
             <Button variant="outline" asChild>
               <Link
                 to="/excursions"
-                search={{ destination: e.destinationId, city: e.city, q: e.title }}
+                search={{ destination: e.destinationId, city: e.city }}
                 onClick={onClose}
               >
                 Другие программы в этом городе

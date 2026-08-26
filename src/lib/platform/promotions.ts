@@ -79,14 +79,24 @@ export function syncTourPromotionTags(tourId: string) {
     (p) =>
       p.tourOfferId === tourId && p.status === "ACTIVE" && new Date(p.expiresAt).getTime() > now,
   );
-  const tags = new Set<"sponsored" | "premium" | "best">();
+  const promoTags = new Set<"sponsored" | "premium" | "best">();
   for (const promo of active) {
-    for (const tag of tagsForPromo(promo.type)) tags.add(tag);
+    for (const tag of tagsForPromo(promo.type)) promoTags.add(tag);
   }
+  const managed: string[] = ["sponsored", "premium", "best"];
   setState((s) => ({
     ...s,
     tours: s.tours.map((t) =>
-      t.id === tourId ? { ...t, tags: Array.from(tags) as typeof t.tags } : t,
+      t.id === tourId
+        ? {
+            ...t,
+            // Промо управляет только своими тегами: «hot» и прочие остаются.
+            tags: [
+              ...t.tags.filter((tag) => !managed.includes(tag)),
+              ...Array.from(promoTags),
+            ] as typeof t.tags,
+          }
+        : t,
     ),
   }));
 }

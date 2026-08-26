@@ -143,7 +143,7 @@ function CompanySignupPage() {
         registrationNumber: company.registrationNumber,
         country: company.country,
         city: company.city,
-        address: "",
+        address: company.address,
         phone: company.phone || person.phone,
         email: company.email || person.email,
         website: company.website,

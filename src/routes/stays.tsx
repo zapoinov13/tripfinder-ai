@@ -80,7 +80,7 @@ function StaysPage() {
   const published = usePublishedStays();
 
   useEffect(() => {
-    setCity(params.city ?? "");
+    setCity((prev) => params.city ?? prev);
   }, [params.city]);
 
   const catalog: StayCard[] = [

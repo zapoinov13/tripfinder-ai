@@ -129,16 +129,24 @@ export const auditEntityLabel: Record<string, string> = {
   store: "хранилище",
 };
 
+// Ключи должны совпадать с типами, которые реально пишет trackEvent(...).
 export const eventLabel: Record<string, string> = {
-  page_view: "Просмотры страниц",
-  search: "Поиски",
-  tour_view: "Просмотры туров",
-  favorite_add: "В избранное",
-  booking_start: "Старт бронирования",
-  booking_complete: "Бронирование завершено",
-  premium_click: "Клики Premium",
-  login: "Входы",
-  register: "Регистрации",
+  LOGIN: "Входы",
+  SEARCH_COMPLETED: "Поиски",
+  AI_SEARCH_STARTED: "AI-поиски",
+  TOUR_VIEWED: "Просмотры туров",
+  TOUR_FAVORITED: "В избранное",
+  TOUR_COMPARED: "В сравнение",
+  BOOKING_STARTED: "Старт бронирования",
+  BOOKING_CREATED: "Бронирование создано",
+  PAYMENT_STARTED: "Оплата начата",
+  PAYMENT_COMPLETED: "Оплата завершена",
+  PREMIUM_VIEWED: "Просмотры Premium",
+  PREMIUM_PURCHASED: "Покупки Premium",
+  PROMOTION_PURCHASED: "Покупки продвижения",
+  REQUEST_CREATED: "Заявки",
+  OFFER_SENT: "Предложения",
+  MESSAGE_SENT: "Сообщения",
 };
 
 export type BadgeTone = "neutral" | "success" | "warning" | "danger" | "info" | "premium";

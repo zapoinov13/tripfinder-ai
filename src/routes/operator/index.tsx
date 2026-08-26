@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/table";
 import { formatNumber, formatPrice, getHotel } from "@/data/demo";
 import { useAuth, useRequireAuth } from "@/lib/platform/auth";
+import { categoriesOfServices } from "@/lib/platform/company-categories";
 import { usePlatformStore } from "@/lib/platform/hooks";
 import { listOrgVertical } from "@/lib/platform/vertical-listings";
 import type { Booking, Organization } from "@/lib/platform/types";
@@ -100,9 +101,9 @@ function setupSteps(
       to: "/operator/tours",
       cta: "Добавить",
     },
-    ...(org.services?.includes("Спорт") ||
-    org.services?.includes("Отели") ||
-    org.services?.includes("Аренда авто")
+    ...(["sport", "stays", "cars"].some((id) =>
+      categoriesOfServices(org.services ?? []).has(id as never),
+    )
       ? [
           {
             done: sportCount > 0,
@@ -282,7 +283,7 @@ function OperatorDashboard() {
         <KpiCard
           label="Активные туры"
           value={formatNumber(active.length)}
-          hint={`лимит ${plan?.tourLimit ?? "нет"}`}
+          hint={`лимит ${plan ? plan.tourLimit + organization.additionalTourLimit : "нет"}`}
         />
         <KpiCard label="Просмотры" value={formatNumber(views)} />
         <KpiCard label="Продажи" value={formatPrice(revenue)} />

@@ -66,6 +66,13 @@ function AdminUsersPage() {
 
   if (!allowed || !user) return null;
 
+  const isPlatformAdmin = user.role === "PLATFORM_ADMIN";
+  // Менеджер не может назначать роль админа платформы и трогать админов,
+  // и никто не редактирует собственный аккаунт (защита от самоблокировки).
+  const assignableRoles = isPlatformAdmin ? roles : roles.filter((r) => r !== "PLATFORM_ADMIN");
+  const canEdit = (target: (typeof state.users)[number]) =>
+    target.id !== user.id && (isPlatformAdmin || target.role !== "PLATFORM_ADMIN");
+
   return (
     <DashShell
       brand="TourGo Админ"
@@ -128,6 +135,7 @@ function AdminUsersPage() {
                   <TableCell>
                     <Select
                       value={u.role}
+                      disabled={!canEdit(u)}
                       onValueChange={(v) => {
                         setState((s) => ({
                           ...s,
@@ -149,7 +157,10 @@ function AdminUsersPage() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {roles.map((r) => (
+                        {(assignableRoles.includes(u.role)
+                          ? assignableRoles
+                          : [u.role, ...assignableRoles]
+                        ).map((r) => (
                           <SelectItem key={r} value={r}>
                             {roleLabel[r]}
                           </SelectItem>
@@ -167,35 +178,37 @@ function AdminUsersPage() {
                     {new Date(u.createdAt).toLocaleDateString("ru-RU")}
                   </TableCell>
                   <TableCell>
-                    <ConfirmAction
-                      triggerLabel={u.status === "active" ? "Заблокировать" : "Восстановить"}
-                      title={
-                        u.status === "active"
-                          ? "Заблокировать пользователя?"
-                          : "Восстановить доступ?"
-                      }
-                      description={`${u.name} (${u.email})`}
-                      confirmLabel={u.status === "active" ? "Заблокировать" : "Восстановить"}
-                      destructive={u.status === "active"}
-                      onConfirm={() => {
-                        const next = u.status === "active" ? "suspended" : "active";
-                        setState((s) => ({
-                          ...s,
-                          users: s.users.map((x) => (x.id === u.id ? { ...x, status: next } : x)),
-                        }));
-                        appendAudit({
-                          actorId: user.id,
-                          action: next === "suspended" ? "user_suspend" : "user_restore",
-                          entityType: "user",
-                          entityId: u.id,
-                        });
-                        toast.success(
-                          next === "suspended"
-                            ? "Пользователь заблокирован"
-                            : "Пользователь восстановлен",
-                        );
-                      }}
-                    />
+                    {canEdit(u) ? (
+                      <ConfirmAction
+                        triggerLabel={u.status === "active" ? "Заблокировать" : "Восстановить"}
+                        title={
+                          u.status === "active"
+                            ? "Заблокировать пользователя?"
+                            : "Восстановить доступ?"
+                        }
+                        description={`${u.name} (${u.email})`}
+                        confirmLabel={u.status === "active" ? "Заблокировать" : "Восстановить"}
+                        destructive={u.status === "active"}
+                        onConfirm={() => {
+                          const next = u.status === "active" ? "suspended" : "active";
+                          setState((s) => ({
+                            ...s,
+                            users: s.users.map((x) => (x.id === u.id ? { ...x, status: next } : x)),
+                          }));
+                          appendAudit({
+                            actorId: user.id,
+                            action: next === "suspended" ? "user_suspend" : "user_restore",
+                            entityType: "user",
+                            entityId: u.id,
+                          });
+                          toast.success(
+                            next === "suspended"
+                              ? "Пользователь заблокирован"
+                              : "Пользователь восстановлен",
+                          );
+                        }}
+                      />
+                    ) : null}
                   </TableCell>
                 </TableRow>
               ))}

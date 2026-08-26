@@ -188,8 +188,9 @@ function TouristCabinet() {
             variant="outline"
             className="mt-4 w-full"
             onClick={() => {
-              logout();
-              toast.message(locale === "kk" ? "Сіз шықтыңыз" : "Вы вышли из аккаунта");
+              // logout() сам показывает тост о выходе.
+              void logout();
+              if (locale === "kk") toast.message("Сіз шықтыңыз");
             }}
           >
             <LogOut className="size-4" />

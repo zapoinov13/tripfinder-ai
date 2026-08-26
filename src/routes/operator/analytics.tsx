@@ -223,6 +223,7 @@ function OperatorAnalyticsPage() {
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
                   <XAxis dataKey="day" tickLine={false} axisLine={false} fontSize={12} />
                   <YAxis allowDecimals={false} tickLine={false} axisLine={false} fontSize={12} />
+                  <YAxis yAxisId="revenue" orientation="right" hide />
                   <Tooltip
                     formatter={(value, name) => {
                       const labels: Record<string, string> = {
@@ -275,6 +276,14 @@ function OperatorAnalyticsPage() {
                     stroke="var(--success)"
                     strokeWidth={2}
                     fill="url(#an-picks)"
+                  />
+                  <Area
+                    yAxisId="revenue"
+                    type="monotone"
+                    dataKey="revenue"
+                    stroke="var(--premium, var(--accent))"
+                    strokeWidth={2}
+                    fillOpacity={0}
                   />
                 </AreaChart>
               </ResponsiveContainer>

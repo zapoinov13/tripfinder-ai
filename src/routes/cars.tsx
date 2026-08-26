@@ -115,7 +115,7 @@ function CarsPage() {
     if (params.destination && item.destinationId !== params.destination) return false;
     if (params.city && item.city !== params.city) return false;
     if (params.klass && item.klass !== params.klass) return false;
-    if (!params.destination && !params.city && !params.klass && needle) {
+    if (needle) {
       return `${item.name} ${item.city} ${item.klass} ${item.companyName ?? ""}`
         .toLowerCase()
         .includes(needle);
@@ -141,7 +141,7 @@ function CarsPage() {
     kind: "assistance" as const,
     ...(params.destination ? { destination: params.destination } : {}),
     ...(params.city ? { city: params.city } : {}),
-    wish,
+    wish: params.age ? `${wish} Возраст водителя: ${params.age}.` : wish,
   });
 
   return (

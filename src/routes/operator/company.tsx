@@ -126,7 +126,35 @@ function OperatorCompanyPage() {
   };
 
   const save = () => {
-    updateCompanyProfile(organization.id, form);
+    // Отправляем только редактируемые поля: полный снапшот затирал бы
+    // изменившиеся вне формы баланс, тариф и статус модерации.
+    updateCompanyProfile(organization.id, {
+      name: form.name,
+      legalName: form.legalName,
+      registrationNumber: form.registrationNumber,
+      country: form.country,
+      city: form.city,
+      address: form.address,
+      phone: form.phone,
+      email: form.email,
+      website: form.website,
+      contactPerson: form.contactPerson,
+      ...(form.about !== undefined ? { about: form.about } : {}),
+      ...(form.logoUrl !== undefined ? { logoUrl: form.logoUrl } : {}),
+      ...(form.coverUrl !== undefined ? { coverUrl: form.coverUrl } : {}),
+      ...(form.photos !== undefined ? { photos: form.photos } : {}),
+      ...(form.videos !== undefined ? { videos: form.videos } : {}),
+      ...(form.whatsapp !== undefined ? { whatsapp: form.whatsapp } : {}),
+      ...(form.instagram !== undefined ? { instagram: form.instagram } : {}),
+      ...(form.telegram !== undefined ? { telegram: form.telegram } : {}),
+      ...(form.services !== undefined ? { services: form.services } : {}),
+      ...(form.countries !== undefined ? { countries: form.countries } : {}),
+      ...(form.clientCountries !== undefined ? { clientCountries: form.clientCountries } : {}),
+      ...(form.languages !== undefined ? { languages: form.languages } : {}),
+      ...(form.verificationFiles !== undefined
+        ? { verificationFiles: form.verificationFiles }
+        : {}),
+    });
     toast.success("Страница обновлена. Так её видят туристы.");
   };
 

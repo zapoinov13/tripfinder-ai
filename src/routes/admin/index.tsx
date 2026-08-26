@@ -34,7 +34,9 @@ function AdminDashboard() {
   const operators = state.organizations.filter((o) => o.status === "APPROVED").length;
   const tours = state.tours.filter((t) => t.status === "active").length;
   const bookings = state.bookings.length;
-  const gmv = state.bookings.reduce((s, b) => s + b.price, 0);
+  const gmv = state.bookings
+    .filter((b) => b.status !== "CANCELLED" && b.status !== "FAILED")
+    .reduce((s, b) => s + b.price, 0);
   const subRev = state.payments
     .filter((p) => p.type.includes("subscription") && p.status === "paid")
     .reduce((s, p) => s + p.amount, 0);
@@ -42,7 +44,12 @@ function AdminDashboard() {
     .filter((p) => (p.type === "promotion" || p.type === "advertising") && p.status === "paid")
     .reduce((s, p) => s + p.amount, 0);
   const failedPayments = state.payments.filter((p) => p.status === "failed");
-  const apiErrors = state.syncLogs.filter((l) => l.status === "error");
+  // Показываем только свежие ошибки синхронизации (24 часа): error-логи
+  // никогда не чистятся, и вся история держала бы KPI красным вечно.
+  const dayAgo = Date.now() - 24 * 3600 * 1000;
+  const apiErrors = state.syncLogs.filter(
+    (l) => l.status === "error" && new Date(l.createdAt).getTime() > dayAgo,
+  );
   const connErrors = state.apiConnections.filter((c) => c.status === "error");
 
   const attention: Array<{ title: string; detail: string; to: string }> = [

@@ -197,7 +197,11 @@ const sameBooking = (a: Booking, b: Booking) =>
   a.externalBookingId === b.externalBookingId;
 
 const sameUser = (a: PlatformUser, b: PlatformUser) =>
-  a.role === b.role && a.status === b.status && a.organizationId === b.organizationId;
+  a.role === b.role &&
+  a.status === b.status &&
+  a.organizationId === b.organizationId &&
+  a.name === b.name &&
+  a.city === b.city;
 
 const sameOrg = (a: Organization, b: Organization) =>
   a.status === b.status &&
@@ -490,6 +494,8 @@ function collectOps(prev: PlatformState, next: PlatformState): Op[] {
         .update({
           role: u.role,
           status: u.status,
+          name: u.name,
+          city: u.city,
           organization_id: isUuid(u.organizationId) ? u.organizationId : null,
           updated_at: new Date().toISOString(),
         })
