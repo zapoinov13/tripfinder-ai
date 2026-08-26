@@ -87,7 +87,7 @@ const adminOnlyRoutes = new Set([
 const adminNavBase: DashItem[] = [
   { label: "Обзор платформы", to: "/admin", icon: Gauge },
   { label: "Пользователи", to: "/admin/users", icon: Users },
-  { label: "Турфирмы", to: "/admin/operators", icon: Building },
+  { label: "Партнёры", to: "/admin/operators", icon: Building },
   { label: "Туры", to: "/admin/tours", icon: Luggage },
   { label: "Бронирования", to: "/admin/bookings", icon: Ticket },
   { label: "Платежи", to: "/admin/payments", icon: Receipt },

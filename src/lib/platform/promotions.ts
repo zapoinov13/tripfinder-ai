@@ -279,6 +279,102 @@ async function executePromotionPurchase(
   return { ok: true, promotion, paidFromBalance };
 }
 
+/**
+ * Внутренний таргетинг: админ платформы включает продвижение компании сам —
+ * бесплатно (подарок, цена 0) или со списанием с её баланса. Цель — страница
+ * компании и все объявления (company:<orgId>).
+ */
+export function adminGrantPromotion(input: {
+  organizationId: string;
+  actorId: string;
+  type: PromotionType;
+  days: number;
+  chargeBalance?: boolean;
+}): { ok: true; promotion: PromotionOrder } | { ok: false; reason: string } {
+  expireStalePromotions();
+  const org = getState().organizations.find((o) => o.id === input.organizationId);
+  if (!org) return { ok: false, reason: "Компания не найдена" };
+
+  const days = Math.max(1, Math.min(90, Math.round(input.days)));
+  const price = input.chargeBalance ? calcPromotionPrice(input.type, days) : 0;
+  if (input.chargeBalance && org.promotionBalance < price) {
+    return {
+      ok: false,
+      reason: `На балансе компании ${org.promotionBalance.toLocaleString("ru-RU")} ₸, нужно ${price.toLocaleString("ru-RU")} ₸`,
+    };
+  }
+
+  const promotion: PromotionOrder = {
+    id: uid(),
+    organizationId: input.organizationId,
+    tourOfferId: companyPromoTarget(input.organizationId),
+    type: input.type,
+    durationDays: days,
+    price,
+    currency: "KZT",
+    status: "ACTIVE",
+    startedAt: nowIso(),
+    expiresAt: new Date(Date.now() + days * 86400000).toISOString(),
+  };
+
+  setState((s) => ({
+    ...s,
+    promotions: [promotion, ...s.promotions],
+    organizations:
+      price > 0
+        ? s.organizations.map((o) =>
+            o.id === input.organizationId
+              ? { ...o, promotionBalance: o.promotionBalance - price }
+              : o,
+          )
+        : s.organizations,
+    payments:
+      price > 0
+        ? [
+            {
+              id: uid(),
+              userId: input.actorId,
+              organizationId: input.organizationId,
+              amount: price,
+              currency: "KZT" as const,
+              type: "promotion" as const,
+              provider: "balance" as const,
+              providerPaymentId: `balance-${promotion.id}`,
+              status: "paid" as const,
+              createdAt: nowIso(),
+              metadata: { type: input.type, days, promotionId: promotion.id, byAdmin: true },
+            },
+            ...s.payments,
+          ]
+        : s.payments,
+  }));
+
+  appendAudit({
+    actorId: input.actorId,
+    action: "promotion_granted_by_admin",
+    entityType: "promotion",
+    entityId: promotion.id,
+    meta: { organizationId: input.organizationId, type: input.type, days, price },
+  });
+  return { ok: true, promotion };
+}
+
+/** Начисление баланса продвижения из админки (оплата вне платформы, бонус). */
+export function adminTopUpBalance(orgId: string, amount: number, actorId: string) {
+  if (amount <= 0) return false;
+  const org = getState().organizations.find((o) => o.id === orgId);
+  if (!org) return false;
+  topUpPromotionBalance(orgId, amount);
+  appendAudit({
+    actorId,
+    action: "promotion_balance_topup_admin",
+    entityType: "organization",
+    entityId: orgId,
+    meta: { amount },
+  });
+  return true;
+}
+
 export function cancelPromotion(input: {
   promotionId: string;
   organizationId: string;

@@ -209,14 +209,16 @@ async function loadUserData(userId: string): Promise<UserDataResult> {
 
   const isAdmin = String((profileRes.data as Row | null)?.["role"] ?? "").startsWith("PLATFORM");
 
-  const [allProfilesRes, auditRes, paymentsRes] = isAdmin
+  const [allProfilesRes, auditRes, paymentsRes, promoRes] = isAdmin
     ? await Promise.all([
         sb.from("profiles").select("*").order("created_at", { ascending: false }).limit(500),
         sb.from("audit_logs").select("*").order("created_at", { ascending: false }).limit(200),
         // Раздел «Платежи» в админке: без этого он показывал только демо-данные.
         sb.from("payments").select("*").order("created_at", { ascending: false }).limit(300),
+        // Раздел «Продвижение»: админ видит кампании всех компаний.
+        sb.from("promotions").select("*").order("started_at", { ascending: false }).limit(300),
       ])
-    : [null, null, null];
+    : [null, null, null, null];
 
   setState(
     (s) => {
@@ -466,6 +468,25 @@ async function loadUserData(userId: string): Promise<UserDataResult> {
             status: str(r["status"], "pending") as PlatformState["payments"][number]["status"],
             ...(r["metadata"] ? { metadata: r["metadata"] as Record<string, unknown> } : {}),
             createdAt: str(r["created_at"]),
+          })),
+        };
+      }
+
+      if (promoRes?.data) {
+        const rows = promoRes.data as Row[];
+        next = {
+          ...next,
+          promotions: rows.map((r) => ({
+            id: str(r["id"]),
+            organizationId: str(r["organization_id"]),
+            tourOfferId: str(r["tour_offer_id"]),
+            type: str(r["type"], "BOOST") as PlatformState["promotions"][number]["type"],
+            durationDays: num(r["duration_days"], 7),
+            price: num(r["price"]),
+            currency: str(r["currency"], "KZT") as PlatformState["promotions"][number]["currency"],
+            status: str(r["status"], "ACTIVE") as PlatformState["promotions"][number]["status"],
+            startedAt: str(r["started_at"]),
+            expiresAt: str(r["expires_at"]),
           })),
         };
       }

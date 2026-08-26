@@ -28,17 +28,33 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { formatNumber } from "@/data/demo";
 import { appendAudit, pushNotification } from "@/lib/platform/catalog";
 import { useAuth, useRequireAuth } from "@/lib/platform/auth";
+import {
+  categoriesOfServices,
+  companyCategories,
+  type CompanyCategoryId,
+} from "@/lib/platform/company-categories";
 import { usePlatformStore } from "@/lib/platform/hooks";
 import { setState } from "@/lib/platform/store";
-import type { OperatorPlanCode, OrganizationStatus } from "@/lib/platform/types";
+import { verificationDocumentLabel } from "@/lib/platform/verification-documents";
+import type { OperatorPlanCode, Organization, OrganizationStatus } from "@/lib/platform/types";
 
 export const Route = createFileRoute("/admin/operators")({
-  head: () => ({ meta: [{ title: "Операторы · Админ TourGo" }] }),
+  head: () => ({ meta: [{ title: "Партнёры · Админ TourGo" }] }),
   component: AdminOperatorsPage,
 });
+
+const fmtDate = (iso: string) =>
+  new Date(iso).toLocaleDateString("ru-RU", { day: "numeric", month: "short", year: "numeric" });
 
 function AdminOperatorsPage() {
   const { allowed } = useRequireAuth(["PLATFORM_ADMIN", "PLATFORM_MANAGER"]);
@@ -46,6 +62,8 @@ function AdminOperatorsPage() {
   const nav = useAdminNav();
   const state = usePlatformStore();
   const [tab, setTab] = useState("all");
+  const [category, setCategory] = useState("all");
+  const [docsOrg, setDocsOrg] = useState<Organization | null>(null);
   const counts = useMemo(() => {
     const all = state.organizations.length;
     const pending = state.organizations.filter((o) => o.status === "PENDING_APPROVAL").length;
@@ -58,6 +76,10 @@ function AdminOperatorsPage() {
   if (!allowed || !user) return null;
 
   const orgs = state.organizations.filter((o) => {
+    if (category !== "all") {
+      const cats = categoriesOfServices(o.services ?? []);
+      if (!cats.has(category as CompanyCategoryId)) return false;
+    }
     if (tab === "all") return true;
     if (tab === "pending") return o.status === "PENDING_APPROVAL";
     if (tab === "approved") return o.status === "APPROVED";
@@ -65,6 +87,11 @@ function AdminOperatorsPage() {
     if (tab === "suspended") return o.status === "SUSPENDED";
     return true;
   });
+
+  const categoryChips = (o: Organization) => {
+    const cats = categoriesOfServices(o.services ?? []);
+    return companyCategories.filter((c) => cats.has(c.id)).map((c) => c.label);
+  };
 
   const setStatus = (orgId: string, status: OrganizationStatus) => {
     setState((s) => ({
@@ -94,20 +121,35 @@ function AdminOperatorsPage() {
     <DashShell
       brand="TourGo Админ"
       items={nav}
-      title="Операторы"
-      subtitle="Одобрение компаний и тарифы"
+      title="Партнёры"
+      subtitle="Все подключённые бизнесы: туры, экскурсии, жильё, авто, спорт. Одобрение, документы и тарифы."
     >
-      <TabPills
-        value={tab}
-        onChange={setTab}
-        items={[
-          { value: "all", label: "Все", count: counts.all },
-          { value: "pending", label: "Ожидают", count: counts.pending },
-          { value: "approved", label: "Одобрены", count: counts.approved },
-          { value: "rejected", label: "Отклонены", count: counts.rejected },
-          { value: "suspended", label: "Приостановлены", count: counts.suspended },
-        ]}
-      />
+      <div className="flex flex-wrap items-center gap-3">
+        <TabPills
+          value={tab}
+          onChange={setTab}
+          items={[
+            { value: "all", label: "Все", count: counts.all },
+            { value: "pending", label: "Ожидают", count: counts.pending },
+            { value: "approved", label: "Одобрены", count: counts.approved },
+            { value: "rejected", label: "Отклонены", count: counts.rejected },
+            { value: "suspended", label: "Приостановлены", count: counts.suspended },
+          ]}
+        />
+        <Select value={category} onValueChange={setCategory}>
+          <SelectTrigger className="w-52">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Все категории</SelectItem>
+            {companyCategories.map((c) => (
+              <SelectItem key={c.id} value={c.id}>
+                {c.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
 
       {orgs.length === 0 ? (
         <EmptyState title="Нет операторов в этой вкладке" />
@@ -116,8 +158,10 @@ function AdminOperatorsPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Компания</TableHead>
+                <TableHead>Партнёр</TableHead>
+                <TableHead>Подключён</TableHead>
                 <TableHead>Статус</TableHead>
+                <TableHead>Документы</TableHead>
                 <TableHead>Тариф</TableHead>
                 <TableHead>Туры / брони</TableHead>
                 <TableHead>Действия</TableHead>
@@ -139,12 +183,40 @@ function AdminOperatorsPage() {
                         БИН {o.registrationNumber || "нет"} ·{" "}
                         {o.contactPerson || "контакт не указан"}
                       </div>
+                      {categoryChips(o).length > 0 ? (
+                        <div className="mt-1.5 flex flex-wrap gap-1">
+                          {categoryChips(o).map((label) => (
+                            <span
+                              key={label}
+                              className="rounded-full bg-secondary px-2 py-0.5 text-[11px] font-medium"
+                            >
+                              {label}
+                            </span>
+                          ))}
+                        </div>
+                      ) : null}
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap text-sm">
+                      {fmtDate(o.createdAt)}
                     </TableCell>
                     <TableCell>
                       <StatusBadge
                         label={orgStatusLabel[o.status]}
                         tone={toneForOrgStatus(o.status)}
                       />
+                    </TableCell>
+                    <TableCell>
+                      {(o.verificationFiles?.length ?? 0) > 0 ? (
+                        <Button size="sm" variant="outline" onClick={() => setDocsOrg(o)}>
+                          {o.verificationFiles!.length} док. — смотреть
+                        </Button>
+                      ) : (o.documents?.length ?? 0) > 0 ? (
+                        <span className="text-xs text-muted-foreground">
+                          {o.documents!.join(", ")}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">не загружены</span>
+                      )}
                     </TableCell>
                     <TableCell>
                       <Select
@@ -254,6 +326,44 @@ function AdminOperatorsPage() {
           </Table>
         </div>
       )}
+
+      <Dialog open={Boolean(docsOrg)} onOpenChange={(open) => !open && setDocsOrg(null)}>
+        <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Документы · {docsOrg?.name}</DialogTitle>
+            <DialogDescription>
+              {docsOrg?.verificationSubmittedAt
+                ? `Отправлены на проверку ${fmtDate(docsOrg.verificationSubmittedAt)}`
+                : "Загружены, но на проверку ещё не отправлены"}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            {(docsOrg?.verificationFiles ?? []).map((f) => (
+              <div key={`${f.type}-${f.fileName}`} className="rounded-2xl border border-border p-4">
+                <p className="font-medium">{verificationDocumentLabel(f.type)}</p>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  {f.fileName} · {fmtDate(f.uploadedAt)}
+                </p>
+                {f.mimeType.startsWith("image/") ? (
+                  <img
+                    src={f.dataUrl}
+                    alt={verificationDocumentLabel(f.type)}
+                    className="mt-3 max-h-96 w-full rounded-xl border border-border object-contain"
+                  />
+                ) : (
+                  <a
+                    href={f.dataUrl}
+                    download={f.fileName}
+                    className="mt-3 inline-block text-sm font-medium text-primary hover:underline"
+                  >
+                    Скачать файл
+                  </a>
+                )}
+              </div>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
     </DashShell>
   );
 }
