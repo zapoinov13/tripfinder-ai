@@ -1,13 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { CalendarDays, Inbox, Ticket, Users } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import {
   ConfirmAction,
-  EmptyState,
   FilterBar,
   KpiLinkCard,
   StatusBadge,
+  TabPills,
   bookingStatusLabel,
   orgName,
   toneForBookingStatus,
@@ -30,23 +31,62 @@ import { appendAudit } from "@/lib/platform/catalog";
 import { useAuth, useRequireAuth } from "@/lib/platform/auth";
 import { usePlatformStore } from "@/lib/platform/hooks";
 import { nowIso, setState } from "@/lib/platform/store";
-import type { BookingStatus } from "@/lib/platform/types";
+import type { BookingStatus, TripRequestStatus } from "@/lib/platform/types";
 
 export const Route = createFileRoute("/admin/bookings")({
-  head: () => ({ meta: [{ title: "Бронирования · Админ" }] }),
+  head: () => ({ meta: [{ title: "Заявки и брони · Админ" }] }),
   component: AdminBookingsPage,
 });
+
+const requestStatusLabel: Record<TripRequestStatus, string> = {
+  NEW: "Новая",
+  IN_REVIEW: "Смотрят компании",
+  OFFERS_RECEIVED: "Есть предложения",
+  CHOSEN: "Компания выбрана",
+  CLOSED: "Закрыта",
+};
+
+const requestStatusTone: Record<TripRequestStatus, "success" | "warning" | "neutral" | "danger"> = {
+  NEW: "warning",
+  IN_REVIEW: "warning",
+  OFFERS_RECEIVED: "success",
+  CHOSEN: "success",
+  CLOSED: "neutral",
+};
+
+const fmtDate = (iso?: string) =>
+  iso ? new Date(iso).toLocaleDateString("ru-RU", { day: "numeric", month: "short" }) : "";
 
 function AdminBookingsPage() {
   const { allowed } = useRequireAuth(["PLATFORM_ADMIN", "PLATFORM_MANAGER"]);
   const { user } = useAuth();
   const nav = useAdminNav();
   const state = usePlatformStore();
+  const [view, setView] = useState("requests");
   const [q, setQ] = useState("");
   const [status, setStatus] = useState("all");
+
+  const requests = useMemo(() => {
+    const query = q.trim().toLowerCase();
+    return [...state.tripRequests]
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+      .filter((r) => {
+        if (view !== "requests") return true;
+        if (status !== "all" && r.status !== status) return false;
+        if (!query) return true;
+        return (
+          userName(r.userId).toLowerCase().includes(query) ||
+          (r.destinationLabel ?? "").toLowerCase().includes(query) ||
+          (r.fromCity ?? "").toLowerCase().includes(query) ||
+          r.contactName.toLowerCase().includes(query)
+        );
+      });
+  }, [state.tripRequests, q, status, view]);
+
   const bookings = useMemo(() => {
     const query = q.trim().toLowerCase();
     return state.bookings.filter((b) => {
+      if (view !== "bookings") return true;
       if (status !== "all" && b.status !== status) return false;
       if (!query) return true;
       return (
@@ -55,7 +95,20 @@ function AdminBookingsPage() {
         b.id.toLowerCase().includes(query)
       );
     });
-  }, [state.bookings, q, status]);
+  }, [state.bookings, q, status, view]);
+
+  const funnel = useMemo(() => {
+    const total = state.tripRequests.length;
+    const open = state.tripRequests.filter((r) =>
+      ["NEW", "IN_REVIEW", "OFFERS_RECEIVED"].includes(r.status),
+    ).length;
+    const chosen = state.tripRequests.filter((r) => r.status === "CHOSEN").length;
+    const offers = state.requestOffers.length;
+    const paidSum = state.bookings
+      .filter((b) => b.paymentStatus === "paid")
+      .reduce((s, b) => s + b.price, 0);
+    return { total, open, chosen, offers, paidSum };
+  }, [state.tripRequests, state.requestOffers, state.bookings]);
 
   if (!allowed || !user) return null;
 
@@ -76,70 +129,210 @@ function AdminBookingsPage() {
     toast.success(bookingStatusLabel[next] ?? next);
   };
 
+  const offersFor = (requestId: string) =>
+    state.requestOffers.filter((o) => o.requestId === requestId);
+
   return (
     <DashShell
       brand="TourGo Админ"
       items={nav}
-      title="Бронирования"
-      subtitle="Все заказы на платформе"
+      title="Заявки и брони"
+      subtitle="Путь сделки: заявка туриста → предложения компаний → выбор и оплата напрямую."
     >
-      <div className="mb-6 grid gap-4 sm:grid-cols-3">
-        <KpiLinkCard label="Всего заказов" value={formatNumber(state.bookings.length)} />
+      <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
         <KpiLinkCard
-          label="Оплачено"
-          value={formatPrice(
-            state.bookings
-              .filter((b) => b.paymentStatus === "paid")
-              .reduce((s, b) => s + b.price, 0),
-          )}
-          hint="сумма оплаченных заказов"
+          label="Заявки туристов"
+          value={formatNumber(funnel.total)}
+          hint={`${formatNumber(funnel.open)} открыто сейчас`}
+          tone={funnel.open > 0 ? "warning" : "default"}
         />
         <KpiLinkCard
-          label="Требуют внимания"
-          value={formatNumber(
-            state.bookings.filter((b) =>
-              ["PENDING", "PRICE_CHECK", "AWAITING_PAYMENT", "CONFIRMING"].includes(b.status),
-            ).length,
-          )}
-          hint="ждут подтверждения или оплаты"
-          tone={
-            state.bookings.some((b) =>
-              ["PENDING", "PRICE_CHECK", "AWAITING_PAYMENT", "CONFIRMING"].includes(b.status),
-            )
-              ? "warning"
-              : "default"
+          label="Предложений компаний"
+          value={formatNumber(funnel.offers)}
+          hint="ответы на заявки"
+        />
+        <KpiLinkCard
+          label="Выбрали компанию"
+          value={formatNumber(funnel.chosen)}
+          hint={
+            funnel.total
+              ? `конверсия ${Math.round((funnel.chosen / funnel.total) * 100)}%`
+              : "появится с первыми заявками"
           }
+        />
+        <KpiLinkCard
+          label="Брони и оплата"
+          value={formatNumber(state.bookings.length)}
+          hint={funnel.paidSum > 0 ? `оплачено ${formatPrice(funnel.paidSum)}` : "оплат пока нет"}
         />
       </div>
 
-      <FilterBar
-        search={q}
-        onSearchChange={setQ}
-        searchPlaceholder="Турист, тур, ID…"
-        filters={[
-          {
-            key: "status",
-            value: status,
-            placeholder: "Статус",
-            onChange: setStatus,
-            options: [
-              { value: "all", label: "Все статусы" },
-              { value: "PENDING", label: "Ожидает" },
-              { value: "PRICE_CHECK", label: "Проверка цены" },
-              { value: "AWAITING_PAYMENT", label: "Ждёт оплаты" },
-              { value: "PAID", label: "Оплачено" },
-              { value: "CONFIRMING", label: "Подтверждается" },
-              { value: "CONFIRMED", label: "Подтверждено" },
-              { value: "CANCELLED", label: "Отменено" },
-              { value: "FAILED", label: "Ошибка" },
-              { value: "COMPLETED", label: "Завершено" },
-            ],
-          },
-        ]}
-      />
+      <div className="mt-5 flex flex-wrap items-center gap-3">
+        <TabPills
+          value={view}
+          onChange={(v) => {
+            setView(v);
+            setStatus("all");
+            setQ("");
+          }}
+          items={[
+            { value: "requests", label: "Заявки туристов", count: funnel.total },
+            { value: "bookings", label: "Брони", count: state.bookings.length },
+          ]}
+        />
+      </div>
 
-      {bookings.length === 0 ? (
-        <EmptyState title="Бронирований нет" description="По фильтру ничего не найдено" />
+      <div className="mt-4">
+        <FilterBar
+          search={q}
+          onSearchChange={setQ}
+          searchPlaceholder={view === "requests" ? "Турист, направление…" : "Турист, тур, ID…"}
+          filters={[
+            {
+              key: "status",
+              value: status,
+              placeholder: "Статус",
+              onChange: setStatus,
+              options:
+                view === "requests"
+                  ? [
+                      { value: "all", label: "Все статусы" },
+                      ...Object.entries(requestStatusLabel).map(([value, label]) => ({
+                        value,
+                        label,
+                      })),
+                    ]
+                  : [
+                      { value: "all", label: "Все статусы" },
+                      { value: "PENDING", label: "Ожидает" },
+                      { value: "AWAITING_PAYMENT", label: "Ждёт оплаты" },
+                      { value: "PAID", label: "Оплачено" },
+                      { value: "CONFIRMED", label: "Подтверждено" },
+                      { value: "CANCELLED", label: "Отменено" },
+                      { value: "COMPLETED", label: "Завершено" },
+                    ],
+            },
+          ]}
+        />
+      </div>
+
+      {view === "requests" ? (
+        requests.length === 0 ? (
+          <div className="surface-card flex flex-col items-center gap-3 p-10 text-center">
+            <span className="grid size-12 place-items-center rounded-2xl bg-primary-soft text-primary">
+              <Inbox className="size-6" />
+            </span>
+            <div className="max-w-md">
+              <p className="font-display text-base font-semibold">
+                {q.trim() || status !== "all" ? "Ничего не нашли" : "Заявок пока нет"}
+              </p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {q.trim() || status !== "all"
+                  ? "Измените поиск или фильтр статуса."
+                  : "Как только турист оставит заявку на тур или помощь в поездке, она появится здесь вместе с ответами компаний."}
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className="surface-card overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Турист</TableHead>
+                  <TableHead>Поездка</TableHead>
+                  <TableHead>Бюджет</TableHead>
+                  <TableHead>Предложения</TableHead>
+                  <TableHead>Статус</TableHead>
+                  <TableHead>Создана</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {requests.map((r) => {
+                  const offers = offersFor(r.id);
+                  const chosen = offers.find((o) => o.status === "CHOSEN");
+                  return (
+                    <TableRow key={r.id}>
+                      <TableCell>
+                        <div className="flex items-center gap-2.5">
+                          <span className="grid size-8 shrink-0 place-items-center rounded-full bg-primary-soft font-display text-xs font-semibold text-primary">
+                            {(r.contactName || userName(r.userId)).slice(0, 1).toUpperCase()}
+                          </span>
+                          <div className="min-w-0">
+                            <div className="truncate font-medium">
+                              {r.contactName || userName(r.userId)}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              {r.kind === "assistance" ? "Помощь в поездке" : "Тур"}
+                            </div>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="text-sm font-medium">
+                          {r.fromCity ? `${r.fromCity} → ` : ""}
+                          {r.destinationLabel || "направление не указано"}
+                        </div>
+                        <div className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
+                          <CalendarDays className="size-3" />
+                          {fmtDate(r.dateStart)}
+                          {r.dateEnd && r.dateEnd !== r.dateStart ? ` — ${fmtDate(r.dateEnd)}` : ""}
+                          <span className="ml-1 inline-flex items-center gap-0.5">
+                            <Users className="size-3" />
+                            {r.adults}
+                            {r.children ? `+${r.children}` : ""}
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-sm tabular-nums">
+                        {r.budget
+                          ? r.currency === "USD"
+                            ? `$${formatNumber(r.budget)}`
+                            : formatPrice(r.budget)
+                          : "—"}
+                      </TableCell>
+                      <TableCell>
+                        {chosen ? (
+                          <span className="text-sm font-medium text-success">
+                            {orgName(chosen.organizationId)}
+                          </span>
+                        ) : offers.length > 0 ? (
+                          <span className="text-sm">{offers.length}</span>
+                        ) : (
+                          <span className="text-sm text-muted-foreground">нет</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <StatusBadge
+                          label={requestStatusLabel[r.status]}
+                          tone={requestStatusTone[r.status]}
+                        />
+                      </TableCell>
+                      <TableCell className="text-xs text-muted-foreground">
+                        {new Date(r.createdAt).toLocaleDateString("ru-RU")}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
+        )
+      ) : bookings.length === 0 ? (
+        <div className="surface-card flex flex-col items-center gap-3 p-10 text-center">
+          <span className="grid size-12 place-items-center rounded-2xl bg-secondary text-muted-foreground">
+            <Ticket className="size-6" />
+          </span>
+          <div className="max-w-md">
+            <p className="font-display text-base font-semibold">
+              {q.trim() || status !== "all" ? "Ничего не нашли" : "Броней пока нет"}
+            </p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {q.trim() || status !== "all"
+                ? "Измените поиск или фильтр статуса."
+                : "Здесь появятся заказы туров с оплатой: статус, сумма и компания-продавец."}
+            </p>
+          </div>
+        </div>
       ) : (
         <div className="surface-card overflow-x-auto">
           <Table>
