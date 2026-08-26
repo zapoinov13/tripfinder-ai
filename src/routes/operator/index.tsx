@@ -24,6 +24,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatNumber, formatPrice, getHotel } from "@/data/demo";
+import { useAutoApiSync } from "@/lib/platform/api-sync";
 import { useAuth, useRequireAuth } from "@/lib/platform/auth";
 import { categoriesOfServices } from "@/lib/platform/company-categories";
 import { usePlatformStore } from "@/lib/platform/hooks";
@@ -138,6 +139,8 @@ function OperatorDashboard() {
   const { user, organization } = useAuth();
   const state = usePlatformStore();
   const nav = useOperatorNav(organization?.id);
+  // Фид компании подтягивается сам, пока открыт кабинет.
+  useAutoApiSync(organization ? [organization.id] : []);
   if (!allowed || !user || !organization) {
     return <div className="grid min-h-screen place-items-center text-sm">Нет доступа…</div>;
   }
