@@ -4,11 +4,14 @@ import { Heart, LogOut, Menu, Plane, User, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { b2bNav, travelScenarios } from "@/data/scenarios";
-import { useAuth } from "@/lib/platform/auth";
+import { useOptionalAuth } from "@/lib/platform/auth";
 import { cn } from "@/lib/utils";
 
 export function SiteHeader({ compact = false }: { compact?: boolean }) {
-  const { user, isAuthenticated, logout } = useAuth();
+  const auth = useOptionalAuth();
+  const user = auth?.user ?? null;
+  const isAuthenticated = auth?.isAuthenticated ?? false;
+  const logout = auth?.logout ?? (() => {});
 
   const accountTo = !isAuthenticated
     ? "/login"
