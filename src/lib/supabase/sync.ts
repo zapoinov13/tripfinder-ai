@@ -500,6 +500,20 @@ function collectOps(prev: PlatformState, next: PlatformState): Op[] {
       report("profiles.update", error);
     });
   }
+  // Удаление из админки: RPC стирает auth.users + профиль (см. миграцию
+  // admin_delete_user), иначе гидрация профилей вернёт пользователя обратно.
+  for (const u of users.removed) {
+    if (!isUuid(u.id)) continue;
+    ops.push(async () => {
+      const { error } = await (
+        sb.rpc as unknown as (
+          fn: string,
+          args: Record<string, unknown>,
+        ) => Promise<{ error: { message: string } | null }>
+      )("admin_delete_user", { target_user: u.id });
+      report("profiles.delete", error);
+    });
+  }
 
   const orgs = diff(prev.organizations, next.organizations, sameOrg);
   for (const o of orgs.added) {
