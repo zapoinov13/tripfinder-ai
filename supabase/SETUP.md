@@ -40,6 +40,7 @@
 | 18  | `supabase/migrations/20260822_review_replies.sql`                             | ответы на отзывы                               |
 | 19  | `supabase/migrations/20260823_organizations_public_safe.sql`                  | скрыть phone/whatsapp от anon                  |
 | 20  | `supabase/migrations/20260823_protect_profiles_self_escalation.sql`           | **блок смены role/status самим пользователем** |
+| 21  | `supabase/migrations/20260826090000_admin_overview_stats.sql`                 | RPC точной статистики для админ-дашборда       |
 
 ## Edge Functions: деплой через Supabase Dashboard
 
