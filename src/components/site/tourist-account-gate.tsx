@@ -145,7 +145,18 @@ function GuestAccountScreen({
 
             <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:justify-center">
               <Button size="lg" asChild>
-                <Link to="/login">
+                <Link
+                  to="/login"
+                  search={
+                    {
+                      // после входа возвращаем на страницу, которую охраняет гейт
+                      next:
+                        typeof window !== "undefined"
+                          ? `${window.location.pathname}${window.location.search}`
+                          : "/",
+                    } as never
+                  }
+                >
                   <LogIn className="size-4" />
                   Войти
                 </Link>

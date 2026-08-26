@@ -67,7 +67,7 @@ function PremiumPage() {
               className="mt-8"
               onClick={() => {
                 if (!isAuthenticated) {
-                  navigate({ to: "/login" });
+                  navigate({ to: "/login", search: { next: "/premium" } as never });
                   return;
                 }
                 purchasePremium();

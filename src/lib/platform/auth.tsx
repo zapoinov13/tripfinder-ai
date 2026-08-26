@@ -798,7 +798,9 @@ export function useRequireAuth(roles?: Role[]) {
 
   if (typeof window === "undefined" || !hydrated) return { allowed: false, user: null };
   if (!isAuthenticated || !user) {
-    queueMicrotask(() => navigate({ to: "/login" }));
+    // После входа возвращаем туда, куда человек шёл (избранное, профиль...).
+    const next = `${window.location.pathname}${window.location.search}`;
+    queueMicrotask(() => navigate({ to: "/login", search: { next } as never }));
     return { allowed: false, user: null };
   }
   if (roles && !roles.includes(user.role)) {

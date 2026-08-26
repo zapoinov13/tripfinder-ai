@@ -174,7 +174,7 @@ function TourPage() {
 
   const startBooking = async () => {
     if (!isAuthenticated || !user) {
-      navigate({ to: "/login" });
+      navigate({ to: "/login", search: { next: `/tour/${tour.id}` } as never });
       return;
     }
     const [firstName, ...rest] = passengerName.trim().split(/\s+/);
