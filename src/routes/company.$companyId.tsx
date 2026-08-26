@@ -1,6 +1,7 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import {
   BadgeCheck,
+  CheckCircle2,
   Clock,
   Globe,
   Instagram,
@@ -12,6 +13,7 @@ import {
   Star,
 } from "lucide-react";
 import { useEffect } from "react";
+import { toast } from "sonner";
 
 import { SiteLayout } from "@/components/site/site-layout";
 import { Badge } from "@/components/ui/badge";
@@ -20,6 +22,7 @@ import { formatPrice, nightsLabel, tourCover } from "@/data/demo";
 import { youtubeEmbed } from "@/lib/image-file";
 import { useAuth } from "@/lib/platform/auth";
 import { getHotel, trackEvent } from "@/lib/platform/catalog";
+import { categoriesOfServices } from "@/lib/platform/company-categories";
 import { usePlatformStore } from "@/lib/platform/hooks";
 import { getCompanyRating, getCompanyReviews } from "@/lib/platform/messages";
 import { cn } from "@/lib/utils";
@@ -83,6 +86,27 @@ function CompanyPage() {
   const trackClick = (channel: string) => {
     if (user && user.organizationId === company.id) return;
     trackEvent("COMPANY_CONTACT_CLICK", userId, { companyId: company.id, channel });
+  };
+
+  // Чекин «я пришёл»: для бизнеса (спорт, жильё, авто) считаем реальные визиты
+  // из приложения. Один раз в день, свои сотрудники не считаются.
+  const cats = categoriesOfServices(company.services ?? []);
+  const isBusiness = cats.has("sport") || cats.has("stays") || cats.has("cars");
+  const isOwnStaff = Boolean(user && user.organizationId === company.id);
+  const checkedInToday = Boolean(
+    user &&
+    state.analyticsEvents.some(
+      (e) =>
+        e.type === "COMPANY_CHECKIN" &&
+        e.userId === user.id &&
+        e.payload?.["companyId"] === company.id &&
+        e.createdAt.slice(0, 10) === today,
+    ),
+  );
+  const checkIn = () => {
+    if (!user || isOwnStaff || checkedInToday) return;
+    trackEvent("COMPANY_CHECKIN", user.id, { companyId: company.id, userName: user.name });
+    toast.success("Отметили визит. Компания увидит, что вы пришли из TourGo.");
   };
 
   return (
@@ -159,6 +183,21 @@ function CompanyPage() {
                   Маршрут
                 </a>
               </Button>
+            ) : null}
+            {isBusiness && !isOwnStaff ? (
+              user ? (
+                <Button variant="outline" disabled={checkedInToday} onClick={checkIn}>
+                  <CheckCircle2 className="size-4" />
+                  {checkedInToday ? "Визит отмечен" : "Я здесь — отметиться"}
+                </Button>
+              ) : (
+                <Button variant="outline" asChild>
+                  <Link to="/login" search={{ next: `/company/${company.id}` } as never}>
+                    <CheckCircle2 className="size-4" />
+                    Отметить визит
+                  </Link>
+                </Button>
+              )
             ) : null}
             <Button asChild>
               <Link to="/request" search={{}}>

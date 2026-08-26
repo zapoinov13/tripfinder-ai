@@ -93,8 +93,16 @@ function OperatorAnalyticsPage() {
       const channel = typeof e.payload?.["channel"] === "string" ? e.payload["channel"] : "other";
       clicks[channel] = (clicks[channel] ?? 0) + 1;
     }
-    return { views, clicks };
-  }, [organization, period, state.analyticsEvents]);
+    const checkinEvents = events.filter((e) => e.type === "COMPANY_CHECKIN");
+    const recentVisits = checkinEvents.slice(0, 6).map((e) => {
+      const name =
+        typeof e.payload?.["userName"] === "string" && e.payload["userName"]
+          ? e.payload["userName"]
+          : (state.users.find((u) => u.id === e.userId)?.name ?? "Клиент");
+      return { id: e.id, name, at: e.createdAt };
+    });
+    return { views, clicks, checkins: checkinEvents.length, recentVisits };
+  }, [organization, period, state.analyticsEvents, state.users]);
 
   if (!allowed || !organization || !data) return null;
 
@@ -209,11 +217,31 @@ function OperatorAnalyticsPage() {
             <PageStat label="WhatsApp" value={pageStats.clicks["whatsapp"] ?? 0} />
             <PageStat label="Позвонить" value={pageStats.clicks["phone"] ?? 0} />
             <PageStat label="Instagram" value={pageStats.clicks["instagram"] ?? 0} />
-            <PageStat
-              label="Telegram и сайт"
-              value={(pageStats.clicks["telegram"] ?? 0) + (pageStats.clicks["website"] ?? 0)}
-            />
+            <PageStat label="Пришли из приложения" value={pageStats.checkins} />
           </div>
+          {pageStats.recentVisits.length > 0 ? (
+            <div className="mt-4 rounded-2xl border border-success/25 bg-success/5 p-4">
+              <p className="text-sm font-semibold">Последние визиты</p>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                Клиенты нажали «Я здесь» на вашей странице — пришли по факту.
+              </p>
+              <ul className="mt-3 space-y-1.5 text-sm">
+                {pageStats.recentVisits.map((v) => (
+                  <li key={v.id} className="flex items-center justify-between gap-3">
+                    <span className="truncate font-medium">{v.name}</span>
+                    <span className="shrink-0 text-xs text-muted-foreground">
+                      {new Date(v.at).toLocaleDateString("ru-RU", {
+                        day: "numeric",
+                        month: "short",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
           {pageStats.views === 0 ? (
             <p className="mt-3 text-xs text-muted-foreground">
               Пока тихо. Заполните страницу (адрес, часы, фото) и поделитесь ссылкой — клики начнут

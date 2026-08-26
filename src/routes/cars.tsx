@@ -1,12 +1,14 @@
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Building2, MapPin, Search } from "lucide-react";
-import { useState, useSyncExternalStore } from "react";
+import { useMemo, useState, useSyncExternalStore } from "react";
 
 import { SiteLayout } from "@/components/site/site-layout";
 import { Button } from "@/components/ui/button";
 import { DateRangePicker } from "@/components/ui/date-picker";
 import { resortsByDestination } from "@/data/demo";
 import { carClasses, cars, formatKzt, popularCarCountries } from "@/data/scenario-catalog";
+import { usePlatformStore } from "@/lib/platform/hooks";
+import { companyPromoBadge, promotedCompanyIds } from "@/lib/platform/promotions";
 import {
   listPublishedVertical,
   subscribeVerticalListings,
@@ -35,6 +37,7 @@ type CarCard = {
   gearbox: string;
   deposit: string;
   companyName?: string;
+  organizationId?: string;
   address?: string;
   features?: string[];
   about?: string;
@@ -79,6 +82,8 @@ function CarsPage() {
   const [geoHint, setGeoHint] = useState("");
   const [age, setAge] = useState(params.age ?? "25");
   const published = usePublishedCars();
+  const state = usePlatformStore();
+  const promoted = useMemo(() => promotedCompanyIds(), [state.promotions]);
 
   const cities = params.destination ? (resortsByDestination[params.destination] ?? []) : [];
   const needle = (params.q ?? "").toLowerCase();
@@ -103,6 +108,7 @@ function CarsPage() {
         gearbox: item.transmission || parts[0] || "автомат",
         deposit,
         companyName: item.companyName,
+        organizationId: item.organizationId,
         ...(item.address ? { address: item.address } : {}),
         ...(item.amenities?.length ? { features: item.amenities } : {}),
         ...(item.about ? { about: item.about } : {}),
@@ -249,74 +255,105 @@ function CarsPage() {
         <div id="cars-results" className="mt-8 scroll-mt-28">
           {list.length > 0 ? (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {list.map((item) => (
-                <article key={item.id} className="surface-card flex flex-col p-5">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                    {item.city}
-                  </p>
-                  <h3 className="mt-2 font-display text-xl font-semibold">{item.name}</h3>
-                  {item.companyName ? (
-                    <p className="mt-1 text-sm text-foreground/60">{item.companyName}</p>
-                  ) : null}
-                  <p className="mt-2 text-sm leading-relaxed text-foreground/70">
-                    {item.seats} мест · {item.gearbox} · {item.deposit}
-                  </p>
-                  {item.about ? (
-                    <p className="mt-2 line-clamp-2 text-sm leading-snug text-foreground/60">
-                      {item.about}
-                    </p>
-                  ) : null}
-                  {item.features?.length ? (
-                    <div className="mt-3 flex flex-wrap gap-1.5">
-                      {item.features.slice(0, 4).map((f) => (
-                        <span
-                          key={f}
-                          className="rounded-full bg-secondary px-2.5 py-1 text-[11px] font-medium text-foreground/70"
-                        >
-                          {f}
-                        </span>
-                      ))}
-                      {item.features.length > 4 ? (
-                        <span className="rounded-full bg-secondary px-2.5 py-1 text-[11px] font-medium text-foreground/50">
-                          +{item.features.length - 4}
+              {[
+                ...list.filter((i) => i.organizationId && promoted.has(i.organizationId)),
+                ...list.filter((i) => !i.organizationId || !promoted.has(i.organizationId)),
+              ].map((item) => {
+                const badge = item.organizationId
+                  ? companyPromoBadge(promoted.get(item.organizationId))
+                  : null;
+                return (
+                  <article
+                    key={item.id}
+                    className={cn(
+                      "surface-card flex flex-col p-5",
+                      badge?.featured && "border-premium/50 ring-1 ring-premium/30",
+                    )}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                        {item.city}
+                      </p>
+                      {badge ? (
+                        <span className="shrink-0 rounded-full bg-premium/15 px-2.5 py-0.5 text-[11px] font-semibold text-premium">
+                          {badge.label}
                         </span>
                       ) : null}
                     </div>
-                  ) : null}
-                  {item.address ? (
-                    <a
-                      href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(`${item.address}, ${item.city}`)}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="mt-2 inline-flex items-start gap-1.5 text-sm font-medium text-primary hover:underline"
-                    >
-                      <MapPin className="mt-0.5 size-4 shrink-0" />
-                      <span>
-                        {item.address}
-                        <span className="block text-xs font-normal text-foreground/55">
-                          Пункт выдачи · маршрут в картах
-                        </span>
-                      </span>
-                    </a>
-                  ) : null}
-                  {item.price > 0 ? (
-                    <p className="mt-4 font-display text-lg font-semibold">
-                      {formatKzt(item.price)}{" "}
-                      <span className="text-sm font-medium text-foreground/60">/ день</span>
+                    <h3 className="mt-2 font-display text-xl font-semibold">{item.name}</h3>
+                    {item.companyName ? (
+                      item.organizationId ? (
+                        <Link
+                          to="/company/$companyId"
+                          params={{ companyId: item.organizationId }}
+                          className="mt-1 text-sm text-foreground/60 hover:text-primary hover:underline"
+                        >
+                          {item.companyName}
+                        </Link>
+                      ) : (
+                        <p className="mt-1 text-sm text-foreground/60">{item.companyName}</p>
+                      )
+                    ) : null}
+                    <p className="mt-2 text-sm leading-relaxed text-foreground/70">
+                      {item.seats} мест · {item.gearbox} · {item.deposit}
                     </p>
-                  ) : (
-                    <p className="mt-4 text-sm text-foreground/60">Цена по запросу</p>
-                  )}
-                  <Button className="mt-4" asChild>
-                    <Link
-                      to="/request"
-                      search={requestFor(`Аренда ${item.name} в ${item.city}, без водителя`)}
-                    >
-                      Запросить авто
-                    </Link>
-                  </Button>
-                </article>
-              ))}
+                    {item.about ? (
+                      <p className="mt-2 line-clamp-2 text-sm leading-snug text-foreground/60">
+                        {item.about}
+                      </p>
+                    ) : null}
+                    {item.features?.length ? (
+                      <div className="mt-3 flex flex-wrap gap-1.5">
+                        {item.features.slice(0, 4).map((f) => (
+                          <span
+                            key={f}
+                            className="rounded-full bg-secondary px-2.5 py-1 text-[11px] font-medium text-foreground/70"
+                          >
+                            {f}
+                          </span>
+                        ))}
+                        {item.features.length > 4 ? (
+                          <span className="rounded-full bg-secondary px-2.5 py-1 text-[11px] font-medium text-foreground/50">
+                            +{item.features.length - 4}
+                          </span>
+                        ) : null}
+                      </div>
+                    ) : null}
+                    {item.address ? (
+                      <a
+                        href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(`${item.address}, ${item.city}`)}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="mt-2 inline-flex items-start gap-1.5 text-sm font-medium text-primary hover:underline"
+                      >
+                        <MapPin className="mt-0.5 size-4 shrink-0" />
+                        <span>
+                          {item.address}
+                          <span className="block text-xs font-normal text-foreground/55">
+                            Пункт выдачи · маршрут в картах
+                          </span>
+                        </span>
+                      </a>
+                    ) : null}
+                    {item.price > 0 ? (
+                      <p className="mt-4 font-display text-lg font-semibold">
+                        {formatKzt(item.price)}{" "}
+                        <span className="text-sm font-medium text-foreground/60">/ день</span>
+                      </p>
+                    ) : (
+                      <p className="mt-4 text-sm text-foreground/60">Цена по запросу</p>
+                    )}
+                    <Button className="mt-4" asChild>
+                      <Link
+                        to="/request"
+                        search={requestFor(`Аренда ${item.name} в ${item.city}, без водителя`)}
+                      >
+                        Запросить авто
+                      </Link>
+                    </Button>
+                  </article>
+                );
+              })}
             </div>
           ) : (
             <div className="surface-card grid gap-6 p-6 md:grid-cols-2 md:p-8">

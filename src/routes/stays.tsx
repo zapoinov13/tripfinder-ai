@@ -1,12 +1,14 @@
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Building2, MapPin, Search } from "lucide-react";
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 
 import { SiteLayout } from "@/components/site/site-layout";
 import { Button } from "@/components/ui/button";
 import { DateRangePicker } from "@/components/ui/date-picker";
 import { destinations, resortsByDestination } from "@/data/demo";
 import { formatKzt, popularStayCities, stayAreas, stayKinds, stays } from "@/data/scenario-catalog";
+import { usePlatformStore } from "@/lib/platform/hooks";
+import { companyPromoBadge, promotedCompanyIds } from "@/lib/platform/promotions";
 import {
   listPublishedVertical,
   subscribeVerticalListings,
@@ -34,6 +36,7 @@ type StayCard = {
   rating: number;
   nightsHint: string;
   companyName?: string;
+  organizationId?: string;
   address?: string;
   amenities?: string[];
   guests?: number;
@@ -78,6 +81,8 @@ function StaysPage() {
   const update = (patch: Search) => void navigate({ search: { ...params, ...patch } as never });
   const [city, setCity] = useState(params.city ?? params.q ?? "");
   const published = usePublishedStays();
+  const state = usePlatformStore();
+  const promoted = useMemo(() => promotedCompanyIds(), [state.promotions]);
 
   useEffect(() => {
     setCity(params.city ?? "");
@@ -95,6 +100,7 @@ function StaysPage() {
       rating: item.rating ?? 0,
       nightsHint: item.detail || "за ночь",
       companyName: item.companyName,
+      organizationId: item.organizationId,
       ...(item.address ? { address: item.address } : {}),
       ...(item.amenities?.length ? { amenities: item.amenities } : {}),
       ...(item.guests ? { guests: item.guests } : {}),
@@ -241,84 +247,115 @@ function StaysPage() {
 
         {list.length > 0 ? (
           <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {list.map((item) => (
-              <article key={item.id} className="surface-card flex flex-col p-5">
-                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  {item.area ? `${item.area} · ` : ""}
-                  {item.city}
-                </p>
-                <h3 className="mt-2 font-display text-xl font-semibold">{item.name}</h3>
-                {item.companyName ? (
-                  <p className="mt-1 text-sm text-foreground/60">{item.companyName}</p>
-                ) : null}
-                {item.rating > 0 ? (
-                  <p className="mt-2 text-sm text-foreground/70">Рейтинг {item.rating}</p>
-                ) : null}
-                {item.guests || item.bedrooms ? (
-                  <p className="mt-2 text-sm text-foreground/70">
-                    {[
-                      item.guests ? `до ${item.guests} гостей` : "",
-                      item.bedrooms ? `${item.bedrooms} сп.` : "",
-                    ]
-                      .filter(Boolean)
-                      .join(" · ")}
-                  </p>
-                ) : null}
-                {item.about ? (
-                  <p className="mt-2 line-clamp-2 text-sm leading-snug text-foreground/60">
-                    {item.about}
-                  </p>
-                ) : null}
-                {item.amenities?.length ? (
-                  <div className="mt-3 flex flex-wrap gap-1.5">
-                    {item.amenities.slice(0, 4).map((a) => (
-                      <span
-                        key={a}
-                        className="rounded-full bg-secondary px-2.5 py-1 text-[11px] font-medium text-foreground/70"
-                      >
-                        {a}
-                      </span>
-                    ))}
-                    {item.amenities.length > 4 ? (
-                      <span className="rounded-full bg-secondary px-2.5 py-1 text-[11px] font-medium text-foreground/50">
-                        +{item.amenities.length - 4}
+            {[
+              ...list.filter((i) => i.organizationId && promoted.has(i.organizationId)),
+              ...list.filter((i) => !i.organizationId || !promoted.has(i.organizationId)),
+            ].map((item) => {
+              const badge = item.organizationId
+                ? companyPromoBadge(promoted.get(item.organizationId))
+                : null;
+              return (
+                <article
+                  key={item.id}
+                  className={cn(
+                    "surface-card flex flex-col p-5",
+                    badge?.featured && "border-premium/50 ring-1 ring-premium/30",
+                  )}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                      {item.area ? `${item.area} · ` : ""}
+                      {item.city}
+                    </p>
+                    {badge ? (
+                      <span className="shrink-0 rounded-full bg-premium/15 px-2.5 py-0.5 text-[11px] font-semibold text-premium">
+                        {badge.label}
                       </span>
                     ) : null}
                   </div>
-                ) : null}
-                {item.address ? (
-                  <a
-                    href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(`${item.address}, ${item.city}`)}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="mt-2 inline-flex items-start gap-1.5 text-sm font-medium text-primary hover:underline"
-                  >
-                    <MapPin className="mt-0.5 size-4 shrink-0" />
-                    <span>
-                      {item.address}
-                      <span className="block text-xs font-normal text-foreground/55">
-                        Открыть маршрут в картах
+                  <h3 className="mt-2 font-display text-xl font-semibold">{item.name}</h3>
+                  {item.companyName ? (
+                    item.organizationId ? (
+                      <Link
+                        to="/company/$companyId"
+                        params={{ companyId: item.organizationId }}
+                        className="mt-1 text-sm text-foreground/60 hover:text-primary hover:underline"
+                      >
+                        {item.companyName}
+                      </Link>
+                    ) : (
+                      <p className="mt-1 text-sm text-foreground/60">{item.companyName}</p>
+                    )
+                  ) : null}
+                  {item.rating > 0 ? (
+                    <p className="mt-2 text-sm text-foreground/70">Рейтинг {item.rating}</p>
+                  ) : null}
+                  {item.guests || item.bedrooms ? (
+                    <p className="mt-2 text-sm text-foreground/70">
+                      {[
+                        item.guests ? `до ${item.guests} гостей` : "",
+                        item.bedrooms ? `${item.bedrooms} сп.` : "",
+                      ]
+                        .filter(Boolean)
+                        .join(" · ")}
+                    </p>
+                  ) : null}
+                  {item.about ? (
+                    <p className="mt-2 line-clamp-2 text-sm leading-snug text-foreground/60">
+                      {item.about}
+                    </p>
+                  ) : null}
+                  {item.amenities?.length ? (
+                    <div className="mt-3 flex flex-wrap gap-1.5">
+                      {item.amenities.slice(0, 4).map((a) => (
+                        <span
+                          key={a}
+                          className="rounded-full bg-secondary px-2.5 py-1 text-[11px] font-medium text-foreground/70"
+                        >
+                          {a}
+                        </span>
+                      ))}
+                      {item.amenities.length > 4 ? (
+                        <span className="rounded-full bg-secondary px-2.5 py-1 text-[11px] font-medium text-foreground/50">
+                          +{item.amenities.length - 4}
+                        </span>
+                      ) : null}
+                    </div>
+                  ) : null}
+                  {item.address ? (
+                    <a
+                      href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(`${item.address}, ${item.city}`)}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-2 inline-flex items-start gap-1.5 text-sm font-medium text-primary hover:underline"
+                    >
+                      <MapPin className="mt-0.5 size-4 shrink-0" />
+                      <span>
+                        {item.address}
+                        <span className="block text-xs font-normal text-foreground/55">
+                          Открыть маршрут в картах
+                        </span>
                       </span>
-                    </span>
-                  </a>
-                ) : null}
-                {item.price > 0 ? (
-                  <p className="mt-4 font-display text-lg font-semibold">
-                    {formatKzt(item.price)}{" "}
-                    <span className="text-sm font-medium text-foreground/60">
-                      {item.nightsHint}
-                    </span>
-                  </p>
-                ) : (
-                  <p className="mt-4 text-sm text-foreground/60">Цена по запросу</p>
-                )}
-                <Button className="mt-4" asChild>
-                  <Link to="/request" search={requestFor(`${item.name}, ${item.city}`)}>
-                    Запросить цену
-                  </Link>
-                </Button>
-              </article>
-            ))}
+                    </a>
+                  ) : null}
+                  {item.price > 0 ? (
+                    <p className="mt-4 font-display text-lg font-semibold">
+                      {formatKzt(item.price)}{" "}
+                      <span className="text-sm font-medium text-foreground/60">
+                        {item.nightsHint}
+                      </span>
+                    </p>
+                  ) : (
+                    <p className="mt-4 text-sm text-foreground/60">Цена по запросу</p>
+                  )}
+                  <Button className="mt-4" asChild>
+                    <Link to="/request" search={requestFor(`${item.name}, ${item.city}`)}>
+                      Запросить цену
+                    </Link>
+                  </Button>
+                </article>
+              );
+            })}
           </div>
         ) : (
           <div className="surface-card mt-8 grid gap-6 p-6 md:grid-cols-2 md:p-8">

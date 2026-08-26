@@ -1,25 +1,40 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { Check, Home, Megaphone, Sparkles, Star, TrendingUp, Wallet, Zap } from "lucide-react";
+import {
+  Building2,
+  Check,
+  Home,
+  Megaphone,
+  Sparkles,
+  Star,
+  TrendingUp,
+  Wallet,
+  Zap,
+} from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { DashShell, KpiCard } from "@/components/dash/dash-shell";
 import { useOperatorNav } from "@/components/dash/nav-items";
 import { Button } from "@/components/ui/button";
-import { formatPrice, nightsLabel, tourCover } from "@/data/demo";
+import { formatNumber, formatPrice, nightsLabel, tourCover } from "@/data/demo";
 import { useAuth, useRequireAuth } from "@/lib/platform/auth";
 import { getHotel } from "@/lib/platform/catalog";
+import { categoriesOfServices } from "@/lib/platform/company-categories";
 import { usePlatformStore } from "@/lib/platform/hooks";
 import {
   calcPromotionPrice,
   cancelPromotion,
   expireStalePromotions,
   getActiveOrgPromotions,
+  getOrgPromotions,
   getPromotionPrices,
+  isCompanyPromotion,
   promotionCatalogMeta,
+  purchaseCompanyPromotion,
   purchasePromotion,
   topUpPromotionBalance,
 } from "@/lib/platform/promotions";
+import { listOrgVertical } from "@/lib/platform/vertical-listings";
 import type { PromotionType } from "@/lib/platform/types";
 import { cn } from "@/lib/utils";
 
@@ -84,6 +99,37 @@ const catalog: Array<{
   },
 ];
 
+/** Пакеты для бизнеса без туров: продвигается страница компании и объявления. */
+const businessCatalog: typeof catalog = [
+  {
+    type: "BOOST",
+    title: "Выше в витрине",
+    badge: "Хит",
+    where: "Витрины спорт / жильё / авто",
+    forWhom: "Ваши объявления поднимаются над остальными в разделе.",
+    gets: ["Объявления в начале витрины", "Отметка «Хит» на карточках"],
+    icon: TrendingUp,
+  },
+  {
+    type: "SPONSORED",
+    title: "Рекомендуем",
+    badge: "Рекомендуем",
+    where: "Витрины и страница компании",
+    forWhom: "Чтобы клиент выбрал именно вас среди похожих.",
+    gets: ["Отметка «Рекомендуем» на карточках", "Выше в витрине"],
+    icon: Megaphone,
+  },
+  {
+    type: "FEATURED",
+    title: "Максимум внимания",
+    badge: "Выбор TourGo",
+    where: "Витрины, вся карточка выделена",
+    forWhom: "Запуск, сезон или акция: нужен максимум переходов.",
+    gets: ["Карточки выделены цветом", "Первые места в витрине", "Отметка «Выбор TourGo»"],
+    icon: Sparkles,
+  },
+];
+
 const dayOptions = [
   { value: "3", label: "3 дня", hint: "Проверить эффект" },
   { value: "7", label: "7 дней", hint: "Обычный срок" },
@@ -120,16 +166,59 @@ function OperatorPromotionPage() {
     [organization, state.promotions],
   );
 
+  // Бизнес без туров (спортзал, прокат, жильё): продвигаем страницу компании
+  // и объявления в витринах, а не туры.
+  const businessOnly = useMemo(() => {
+    if (!organization) return false;
+    const cats = categoriesOfServices(organization.services ?? []);
+    return (
+      (cats.has("sport") || cats.has("stays") || cats.has("cars")) &&
+      !cats.has("tours") &&
+      !cats.has("excursions")
+    );
+  }, [organization]);
+
+  const publishedCount = organization
+    ? listOrgVertical(organization.id).filter((s) => s.status === "published").length
+    : 0;
+
+  // Аналитика продвижения: просмотры и клики страницы за время кампании
+  // против такого же окна до неё.
+  const promoAnalytics = useMemo(() => {
+    if (!organization) return [];
+    return getOrgPromotions(organization.id)
+      .filter(isCompanyPromotion)
+      .slice(0, 4)
+      .map((p) => {
+        const start = new Date(p.startedAt).getTime();
+        const end = Math.min(Date.now(), new Date(p.expiresAt).getTime());
+        const windowMs = Math.max(end - start, 1);
+        const inWindow = { views: 0, clicks: 0 };
+        const before = { views: 0, clicks: 0 };
+        for (const e of state.analyticsEvents) {
+          if (e.payload?.["companyId"] !== organization.id) continue;
+          const t = new Date(e.createdAt).getTime();
+          const bucket =
+            t >= start && t <= end ? inWindow : t >= start - windowMs && t < start ? before : null;
+          if (!bucket) continue;
+          if (e.type === "COMPANY_PAGE_VIEW") bucket.views += 1;
+          if (e.type === "COMPANY_CONTACT_CLICK") bucket.clicks += 1;
+        }
+        return { promo: p, inWindow, before };
+      });
+  }, [organization, state.promotions, state.analyticsEvents]);
+
   if (!allowed || !organization || !user) return null;
 
-  const selected = catalog.find((p) => p.type === type)!;
+  const packs = businessOnly ? businessCatalog : catalog;
+  const selected = packs.find((p) => p.type === type) ?? packs[0]!;
   const daysCount = Number(days);
-  const price = calcPromotionPrice(type, daysCount);
+  const price = calcPromotionPrice(selected.type, daysCount);
   const chosenTour = tours.find((t) => t.id === tourId);
   const canAfford = organization.promotionBalance >= price;
 
   const buy = async () => {
-    if (!tourId) {
+    if (!businessOnly && !tourId) {
       toast.error("Сначала выберите тур");
       return;
     }
@@ -140,14 +229,22 @@ function OperatorPromotionPage() {
 
     setBuying(true);
     try {
-      const result = await purchasePromotion({
-        organizationId: organization.id,
-        userId: user.id,
-        tourId,
-        type,
-        days: daysCount,
-        payFromBalance,
-      });
+      const result = businessOnly
+        ? await purchaseCompanyPromotion({
+            organizationId: organization.id,
+            userId: user.id,
+            type: selected.type,
+            days: daysCount,
+            payFromBalance,
+          })
+        : await purchasePromotion({
+            organizationId: organization.id,
+            userId: user.id,
+            tourId,
+            type: selected.type,
+            days: daysCount,
+            payFromBalance,
+          });
       if (!result.ok) {
         toast.error(result.reason);
         return;
@@ -155,7 +252,7 @@ function OperatorPromotionPage() {
       toast.success(
         result.paidFromBalance
           ? "Продвижение включено. Списано с баланса."
-          : "Продвижение включено. Туристы уже видят отметку.",
+          : "Продвижение включено. Клиенты уже видят отметку.",
       );
     } finally {
       setBuying(false);
@@ -167,7 +264,11 @@ function OperatorPromotionPage() {
       brand={organization.name}
       items={nav}
       title="Продвижение"
-      subtitle="Оплатите с баланса или картой. Отметка появится на карточке тура в поиске и на главной."
+      subtitle={
+        businessOnly
+          ? "Тарифы поднимают ваши объявления в витрине и добавляют отметку. Оплата с баланса или картой."
+          : "Оплатите с баланса или картой. Отметка появится на карточке тура в поиске и на главной."
+      }
       actions={
         <Button variant="outline" size="sm" asChild>
           <Link to="/operator/billing">Пополнить баланс</Link>
@@ -190,14 +291,16 @@ function OperatorPromotionPage() {
       </div>
 
       <div className="mt-6 rounded-2xl border border-border bg-card p-5 text-sm leading-relaxed text-muted-foreground">
-        Обычный тур виден в поиске. Продвижение поднимает его выше и добавляет отметку: «Хит»,
-        «Выгодная цена» или «Рекомендуем». Пакет «На главной» показывает тур на главной странице
-        TourGo.
+        {businessOnly
+          ? "Ваши объявления и так видны в витрине. Тариф поднимает их выше похожих и добавляет отметку — клиент замечает вас первым. Действует на все опубликованные объявления и страницу компании."
+          : "Обычный тур виден в поиске. Продвижение поднимает его выше и добавляет отметку: «Хит», «Выгодная цена» или «Рекомендуем». Пакет «На главной» показывает тур на главной странице TourGo."}
       </div>
 
-      <h2 className="mt-8 font-display text-lg font-semibold">Выберите пакет</h2>
+      <h2 className="mt-8 font-display text-lg font-semibold">
+        {businessOnly ? "Тарифы продвижения" : "Выберите пакет"}
+      </h2>
       <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {catalog.map((item) => {
+        {packs.map((item) => {
           const on = item.type === type;
           const Icon = item.icon;
           const weekly = prices[item.type];
@@ -248,12 +351,35 @@ function OperatorPromotionPage() {
       <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
         <section className="surface-card space-y-5 p-6">
           <div>
-            <h2 className="font-display text-lg font-semibold">Какой тур продвигать</h2>
+            <h2 className="font-display text-lg font-semibold">
+              {businessOnly ? "Что продвигаем" : "Какой тур продвигать"}
+            </h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              Отметка появится на этой карточке в поиске.
+              {businessOnly
+                ? "Тариф действует сразу на всё: объявления в витрине и страницу компании."
+                : "Отметка появится на этой карточке в поиске."}
             </p>
           </div>
-          {tours.length === 0 ? (
+          {businessOnly ? (
+            <div className="flex items-start gap-3 rounded-2xl border border-primary/25 bg-primary/[0.04] p-4">
+              <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary-soft text-primary">
+                <Building2 className="size-5" />
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="font-medium">{organization.name}</p>
+                <p className="mt-0.5 text-sm text-muted-foreground">
+                  {publishedCount > 0
+                    ? `${publishedCount} объявлений в витрине + страница компании`
+                    : "Страница компании. Добавьте объявления, чтобы продвижение работало сильнее."}
+                </p>
+                {publishedCount === 0 ? (
+                  <Button size="sm" variant="outline" className="mt-2" asChild>
+                    <Link to="/operator/services">Добавить объявление</Link>
+                  </Button>
+                ) : null}
+              </div>
+            </div>
+          ) : tours.length === 0 ? (
             <div className="rounded-2xl bg-secondary/60 p-5 text-sm">
               <p>Сначала опубликуйте тур, потом его можно продвигать.</p>
               <Button className="mt-3" asChild>
@@ -328,9 +454,13 @@ function OperatorPromotionPage() {
               <span className="text-right font-medium">{selected.title}</span>
             </li>
             <li className="flex justify-between gap-3">
-              <span className="text-muted-foreground">Тур</span>
+              <span className="text-muted-foreground">{businessOnly ? "Цель" : "Тур"}</span>
               <span className="truncate text-right font-medium">
-                {chosenTour ? chosenTour.title || getHotel(chosenTour.hotelId).name : "Не выбран"}
+                {businessOnly
+                  ? "Компания и объявления"
+                  : chosenTour
+                    ? chosenTour.title || getHotel(chosenTour.hotelId).name
+                    : "Не выбран"}
               </span>
             </li>
             <li className="flex justify-between gap-3">
@@ -397,7 +527,7 @@ function OperatorPromotionPage() {
 
           <Button
             className="w-full"
-            disabled={!tourId || buying || (payFromBalance && !canAfford)}
+            disabled={(!businessOnly && !tourId) || buying || (payFromBalance && !canAfford)}
             onClick={() => void buy()}
           >
             {buying ? "Подключаем…" : "Включить продвижение"}
@@ -428,7 +558,8 @@ function OperatorPromotionPage() {
         ) : (
           <ul className="mt-4 grid gap-3 md:grid-cols-2">
             {active.map((p) => {
-              const tour = state.tours.find((t) => t.id === p.tourOfferId);
+              const forCompany = isCompanyPromotion(p);
+              const tour = forCompany ? undefined : state.tours.find((t) => t.id === p.tourOfferId);
               const hotel = tour ? getHotel(tour.hotelId) : null;
               const pack = promotionCatalogMeta[p.type];
               const left = Math.max(
@@ -443,11 +574,24 @@ function OperatorPromotionPage() {
                       alt=""
                       className="size-16 shrink-0 rounded-xl object-cover"
                     />
+                  ) : forCompany ? (
+                    <span className="grid size-16 shrink-0 place-items-center rounded-xl bg-primary-soft text-primary">
+                      <Building2 className="size-6" />
+                    </span>
                   ) : null}
                   <div className="min-w-0 flex-1">
-                    <p className="truncate font-medium">{tour?.title || hotel?.name || "Тур"}</p>
+                    <p className="truncate font-medium">
+                      {forCompany
+                        ? "Страница компании и объявления"
+                        : tour?.title || hotel?.name || "Тур"}
+                    </p>
                     <p className="mt-0.5 text-sm text-muted-foreground">
-                      {pack.title} · «{pack.badge}»
+                      {forCompany
+                        ? (() => {
+                            const biz = businessCatalog.find((b) => b.type === p.type);
+                            return `${biz?.title ?? pack.title} · «${biz?.badge ?? pack.badge}»`;
+                          })()
+                        : `${pack.title} · «${pack.badge}»`}
                     </p>
                     <p className="mt-1 text-xs text-muted-foreground">
                       Ещё {left} дн. · {formatPrice(p.price)}
@@ -477,6 +621,72 @@ function OperatorPromotionPage() {
           </ul>
         )}
       </section>
+
+      {promoAnalytics.length > 0 ? (
+        <section className="mt-8">
+          <h2 className="font-display text-lg font-semibold">Аналитика продвижения</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Просмотры страницы и клики (маршрут, WhatsApp, звонки) за время кампании — в сравнении с
+            таким же периодом до неё.
+          </p>
+          <ul className="mt-4 grid gap-3 md:grid-cols-2">
+            {promoAnalytics.map(({ promo, inWindow, before }) => {
+              const biz = businessCatalog.find((b) => b.type === promo.type);
+              const finished =
+                promo.status !== "ACTIVE" || new Date(promo.expiresAt).getTime() <= Date.now();
+              const delta = (now: number, prev: number) => {
+                if (prev === 0) return now > 0 ? "новые" : "—";
+                const p = Math.round(((now - prev) / prev) * 100);
+                return `${p > 0 ? "+" : ""}${p}%`;
+              };
+              return (
+                <li key={promo.id} className="surface-card p-4">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <p className="font-medium">
+                      {biz?.title ?? promotionCatalogMeta[promo.type].title}
+                    </p>
+                    <span
+                      className={cn(
+                        "rounded-full px-2.5 py-0.5 text-[11px] font-semibold",
+                        finished
+                          ? "bg-secondary text-muted-foreground"
+                          : "bg-success/12 text-success",
+                      )}
+                    >
+                      {finished ? "Завершена" : "Идёт"}
+                    </span>
+                  </div>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    {new Date(promo.startedAt).toLocaleDateString("ru-RU")} —{" "}
+                    {new Date(promo.expiresAt).toLocaleDateString("ru-RU")} ·{" "}
+                    {formatPrice(promo.price)}
+                  </p>
+                  <div className="mt-3 grid grid-cols-2 gap-3">
+                    <div className="rounded-xl bg-secondary/40 p-3">
+                      <p className="text-xs text-muted-foreground">Просмотры страницы</p>
+                      <p className="mt-1 font-display text-lg font-semibold tabular-nums">
+                        {formatNumber(inWindow.views)}
+                        <span className="ml-2 text-xs font-medium text-muted-foreground">
+                          {delta(inWindow.views, before.views)}
+                        </span>
+                      </p>
+                    </div>
+                    <div className="rounded-xl bg-secondary/40 p-3">
+                      <p className="text-xs text-muted-foreground">Клики по контактам</p>
+                      <p className="mt-1 font-display text-lg font-semibold tabular-nums">
+                        {formatNumber(inWindow.clicks)}
+                        <span className="ml-2 text-xs font-medium text-muted-foreground">
+                          {delta(inWindow.clicks, before.clicks)}
+                        </span>
+                      </p>
+                    </div>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      ) : null}
     </DashShell>
   );
 }
