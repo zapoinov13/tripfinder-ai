@@ -15,7 +15,9 @@ import {
   verticalLabel,
   type VerticalId,
 } from "@/lib/platform/service-ingest";
+import { ConfirmAction } from "@/components/admin";
 import {
+  deleteVerticalListing,
   hideVerticalListing,
   listOrgVertical,
   subscribeVerticalListings,
@@ -156,19 +158,33 @@ function OperatorServicesPage() {
                   {item.sourceUrl}
                 </a>
               ) : null}
-              {item.status === "published" ? (
-                <Button
-                  className="mt-4"
-                  variant="outline"
-                  onClick={() => {
-                    hideVerticalListing(item.id, organization.id);
+              <div className="mt-4 flex flex-wrap gap-2">
+                {item.status === "published" ? (
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      hideVerticalListing(item.id, organization.id);
+                      bump((n) => n + 1);
+                      toast.success("Скрыто из витрины");
+                    }}
+                  >
+                    Скрыть
+                  </Button>
+                ) : null}
+                <ConfirmAction
+                  triggerLabel="Удалить"
+                  title="Удалить объявление?"
+                  description={`${item.name}: объявление исчезнет из витрины и кабинета навсегда.`}
+                  confirmLabel="Удалить"
+                  destructive
+                  variant="ghost"
+                  onConfirm={() => {
+                    deleteVerticalListing(item.id, organization.id);
                     bump((n) => n + 1);
-                    toast.success("Скрыто из витрины");
+                    toast.success("Объявление удалено");
                   }}
-                >
-                  Скрыть
-                </Button>
-              ) : null}
+                />
+              </div>
             </article>
           ))}
         </div>

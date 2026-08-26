@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 
+import { ConfirmAction } from "@/components/admin";
 import { DashShell } from "@/components/dash/dash-shell";
 import { useOperatorNav } from "@/components/dash/nav-items";
 import { AddTourDialog } from "@/components/operator/add-tour-dialog";
@@ -240,6 +241,21 @@ function OperatorToursPage() {
                         {active ? "Скрыть" : "Показать"}
                       </Button>
                     )}
+                    <ConfirmAction
+                      triggerLabel="Удалить"
+                      title="Удалить тур?"
+                      description={`${tour.title || getHotel(tour.hotelId).name}: тур исчезнет из поиска и вашего кабинета навсегда. Если по нему были брони, он будет скрыт, а история броней сохранится.`}
+                      confirmLabel="Удалить"
+                      destructive
+                      variant="ghost"
+                      onConfirm={() => {
+                        setState((s) => ({
+                          ...s,
+                          tours: s.tours.filter((t) => t.id !== tour.id),
+                        }));
+                        toast.success("Тур удалён");
+                      }}
+                    />
                   </div>
                 </div>
               </article>

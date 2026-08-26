@@ -245,6 +245,27 @@ function AdminToursPage() {
                             />
                           </>
                         )}
+                        <ConfirmAction
+                          triggerLabel="Удалить"
+                          title="Удалить тур?"
+                          description={`${t.title || hotel.name}: тур исчезнет из поиска и базы навсегда. Если по нему были брони, он будет скрыт, а история сохранится.`}
+                          confirmLabel="Удалить"
+                          destructive
+                          variant="ghost"
+                          onConfirm={() => {
+                            setState((s) => ({
+                              ...s,
+                              tours: s.tours.filter((x) => x.id !== t.id),
+                            }));
+                            appendAudit({
+                              actorId: user.id,
+                              action: "tour_delete",
+                              entityType: "tour",
+                              entityId: t.id,
+                            });
+                            toast.success("Тур удалён");
+                          }}
+                        />
                       </TableCell>
                     </TableRow>
                   );

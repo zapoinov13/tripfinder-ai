@@ -218,6 +218,34 @@ function AdminOperatorsPage() {
                           Возобновить
                         </Button>
                       )}
+                      <ConfirmAction
+                        triggerLabel="Удалить"
+                        title="Удалить компанию?"
+                        description={`${o.name}: страница, туры и объявления исчезнут навсегда, сотрудники станут туристами. Брони и платежи сохраняются в отчётах. Действие нельзя отменить.`}
+                        confirmLabel="Удалить"
+                        destructive
+                        onConfirm={() => {
+                          setState((s) => ({
+                            ...s,
+                            organizations: s.organizations.filter((x) => x.id !== o.id),
+                            tours: s.tours.filter((t) => t.operatorOrgId !== o.id),
+                            members: s.members.filter((m) => m.organizationId !== o.id),
+                            users: s.users.map((u2) => {
+                              if (u2.organizationId !== o.id) return u2;
+                              const { organizationId: _org, ...rest } = u2;
+                              return { ...rest, role: "TOURIST" as const };
+                            }),
+                          }));
+                          appendAudit({
+                            actorId: user.id,
+                            action: "organization_delete",
+                            entityType: "organization",
+                            entityId: o.id,
+                            meta: { name: o.name },
+                          });
+                          toast.success("Компания удалена");
+                        }}
+                      />
                     </TableCell>
                   </TableRow>
                 );

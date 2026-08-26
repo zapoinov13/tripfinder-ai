@@ -149,6 +149,10 @@ export function hideVerticalListing(id: string, organizationId: string) {
   );
 }
 
+export function deleteVerticalListing(id: string, organizationId: string) {
+  writeAll(readAll().filter((x) => !(x.id === id && x.organizationId === organizationId)));
+}
+
 /** Back-compat wrappers for sport module imports */
 export const subscribeSportListings = subscribeVerticalListings;
 export function listPublishedSports() {

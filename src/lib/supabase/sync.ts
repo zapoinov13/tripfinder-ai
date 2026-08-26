@@ -34,6 +34,20 @@ function report(table: string, error: { message: string } | null) {
   if (error) console.warn(`[sync] ${table}: ${error.message}`);
 }
 
+/** RPC вне сгенерированных типов Database (админ-функции из миграций). */
+function callRpc(
+  sb: { rpc: unknown },
+  fn: string,
+  args: Record<string, unknown>,
+): Promise<{ error: { message: string } | null }> {
+  return (
+    sb.rpc as (
+      fn: string,
+      args: Record<string, unknown>,
+    ) => Promise<{ error: { message: string } | null }>
+  )(fn, args);
+}
+
 type Op = () => Promise<void>;
 
 function run(ops: Op[]) {
@@ -511,12 +525,7 @@ function collectOps(prev: PlatformState, next: PlatformState): Op[] {
   for (const u of users.removed) {
     if (!isUuid(u.id)) continue;
     ops.push(async () => {
-      const { error } = await (
-        sb.rpc as unknown as (
-          fn: string,
-          args: Record<string, unknown>,
-        ) => Promise<{ error: { message: string } | null }>
-      )("admin_delete_user", { target_user: u.id });
+      const { error } = await callRpc(sb, "admin_delete_user", { target_user: u.id });
       report("profiles.delete", error);
     });
   }
@@ -546,6 +555,15 @@ function collectOps(prev: PlatformState, next: PlatformState): Op[] {
       report("organizations.update", error);
     });
   }
+  // Удаление компании из админки: RPC чистит базу (туры, участники, отвязка
+  // сотрудников и финансовых записей) — иначе гидрация вернёт её обратно.
+  for (const o of orgs.removed) {
+    if (!isUuid(o.id)) continue;
+    ops.push(async () => {
+      const { error } = await callRpc(sb, "admin_delete_organization", { target_org: o.id });
+      report("organizations.delete", error);
+    });
+  }
 
   const tours = diff(prev.tours, next.tours, sameTour);
   for (const t of tours.updated) {
@@ -561,6 +579,13 @@ function collectOps(prev: PlatformState, next: PlatformState): Op[] {
         })
         .eq("id", t.id);
       report("tour_offers.update", error);
+    });
+  }
+  // Удаление тура: тур с бронями сервер прячет вместо удаления.
+  for (const t of tours.removed) {
+    ops.push(async () => {
+      const { error } = await callRpc(sb, "admin_delete_tour", { target_tour: t.id });
+      report("tour_offers.delete", error);
     });
   }
 
