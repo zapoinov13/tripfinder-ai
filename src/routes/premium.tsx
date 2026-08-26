@@ -6,7 +6,8 @@ import { formatPrice, getHotel, tourCover } from "@/data/demo";
 import { useAuth } from "@/lib/platform/auth";
 import { trackEvent } from "@/lib/platform/catalog";
 import { usePlatformStore } from "@/lib/platform/hooks";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/premium")({
   head: () => ({
@@ -36,7 +37,10 @@ function PremiumPage() {
   const navigate = useNavigate();
   const state = usePlatformStore();
   const price = state.config.premiumMonthlyPrice;
-  const premiumTours = state.tours.filter((t) => t.tags.includes("premium")).slice(0, 3);
+  const premiumTours = state.tours
+    .filter((t) => t.status === "active" && t.tags.includes("premium"))
+    .slice(0, 3);
+  const [buying, setBuying] = useState(false);
 
   useEffect(() => {
     trackEvent("PREMIUM_VIEWED");
@@ -65,15 +69,22 @@ function PremiumPage() {
             <Button
               size="lg"
               className="mt-8"
-              onClick={() => {
+              disabled={buying}
+              onClick={async () => {
                 if (!isAuthenticated) {
-                  navigate({ to: "/login", search: { next: "/premium" } as never });
+                  void navigate({ to: "/login", search: { next: "/premium" } as never });
                   return;
                 }
-                purchasePremium();
+                setBuying(true);
+                try {
+                  const res = await purchasePremium();
+                  if (!res.ok) toast.error(res.error ?? "Не удалось активировать Premium");
+                } finally {
+                  setBuying(false);
+                }
               }}
             >
-              Подключить Premium, {formatPrice(price)}
+              {buying ? "Подключаем…" : `Подключить Premium, ${formatPrice(price)}`}
             </Button>
           )}
         </section>
@@ -122,7 +133,9 @@ function PremiumPage() {
                       <>
                         <div className="mt-4 font-display text-xl font-semibold">Premium Deal</div>
                         <Button className="mt-3" size="sm" asChild>
-                          <Link to="/premium">Открыть Premium</Link>
+                          <Link to="/tour/$tourId" params={{ tourId: tour.id }}>
+                            Смотреть предложение
+                          </Link>
                         </Button>
                       </>
                     )}

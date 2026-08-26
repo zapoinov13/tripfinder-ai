@@ -16,11 +16,7 @@ type Props = {
   heightClassName?: string;
 };
 
-export function HotelMap({
-  hotel,
-  className,
-  heightClassName = "h-64 md:h-80",
-}: Props) {
+export function HotelMap({ hotel, className, heightClassName = "h-64 md:h-80" }: Props) {
   const mapId = useId().replace(/:/g, "");
   const containerRef = useRef<HTMLDivElement>(null);
   const [point] = useState<GeoPoint>(() => resolveHotelCoords(hotel));

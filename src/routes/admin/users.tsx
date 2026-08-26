@@ -66,6 +66,13 @@ function AdminUsersPage() {
 
   if (!allowed || !user) return null;
 
+  const isPlatformAdmin = user.role === "PLATFORM_ADMIN";
+  // Менеджер не может назначать роль админа платформы и трогать админов,
+  // и никто не редактирует собственный аккаунт (защита от самоблокировки).
+  const assignableRoles = isPlatformAdmin ? roles : roles.filter((r) => r !== "PLATFORM_ADMIN");
+  const canEdit = (target: (typeof state.users)[number]) =>
+    target.id !== user.id && (isPlatformAdmin || target.role !== "PLATFORM_ADMIN");
+
   return (
     <DashShell
       brand="TourGo Админ"
@@ -128,6 +135,7 @@ function AdminUsersPage() {
                   <TableCell>
                     <Select
                       value={u.role}
+                      disabled={!canEdit(u)}
                       onValueChange={(v) => {
                         setState((s) => ({
                           ...s,
@@ -149,7 +157,10 @@ function AdminUsersPage() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {roles.map((r) => (
+                        {(assignableRoles.includes(u.role)
+                          ? assignableRoles
+                          : [u.role, ...assignableRoles]
+                        ).map((r) => (
                           <SelectItem key={r} value={r}>
                             {roleLabel[r]}
                           </SelectItem>
@@ -169,7 +180,7 @@ function AdminUsersPage() {
                   <TableCell>
                     {u.id === user.id ? (
                       <span className="text-xs text-muted-foreground">Это вы</span>
-                    ) : (
+                    ) : canEdit(u) ? (
                       <div className="flex flex-wrap justify-end gap-2">
                         <ConfirmAction
                           triggerLabel={u.status === "active" ? "Заморозить" : "Разморозить"}
@@ -229,7 +240,7 @@ function AdminUsersPage() {
                           }}
                         />
                       </div>
-                    )}
+                    ) : null}
                   </TableCell>
                 </TableRow>
               ))}

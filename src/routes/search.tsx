@@ -113,10 +113,13 @@ const offerOptions = [
 ];
 const sortOptions: Array<{ value: SortKey; label: string }> = [
   { value: "recommended", label: "Сначала выгодные" },
+  { value: "match", label: "По запросу" },
   { value: "price-asc", label: "Дешевле" },
   { value: "price-desc", label: "Дороже" },
   { value: "rating", label: "Выше рейтинг" },
   { value: "popular", label: "Популярные" },
+  { value: "new", label: "Новые" },
+  { value: "premium", label: "Premium" },
   { value: "hot", label: "Горящие" },
 ];
 
@@ -602,14 +605,17 @@ function SearchPage() {
     {
       label: "Премиум",
       active: params.offers.includes("premium") || params.stars.includes(5),
-      patch: {
-        offers: params.offers.includes("premium")
-          ? params.offers.filter((o) => o !== "premium")
-          : [...params.offers, "premium"],
-        stars: params.stars.includes(5)
-          ? params.stars.filter((s) => s !== 5)
-          : [...params.stars, 5],
-      },
+      // Выключение снимает обе части фильтра, включение — ставит обе.
+      patch:
+        params.offers.includes("premium") || params.stars.includes(5)
+          ? {
+              offers: params.offers.filter((o) => o !== "premium"),
+              stars: params.stars.filter((s) => s !== 5),
+            }
+          : {
+              offers: [...params.offers, "premium"],
+              stars: [...params.stars, 5],
+            },
     },
     {
       label: "Бюджетные туры",

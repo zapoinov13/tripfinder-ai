@@ -125,7 +125,8 @@ export function removePriceAlert(tourId: string, userId = userKey()) {
 
 export function migrateAnonymousToUser(userId: string) {
   setState((s) => {
-    const anonFavs = s.favorites.filter((f) => f.userId === ANON);
+    const ownTourIds = new Set(s.favorites.filter((f) => f.userId === userId).map((f) => f.tourId));
+    const anonFavs = s.favorites.filter((f) => f.userId === ANON && !ownTourIds.has(f.tourId));
     const anonCmp = s.comparisons.find((c) => c.userId === ANON);
     const anonAlerts = s.priceAlerts.filter((a) => a.userId === ANON);
     return {

@@ -63,7 +63,9 @@ function stableJitter(seed: string, span = 0.012): GeoPoint {
   return { lat, lng };
 }
 
-export function resolveHotelCoords(hotel: Pick<Hotel, "id" | "name" | "destinationId" | "city" | "district">): GeoPoint {
+export function resolveHotelCoords(
+  hotel: Pick<Hotel, "id" | "name" | "destinationId" | "city" | "district">,
+): GeoPoint {
   const name = hotel.name.toLowerCase();
   for (const row of HOTEL_COORDS) {
     if (name.includes(row.match)) return row.point;
@@ -87,7 +89,10 @@ export function hotelMapsSearchQuery(hotel: Pick<Hotel, "name" | "district" | "c
   return [hotel.name, hotel.district, hotel.city, hotel.country].filter(Boolean).join(", ");
 }
 
-export function googleMapsUrl(hotel: Pick<Hotel, "name" | "district" | "city" | "country">, point?: GeoPoint) {
+export function googleMapsUrl(
+  hotel: Pick<Hotel, "name" | "district" | "city" | "country">,
+  point?: GeoPoint,
+) {
   if (point) {
     return `https://www.google.com/maps/search/?api=1&query=${point.lat}%2C${point.lng}`;
   }

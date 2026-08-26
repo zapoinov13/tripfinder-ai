@@ -85,7 +85,7 @@ function StaysPage() {
   const promoted = useMemo(() => promotedCompanyIds(), [state.promotions]);
 
   useEffect(() => {
-    setCity(params.city ?? "");
+    setCity((prev) => params.city ?? prev);
   }, [params.city]);
 
   const catalog: StayCard[] = [

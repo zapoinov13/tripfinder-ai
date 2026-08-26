@@ -51,7 +51,8 @@ function OperatorToursPage() {
   const filtered = useMemo(() => {
     return orgTours.filter((t) => {
       if (filter === "active") return t.status === "active";
-      if (filter === "inactive") return t.status === "inactive" || t.status === "hidden";
+      if (filter === "inactive")
+        return t.status === "inactive" || t.status === "hidden" || t.status === "blocked";
       if (filter === "hot") return t.tags.includes("hot");
       if (filter === "premium") return t.tags.includes("premium");
       if (filter === "sponsored") return t.tags.includes("sponsored");
@@ -127,6 +128,16 @@ function OperatorToursPage() {
           <Button
             className="mt-5"
             onClick={() => {
+              if (
+                !canCreateTour(
+                  activeCount,
+                  { code: plan.code, activeTourLimit: plan.tourLimit, features: plan.features },
+                  organization.additionalTourLimit,
+                )
+              ) {
+                toast.error("Достигнут лимит активных туров по вашему тарифу.");
+                return;
+              }
               setAddMode("choose");
               setAdding(true);
             }}
@@ -140,6 +151,7 @@ function OperatorToursPage() {
             const hotel = getHotel(tour.hotelId);
             const cover = tourCover(tour, hotel);
             const active = tour.status === "active";
+            const moderated = tour.status === "hidden" || tour.status === "blocked";
             return (
               <article key={tour.id} className="surface-card overflow-hidden">
                 <div className="relative aspect-[4/3]">
@@ -187,26 +199,47 @@ function OperatorToursPage() {
                         {formatNumber(tour.views)} просмотров
                       </p>
                     </div>
-                    <Button
-                      size="sm"
-                      variant={active ? "outline" : "default"}
-                      onClick={() => {
-                        setState((s) => ({
-                          ...s,
-                          tours: s.tours.map((t) =>
-                            t.id === tour.id
-                              ? {
-                                  ...t,
-                                  status: t.status === "active" ? "inactive" : "active",
-                                  lastSyncedAt: nowIso(),
-                                }
-                              : t,
-                          ),
-                        }));
-                      }}
-                    >
-                      {active ? "Скрыть" : "Показать"}
-                    </Button>
+                    {moderated ? (
+                      <span className="text-xs text-muted-foreground">
+                        {tour.status === "blocked" ? "Заблокирован модерацией" : "Скрыт модерацией"}
+                      </span>
+                    ) : (
+                      <Button
+                        size="sm"
+                        variant={active ? "outline" : "default"}
+                        onClick={() => {
+                          if (
+                            !active &&
+                            !canCreateTour(
+                              activeCount,
+                              {
+                                code: plan.code,
+                                activeTourLimit: plan.tourLimit,
+                                features: plan.features,
+                              },
+                              organization.additionalTourLimit,
+                            )
+                          ) {
+                            toast.error("Достигнут лимит активных туров по вашему тарифу.");
+                            return;
+                          }
+                          setState((s) => ({
+                            ...s,
+                            tours: s.tours.map((t) =>
+                              t.id === tour.id
+                                ? {
+                                    ...t,
+                                    status: t.status === "active" ? "inactive" : "active",
+                                    lastSyncedAt: nowIso(),
+                                  }
+                                : t,
+                            ),
+                          }));
+                        }}
+                      >
+                        {active ? "Скрыть" : "Показать"}
+                      </Button>
+                    )}
                   </div>
                 </div>
               </article>

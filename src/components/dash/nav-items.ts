@@ -24,6 +24,7 @@ import {
   Users,
 } from "lucide-react";
 
+import { useOptionalAuth } from "@/lib/platform/auth";
 import { usePlatformStore } from "@/lib/platform/hooks";
 
 import type { DashItem } from "./dash-shell";
@@ -75,6 +76,16 @@ export function useOperatorNav(orgId?: string): DashItem[] {
   });
 }
 
+/** Страницы, требующие PLATFORM_ADMIN: менеджеру их не показываем. */
+const adminOnlyRoutes = new Set([
+  "/admin/payments",
+  "/admin/premium",
+  "/admin/promotions",
+  "/admin/audit-logs",
+  "/admin/ai-keys",
+  "/admin/settings",
+]);
+
 const adminNavBase: DashItem[] = [
   { label: "Обзор платформы", to: "/admin", icon: Gauge },
   { label: "Пользователи", to: "/admin/users", icon: Users },
@@ -97,12 +108,18 @@ export const adminNav = adminNavBase;
 
 export function useAdminNav(): DashItem[] {
   const state = usePlatformStore();
+  const auth = useOptionalAuth();
   const pendingOps = state.organizations.filter((o) => o.status === "PENDING_APPROVAL").length;
-  const apiErrors =
-    state.apiConnections.filter((c) => c.status === "error").length +
-    state.syncLogs.filter((l) => l.status === "error").length;
+  // Бейдж — только текущие проблемы подключений; исторические error-логи
+  // никогда не чистятся и держали бы бейдж красным вечно.
+  const apiErrors = state.apiConnections.filter((c) => c.status === "error").length;
 
-  return adminNavBase.map((item) => {
+  const items =
+    auth?.user?.role === "PLATFORM_MANAGER"
+      ? adminNavBase.filter((item) => !adminOnlyRoutes.has(item.to))
+      : adminNavBase;
+
+  return items.map((item) => {
     if (item.to === "/admin/operators" && pendingOps > 0) return { ...item, badge: pendingOps };
     if (item.to === "/admin/api-monitoring" && apiErrors > 0) return { ...item, badge: apiErrors };
     return item;

@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { useAuth, useRequireAuth } from "@/lib/platform/auth";
 import { usePlatformStore } from "@/lib/platform/hooks";
 import { setState } from "@/lib/platform/store";
+import { getSupabase } from "@/lib/supabase/client";
 
 export const Route = createFileRoute("/operator/settings")({
   head: () => ({ meta: [{ title: "Настройки · TourGo" }] }),
@@ -57,7 +58,7 @@ function OperatorSettingsPage() {
     toast.success("Имя и город сохранены");
   };
 
-  const savePassword = () => {
+  const savePassword = async () => {
     if (password.length < 8) {
       toast.error("Пароль не короче 8 символов");
       return;
@@ -65,6 +66,15 @@ function OperatorSettingsPage() {
     if (password !== password2) {
       toast.error("Пароли не совпадают");
       return;
+    }
+    // Реальный пароль входа живёт в Supabase Auth: локальный стор — лишь витрина.
+    const sb = getSupabase();
+    if (sb) {
+      const { error } = await sb.auth.updateUser({ password });
+      if (error) {
+        toast.error(error.message || "Не удалось обновить пароль");
+        return;
+      }
     }
     setState((s) => ({
       ...s,

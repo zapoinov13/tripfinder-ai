@@ -318,10 +318,19 @@ export const formatSearchDates = (start: string, end: string) => {
   return `${fmt.format(s).replace(/\s\S+$/, "")}–${fmt.format(e)}`;
 };
 
+const adultsWord = (n: number) => (n % 10 === 1 && n % 100 !== 11 ? "взрослый" : "взрослых");
+const childrenWord = (n: number) => {
+  const mod10 = n % 10;
+  const mod100 = n % 100;
+  if (mod10 === 1 && mod100 !== 11) return "ребёнок";
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return "ребёнка";
+  return "детей";
+};
+
 export const guestsSummary = (adults: number, children: number) =>
   children > 0
-    ? `${adults} взрослых + ${children} ${children === 1 ? "ребёнок" : "детей"}`
-    : `${adults} взрослых`;
+    ? `${adults} ${adultsWord(adults)} + ${children} ${childrenWord(children)}`
+    : `${adults} ${adultsWord(adults)}`;
 
 /** Search params that should be forwarded from home page search to /search */
 export const toSearchLink = (p: Partial<SearchParams>) => {

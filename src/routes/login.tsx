@@ -1,6 +1,6 @@
 import { Link, createFileRoute, useNavigate, useRouter } from "@tanstack/react-router";
 import { LogIn } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { AuthLayout } from "@/components/site/auth-layout";
 import { AppleSignInButton } from "@/components/auth/apple-sign-in-button";
@@ -21,7 +21,8 @@ export const Route = createFileRoute("/login")({
   }),
   validateSearch: (search: Record<string, unknown>): { next?: string } =>
     // Только внутренние пути: внешний redirect после логина недопустим.
-    typeof search["next"] === "string" && search["next"].startsWith("/")
+    // «//evil.com» и «/\evil.com» браузер трактует как protocol-relative URL — отсекаем.
+    typeof search["next"] === "string" && /^\/(?![/\\])/.test(search["next"])
       ? { next: search["next"] }
       : {},
   component: LoginPage,
@@ -37,17 +38,21 @@ function LoginPage() {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
-  if (user) {
-    const to = user.role.startsWith("PLATFORM")
+  const isLoggedIn = Boolean(user);
+  const role = user?.role;
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    if (next) {
+      router.history.push(next);
+      return;
+    }
+    const to = role?.startsWith("PLATFORM")
       ? "/admin"
-      : user.role.startsWith("OPERATOR")
+      : role?.startsWith("OPERATOR")
         ? "/operator"
         : "/profile";
-    queueMicrotask(() => {
-      if (next) router.history.push(next);
-      else void navigate({ to });
-    });
-  }
+    void navigate({ to });
+  }, [isLoggedIn, role, next, navigate, router]);
 
   return (
     <AuthLayout

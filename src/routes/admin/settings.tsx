@@ -74,12 +74,13 @@ function AdminSettingsPage() {
             variant="destructive"
             size="default"
             onConfirm={() => {
+              resetPlatformStore();
+              // Запись — после сброса, иначе её уничтожит сам сброс.
               appendAudit({
                 actorId: user.id,
                 action: "store_reset",
                 entityType: "store",
               });
-              resetPlatformStore();
               toast.success("Хранилище платформы сброшено");
             }}
           />

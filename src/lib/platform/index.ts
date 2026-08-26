@@ -8,7 +8,9 @@
  * - manager@tourgo.demo: OPERATOR_MANAGER
  * - pending@tourgo.demo: OPERATOR_ADMIN (PENDING_APPROVAL)
  * - admin@tourgo.demo: PLATFORM_ADMIN
- * - zapoinov@bk.ru: PLATFORM_ADMIN (пароль = email)
+ *
+ * Аккаунт владельца в исходниках не хранится: прод — Supabase
+ * (npm run ensure:admin, пароль в env), dev — VITE_DEV_ADMIN_* из .env.
  *
  * Data lives in localStorage key `tourgo:platform-v1`.
  * Later: replace store.ts persistence with Supabase client; keep service interfaces.

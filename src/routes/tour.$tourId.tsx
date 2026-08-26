@@ -20,6 +20,7 @@ import {
   Wifi,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 import { SiteLayout } from "@/components/site/site-layout";
 import { HotelMap } from "@/components/maps/hotel-map";
@@ -117,7 +118,6 @@ function buildPriceBreakdown(tour: Tour) {
     ["Трансфер", transfer],
     ["Дополнительные услуги", extras],
     ...(discount > 0 ? [["Скидка", -discount] as [string, number]] : []),
-    ...(tour.premiumPrice ? [["Premium price", tour.premiumPrice] as [string, number]] : []),
   ] as Array<[string, number]>;
 }
 
@@ -161,15 +161,20 @@ function TourPage() {
 
   const shareTour = async () => {
     const url = typeof window !== "undefined" ? window.location.href : "";
-    if (navigator.share) {
-      await navigator.share({
-        title: hotel.name,
-        text: `${hotel.name}, ${formatPrice(displayPrice)}`,
-        url,
-      });
-      return;
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: hotel.name,
+          text: `${hotel.name}, ${formatPrice(displayPrice)}`,
+          url,
+        });
+        return;
+      }
+      await navigator.clipboard?.writeText(url);
+      toast.success("Ссылка скопирована");
+    } catch {
+      // пользователь закрыл системный шэринг — не ошибка
     }
-    await navigator.clipboard?.writeText(url);
   };
 
   const startBooking = async () => {
@@ -389,9 +394,11 @@ function TourPage() {
                   </li>
                 ))}
               </ul>
-              <Button variant="secondary" className="mt-6">
-                <Sparkles className="size-4" />
-                Спросить AI
+              <Button variant="secondary" className="mt-6" asChild>
+                <Link to="/ai-search">
+                  <Sparkles className="size-4" />
+                  Спросить AI
+                </Link>
               </Button>
             </section>
 
@@ -411,6 +418,14 @@ function TourPage() {
                   <span>Итого</span>
                   <span>{formatPrice(tour.price)}</span>
                 </div>
+                {tour.premiumPrice ? (
+                  <div className="flex justify-between gap-4 text-sm text-muted-foreground">
+                    <span>Цена для Premium-подписчиков</span>
+                    <span className="font-medium text-foreground">
+                      {formatPrice(tour.premiumPrice)}
+                    </span>
+                  </div>
+                ) : null}
               </div>
             </section>
           </div>

@@ -94,6 +94,10 @@ function AdminBookingsPage() {
             options: [
               { value: "all", label: "Все статусы" },
               { value: "PENDING", label: "Ожидает" },
+              { value: "PRICE_CHECK", label: "Проверка цены" },
+              { value: "AWAITING_PAYMENT", label: "Ждёт оплаты" },
+              { value: "PAID", label: "Оплачено" },
+              { value: "CONFIRMING", label: "Подтверждается" },
               { value: "CONFIRMED", label: "Подтверждено" },
               { value: "CANCELLED", label: "Отменено" },
               { value: "FAILED", label: "Ошибка" },
@@ -137,7 +141,10 @@ function AdminBookingsPage() {
                     {new Date(b.createdAt).toLocaleString("ru-RU")}
                   </TableCell>
                   <TableCell className="space-x-1 whitespace-nowrap">
-                    {b.status !== "CONFIRMED" && b.status !== "CANCELLED" ? (
+                    {b.status !== "CONFIRMED" &&
+                    b.status !== "CANCELLED" &&
+                    b.status !== "COMPLETED" &&
+                    b.status !== "FAILED" ? (
                       <Button
                         size="sm"
                         onClick={() => setBookingStatus(b.id, "CONFIRMED", "booking_confirm")}
@@ -145,7 +152,7 @@ function AdminBookingsPage() {
                         Подтвердить
                       </Button>
                     ) : null}
-                    {b.status !== "CANCELLED" ? (
+                    {b.status !== "CANCELLED" && b.status !== "COMPLETED" ? (
                       <ConfirmAction
                         triggerLabel="Отменить"
                         title="Отменить бронирование?"

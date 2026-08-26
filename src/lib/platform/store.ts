@@ -1,5 +1,5 @@
 import { createSeedState, STORE_KEY } from "./seed";
-import type { PlatformState } from "./types";
+import type { PlatformState, PlatformUser } from "./types";
 
 type Listener = () => void;
 type MutationObserver = (prev: PlatformState, next: PlatformState) => void;
@@ -38,22 +38,13 @@ function loadFromStorage(): PlatformState | null {
     if (!parsed?.version || !Array.isArray(parsed.tours) || !Array.isArray(parsed.users)) {
       return null;
     }
-    // Коллекции, появившиеся позже сохранённого состояния.
-    const users = Array.isArray(parsed.users) ? [...parsed.users] : [];
-    const ownerEmail = "zapoinov@bk.ru";
-    const ownerIdx = users.findIndex((u) => u.email.toLowerCase() === ownerEmail);
-    const owner = {
-      id: ownerIdx >= 0 ? users[ownerIdx]!.id : "user-owner-admin",
-      email: ownerEmail,
-      password: "zapoinov@bk.ru",
-      name: "Юрий Запойнов",
-      city: "Алматы",
-      role: "PLATFORM_ADMIN" as const,
-      status: "active" as const,
-      createdAt: ownerIdx >= 0 ? users[ownerIdx]!.createdAt : new Date().toISOString(),
-    };
-    if (ownerIdx >= 0) users[ownerIdx] = { ...users[ownerIdx]!, ...owner };
-    else users.push(owner);
+    // Коллекции, появившиеся позже сохранённого состояния. Легаси-запись
+    // владельца («user-owner-admin», пароль в исходниках) вычищаем из старых
+    // снапшотов: прод-доступ владельца обеспечивает Supabase (npm run
+    // ensure:admin), dev-доступ — admin@tourgo.demo или VITE_DEV_ADMIN_*.
+    const users = (Array.isArray(parsed.users) ? parsed.users : []).filter(
+      (u) => u.id !== "user-owner-admin",
+    );
     return {
       ...parsed,
       users,
@@ -67,9 +58,36 @@ function loadFromStorage(): PlatformState | null {
   }
 }
 
+/**
+ * Dev-вход админа без Supabase: email и пароль берутся только из локального
+ * .env (VITE_DEV_ADMIN_EMAIL / VITE_DEV_ADMIN_PASSWORD), в репозиторий и
+ * прод-сборку никакие креды не попадают.
+ */
+function withDevAdmin(base: PlatformState): PlatformState {
+  if (!import.meta.env.DEV) return base;
+  const email = import.meta.env.VITE_DEV_ADMIN_EMAIL?.trim().toLowerCase();
+  const password = import.meta.env.VITE_DEV_ADMIN_PASSWORD;
+  if (!email || !password) return base;
+  const existing = base.users.find((u) => u.email.toLowerCase() === email);
+  const admin: PlatformUser = {
+    id: existing?.id ?? "user-dev-admin",
+    email,
+    password,
+    name: existing?.name ?? "Администратор",
+    city: existing?.city ?? "Алматы",
+    role: "PLATFORM_ADMIN",
+    status: "active",
+    createdAt: existing?.createdAt ?? new Date().toISOString(),
+  };
+  return {
+    ...base,
+    users: [...base.users.filter((u) => u.email.toLowerCase() !== email), admin],
+  };
+}
+
 export function getState(): PlatformState {
   if (!state) {
-    state = loadFromStorage() ?? createSeedState();
+    state = withDevAdmin(loadFromStorage() ?? createSeedState());
     persist(state);
   }
   return state;

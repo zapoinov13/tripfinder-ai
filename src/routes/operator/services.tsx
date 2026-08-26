@@ -1,6 +1,6 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { Plus } from "lucide-react";
-import { useSyncExternalStore, useState } from "react";
+import { useEffect, useSyncExternalStore, useState } from "react";
 
 import { DashShell } from "@/components/dash/dash-shell";
 import { useOperatorNav } from "@/components/dash/nav-items";
@@ -53,6 +53,10 @@ function OperatorServicesPage() {
   const nav = useOperatorNav(organization?.id);
   const search = Route.useSearch();
   const [tab, setTab] = useState<VerticalId>(search.tab ?? "stay");
+  // Навигация с другим ?tab= должна переключать вкладку и после монтирования.
+  useEffect(() => {
+    if (search.tab) setTab(search.tab);
+  }, [search.tab]);
   const [adding, setAdding] = useState(false);
   const [, bump] = useState(0);
   const items = useSyncExternalStore(

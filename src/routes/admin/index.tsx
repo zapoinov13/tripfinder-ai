@@ -86,7 +86,12 @@ function AdminDashboard() {
 
   const pendingOps = state.organizations.filter((o) => o.status === "PENDING_APPROVAL");
   const failedPayments = state.payments.filter((p) => p.status === "failed");
-  const apiErrors = state.syncLogs.filter((l) => l.status === "error");
+  // Показываем только свежие ошибки синхронизации (24 часа): error-логи
+  // никогда не чистятся, и вся история держала бы KPI красным вечно.
+  const dayAgo = Date.now() - 24 * 3600 * 1000;
+  const apiErrors = state.syncLogs.filter(
+    (l) => l.status === "error" && new Date(l.createdAt).getTime() > dayAgo,
+  );
   const connErrors = state.apiConnections.filter((c) => c.status === "error");
 
   const attention: Array<{ title: string; detail: string; to: string }> = [
