@@ -1,3 +1,4 @@
+import { categoriesOfServices, travelCategoryIds } from "./company-categories";
 import type { CompanyVerificationFile, VerificationDocumentId } from "./types";
 
 export type VerificationDocumentType = {
@@ -34,28 +35,20 @@ export const verificationDocumentTypes: VerificationDocumentType[] = [
   },
 ];
 
-const TRAVEL_SERVICES = new Set([
-  "Туры",
-  "Отели",
-  "Экскурсии",
-  "Трансферы",
-  "Индивидуальные поездки",
-  "Помощь туристам на месте",
-]);
-
 /**
- * Какие документы показывать компании: зависит от её услуг.
- * Спорт-залу не нужна турлицензия, турагенту — коммерческая.
+ * Какие документы показывать компании: зависит от категорий её услуг.
+ * Спорт-залу и прокату авто не нужна турлицензия, турагенту — коммерческая.
  */
 export function verificationDocumentTypesFor(services: string[]): VerificationDocumentType[] {
-  const isTravel = services.some((s) => TRAVEL_SERVICES.has(s));
-  const isOther = services.some((s) => !TRAVEL_SERVICES.has(s));
+  const categories = categoriesOfServices(services);
+  const isTravel = [...categories].some((id) => travelCategoryIds.has(id));
+  const isCommercial = [...categories].some((id) => !travelCategoryIds.has(id));
   return verificationDocumentTypes.filter((doc) => {
     if (doc.id === "registration") return true;
     if (doc.id === "tourism_license" || doc.id === "liability_insurance") {
-      return isTravel || services.length === 0;
+      return isTravel || categories.size === 0;
     }
-    return isOther;
+    return isCommercial;
   });
 }
 

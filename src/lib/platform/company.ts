@@ -13,29 +13,14 @@ export {
 } from "./verification-documents";
 export type { VerificationDocumentId } from "./types";
 
-/** Туристические услуги: для них действуют турлицензия и страховка. */
-export const travelServiceOptions = [
-  "Туры",
-  "Отели",
-  "Экскурсии",
-  "Трансферы",
-  "Аренда авто",
-  "Индивидуальные поездки",
-  "Помощь туристам на месте",
-];
+export { companyCategories, categoriesOfServices } from "./company-categories";
+import { companyCategories as categoriesCatalog } from "./company-categories";
 
-/** Спорт-услуги: подтверждаются коммерческой лицензией, а не турдокументами. */
-export const sportServiceOptions = [
-  "Тренажёрный зал",
-  "Падел и теннис",
-  "Групповые тренировки",
-  "Аренда спортплощадок",
-];
-
-export const companyServiceGroups = [
-  { label: "Путешествия", options: travelServiceOptions },
-  { label: "Спорт и активности", options: sportServiceOptions },
-];
+/** Группы услуг для кабинета компании: по категориям деятельности. */
+export const companyServiceGroups = categoriesCatalog.map((category) => ({
+  label: category.label,
+  options: category.services,
+}));
 
 export const companyServiceOptions = companyServiceGroups.flatMap((g) => g.options);
 

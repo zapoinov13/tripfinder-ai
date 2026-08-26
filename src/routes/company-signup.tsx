@@ -19,7 +19,7 @@ import { useAuth } from "@/lib/platform/auth";
 import {
   clientCountryOptions,
   companyCountryOptions,
-  companyServiceOptions,
+  companyCategories,
   findOrgByEmail,
   hasRequiredVerificationDocuments,
   languageOptions,
@@ -51,6 +51,10 @@ const steps = [
   {
     title: "Компания",
     hint: "Так страница будет выглядеть в каталоге и в заявках.",
+  },
+  {
+    title: "Категория",
+    hint: "Чем занимается компания? Можно выбрать несколько направлений.",
   },
   {
     title: "Услуги",
@@ -89,12 +93,14 @@ function CompanySignupPage() {
     city: "Дубай",
     legalName: "",
     registrationNumber: "",
+    address: "",
     phone: "",
     email: "",
     website: "",
     about: "",
   });
-  const [services, setServices] = useState<string[]>(["Туры"]);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [services, setServices] = useState<string[]>([]);
   const [countries, setCountries] = useState<string[]>(["ОАЭ"]);
   const [clientCountries, setClientCountries] = useState<string[]>(["Казахстан"]);
   const [languages, setLanguages] = useState<string[]>(["Русский"]);
@@ -112,9 +118,10 @@ function CompanySignupPage() {
       );
     }
     if (step === 1) return Boolean(company.name.trim() && company.city.trim());
-    if (step === 2) return services.length > 0;
-    if (step === 3) return countries.length > 0 && clientCountries.length > 0;
-    if (step === 4) return languages.length > 0;
+    if (step === 2) return categories.length > 0;
+    if (step === 3) return services.length > 0;
+    if (step === 4) return countries.length > 0 && clientCountries.length > 0;
+    if (step === 5) return languages.length > 0;
     return true;
   };
 
@@ -310,6 +317,13 @@ function CompanySignupPage() {
                   onChange={(v) => setCompany({ ...company, email: v })}
                 />
                 <Field
+                  id="company-address"
+                  label="Адрес офиса"
+                  value={company.address}
+                  onChange={(v) => setCompany({ ...company, address: v })}
+                  placeholder="Улица, дом, офис"
+                />
+                <Field
                   id="company-site"
                   label="Сайт"
                   value={company.website}
@@ -330,14 +344,68 @@ function CompanySignupPage() {
             ) : null}
 
             {step === 2 ? (
-              <CheckGroup
-                options={companyServiceOptions}
-                selected={services}
-                onToggle={(v) => toggle(services, setServices, v)}
-              />
+              <div className="grid gap-3 sm:grid-cols-2">
+                {companyCategories.map((category) => {
+                  const on = categories.includes(category.id);
+                  return (
+                    <button
+                      key={category.id}
+                      type="button"
+                      onClick={() => {
+                        toggle(categories, setCategories, category.id);
+                        // Услуги снятой категории убираем, чтобы не уехали в заявку.
+                        if (on) {
+                          setServices(services.filter((v) => !category.services.includes(v)));
+                        }
+                      }}
+                      className={cn(
+                        "rounded-2xl border p-4 text-left transition-colors",
+                        on
+                          ? "border-primary bg-primary-soft/60"
+                          : "border-border bg-card hover:border-primary/40",
+                      )}
+                    >
+                      <span className="flex items-center justify-between gap-2">
+                        <span className="font-display text-base font-semibold">
+                          {category.label}
+                        </span>
+                        <span
+                          className={cn(
+                            "grid size-5 shrink-0 place-items-center rounded-full border",
+                            on
+                              ? "border-primary bg-primary text-primary-foreground"
+                              : "border-border bg-card",
+                          )}
+                        >
+                          {on ? <Check className="size-3" /> : null}
+                        </span>
+                      </span>
+                      <span className="mt-1 block text-sm text-muted-foreground">
+                        {category.hint}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
             ) : null}
 
             {step === 3 ? (
+              <div className="space-y-8">
+                {companyCategories
+                  .filter((category) => categories.includes(category.id))
+                  .map((category) => (
+                    <CheckGroup
+                      key={category.id}
+                      title={category.label}
+                      options={category.services}
+                      selected={services}
+                      onToggle={(v) => toggle(services, setServices, v)}
+                    />
+                  ))}
+              </div>
+            ) : null}
+
+            {step === 4 ? (
               <div className="space-y-8">
                 <CheckGroup
                   title="Где работаете"
@@ -354,7 +422,7 @@ function CompanySignupPage() {
               </div>
             ) : null}
 
-            {step === 4 ? (
+            {step === 5 ? (
               <CheckGroup
                 options={languageOptions}
                 selected={languages}
@@ -362,7 +430,7 @@ function CompanySignupPage() {
               />
             ) : null}
 
-            {step === 5 ? (
+            {step === 6 ? (
               <VerificationDocumentsPanel
                 companyName={company.name}
                 companySummary={[
@@ -374,6 +442,7 @@ function CompanySignupPage() {
                   .join(" · ")}
                 files={verificationFiles}
                 onChange={setVerificationFiles}
+                services={services}
               />
             ) : null}
 
