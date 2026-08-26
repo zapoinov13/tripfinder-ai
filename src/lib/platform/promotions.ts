@@ -101,6 +101,46 @@ export function syncTourPromotionTags(tourId: string) {
   }));
 }
 
+/**
+ * Продвижение бизнеса без туров (спортзал, прокат, жильё): целью кампании
+ * выступает не тур, а страница компании и все её объявления в витринах.
+ * Такие кампании хранятся с tourOfferId = "company:<orgId>".
+ */
+const COMPANY_TARGET_PREFIX = "company:";
+
+export function companyPromoTarget(orgId: string) {
+  return `${COMPANY_TARGET_PREFIX}${orgId}`;
+}
+
+export function isCompanyPromotion(p: PromotionOrder) {
+  return p.tourOfferId.startsWith(COMPANY_TARGET_PREFIX);
+}
+
+/** Компании с активным продвижением: их объявления поднимаются в витринах. */
+export function promotedCompanyIds(): Map<string, Set<PromotionType>> {
+  const now = Date.now();
+  const out = new Map<string, Set<PromotionType>>();
+  for (const p of getState().promotions) {
+    if (p.status !== "ACTIVE" || new Date(p.expiresAt).getTime() <= now) continue;
+    if (!p.tourOfferId.startsWith(COMPANY_TARGET_PREFIX)) continue;
+    const orgId = p.tourOfferId.slice(COMPANY_TARGET_PREFIX.length);
+    const set = out.get(orgId) ?? new Set<PromotionType>();
+    set.add(p.type);
+    out.set(orgId, set);
+  }
+  return out;
+}
+
+/** Какую отметку показывать на карточках продвигаемой компании в витрине. */
+export function companyPromoBadge(
+  types: Set<PromotionType> | undefined,
+): { label: string; featured: boolean } | null {
+  if (!types || types.size === 0) return null;
+  if (types.has("FEATURED")) return { label: "Выбор TourGo", featured: true };
+  if (types.has("SPONSORED")) return { label: "Рекомендуем", featured: false };
+  return { label: "Хит", featured: false };
+}
+
 export type PurchasePromotionInput = {
   organizationId: string;
   userId: string;
@@ -128,6 +168,32 @@ export async function purchasePromotion(
     return { ok: false, reason: "Выберите активный тур вашей компании" };
   }
 
+  return executePromotionPurchase(input, org);
+}
+
+/** Продвижение страницы компании и всех её объявлений (бизнес без туров). */
+export async function purchaseCompanyPromotion(input: {
+  organizationId: string;
+  userId: string;
+  type: PromotionType;
+  days: number;
+  payFromBalance?: boolean;
+}): Promise<PurchasePromotionResult> {
+  expireStalePromotions();
+
+  const org = getState().organizations.find((o) => o.id === input.organizationId);
+  if (!org) return { ok: false, reason: "Компания не найдена" };
+
+  return executePromotionPurchase(
+    { ...input, tourId: companyPromoTarget(input.organizationId) },
+    org,
+  );
+}
+
+async function executePromotionPurchase(
+  input: PurchasePromotionInput,
+  org: Organization,
+): Promise<PurchasePromotionResult> {
   const days = Math.max(1, Math.min(90, Math.round(input.days)));
   const price = calcPromotionPrice(input.type, days);
   if (price <= 0) return { ok: false, reason: "Некорректная цена" };

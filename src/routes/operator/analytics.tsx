@@ -78,6 +78,32 @@ function OperatorAnalyticsPage() {
     ],
   );
 
+  const pageStats = useMemo(() => {
+    if (!organization) return null;
+    const since = period === 0 ? 0 : Date.now() - period * 24 * 60 * 60 * 1000;
+    const events = state.analyticsEvents.filter(
+      (e) =>
+        e.payload?.["companyId"] === organization.id &&
+        (since === 0 || new Date(e.createdAt).getTime() >= since),
+    );
+    const views = events.filter((e) => e.type === "COMPANY_PAGE_VIEW").length;
+    const clicks: Record<string, number> = {};
+    for (const e of events) {
+      if (e.type !== "COMPANY_CONTACT_CLICK") continue;
+      const channel = typeof e.payload?.["channel"] === "string" ? e.payload["channel"] : "other";
+      clicks[channel] = (clicks[channel] ?? 0) + 1;
+    }
+    const checkinEvents = events.filter((e) => e.type === "COMPANY_CHECKIN");
+    const recentVisits = checkinEvents.slice(0, 6).map((e) => {
+      const name =
+        typeof e.payload?.["userName"] === "string" && e.payload["userName"]
+          ? e.payload["userName"]
+          : (state.users.find((u) => u.id === e.userId)?.name ?? "Клиент");
+      return { id: e.id, name, at: e.createdAt };
+    });
+    return { views, clicks, checkins: checkinEvents.length, recentVisits };
+  }, [organization, period, state.analyticsEvents, state.users]);
+
   if (!allowed || !organization || !data) return null;
 
   const sortedTours = [...data.topTours].sort((a, b) => {
@@ -169,6 +195,61 @@ function OperatorAnalyticsPage() {
           hint={data.rating ? `${data.rating.count} отзывов` : "отзывов пока нет"}
         />
       </div>
+
+      {pageStats ? (
+        <section className="surface-card mt-6 p-6">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="font-display text-lg font-semibold">Страница компании</h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Кто заходит на вашу визитку и куда нажимает: маршрут, WhatsApp, звонки.
+              </p>
+            </div>
+            <Button variant="outline" size="sm" asChild>
+              <Link to="/company/$companyId" params={{ companyId: organization.id }}>
+                Открыть страницу
+              </Link>
+            </Button>
+          </div>
+          <div className="mt-4 grid gap-3 sm:grid-cols-3 xl:grid-cols-6">
+            <PageStat label="Просмотры страницы" value={pageStats.views} />
+            <PageStat label="Маршрут (карта)" value={pageStats.clicks["map"] ?? 0} />
+            <PageStat label="WhatsApp" value={pageStats.clicks["whatsapp"] ?? 0} />
+            <PageStat label="Позвонить" value={pageStats.clicks["phone"] ?? 0} />
+            <PageStat label="Instagram" value={pageStats.clicks["instagram"] ?? 0} />
+            <PageStat label="Пришли из приложения" value={pageStats.checkins} />
+          </div>
+          {pageStats.recentVisits.length > 0 ? (
+            <div className="mt-4 rounded-2xl border border-success/25 bg-success/5 p-4">
+              <p className="text-sm font-semibold">Последние визиты</p>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                Клиенты нажали «Я здесь» на вашей странице — пришли по факту.
+              </p>
+              <ul className="mt-3 space-y-1.5 text-sm">
+                {pageStats.recentVisits.map((v) => (
+                  <li key={v.id} className="flex items-center justify-between gap-3">
+                    <span className="truncate font-medium">{v.name}</span>
+                    <span className="shrink-0 text-xs text-muted-foreground">
+                      {new Date(v.at).toLocaleDateString("ru-RU", {
+                        day: "numeric",
+                        month: "short",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+          {pageStats.views === 0 ? (
+            <p className="mt-3 text-xs text-muted-foreground">
+              Пока тихо. Заполните страницу (адрес, часы, фото) и поделитесь ссылкой — клики начнут
+              считаться автоматически.
+            </p>
+          ) : null}
+        </section>
+      ) : null}
 
       {data.insights.length > 0 ? (
         <div className="mt-6 grid gap-3 md:grid-cols-2">
@@ -515,6 +596,15 @@ function OperatorAnalyticsPage() {
         </div>
       </div>
     </DashShell>
+  );
+}
+
+function PageStat({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="rounded-2xl border border-border bg-secondary/30 p-4">
+      <p className="text-xs text-muted-foreground">{label}</p>
+      <p className="mt-1 font-display text-xl font-semibold tabular-nums">{formatNumber(value)}</p>
+    </div>
   );
 }
 

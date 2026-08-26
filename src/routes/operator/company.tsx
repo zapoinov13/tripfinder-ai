@@ -326,6 +326,38 @@ function OperatorCompanyPage() {
                 2–3 предложения: опыт, направления, чем вы отличаетесь.
               </p>
             </div>
+            <div className="rounded-2xl border border-premium/30 bg-premium/5 p-4">
+              <div className="mb-3">
+                <p className="text-sm font-semibold">Акция</p>
+                <p className="text-xs text-muted-foreground">
+                  Покажем баннером на вашей странице. Напишите, что входит и на каких условиях.
+                </p>
+              </div>
+              <div className="space-y-3">
+                <Textarea
+                  id="company-promo"
+                  rows={2}
+                  value={form.promoText ?? ""}
+                  disabled={readOnly}
+                  onChange={(e) => setForm({ ...form, promoText: e.target.value })}
+                  placeholder="Первая тренировка бесплатно: зал, сауна и разбор техники с тренером."
+                  className="resize-y"
+                />
+                <div className="grid gap-1.5 sm:max-w-[220px]">
+                  <Label htmlFor="company-promo-until">Действует до</Label>
+                  <Input
+                    id="company-promo-until"
+                    type="date"
+                    value={form.promoUntil ?? ""}
+                    disabled={readOnly}
+                    onChange={(e) => setForm({ ...form, promoUntil: e.target.value })}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    После этой даты баннер скрывается сам. Пусто — акция бессрочная.
+                  </p>
+                </div>
+              </div>
+            </div>
           </ProfileSection>
 
           <ProfileSection
@@ -390,7 +422,27 @@ function OperatorCompanyPage() {
                 disabled={readOnly}
                 onChange={(email) => setForm({ ...form, email })}
               />
+              <Field
+                id="company-address"
+                label="Адрес (улица, дом)"
+                value={form.address}
+                disabled={readOnly}
+                onChange={(address) => setForm({ ...form, address })}
+                placeholder="Al Wasl Road 12, Jumeirah"
+              />
+              <Field
+                id="company-hours"
+                label="Часы работы"
+                value={form.workingHours ?? ""}
+                disabled={readOnly}
+                onChange={(workingHours) => setForm({ ...form, workingHours })}
+                placeholder="Пн-Пт 07:00-23:00, Сб-Вс 09:00-21:00"
+              />
             </div>
+            <p className="text-xs text-muted-foreground">
+              Адрес превращается на странице в кнопку «Маршрут» с Google Картами — клиент строит
+              путь в одно касание.
+            </p>
           </ProfileSection>
 
           <ProfileSection

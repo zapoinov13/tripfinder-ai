@@ -1,11 +1,13 @@
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Building2, MapPin } from "lucide-react";
-import { useSyncExternalStore, useState } from "react";
+import { useMemo, useSyncExternalStore, useState } from "react";
 
 import { SiteLayout } from "@/components/site/site-layout";
 import { Button } from "@/components/ui/button";
 import { destinations } from "@/data/demo";
 import { formatKzt, sportKinds, sports } from "@/data/scenario-catalog";
+import { usePlatformStore } from "@/lib/platform/hooks";
+import { companyPromoBadge, promotedCompanyIds } from "@/lib/platform/promotions";
 import { listPublishedSports, subscribeSportListings } from "@/lib/platform/sport-listings";
 import { cn } from "@/lib/utils";
 
@@ -22,6 +24,7 @@ type SportCard = {
   slot: string;
   address?: string;
   companyName?: string;
+  organizationId?: string;
 };
 
 export const Route = createFileRoute("/sport")({
@@ -55,6 +58,8 @@ function SportPage() {
   const update = (patch: Search) => void navigate({ search: { ...params, ...patch } as never });
   const [geoHint, setGeoHint] = useState("");
   const published = usePublishedSports();
+  const state = usePlatformStore();
+  const promoted = useMemo(() => promotedCompanyIds(), [state.promotions]);
 
   const catalog: SportCard[] = [
     ...published.map((item) => ({
@@ -68,6 +73,7 @@ function SportPage() {
       slot: item.detail,
       ...(item.address ? { address: item.address } : {}),
       companyName: item.companyName,
+      organizationId: item.organizationId,
     })),
     ...sports,
   ];
@@ -87,6 +93,12 @@ function SportPage() {
     }
     return true;
   });
+
+  // Продвигаемые компании — выше в витрине (стабильно, без пересортировки прочих).
+  const orderedList = [
+    ...list.filter((i) => i.organizationId && promoted.has(i.organizationId)),
+    ...list.filter((i) => !i.organizationId || !promoted.has(i.organizationId)),
+  ];
 
   const useLocation = () => {
     if (!navigator.geolocation) {
@@ -167,45 +179,77 @@ function SportPage() {
 
         {list.length > 0 ? (
           <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {list.map((item) => (
-              <article key={item.id} className="surface-card flex flex-col p-5">
-                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  {item.city}
-                  {item.area ? ` · ${item.area}` : ""}
-                </p>
-                <h3 className="mt-2 font-display text-xl font-semibold">{item.name}</h3>
-                {item.companyName ? (
-                  <p className="mt-1 text-sm text-foreground/60">{item.companyName}</p>
-                ) : null}
-                {item.slot ? <p className="mt-2 text-sm text-foreground/70">{item.slot}</p> : null}
-                {item.address ? (
-                  <a
-                    href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(`${item.address}, ${item.city}`)}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="mt-2 inline-flex items-start gap-1.5 text-sm font-medium text-primary hover:underline"
-                  >
-                    <MapPin className="mt-0.5 size-4 shrink-0" />
-                    <span>
-                      {item.address}
-                      <span className="block text-xs font-normal text-foreground/55">
-                        Открыть маршрут в картах
+            {orderedList.map((item) => {
+              const badge = item.organizationId
+                ? companyPromoBadge(promoted.get(item.organizationId))
+                : null;
+              return (
+                <article
+                  key={item.id}
+                  className={cn(
+                    "surface-card flex flex-col p-5",
+                    badge?.featured && "border-premium/50 ring-1 ring-premium/30",
+                  )}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                      {item.city}
+                      {item.area ? ` · ${item.area}` : ""}
+                    </p>
+                    {badge ? (
+                      <span className="shrink-0 rounded-full bg-premium/15 px-2.5 py-0.5 text-[11px] font-semibold text-premium">
+                        {badge.label}
                       </span>
-                    </span>
-                  </a>
-                ) : null}
-                {item.price > 0 ? (
-                  <p className="mt-4 font-display text-lg font-semibold">{formatKzt(item.price)}</p>
-                ) : (
-                  <p className="mt-4 text-sm text-foreground/60">Цена по запросу</p>
-                )}
-                <Button className="mt-4" asChild>
-                  <Link to="/request" search={requestFor(`${item.name}, ${item.city}`)}>
-                    Забронировать
-                  </Link>
-                </Button>
-              </article>
-            ))}
+                    ) : null}
+                  </div>
+                  <h3 className="mt-2 font-display text-xl font-semibold">{item.name}</h3>
+                  {item.companyName ? (
+                    item.organizationId ? (
+                      <Link
+                        to="/company/$companyId"
+                        params={{ companyId: item.organizationId }}
+                        className="mt-1 text-sm text-foreground/60 hover:text-primary hover:underline"
+                      >
+                        {item.companyName}
+                      </Link>
+                    ) : (
+                      <p className="mt-1 text-sm text-foreground/60">{item.companyName}</p>
+                    )
+                  ) : null}
+                  {item.slot ? (
+                    <p className="mt-2 text-sm text-foreground/70">{item.slot}</p>
+                  ) : null}
+                  {item.address ? (
+                    <a
+                      href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(`${item.address}, ${item.city}`)}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-2 inline-flex items-start gap-1.5 text-sm font-medium text-primary hover:underline"
+                    >
+                      <MapPin className="mt-0.5 size-4 shrink-0" />
+                      <span>
+                        {item.address}
+                        <span className="block text-xs font-normal text-foreground/55">
+                          Открыть маршрут в картах
+                        </span>
+                      </span>
+                    </a>
+                  ) : null}
+                  {item.price > 0 ? (
+                    <p className="mt-4 font-display text-lg font-semibold">
+                      {formatKzt(item.price)}
+                    </p>
+                  ) : (
+                    <p className="mt-4 text-sm text-foreground/60">Цена по запросу</p>
+                  )}
+                  <Button className="mt-4" asChild>
+                    <Link to="/request" search={requestFor(`${item.name}, ${item.city}`)}>
+                      Забронировать
+                    </Link>
+                  </Button>
+                </article>
+              );
+            })}
           </div>
         ) : (
           <div className="surface-card mt-8 grid gap-6 p-6 md:grid-cols-2 md:p-8">

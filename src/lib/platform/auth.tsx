@@ -55,6 +55,7 @@ type AuthCtx = {
       | "createdAt"
     >;
   }) => Promise<AuthResult>;
+  registerCompanyForCurrentUser: (company: CompanyInput) => Promise<AuthResult>;
   hasRole: (...roles: Role[]) => boolean;
   hasPermission: (permission: string) => boolean;
   purchasePremium: () => Promise<AuthResult>;
@@ -114,6 +115,84 @@ async function fetchProfile(userId: string) {
     status: PlatformUser["status"];
     organization_id: string | null;
   } | null;
+}
+
+type CompanyInput = Omit<
+  Organization,
+  | "id"
+  | "status"
+  | "planCode"
+  | "additionalTourLimit"
+  | "advertisingBalance"
+  | "promotionBalance"
+  | "createdAt"
+>;
+
+type OrgRpcRow = {
+  id: string;
+  name: string;
+  legal_name: string;
+  registration_number: string;
+  country: string;
+  city: string;
+  address: string;
+  phone: string;
+  email: string;
+  website: string;
+  contact_person: string;
+  status: Organization["status"];
+  plan_code: Organization["planCode"];
+  additional_tour_limit: number;
+  advertising_balance: number;
+  promotion_balance: number;
+  created_at: string;
+};
+
+/** Организация + профиль + членство одной серверной функцией (см. миграцию). */
+async function callRegisterCompanyRpc(
+  sb: NonNullable<ReturnType<typeof getSupabase>>,
+  company: CompanyInput,
+  fallbackEmail: string,
+): Promise<{ org: OrgRpcRow | null; error: string | null }> {
+  const rpc = sb.rpc as unknown as (
+    fn: "register_company",
+    args: Record<string, string>,
+  ) => PromiseLike<{ data: OrgRpcRow | null; error: { message: string } | null }>;
+  const { data, error } = await rpc("register_company", {
+    p_name: company.name,
+    p_legal_name: company.legalName,
+    p_registration_number: company.registrationNumber,
+    p_country: company.country,
+    p_city: company.city,
+    p_address: company.address,
+    p_phone: company.phone,
+    p_email: company.email || fallbackEmail,
+    p_website: company.website,
+    p_contact_person: company.contactPerson,
+  });
+  return { org: data, error: error?.message ?? null };
+}
+
+function orgRowToLocal(org: OrgRpcRow): Organization {
+  return {
+    id: org.id,
+    name: org.name,
+    legalName: org.legal_name,
+    registrationNumber: org.registration_number,
+    country: org.country,
+    city: org.city,
+    address: org.address,
+    phone: org.phone,
+    email: org.email,
+    website: org.website,
+    contactPerson: org.contact_person,
+    status: org.status,
+    planCode: org.plan_code,
+    additionalTourLimit: org.additional_tour_limit,
+    advertisingBalance: Number(org.advertising_balance),
+    promotionBalance: Number(org.promotion_balance),
+    createdAt: org.created_at,
+  };
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -518,6 +597,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [],
   );
 
+  /** Создаёт компанию для УЖЕ залогиненного пользователя (без signUp). */
+  const registerCompanyForCurrentUser = useCallback(
+    async (company: CompanyInput): Promise<AuthResult> => {
+      const sb = getSupabase();
+      if (!sb) return { ok: false, error: "Supabase не настроен" };
+      const { data: sessionData } = await sb.auth.getSession();
+      const sessionUser = sessionData.session?.user;
+      if (!sessionUser) return { ok: false, error: "CONFIRM_EMAIL" };
+
+      const { org, error } = await callRegisterCompanyRpc(sb, company, sessionUser.email ?? "");
+      if (error || !org) {
+        return {
+          ok: false,
+          error:
+            error === "already_in_organization"
+              ? "У этого аккаунта уже есть компания"
+              : (error ?? "Не удалось создать организацию"),
+        };
+      }
+      setState((s) => ({
+        ...s,
+        organizations: [...s.organizations, orgRowToLocal(org)],
+      }));
+      upsertLocalUser({
+        id: sessionUser.id,
+        email: sessionUser.email ?? "",
+        name: company.contactPerson || "Поставщик",
+        city: company.city || "Алматы",
+        role: "OPERATOR_ADMIN",
+        organization_id: org.id,
+      });
+      return { ok: true };
+    },
+    [],
+  );
+
   const registerOperator = useCallback(
     async (input: {
       name: string;
@@ -554,90 +669,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         // При включённом подтверждении email signUp не даёт сессию, а без неё
         // любые вставки летят анонимно и режутся RLS. Пробуем войти сразу;
-        // если и это не дало сессию — просим подтвердить почту.
+        // если и это не дало сессию — визард покажет экран подтверждения
+        // почты и достроит компанию после первого входа.
         if (!data.session) {
           const { data: signIn } = await sb.auth.signInWithPassword({ email, password });
           if (!signIn.session) {
-            return {
-              ok: false,
-              error:
-                "Подтвердите email по ссылке из письма, затем войдите и создайте компанию заново.",
-            };
+            return { ok: false, error: "CONFIRM_EMAIL" };
           }
         }
 
         // Организация + профиль + членство создаются атомарно на сервере:
         // по частям это невозможно (RLS и защита профиля мешают друг другу).
-        // Типы Supabase перегенерируются позже: функции ещё нет в Database,
-        // поэтому аргументы и результат типизируем вручную.
-        const registerCompanyRpc = sb.rpc as unknown as (
-          fn: "register_company",
-          args: Record<string, string>,
-        ) => PromiseLike<{
-          data: {
-            id: string;
-            name: string;
-            legal_name: string;
-            registration_number: string;
-            country: string;
-            city: string;
-            address: string;
-            phone: string;
-            email: string;
-            website: string;
-            contact_person: string;
-            status: Organization["status"];
-            plan_code: Organization["planCode"];
-            additional_tour_limit: number;
-            advertising_balance: number;
-            promotion_balance: number;
-            created_at: string;
-          } | null;
-          error: { message: string } | null;
-        }>;
-        const { data: org, error: orgErr } = await registerCompanyRpc("register_company", {
-          p_name: input.company.name,
-          p_legal_name: input.company.legalName,
-          p_registration_number: input.company.registrationNumber,
-          p_country: input.company.country,
-          p_city: input.company.city,
-          p_address: input.company.address,
-          p_phone: input.company.phone,
-          p_email: input.company.email || email,
-          p_website: input.company.website,
-          p_contact_person: input.company.contactPerson,
-        });
+        const { org, error: orgErr } = await callRegisterCompanyRpc(sb, input.company, email);
         if (orgErr || !org) {
           const message =
-            orgErr?.message === "already_in_organization"
+            orgErr === "already_in_organization"
               ? "У этого аккаунта уже есть компания"
-              : (orgErr?.message ?? "Не удалось создать организацию");
+              : (orgErr ?? "Не удалось создать организацию");
           return { ok: false, error: message };
         }
         setState((s) => ({
           ...s,
-          organizations: [
-            ...s.organizations,
-            {
-              id: org.id,
-              name: org.name,
-              legalName: org.legal_name,
-              registrationNumber: org.registration_number,
-              country: org.country,
-              city: org.city,
-              address: org.address,
-              phone: org.phone,
-              email: org.email,
-              website: org.website,
-              contactPerson: org.contact_person,
-              status: org.status,
-              planCode: org.plan_code,
-              additionalTourLimit: org.additional_tour_limit,
-              advertisingBalance: Number(org.advertising_balance),
-              promotionBalance: Number(org.promotion_balance),
-              createdAt: org.created_at,
-            },
-          ],
+          organizations: [...s.organizations, orgRowToLocal(org)],
         }));
         upsertLocalUser({
           id: data.user.id,
@@ -770,6 +823,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       deleteAccount,
       registerTourist,
       registerOperator,
+      registerCompanyForCurrentUser,
       purchasePremium,
       hasRole: (...roles) => (user ? roles.includes(user.role) : false),
       hasPermission: (permission) => {
@@ -787,6 +841,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       deleteAccount,
       registerTourist,
       registerOperator,
+      registerCompanyForCurrentUser,
       purchasePremium,
     ],
   );
