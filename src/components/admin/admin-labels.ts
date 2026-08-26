@@ -125,6 +125,7 @@ export const auditActionLabel: Record<string, string> = {
   api_auto_sync: "Автосинхронизация фидов",
   store_reset: "Сброс данных",
   seed: "Инициализация платформы",
+  push_broadcast: "Push-рассылка",
 };
 
 export const auditEntityLabel: Record<string, string> = {
