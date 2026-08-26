@@ -8,8 +8,8 @@ import { SiteLayout } from "@/components/site/site-layout";
 import { SafeImage } from "@/components/media/safe-image";
 import { TourCard } from "@/components/tours/tour-card";
 import { Button } from "@/components/ui/button";
-import { destinations, formatPrice, hotTours } from "@/data/demo";
-import { getFeaturedExcursions } from "@/data/excursions";
+import { destinations } from "@/data/demo";
+import { usePlatformStore } from "@/lib/platform/hooks";
 import { b2bNav, travelScenarios } from "@/data/scenarios";
 
 export const Route = createFileRoute("/")({
@@ -45,7 +45,11 @@ const how = [
 ];
 
 function Index() {
-  const featuredExcursions = getFeaturedExcursions(6);
+  // Горящие туры — только реальные предложения компаний; пусто — секция скрыта.
+  const state = usePlatformStore();
+  const liveHotTours = state.tours
+    .filter((t) => t.status === "active" && t.tags.includes("hot"))
+    .slice(0, 4);
 
   return (
     <SiteLayout>
@@ -156,7 +160,7 @@ function Index() {
                   {dest.flag} {dest.country}
                 </h3>
                 <p className="mt-0.5 text-[11px] leading-tight text-primary-foreground/80 md:text-sm">
-                  {dest.tours} предложений · {dest.city}
+                  {dest.city}
                 </p>
               </div>
             </Link>
@@ -165,94 +169,43 @@ function Index() {
         <SeeRestLink to="/destinations" label="Все направления" />
       </section>
 
-      <section className="mt-10 bg-gradient-to-b from-primary-soft/60 via-primary-soft/25 to-transparent md:mt-14">
-        {/* Тёплая полоса выделяет горящие туры среди остальных секций. */}
-        <div className="container-page py-6 md:py-8">
-          <div className="inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-1 text-xs font-semibold uppercase tracking-[0.08em] text-primary-foreground">
-            <Flame className="size-3.5" />
-            Осталось мало мест
-          </div>
-          <div className="mt-3">
-            <SectionHead
-              title="Горящие туры"
-              subtitle="Компании уже снизили цену на ближайшие вылеты. Такие предложения разбирают за пару дней"
-              action={
-                <Button variant="outline" asChild>
-                  <Link to="/search" search={{ offers: "hot" } as never}>
-                    Смотреть остальные
-                  </Link>
-                </Button>
-              }
+      {liveHotTours.length > 0 ? (
+        <section className="mt-10 bg-gradient-to-b from-primary-soft/60 via-primary-soft/25 to-transparent md:mt-14">
+          {/* Тёплая полоса выделяет горящие туры среди остальных секций. */}
+          <div className="container-page py-6 md:py-8">
+            <div className="inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-1 text-xs font-semibold uppercase tracking-[0.08em] text-primary-foreground">
+              <Flame className="size-3.5" />
+              Осталось мало мест
+            </div>
+            <div className="mt-3">
+              <SectionHead
+                title="Горящие туры"
+                subtitle="Компании уже снизили цену на ближайшие вылеты. Такие предложения разбирают за пару дней"
+                action={
+                  <Button variant="outline" asChild>
+                    <Link to="/search" search={{ offers: "hot" } as never}>
+                      Смотреть остальные
+                    </Link>
+                  </Button>
+                }
+              />
+            </div>
+            {/* Мобильный: горизонтальная карусель, как у экскурсий ниже. */}
+            <div className="-mx-4 mt-5 flex snap-x snap-mandatory scroll-pl-4 gap-4 overflow-x-auto px-4 pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:grid sm:grid-cols-2 sm:overflow-visible sm:pb-0 md:mx-0 md:mt-6 md:gap-4 md:px-0 lg:grid-cols-4">
+              {liveHotTours.map((tour) => (
+                <div key={tour.id} className="w-[85%] shrink-0 snap-start snap-always sm:w-auto">
+                  <TourCard tour={tour} layout="grid" />
+                </div>
+              ))}
+            </div>
+            <SeeRestLink
+              to="/search"
+              search={{ offers: "hot" }}
+              label="Смотреть остальные горящие туры"
             />
           </div>
-          {/* Мобильный: горизонтальная карусель, как у экскурсий ниже. */}
-          <div className="-mx-4 mt-5 flex snap-x snap-mandatory scroll-pl-4 gap-4 overflow-x-auto px-4 pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:grid sm:grid-cols-2 sm:overflow-visible sm:pb-0 md:mx-0 md:mt-6 md:gap-4 md:px-0 lg:grid-cols-4">
-            {hotTours.map((tour) => (
-              <div key={tour.id} className="w-[85%] shrink-0 snap-start snap-always sm:w-auto">
-                <TourCard tour={tour} layout="grid" />
-              </div>
-            ))}
-          </div>
-          <SeeRestLink
-            to="/search"
-            search={{ offers: "hot" }}
-            label="Смотреть остальные горящие туры"
-          />
-        </div>
-      </section>
-
-      <section className="container-page mt-10 md:mt-14">
-        <SectionHead
-          title="Экскурсии и развлечения"
-          subtitle="Сафари, яхты и парки от местных компаний по их ценам, без наценки посредников"
-          action={
-            <Button variant="outline" asChild>
-              <Link to="/excursions">Смотреть остальные</Link>
-            </Button>
-          }
-        />
-        {/* Мобильный: горизонтальная карусель со snap, чтобы не раздувать страницу. */}
-        <div className="-mx-4 mt-5 flex snap-x snap-mandatory scroll-pl-4 gap-4 overflow-x-auto px-4 pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:mx-0 md:mt-6 md:grid md:grid-cols-3 md:gap-4 md:overflow-visible md:px-0 md:pb-0">
-          {featuredExcursions.map((item) => (
-            <Link
-              key={item.id}
-              to="/excursions"
-              search={{ destination: item.destinationId, city: item.city } as never}
-              className="hover-lift surface-card w-[85%] shrink-0 snap-start snap-always overflow-hidden p-0 sm:w-[46%] md:w-auto"
-            >
-              <div className="relative">
-                <img
-                  src={item.image}
-                  alt=""
-                  loading="lazy"
-                  className="h-40 w-full object-cover md:h-44"
-                />
-                <span className="absolute left-2.5 top-2.5 rounded-full bg-ink/70 px-2.5 py-1 text-[11px] font-semibold text-primary-foreground backdrop-blur-sm">
-                  {item.category}
-                </span>
-                <span className="absolute bottom-2.5 right-2.5 rounded-full bg-background px-2.5 py-1 text-xs font-bold shadow-md">
-                  от {formatPrice(item.price)}
-                </span>
-              </div>
-              <div className="p-4">
-                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  {item.city}
-                </p>
-                <h3 className="mt-1 line-clamp-2 font-display text-[1.05rem] font-semibold leading-snug md:text-lg">
-                  {item.title}
-                </h3>
-                <div className="mt-2 flex min-w-0 items-center gap-1.5 text-[13px] text-foreground/60">
-                  <Clock className="size-3.5 shrink-0" />
-                  <span className="shrink-0">{item.duration}</span>
-                  <span className="shrink-0">·</span>
-                  <span className="truncate">{item.company}</span>
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
-        <SeeRestLink to="/excursions" label="Смотреть остальные экскурсии" />
-      </section>
+        </section>
+      ) : null}
 
       <section className="container-page mt-10 md:mt-14">
         <div className="rounded-3xl bg-ink px-5 py-7 text-primary-foreground md:rounded-[2rem] md:px-10 md:py-10">

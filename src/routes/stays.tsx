@@ -6,7 +6,7 @@ import { SiteLayout } from "@/components/site/site-layout";
 import { Button } from "@/components/ui/button";
 import { DateRangePicker } from "@/components/ui/date-picker";
 import { destinations, resortsByDestination } from "@/data/demo";
-import { formatKzt, popularStayCities, stayAreas, stayKinds, stays } from "@/data/scenario-catalog";
+import { formatKzt, popularStayCities, stayAreas, stayKinds } from "@/data/scenario-catalog";
 import { usePlatformStore } from "@/lib/platform/hooks";
 import { companyPromoBadge, promotedCompanyIds } from "@/lib/platform/promotions";
 import {
@@ -107,7 +107,7 @@ function StaysPage() {
       ...(item.bedrooms ? { bedrooms: item.bedrooms } : {}),
       ...(item.about ? { about: item.about } : {}),
     })),
-    ...stays,
+    // Демо-карточки убраны: в витрине только реальные объявления компаний.
   ];
 
   const list = catalog.filter((item) => {

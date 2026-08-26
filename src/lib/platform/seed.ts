@@ -16,7 +16,8 @@ import type {
 } from "./types";
 
 export const DEMO_PASSWORD = "demo1234";
-export const STORE_KEY = "tourgo:dubai-platform-v2";
+// v3: продакшен-сид без демоданных (туры, компании и демо-пользователи убраны).
+export const STORE_KEY = "tourgo:dubai-platform-v3";
 
 const cities = ["Алматы", "Астана", "Ташкент", "Бишкек", "Москва", "Санкт-Петербург"];
 const monthNames = [
@@ -301,7 +302,116 @@ function buildUsers(orgs: Organization[]): PlatformUser[] {
   ];
 }
 
+/**
+ * Продакшен-сид: никаких демо-туров, демо-компаний и демо-туристов.
+ * Остаются только справочники (направления, отели), конфиг платформы,
+ * резервный админ и два аккаунта для проверки App Store (Apple входит под
+ * ними при ревью — удалить после одобрения).
+ *
+ * buildTours/buildOrgs/buildUsers сохранены для локальной разработки:
+ * их можно вернуть в createSeedState, если нужен полный демо-стенд.
+ */
 export function createSeedState(): PlatformState {
+  const ts = nowIso();
+  void buildTours;
+  void buildOrgs;
+  void buildUsers;
+
+  const reviewOrg: Organization = {
+    id: "org-review",
+    name: "TourGo Review",
+    legalName: "TourGo Review LLC",
+    registrationNumber: "REVIEW-0001",
+    country: "Казахстан",
+    city: "Алматы",
+    address: "Тестовый адрес, 1",
+    phone: "+7 700 000 00 00",
+    email: "operator@test.tourgo.app",
+    website: "",
+    contactPerson: "Review Operator",
+    status: "APPROVED",
+    planCode: "START",
+    additionalTourLimit: 0,
+    advertisingBalance: 0,
+    promotionBalance: 0,
+    createdAt: ts,
+  };
+
+  // Админов в сиде нет: прод-доступ — через Supabase (ensure:admin),
+  // dev-доступ — VITE_DEV_ADMIN_* (см. withDevAdmin в store.ts).
+  const users: PlatformUser[] = [
+    {
+      id: "user-review-tourist",
+      email: "tourist@test.tourgo.app",
+      password: "Test1234!",
+      name: "Review Tourist",
+      city: "Алматы",
+      role: "TOURIST",
+      status: "active",
+      createdAt: ts,
+    },
+    {
+      id: "user-review-operator",
+      email: "operator@test.tourgo.app",
+      password: "Test1234!",
+      name: "Review Operator",
+      city: "Алматы",
+      role: "OPERATOR_ADMIN",
+      status: "active",
+      organizationId: reviewOrg.id,
+      createdAt: ts,
+    },
+  ];
+
+  return {
+    version: 1,
+    seededAt: ts,
+    config: defaultConfig(),
+    users,
+    organizations: [reviewOrg],
+    members: [
+      {
+        id: "mem-review",
+        organizationId: reviewOrg.id,
+        userId: "user-review-operator",
+        role: "OPERATOR_ADMIN",
+      },
+    ],
+    destinations,
+    hotels,
+    operators: [],
+    tours: [],
+    bookings: [],
+    payments: [],
+    subscriptions: [],
+    favorites: [],
+    comparisons: [],
+    priceAlerts: [],
+    aiSearches: [],
+    notifications: [],
+    auditLogs: [
+      {
+        id: "audit-1",
+        action: "seed",
+        entityType: "platform",
+        createdAt: ts,
+        meta: { note: "Clean production seed (v3, no demo data)" },
+      },
+    ],
+    analyticsEvents: [],
+    apiConnections: [],
+    syncLogs: [],
+    promotions: [],
+    tripRequests: [],
+    requestOffers: [],
+    requestMessages: [],
+    companyReviews: [],
+    session: null,
+  };
+}
+
+/** Полный демо-стенд прежней версии — не используется в проде. */
+export function createDemoSeedState(): PlatformState {
   const orgs = buildOrgs();
   const users = buildUsers(orgs);
   const tours = buildTours(200);

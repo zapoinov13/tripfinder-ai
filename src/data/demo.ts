@@ -686,6 +686,7 @@ export const tours: Tour[] = Array.from({ length: 200 }, (_, i) => {
 // Актуальный ключ стора платформы (см. STORE_KEY в src/lib/platform/seed.ts) — первым,
 // иначе getTour/getHotel читают устаревшие снапшоты и цены расходятся с выдачей.
 const PLATFORM_STORE_KEYS = [
+  "tourgo:dubai-platform-v3",
   "tourgo:dubai-platform-v2",
   "tourgo:dubai-platform-v1",
   "tourgo:platform-v1",

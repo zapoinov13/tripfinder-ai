@@ -759,7 +759,12 @@ const seeds: Seed[] = [
   ],
 ];
 
-export const excursions: Excursion[] = seeds.map((row, i) => {
+/**
+ * Демо-каталог отключён: в витрине показываются только реальные экскурсии
+ * компаний. `seeds` сохранены как справочный пример структуры данных —
+ * чтобы вернуть демо-стенд, замените [] на seeds.map(...) как раньше.
+ */
+const buildExcursion = (row: (typeof seeds)[number], i: number): Excursion => {
   const photos = excursionGallery(row[0], row[2], i);
   return {
     id: row[0],
@@ -775,7 +780,10 @@ export const excursions: Excursion[] = seeds.map((row, i) => {
     includes: row[9],
     company: row[10],
   };
-});
+};
+void buildExcursion;
+
+export const excursions: Excursion[] = [];
 
 export const excursionCategories: ExcursionCategory[] = [
   "Экскурсии",

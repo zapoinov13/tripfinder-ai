@@ -6,7 +6,7 @@ import { SiteLayout } from "@/components/site/site-layout";
 import { Button } from "@/components/ui/button";
 import { DateRangePicker } from "@/components/ui/date-picker";
 import { resortsByDestination } from "@/data/demo";
-import { carClasses, cars, formatKzt, popularCarCountries } from "@/data/scenario-catalog";
+import { carClasses, formatKzt, popularCarCountries } from "@/data/scenario-catalog";
 import { usePlatformStore } from "@/lib/platform/hooks";
 import { companyPromoBadge, promotedCompanyIds } from "@/lib/platform/promotions";
 import {
@@ -114,7 +114,7 @@ function CarsPage() {
         ...(item.about ? { about: item.about } : {}),
       };
     }),
-    ...cars,
+    // Демо-карточки убраны: в витрине только реальные объявления компаний.
   ];
 
   const list = catalog.filter((item) => {

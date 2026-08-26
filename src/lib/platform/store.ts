@@ -85,10 +85,29 @@ function withDevAdmin(base: PlatformState): PlatformState {
   };
 }
 
+/** Ключи прежних версий с демоданными: подчищаем, чтобы они не «воскресали». */
+const LEGACY_STORE_KEYS = [
+  "tourgo:dubai-platform-v2",
+  "tourgo:dubai-platform-v1",
+  "tourgo:platform-v1",
+];
+
+function dropLegacyStores() {
+  if (!canUseStorage()) return;
+  for (const key of LEGACY_STORE_KEYS) {
+    try {
+      localStorage.removeItem(key);
+    } catch {
+      /* ignore */
+    }
+  }
+}
+
 export function getState(): PlatformState {
   if (!state) {
     state = withDevAdmin(loadFromStorage() ?? createSeedState());
     persist(state);
+    dropLegacyStores();
   }
   return state;
 }

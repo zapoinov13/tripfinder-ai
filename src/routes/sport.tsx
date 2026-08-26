@@ -5,7 +5,7 @@ import { useMemo, useSyncExternalStore, useState } from "react";
 import { SiteLayout } from "@/components/site/site-layout";
 import { Button } from "@/components/ui/button";
 import { destinations } from "@/data/demo";
-import { formatKzt, sportKinds, sports } from "@/data/scenario-catalog";
+import { formatKzt, sportKinds } from "@/data/scenario-catalog";
 import { usePlatformStore } from "@/lib/platform/hooks";
 import { companyPromoBadge, promotedCompanyIds } from "@/lib/platform/promotions";
 import { listPublishedSports, subscribeSportListings } from "@/lib/platform/sport-listings";
@@ -75,7 +75,7 @@ function SportPage() {
       companyName: item.companyName,
       organizationId: item.organizationId,
     })),
-    ...sports,
+    // Демо-карточки убраны: в витрине только реальные объявления компаний.
   ];
 
   const needle = (params.q ?? "").toLowerCase();
