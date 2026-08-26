@@ -7,8 +7,12 @@ import {
   EmptyState,
   StatusBadge,
   TabPills,
+  orgName,
   orgStatusLabel,
+  roleLabel,
   toneForOrgStatus,
+  toneForUserStatus,
+  userStatusLabel,
 } from "@/components/admin";
 import { DashShell } from "@/components/dash/dash-shell";
 import { useAdminNav } from "@/components/dash/nav-items";
@@ -61,6 +65,7 @@ function AdminOperatorsPage() {
   const { user } = useAuth();
   const nav = useAdminNav();
   const state = usePlatformStore();
+  const [view, setView] = useState("companies");
   const [tab, setTab] = useState("all");
   const [category, setCategory] = useState("all");
   const [docsOrg, setDocsOrg] = useState<Organization | null>(null);
@@ -93,6 +98,11 @@ function AdminOperatorsPage() {
     return companyCategories.filter((c) => cats.has(c.id)).map((c) => c.label);
   };
 
+  // Люди с бизнес-ролями: живут здесь, а не в «Пользователях».
+  const partnerUsers = state.users
+    .filter((u) => u.role === "OPERATOR_ADMIN" || u.role === "OPERATOR_MANAGER")
+    .sort((a, b) => (a.organizationId ?? "").localeCompare(b.organizationId ?? ""));
+
   const setStatus = (orgId: string, status: OrganizationStatus) => {
     setState((s) => ({
       ...s,
@@ -124,207 +134,328 @@ function AdminOperatorsPage() {
       title="Партнёры"
       subtitle="Все подключённые бизнесы: туры, экскурсии, жильё, авто, спорт. Одобрение, документы и тарифы."
     >
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="mb-4">
         <TabPills
-          value={tab}
-          onChange={setTab}
+          value={view}
+          onChange={setView}
           items={[
-            { value: "all", label: "Все", count: counts.all },
-            { value: "pending", label: "Ожидают", count: counts.pending },
-            { value: "approved", label: "Одобрены", count: counts.approved },
-            { value: "rejected", label: "Отклонены", count: counts.rejected },
-            { value: "suspended", label: "Приостановлены", count: counts.suspended },
+            { value: "companies", label: "Компании", count: counts.all },
+            { value: "staff", label: "Сотрудники", count: partnerUsers.length },
           ]}
         />
-        <Select value={category} onValueChange={setCategory}>
-          <SelectTrigger className="w-52">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Все категории</SelectItem>
-            {companyCategories.map((c) => (
-              <SelectItem key={c.id} value={c.id}>
-                {c.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
       </div>
 
-      {orgs.length === 0 ? (
-        <EmptyState title="Нет операторов в этой вкладке" />
-      ) : (
-        <div className="surface-card overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Партнёр</TableHead>
-                <TableHead>Подключён</TableHead>
-                <TableHead>Статус</TableHead>
-                <TableHead>Документы</TableHead>
-                <TableHead>Тариф</TableHead>
-                <TableHead>Туры / брони</TableHead>
-                <TableHead>Действия</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {orgs.map((o) => {
-                const tourCount = state.tours.filter((t) => t.operatorOrgId === o.id).length;
-                const bookingCount = state.bookings.filter((b) => b.organizationId === o.id).length;
-                const plan = state.config.operatorPlans.find((p) => p.code === o.planCode);
-                return (
-                  <TableRow key={o.id}>
+      {view === "staff" ? (
+        partnerUsers.length === 0 ? (
+          <EmptyState
+            title="Сотрудников партнёров нет"
+            description="Появятся после регистрации компаний"
+          />
+        ) : (
+          <div className="surface-card overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Сотрудник</TableHead>
+                  <TableHead>Компания</TableHead>
+                  <TableHead>Роль</TableHead>
+                  <TableHead>Статус</TableHead>
+                  <TableHead>Создан</TableHead>
+                  <TableHead></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {partnerUsers.map((u) => (
+                  <TableRow key={u.id}>
                     <TableCell>
-                      <div className="font-medium">{o.name}</div>
-                      <div className="text-xs text-muted-foreground">
-                        {o.city} · {o.email}
-                      </div>
-                      <div className="mt-1 text-xs text-muted-foreground">
-                        БИН {o.registrationNumber || "нет"} ·{" "}
-                        {o.contactPerson || "контакт не указан"}
-                      </div>
-                      {categoryChips(o).length > 0 ? (
-                        <div className="mt-1.5 flex flex-wrap gap-1">
-                          {categoryChips(o).map((label) => (
-                            <span
-                              key={label}
-                              className="rounded-full bg-secondary px-2 py-0.5 text-[11px] font-medium"
-                            >
-                              {label}
-                            </span>
-                          ))}
-                        </div>
-                      ) : null}
-                    </TableCell>
-                    <TableCell className="whitespace-nowrap text-sm">
-                      {fmtDate(o.createdAt)}
-                    </TableCell>
-                    <TableCell>
-                      <StatusBadge
-                        label={orgStatusLabel[o.status]}
-                        tone={toneForOrgStatus(o.status)}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      {(o.verificationFiles?.length ?? 0) > 0 ? (
-                        <Button size="sm" variant="outline" onClick={() => setDocsOrg(o)}>
-                          {o.verificationFiles!.length} док. — смотреть
-                        </Button>
-                      ) : (o.documents?.length ?? 0) > 0 ? (
-                        <span className="text-xs text-muted-foreground">
-                          {o.documents!.join(", ")}
-                        </span>
-                      ) : (
-                        <span className="text-xs text-muted-foreground">не загружены</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <Select
-                        value={o.planCode}
-                        onValueChange={(v) => {
-                          setState((s) => ({
-                            ...s,
-                            organizations: s.organizations.map((x) =>
-                              x.id === o.id ? { ...x, planCode: v as OperatorPlanCode } : x,
-                            ),
-                          }));
-                          appendAudit({
-                            actorId: user.id,
-                            action: "operator_plan_admin",
-                            entityType: "organization",
-                            entityId: o.id,
-                            meta: { plan: v },
-                          });
-                          toast.success(`Тариф: ${v}`);
-                        }}
-                      >
-                        <SelectTrigger className="w-36">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {state.config.operatorPlans.map((p) => (
-                            <SelectItem key={p.code} value={p.code}>
-                              {p.name || p.code}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <div className="mt-1 text-xs text-muted-foreground">
-                        лимит {formatNumber(plan?.tourLimit ?? 0)} туров
-                      </div>
+                      <div className="font-medium">{u.name}</div>
+                      <div className="text-xs text-muted-foreground">{u.email}</div>
                     </TableCell>
                     <TableCell className="text-sm">
-                      {formatNumber(tourCount)} / {formatNumber(bookingCount)}
+                      {u.organizationId ? orgName(u.organizationId) : "без компании"}
                     </TableCell>
-                    <TableCell className="space-x-2 whitespace-nowrap">
-                      {o.status !== "APPROVED" ? (
-                        <Button size="sm" onClick={() => setStatus(o.id, "APPROVED")}>
-                          Одобрить
-                        </Button>
-                      ) : null}
-                      {o.status !== "REJECTED" ? (
-                        <ConfirmAction
-                          triggerLabel="Отклонить"
-                          title="Отклонить оператора?"
-                          description={o.name}
-                          confirmLabel="Отклонить"
-                          destructive
-                          onConfirm={() => setStatus(o.id, "REJECTED")}
-                        />
-                      ) : null}
-                      {o.status !== "SUSPENDED" ? (
-                        <ConfirmAction
-                          triggerLabel="Приостановить"
-                          title="Приостановить оператора?"
-                          description="Туры компании могут быть скрыты из выдачи."
-                          confirmLabel="Приостановить"
-                          variant="ghost"
-                          onConfirm={() => setStatus(o.id, "SUSPENDED")}
-                        />
-                      ) : (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => setStatus(o.id, "APPROVED")}
-                        >
-                          Возобновить
-                        </Button>
-                      )}
-                      <ConfirmAction
-                        triggerLabel="Удалить"
-                        title="Удалить компанию?"
-                        description={`${o.name}: страница, туры и объявления исчезнут навсегда, сотрудники станут туристами. Брони и платежи сохраняются в отчётах. Действие нельзя отменить.`}
-                        confirmLabel="Удалить"
-                        destructive
-                        onConfirm={() => {
-                          setState((s) => ({
-                            ...s,
-                            organizations: s.organizations.filter((x) => x.id !== o.id),
-                            tours: s.tours.filter((t) => t.operatorOrgId !== o.id),
-                            members: s.members.filter((m) => m.organizationId !== o.id),
-                            users: s.users.map((u2) => {
-                              if (u2.organizationId !== o.id) return u2;
-                              const { organizationId: _org, ...rest } = u2;
-                              return { ...rest, role: "TOURIST" as const };
-                            }),
-                          }));
-                          appendAudit({
-                            actorId: user.id,
-                            action: "organization_delete",
-                            entityType: "organization",
-                            entityId: o.id,
-                            meta: { name: o.name },
-                          });
-                          toast.success("Компания удалена");
-                        }}
+                    <TableCell className="text-sm">{roleLabel[u.role]}</TableCell>
+                    <TableCell>
+                      <StatusBadge
+                        label={userStatusLabel[u.status]}
+                        tone={toneForUserStatus(u.status)}
                       />
                     </TableCell>
+                    <TableCell className="text-xs text-muted-foreground">
+                      {fmtDate(u.createdAt)}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-wrap justify-end gap-2">
+                        <ConfirmAction
+                          triggerLabel={u.status === "active" ? "Заморозить" : "Разморозить"}
+                          title={
+                            u.status === "active"
+                              ? "Заморозить сотрудника?"
+                              : "Разморозить сотрудника?"
+                          }
+                          description={`${u.name} (${u.email})${
+                            u.status === "active"
+                              ? " не сможет войти, пока вы не разморозите аккаунт."
+                              : " снова сможет входить в кабинет компании."
+                          }`}
+                          confirmLabel={u.status === "active" ? "Заморозить" : "Разморозить"}
+                          destructive={u.status === "active"}
+                          onConfirm={() => {
+                            const next = u.status === "active" ? "suspended" : "active";
+                            setState((s) => ({
+                              ...s,
+                              users: s.users.map((x) =>
+                                x.id === u.id ? { ...x, status: next } : x,
+                              ),
+                            }));
+                            appendAudit({
+                              actorId: user.id,
+                              action: next === "suspended" ? "user_suspend" : "user_restore",
+                              entityType: "user",
+                              entityId: u.id,
+                            });
+                            toast.success(
+                              next === "suspended" ? "Сотрудник заморожен" : "Сотрудник разморожен",
+                            );
+                          }}
+                        />
+                        <ConfirmAction
+                          triggerLabel="Удалить"
+                          title="Удалить сотрудника?"
+                          description={`${u.name} (${u.email}) исчезнет навсегда. Компания и её данные останутся.`}
+                          confirmLabel="Удалить"
+                          destructive
+                          onConfirm={() => {
+                            setState((s) => ({
+                              ...s,
+                              users: s.users.filter((x) => x.id !== u.id),
+                              members: s.members.filter((m) => m.userId !== u.id),
+                            }));
+                            appendAudit({
+                              actorId: user.id,
+                              action: "user_delete",
+                              entityType: "user",
+                              entityId: u.id,
+                              meta: { email: u.email, role: u.role },
+                            });
+                            toast.success("Сотрудник удалён");
+                          }}
+                        />
+                      </div>
+                    </TableCell>
                   </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </div>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        )
+      ) : (
+        <>
+          <div className="flex flex-wrap items-center gap-3">
+            <TabPills
+              value={tab}
+              onChange={setTab}
+              items={[
+                { value: "all", label: "Все", count: counts.all },
+                { value: "pending", label: "Ожидают", count: counts.pending },
+                { value: "approved", label: "Одобрены", count: counts.approved },
+                { value: "rejected", label: "Отклонены", count: counts.rejected },
+                { value: "suspended", label: "Приостановлены", count: counts.suspended },
+              ]}
+            />
+            <Select value={category} onValueChange={setCategory}>
+              <SelectTrigger className="w-52">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Все категории</SelectItem>
+                {companyCategories.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>
+                    {c.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {orgs.length === 0 ? (
+            <EmptyState title="Нет операторов в этой вкладке" />
+          ) : (
+            <div className="surface-card overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Партнёр</TableHead>
+                    <TableHead>Подключён</TableHead>
+                    <TableHead>Статус</TableHead>
+                    <TableHead>Документы</TableHead>
+                    <TableHead>Тариф</TableHead>
+                    <TableHead>Туры / брони</TableHead>
+                    <TableHead>Действия</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {orgs.map((o) => {
+                    const tourCount = state.tours.filter((t) => t.operatorOrgId === o.id).length;
+                    const bookingCount = state.bookings.filter(
+                      (b) => b.organizationId === o.id,
+                    ).length;
+                    const plan = state.config.operatorPlans.find((p) => p.code === o.planCode);
+                    return (
+                      <TableRow key={o.id}>
+                        <TableCell>
+                          <div className="font-medium">{o.name}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {o.city} · {o.email}
+                          </div>
+                          <div className="mt-1 text-xs text-muted-foreground">
+                            БИН {o.registrationNumber || "нет"} ·{" "}
+                            {o.contactPerson || "контакт не указан"}
+                          </div>
+                          {categoryChips(o).length > 0 ? (
+                            <div className="mt-1.5 flex flex-wrap gap-1">
+                              {categoryChips(o).map((label) => (
+                                <span
+                                  key={label}
+                                  className="rounded-full bg-secondary px-2 py-0.5 text-[11px] font-medium"
+                                >
+                                  {label}
+                                </span>
+                              ))}
+                            </div>
+                          ) : null}
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap text-sm">
+                          {fmtDate(o.createdAt)}
+                        </TableCell>
+                        <TableCell>
+                          <StatusBadge
+                            label={orgStatusLabel[o.status]}
+                            tone={toneForOrgStatus(o.status)}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          {(o.verificationFiles?.length ?? 0) > 0 ? (
+                            <Button size="sm" variant="outline" onClick={() => setDocsOrg(o)}>
+                              {o.verificationFiles!.length} док. — смотреть
+                            </Button>
+                          ) : (o.documents?.length ?? 0) > 0 ? (
+                            <span className="text-xs text-muted-foreground">
+                              {o.documents!.join(", ")}
+                            </span>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">не загружены</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <Select
+                            value={o.planCode}
+                            onValueChange={(v) => {
+                              setState((s) => ({
+                                ...s,
+                                organizations: s.organizations.map((x) =>
+                                  x.id === o.id ? { ...x, planCode: v as OperatorPlanCode } : x,
+                                ),
+                              }));
+                              appendAudit({
+                                actorId: user.id,
+                                action: "operator_plan_admin",
+                                entityType: "organization",
+                                entityId: o.id,
+                                meta: { plan: v },
+                              });
+                              toast.success(`Тариф: ${v}`);
+                            }}
+                          >
+                            <SelectTrigger className="w-36">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {state.config.operatorPlans.map((p) => (
+                                <SelectItem key={p.code} value={p.code}>
+                                  {p.name || p.code}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <div className="mt-1 text-xs text-muted-foreground">
+                            лимит {formatNumber(plan?.tourLimit ?? 0)} туров
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-sm">
+                          {formatNumber(tourCount)} / {formatNumber(bookingCount)}
+                        </TableCell>
+                        <TableCell className="space-x-2 whitespace-nowrap">
+                          {o.status !== "APPROVED" ? (
+                            <Button size="sm" onClick={() => setStatus(o.id, "APPROVED")}>
+                              Одобрить
+                            </Button>
+                          ) : null}
+                          {o.status !== "REJECTED" ? (
+                            <ConfirmAction
+                              triggerLabel="Отклонить"
+                              title="Отклонить оператора?"
+                              description={o.name}
+                              confirmLabel="Отклонить"
+                              destructive
+                              onConfirm={() => setStatus(o.id, "REJECTED")}
+                            />
+                          ) : null}
+                          {o.status !== "SUSPENDED" ? (
+                            <ConfirmAction
+                              triggerLabel="Приостановить"
+                              title="Приостановить оператора?"
+                              description="Туры компании могут быть скрыты из выдачи."
+                              confirmLabel="Приостановить"
+                              variant="ghost"
+                              onConfirm={() => setStatus(o.id, "SUSPENDED")}
+                            />
+                          ) : (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setStatus(o.id, "APPROVED")}
+                            >
+                              Возобновить
+                            </Button>
+                          )}
+                          <ConfirmAction
+                            triggerLabel="Удалить"
+                            title="Удалить компанию?"
+                            description={`${o.name}: страница, туры и объявления исчезнут навсегда, сотрудники станут туристами. Брони и платежи сохраняются в отчётах. Действие нельзя отменить.`}
+                            confirmLabel="Удалить"
+                            destructive
+                            onConfirm={() => {
+                              setState((s) => ({
+                                ...s,
+                                organizations: s.organizations.filter((x) => x.id !== o.id),
+                                tours: s.tours.filter((t) => t.operatorOrgId !== o.id),
+                                members: s.members.filter((m) => m.organizationId !== o.id),
+                                users: s.users.map((u2) => {
+                                  if (u2.organizationId !== o.id) return u2;
+                                  const { organizationId: _org, ...rest } = u2;
+                                  return { ...rest, role: "TOURIST" as const };
+                                }),
+                              }));
+                              appendAudit({
+                                actorId: user.id,
+                                action: "organization_delete",
+                                entityType: "organization",
+                                entityId: o.id,
+                                meta: { name: o.name },
+                              });
+                              toast.success("Компания удалена");
+                            }}
+                          />
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </>
       )}
 
       <Dialog open={Boolean(docsOrg)} onOpenChange={(open) => !open && setDocsOrg(null)}>

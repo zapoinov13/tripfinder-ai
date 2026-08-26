@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
@@ -7,6 +7,7 @@ import {
   EmptyState,
   FilterBar,
   StatusBadge,
+  TabPills,
   roleLabel,
   toneForUserStatus,
   userStatusLabel,
@@ -39,19 +40,29 @@ export const Route = createFileRoute("/admin/users")({
   component: AdminUsersPage,
 });
 
-const roles = Object.keys(roleLabel) as Role[];
+/**
+ * Раздел «Пользователи» — только туристы и команда платформы.
+ * Все, кто зарегистрировался как бизнес (турфирма, спорт, аренда и т.д.),
+ * живут в разделе «Партнёры» — там компании и их сотрудники.
+ */
+const touristRoles: Role[] = ["TOURIST", "PREMIUM_TOURIST"];
+const staffRoles: Role[] = ["PLATFORM_ADMIN", "PLATFORM_MANAGER"];
+const partnerRoles: Role[] = ["OPERATOR_ADMIN", "OPERATOR_MANAGER"];
 
 function AdminUsersPage() {
   const { allowed } = useRequireAuth(["PLATFORM_ADMIN", "PLATFORM_MANAGER"]);
   const { user } = useAuth();
   const nav = useAdminNav();
   const state = usePlatformStore();
+  const [tab, setTab] = useState("tourists");
   const [q, setQ] = useState("");
   const [role, setRole] = useState("all");
   const [status, setStatus] = useState("all");
+  const tabRoles = tab === "staff" ? staffRoles : touristRoles;
   const users = useMemo(() => {
     const query = q.trim().toLowerCase();
     return state.users.filter((u) => {
+      if (!tabRoles.includes(u.role)) return false;
       if (role !== "all" && u.role !== role) return false;
       if (status !== "all" && u.status !== status) return false;
       if (!query) return true;
@@ -62,14 +73,25 @@ function AdminUsersPage() {
         (roleLabel[u.role] ?? "").toLowerCase().includes(query)
       );
     });
-  }, [state.users, q, role, status]);
+  }, [state.users, q, role, status, tabRoles]);
+
+  const counts = useMemo(
+    () => ({
+      tourists: state.users.filter((u) => touristRoles.includes(u.role)).length,
+      staff: state.users.filter((u) => staffRoles.includes(u.role)).length,
+      partners: state.users.filter((u) => partnerRoles.includes(u.role)).length,
+    }),
+    [state.users],
+  );
 
   if (!allowed || !user) return null;
 
   const isPlatformAdmin = user.role === "PLATFORM_ADMIN";
   // Менеджер не может назначать роль админа платформы и трогать админов,
   // и никто не редактирует собственный аккаунт (защита от самоблокировки).
-  const assignableRoles = isPlatformAdmin ? roles : roles.filter((r) => r !== "PLATFORM_ADMIN");
+  // Бизнес-роли здесь не назначаются: партнёром становятся через регистрацию
+  // компании, а сотрудники партнёров управляются в разделе «Партнёры».
+  const assignableRoles = tabRoles.filter((r) => isPlatformAdmin || r !== "PLATFORM_ADMIN");
   const canEdit = (target: (typeof state.users)[number]) =>
     target.id !== user.id && (isPlatformAdmin || target.role !== "PLATFORM_ADMIN");
 
@@ -78,8 +100,25 @@ function AdminUsersPage() {
       brand="TourGo Админ"
       items={nav}
       title="Пользователи"
-      subtitle="Поиск, роли, заморозка и удаление"
+      subtitle="Туристы и команда платформы. Бизнес-аккаунты — в разделе «Партнёры»."
     >
+      <div className="mb-4 flex flex-wrap items-center gap-3">
+        <TabPills
+          value={tab}
+          onChange={(v) => {
+            setTab(v);
+            setRole("all");
+          }}
+          items={[
+            { value: "tourists", label: "Туристы", count: counts.tourists },
+            { value: "staff", label: "Команда платформы", count: counts.staff },
+          ]}
+        />
+        <Link to="/admin/operators" className="text-sm font-medium text-primary hover:underline">
+          Сотрудники партнёров ({counts.partners}) — в разделе «Партнёры» →
+        </Link>
+      </div>
+
       <FilterBar
         search={q}
         onSearchChange={setQ}
@@ -92,7 +131,7 @@ function AdminUsersPage() {
             onChange: setRole,
             options: [
               { value: "all", label: "Все роли" },
-              ...roles.map((r) => ({ value: r, label: roleLabel[r] })),
+              ...tabRoles.map((r) => ({ value: r, label: roleLabel[r] })),
             ],
           },
           {
