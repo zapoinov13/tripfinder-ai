@@ -193,20 +193,31 @@ function OperatorPromotionPage() {
         const start = new Date(p.startedAt).getTime();
         const end = Math.min(Date.now(), new Date(p.expiresAt).getTime());
         const windowMs = Math.max(end - start, 1);
-        const inWindow = { views: 0, clicks: 0 };
-        const before = { views: 0, clicks: 0 };
+        const inWindow = { views: 0, clicks: 0, checkins: 0, requests: 0 };
+        const before = { views: 0, clicks: 0, checkins: 0, requests: 0 };
+        const bucketFor = (iso: string) => {
+          const t = new Date(iso).getTime();
+          if (t >= start && t <= end) return inWindow;
+          if (t >= start - windowMs && t < start) return before;
+          return null;
+        };
         for (const e of state.analyticsEvents) {
           if (e.payload?.["companyId"] !== organization.id) continue;
-          const t = new Date(e.createdAt).getTime();
-          const bucket =
-            t >= start && t <= end ? inWindow : t >= start - windowMs && t < start ? before : null;
+          const bucket = bucketFor(e.createdAt);
           if (!bucket) continue;
           if (e.type === "COMPANY_PAGE_VIEW") bucket.views += 1;
           if (e.type === "COMPANY_CONTACT_CLICK") bucket.clicks += 1;
+          if (e.type === "COMPANY_CHECKIN") bucket.checkins += 1;
+        }
+        // Заявки — главный результат продвижения для бизнеса.
+        for (const r of state.serviceRequests) {
+          if (r.organizationId !== organization.id) continue;
+          const bucket = bucketFor(r.createdAt);
+          if (bucket) bucket.requests += 1;
         }
         return { promo: p, inWindow, before };
       });
-  }, [organization, state.promotions, state.analyticsEvents]);
+  }, [organization, state.promotions, state.analyticsEvents, state.serviceRequests]);
 
   if (!allowed || !organization || !user) return null;
 
@@ -624,12 +635,12 @@ function OperatorPromotionPage() {
 
       {promoAnalytics.length > 0 ? (
         <section className="mt-8">
-          <h2 className="font-display text-lg font-semibold">Аналитика продвижения</h2>
+          <h2 className="font-display text-lg font-semibold">Что дало продвижение</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Просмотры страницы и клики (маршрут, WhatsApp, звонки) за время кампании — в сравнении с
-            таким же периодом до неё.
+            Просмотры, клики по контактам, визиты и заявки за время кампании — против такого же
+            периода до неё.
           </p>
-          <ul className="mt-4 grid gap-3 md:grid-cols-2">
+          <ul className="mt-4 grid gap-3">
             {promoAnalytics.map(({ promo, inWindow, before }) => {
               const biz = businessCatalog.find((b) => b.type === promo.type);
               const finished =
@@ -661,26 +672,32 @@ function OperatorPromotionPage() {
                     {new Date(promo.expiresAt).toLocaleDateString("ru-RU")} ·{" "}
                     {formatPrice(promo.price)}
                   </p>
-                  <div className="mt-3 grid grid-cols-2 gap-3">
-                    <div className="rounded-xl bg-secondary/40 p-3">
-                      <p className="text-xs text-muted-foreground">Просмотры страницы</p>
-                      <p className="mt-1 font-display text-lg font-semibold tabular-nums">
-                        {formatNumber(inWindow.views)}
-                        <span className="ml-2 text-xs font-medium text-muted-foreground">
-                          {delta(inWindow.views, before.views)}
-                        </span>
-                      </p>
-                    </div>
-                    <div className="rounded-xl bg-secondary/40 p-3">
-                      <p className="text-xs text-muted-foreground">Клики по контактам</p>
-                      <p className="mt-1 font-display text-lg font-semibold tabular-nums">
-                        {formatNumber(inWindow.clicks)}
-                        <span className="ml-2 text-xs font-medium text-muted-foreground">
-                          {delta(inWindow.clicks, before.clicks)}
-                        </span>
-                      </p>
-                    </div>
+                  <div className="mt-3 grid grid-cols-2 gap-3 lg:grid-cols-4">
+                    {[
+                      { label: "Просмотры страницы", now: inWindow.views, was: before.views },
+                      { label: "Клики по контактам", now: inWindow.clicks, was: before.clicks },
+                      { label: "Визиты «Я здесь»", now: inWindow.checkins, was: before.checkins },
+                      { label: "Заявки", now: inWindow.requests, was: before.requests },
+                    ].map((metric) => (
+                      <div key={metric.label} className="rounded-xl bg-secondary/40 p-3">
+                        <p className="text-xs text-muted-foreground">{metric.label}</p>
+                        <p className="mt-1 font-display text-lg font-semibold tabular-nums">
+                          {formatNumber(metric.now)}
+                          <span
+                            className={cn(
+                              "ml-2 text-xs font-medium",
+                              metric.now > metric.was ? "text-success" : "text-muted-foreground",
+                            )}
+                          >
+                            {delta(metric.now, metric.was)}
+                          </span>
+                        </p>
+                      </div>
+                    ))}
                   </div>
+                  <p className="mt-2 text-[11px] text-muted-foreground">
+                    Сравнение с таким же периодом до старта кампании.
+                  </p>
                 </li>
               );
             })}
