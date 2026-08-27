@@ -13,13 +13,22 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
  * из браузера — туда пишет только эта функция под service role.
  */
 
-const promotionTypes = ["PREMIUM", "SPONSORED", "HOME_FEATURE"] as const;
+// Держим в одном списке с PromotionType и DEFAULT_PRICES в promotions.ts.
+const promotionTypes = [
+  "BOOST",
+  "FEATURED",
+  "SPONSORED",
+  "PREMIUM_PLACEMENT",
+  "HOME_FEATURE",
+] as const;
 type PromotionType = (typeof promotionTypes)[number];
 
 const DEFAULT_PRICES: Record<PromotionType, number> = {
-  PREMIUM: 25000,
-  SPONSORED: 15000,
-  HOME_FEATURE: 40000,
+  BOOST: 15000,
+  FEATURED: 35000,
+  SPONSORED: 55000,
+  PREMIUM_PLACEMENT: 45000,
+  HOME_FEATURE: 75000,
 };
 
 const schema = z.object({
