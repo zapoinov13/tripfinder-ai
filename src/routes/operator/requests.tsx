@@ -23,8 +23,10 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { formatPrice, getHotel, hotels, type Hotel } from "@/data/demo";
 import { useAuth, useRequireAuth } from "@/lib/platform/auth";
+import { isoDate } from "@/lib/platform/booking-slots";
 import { isBusinessOnlyServices } from "@/lib/platform/company-categories";
 import { ServiceChatDialog } from "@/components/company/service-chat-dialog";
+import { ServiceRescheduleDialog } from "@/components/company/service-reschedule-dialog";
 import {
   formatServiceRequestWhen,
   serviceRequestStatusClass,
@@ -104,6 +106,30 @@ const serviceTabs = [
 
 type ServiceTab = (typeof serviceTabs)[number]["value"];
 
+const whenFilters = [
+  { value: "all", label: "Все даты" },
+  { value: "today", label: "Сегодня" },
+  { value: "tomorrow", label: "Завтра" },
+  { value: "week", label: "7 дней" },
+] as const;
+
+type WhenFilter = (typeof whenFilters)[number]["value"];
+
+/** Попадает ли запись в выбранное окно дат. */
+function matchesWhen(date: string, filter: WhenFilter) {
+  if (filter === "all") return true;
+  const today = new Date();
+  const iso = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  if (filter === "today") return date === iso(today);
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  if (filter === "tomorrow") return date === iso(tomorrow);
+  const week = new Date(today);
+  week.setDate(week.getDate() + 7);
+  return date >= iso(today) && date <= iso(week);
+}
+
 /** «1 новая заявка», «2 новые заявки», «5 новых заявок» */
 function newRequestsLabel(n: number) {
   const mod10 = n % 10;
@@ -122,6 +148,8 @@ function BusinessRequestsPage() {
   const nav = useOperatorNav(organization?.id);
   const [tab, setTab] = useState<ServiceTab>("new");
   const [chatWith, setChatWith] = useState<ServiceRequest | null>(null);
+  const [moveRequest, setMoveRequest] = useState<ServiceRequest | null>(null);
+  const [when, setWhen] = useState<WhenFilter>("all");
 
   const mine = useMemo(() => {
     if (!organization) return [];
@@ -138,11 +166,14 @@ function BusinessRequestsPage() {
     archive: mine.filter((r) => ["DONE", "DECLINED", "CANCELLED"].includes(r.status)).length,
   };
 
-  const visible = mine.filter((r) => {
-    if (tab === "new") return r.status === "NEW";
-    if (tab === "confirmed") return r.status === "CONFIRMED";
-    return ["DONE", "DECLINED", "CANCELLED"].includes(r.status);
-  });
+  const visible = mine
+    .filter((r) => {
+      if (tab === "new") return r.status === "NEW";
+      if (tab === "confirmed") return r.status === "CONFIRMED";
+      return ["DONE", "DECLINED", "CANCELLED"].includes(r.status);
+    })
+    // Архив показываем целиком: фильтр по дате нужен для будущих записей.
+    .filter((r) => tab === "archive" || matchesWhen(r.date, when));
 
   const setStatus = (request: ServiceRequest, status: ServiceRequestStatus, toastText: string) => {
     updateServiceRequestStatus(request.id, status, {
@@ -174,7 +205,7 @@ function BusinessRequestsPage() {
         <KpiCard label="Всего заявок" value={String(mine.length)} hint="за всё время" />
       </div>
 
-      <div className="mt-6">
+      <div className="mt-6 flex flex-wrap items-center gap-3">
         <TabPills
           value={tab}
           onChange={(v: string) => setTab(v as ServiceTab)}
@@ -183,13 +214,34 @@ function BusinessRequestsPage() {
             label: `${t.label} (${counts[t.value]})`,
           }))}
         />
+        {tab === "archive" ? null : (
+          <div className="flex flex-wrap gap-1.5">
+            {whenFilters.map((f) => (
+              <button
+                key={f.value}
+                type="button"
+                onClick={() => setWhen(f.value)}
+                className={cn(
+                  "rounded-full px-3 py-1.5 text-xs font-semibold",
+                  when === f.value ? "bg-secondary text-foreground" : "text-muted-foreground",
+                )}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
       {visible.length === 0 ? (
         <div className="surface-card p-10 text-center">
           <Inbox className="mx-auto size-10 text-muted-foreground/70" />
           <p className="mt-4 font-medium">
-            {tab === "new" ? "Новых заявок нет" : "Здесь пока пусто"}
+            {when !== "all" && tab !== "archive"
+              ? "На этот период записей нет"
+              : tab === "new"
+                ? "Новых заявок нет"
+                : "Здесь пока пусто"}
           </p>
           <p className="mt-1 text-sm text-muted-foreground">
             {tab === "new"
@@ -267,6 +319,9 @@ function BusinessRequestsPage() {
                     >
                       Подтвердить
                     </Button>
+                    <Button size="sm" variant="outline" onClick={() => setMoveRequest(request)}>
+                      Перенести
+                    </Button>
                     <Button
                       size="sm"
                       variant="outline"
@@ -286,6 +341,9 @@ function BusinessRequestsPage() {
                     >
                       Клиент пришёл
                     </Button>
+                    <Button size="sm" variant="outline" onClick={() => setMoveRequest(request)}>
+                      Перенести
+                    </Button>
                   </div>
                 ) : null}
               </article>
@@ -293,6 +351,18 @@ function BusinessRequestsPage() {
           })}
         </div>
       )}
+
+      {moveRequest ? (
+        <ServiceRescheduleDialog
+          open
+          onOpenChange={(o) => {
+            if (!o) setMoveRequest(null);
+          }}
+          request={moveRequest}
+          organization={organization}
+          actorId={user.id}
+        />
+      ) : null}
 
       {chatWith ? (
         <ServiceChatDialog

@@ -299,3 +299,47 @@ export function unreadServiceMessagesForOrg(organizationId: string): number {
     (m) => m.organizationId === organizationId && m.authorSide === "CLIENT" && !m.readByCompany,
   ).length;
 }
+
+/** Перенос записи компанией: новое время и уведомление клиенту. */
+export function rescheduleServiceRequest(
+  requestId: string,
+  date: string,
+  time: string,
+  options: { actorId: string; organizationName: string },
+) {
+  let moved: ServiceRequest | null = null;
+  setState((s) => ({
+    ...s,
+    serviceRequests: s.serviceRequests.map((r) => {
+      if (r.id !== requestId) return r;
+      moved = { ...r, date, time, updatedAt: nowIso() };
+      return moved;
+    }),
+  }));
+
+  if (!moved) return null;
+  const request: ServiceRequest = moved;
+
+  if (request.userId) {
+    pushNotification(
+      request.userId,
+      "service_request_moved",
+      "Запись перенесена",
+      `${options.organizationName || "Компания"} предлагает новое время: ${formatServiceRequestWhen(
+        date,
+        time,
+      )}.`,
+      { requestId: request.id, organizationId: request.organizationId },
+    );
+  }
+
+  appendAudit({
+    actorId: options.actorId,
+    action: "service_request_moved",
+    entityType: "service_request",
+    entityId: request.id,
+    meta: { date, time },
+  });
+
+  return request;
+}

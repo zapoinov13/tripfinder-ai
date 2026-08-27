@@ -131,6 +131,7 @@ export const auditActionLabel: Record<string, string> = {
   service_request_declined: "Заявка клиента отклонена",
   service_request_done: "Заявка клиента выполнена",
   service_request_cancelled: "Заявка клиента отменена",
+  service_request_moved: "Запись перенесена",
 };
 
 export const auditEntityLabel: Record<string, string> = {
