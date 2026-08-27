@@ -26,6 +26,7 @@ function OperatorReviewsPage() {
   const { user, organization } = useAuth();
   const state = usePlatformStore();
   const nav = useOperatorNav(organization?.id);
+  const [onlyUnanswered, setOnlyUnanswered] = useState(false);
 
   if (!allowed || !organization || !user) return null;
 
@@ -33,6 +34,13 @@ function OperatorReviewsPage() {
   const reviews = getCompanyReviews(organization.id);
   const rating = getCompanyRating(organization.id);
   const unanswered = reviews.filter((r) => !r.reply?.trim()).length;
+  // Без ответа — наверх: это то, что требует действия сегодня.
+  const ordered = [...reviews].sort((a, b) => {
+    const aOpen = a.reply?.trim() ? 1 : 0;
+    const bOpen = b.reply?.trim() ? 1 : 0;
+    return aOpen - bOpen || b.createdAt.localeCompare(a.createdAt);
+  });
+  const visible = onlyUnanswered ? ordered.filter((r) => !r.reply?.trim()) : ordered;
 
   return (
     <DashShell
@@ -67,8 +75,9 @@ function OperatorReviewsPage() {
           </p>
         </div>
         <p className="max-w-md text-sm text-muted-foreground">
-          Высокий рейтинг и вежливые ответы повышают доверие. Клиент видит ответ под отзывом на
-          вашей странице.
+          {unanswered > 0
+            ? "Ответ виден всем на странице компании — отвечают чаще там, где видят живой диалог. Неотвеченные подняты наверх."
+            : "Все отзывы с ответом. Так страница выглядит живой и клиенты решаются быстрее."}
         </p>
       </div>
 
@@ -80,17 +89,44 @@ function OperatorReviewsPage() {
           </p>
         </div>
       ) : (
-        <div className="mt-6 space-y-4">
-          {reviews.map((review) => (
-            <ReviewCard
-              key={review.id}
-              review={review}
-              organizationId={organization.id}
-              actorId={user.id}
-              actorName={user.name}
-            />
-          ))}
-        </div>
+        <>
+          {unanswered > 0 ? (
+            <div className="mt-6 flex flex-wrap gap-1.5">
+              <button
+                type="button"
+                onClick={() => setOnlyUnanswered(false)}
+                className={cn(
+                  "rounded-full px-3 py-1.5 text-xs font-semibold",
+                  onlyUnanswered ? "text-muted-foreground" : "bg-secondary text-foreground",
+                )}
+              >
+                Все ({reviews.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setOnlyUnanswered(true)}
+                className={cn(
+                  "rounded-full px-3 py-1.5 text-xs font-semibold",
+                  onlyUnanswered ? "bg-secondary text-foreground" : "text-muted-foreground",
+                )}
+              >
+                Без ответа ({unanswered})
+              </button>
+            </div>
+          ) : null}
+
+          <div className="mt-4 space-y-4">
+            {visible.map((review) => (
+              <ReviewCard
+                key={review.id}
+                review={review}
+                organizationId={organization.id}
+                actorId={user.id}
+                actorName={user.name}
+              />
+            ))}
+          </div>
+        </>
       )}
     </DashShell>
   );

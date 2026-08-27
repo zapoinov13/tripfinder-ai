@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { formatNumber, formatPrice } from "@/data/demo";
 import { mockPaymentProvider } from "@/lib/platform/adapters";
 import { useAuth, useRequireAuth } from "@/lib/platform/auth";
+import { businessMoney, recordsWord } from "@/lib/platform/business-stats";
 import { isBusinessOnlyServices } from "@/lib/platform/company-categories";
 import { appendAudit, pushNotification } from "@/lib/platform/catalog";
 import { usePlatformStore } from "@/lib/platform/hooks";
@@ -85,6 +86,14 @@ function OperatorBillingPage() {
 
   // «Бизнес без туров»: без лимитов туров и туровых формулировок.
   const businessOnly = isBusinessOnlyServices(organization.services);
+  // Что тариф принёс за 30 дней: записи, доход и просмотры против его цены.
+  const last30 = businessMoney(organization.id, 30);
+  const monthViews = state.analyticsEvents.filter(
+    (e) =>
+      e.type === "COMPANY_PAGE_VIEW" &&
+      e.payload?.["companyId"] === organization.id &&
+      Date.now() - new Date(e.createdAt).getTime() <= 30 * 24 * 60 * 60 * 1000,
+  ).length;
   const plans = state.config.operatorPlans;
   const current = plans.find((p) => p.code === organization.planCode) ?? plans[0]!;
   const currentCopy = catalog[current.code];
@@ -216,6 +225,58 @@ function OperatorBillingPage() {
           </p>
         </div>
       </div>
+
+      {businessOnly && (last30.requests > 0 || monthViews > 0) ? (
+        <section className="surface-card mb-6 p-6">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <h2 className="font-display text-lg font-semibold">Что дал тариф за 30 дней</h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Тариф стоит {formatPrice(current.price)} в месяц. Ниже — что вы получили.
+              </p>
+            </div>
+            {last30.earned > 0 ? (
+              <p
+                className={cn(
+                  "text-sm font-semibold",
+                  last30.earned >= current.price ? "text-success" : "text-muted-foreground",
+                )}
+              >
+                {last30.earned >= current.price
+                  ? `Окупился в ${Math.round((last30.earned / Math.max(1, current.price)) * 10) / 10} раза`
+                  : "Пока не окупился"}
+              </p>
+            ) : null}
+          </div>
+
+          <div className="mt-4 grid gap-3 sm:grid-cols-3">
+            <div className="rounded-2xl border border-border p-4">
+              <p className="text-xs text-muted-foreground">Записей</p>
+              <p className="mt-1 font-display text-xl font-semibold">
+                {formatNumber(last30.requests)}{" "}
+                <span className="text-sm font-medium text-muted-foreground">
+                  {recordsWord(last30.requests)}
+                </span>
+              </p>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                состоялись {formatNumber(last30.won)}
+              </p>
+            </div>
+            <div className="rounded-2xl border border-border p-4">
+              <p className="text-xs text-muted-foreground">Доход по записям</p>
+              <p className="mt-1 font-display text-xl font-semibold text-success">
+                {formatPrice(last30.earned)}
+              </p>
+              <p className="mt-0.5 text-xs text-muted-foreground">по ценам ваших услуг</p>
+            </div>
+            <div className="rounded-2xl border border-border p-4">
+              <p className="text-xs text-muted-foreground">Просмотры страницы</p>
+              <p className="mt-1 font-display text-xl font-semibold">{formatNumber(monthViews)}</p>
+              <p className="mt-0.5 text-xs text-muted-foreground">клиенты открывали компанию</p>
+            </div>
+          </div>
+        </section>
+      ) : null}
 
       <h2 className="font-display text-lg font-semibold">Выберите тариф</h2>
       <p className="mt-1 text-sm text-muted-foreground">
