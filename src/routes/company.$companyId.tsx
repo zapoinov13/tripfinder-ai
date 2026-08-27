@@ -15,6 +15,7 @@ import { useEffect, useState, useSyncExternalStore } from "react";
 import { toast } from "sonner";
 
 import { CompanyReviewDialog } from "@/components/company/company-review-dialog";
+import { PhotoGallery } from "@/components/company/photo-gallery";
 import { WorkingHours } from "@/components/company/working-hours";
 import { ServiceRequestDialog } from "@/components/company/service-request-dialog";
 import { SiteLayout } from "@/components/site/site-layout";
@@ -78,6 +79,7 @@ function CompanyPage() {
   const [requestListing, setRequestListing] = useState<VerticalListing | null>(null);
   const [requestSlot, setRequestSlot] = useState<{ date: string; time: string } | null>(null);
   const [reviewOpen, setReviewOpen] = useState(false);
+  const [allReviews, setAllReviews] = useState(false);
   const listings = useSyncExternalStore(
     subscribeVerticalListings,
     () => (companyId ? listOrgVertical(companyId) : EMPTY_LISTINGS),
@@ -114,6 +116,12 @@ function CompanyPage() {
   );
   const rating = getCompanyRating(company.id);
   const reviews = getCompanyReviews(company.id);
+  // Распределение оценок: считаем после объявления reviews.
+  const ratingBuckets = [5, 4, 3, 2, 1].map((stars) => ({
+    stars,
+    count: reviews.filter((r) => r.rating === stars).length,
+  }));
+
   const tours = state.tours
     .filter((t) => t.operatorOrgId === company.id && t.status === "active")
     .slice(0, 6);
@@ -471,17 +479,7 @@ function CompanyPage() {
           {photos.length > 0 ? (
             <section className="surface-card p-6">
               <h2 className="font-display text-lg font-semibold">Фотографии</h2>
-              <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                {photos.map((url, i) => (
-                  <img
-                    key={`${url.slice(0, 24)}-${i}`}
-                    src={url}
-                    alt=""
-                    loading="lazy"
-                    className="h-36 w-full rounded-2xl object-cover"
-                  />
-                ))}
-              </div>
+              <PhotoGallery photos={photos} alt={company.name} />
             </section>
           ) : null}
 
@@ -545,9 +543,7 @@ function CompanyPage() {
 
           <section id="reviews" className="scroll-mt-24 surface-card p-6">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <h2 className="font-display text-lg font-semibold">
-                Отзывы {rating ? `· ${rating.average.toFixed(1)} из 5` : ""}
-              </h2>
+              <h2 className="font-display text-lg font-semibold">Отзывы</h2>
               {canReview ? (
                 alreadyReviewed ? (
                   <span className="text-xs text-muted-foreground">Вы оставили отзыв</span>
@@ -559,6 +555,47 @@ function CompanyPage() {
                 )
               ) : null}
             </div>
+            {rating ? (
+              <div className="mt-4 flex flex-wrap items-center gap-6 rounded-2xl bg-secondary/40 p-4">
+                <div className="text-center">
+                  <p className="font-display text-3xl font-semibold">{rating.average.toFixed(1)}</p>
+                  <div className="mt-1 flex justify-center gap-0.5">
+                    {[1, 2, 3, 4, 5].map((i) => (
+                      <Star
+                        key={i}
+                        className={cn(
+                          "size-3.5",
+                          i <= Math.round(rating.average)
+                            ? "fill-premium text-premium"
+                            : "text-muted-foreground/30",
+                        )}
+                      />
+                    ))}
+                  </div>
+                  <p className="mt-1 text-xs text-muted-foreground">{rating.count} отзывов</p>
+                </div>
+                <div className="min-w-[12rem] flex-1 space-y-1">
+                  {ratingBuckets.map((bucket) => (
+                    <div key={bucket.stars} className="flex items-center gap-2 text-xs">
+                      <span className="w-3 text-muted-foreground">{bucket.stars}</span>
+                      <Star className="size-3 fill-premium text-premium" />
+                      <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-border">
+                        <span
+                          className="block h-full rounded-full bg-premium"
+                          style={{
+                            width: `${rating.count ? (bucket.count / rating.count) * 100 : 0}%`,
+                          }}
+                        />
+                      </span>
+                      <span className="w-4 text-right tabular-nums text-muted-foreground">
+                        {bucket.count}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+
             {reviews.length === 0 ? (
               <p className="mt-3 text-sm text-muted-foreground">
                 {isBusiness
@@ -567,7 +604,7 @@ function CompanyPage() {
               </p>
             ) : (
               <div className="mt-4 space-y-4">
-                {reviews.map((r) => (
+                {(allReviews ? reviews : reviews.slice(0, 3)).map((r) => (
                   <article key={r.id} className="rounded-2xl bg-secondary/50 p-4">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <p className="font-medium">{r.authorName}</p>
@@ -600,6 +637,11 @@ function CompanyPage() {
                     ) : null}
                   </article>
                 ))}
+                {!allReviews && reviews.length > 3 ? (
+                  <Button variant="outline" className="w-full" onClick={() => setAllReviews(true)}>
+                    Показать ещё {reviews.length - 3}
+                  </Button>
+                ) : null}
               </div>
             )}
           </section>
