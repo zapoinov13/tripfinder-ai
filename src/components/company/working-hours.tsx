@@ -1,7 +1,14 @@
 import { ChevronDown, Clock } from "lucide-react";
 import { useState } from "react";
 
-import { WEEKDAY_FULL, openState } from "@/lib/platform/booking-slots";
+import {
+  WEEKDAY_FULL,
+  closedDateLabel,
+  isClosedDate,
+  isoDate,
+  openState,
+  upcomingClosedDates,
+} from "@/lib/platform/booking-slots";
 import type { BookingSchedule } from "@/lib/platform/types";
 import { cn } from "@/lib/utils";
 
@@ -32,9 +39,13 @@ export function WorkingHours({
     );
   }
 
-  const todayIndex = new Date().getDay();
-  const todayHours = schedule!.days[String(todayIndex)];
+  const now = new Date();
+  const todayIndex = now.getDay();
+  // Разовый выходной (праздник, отпуск) перекрывает обычные часы дня.
+  const closedToday = isClosedDate(schedule, isoDate(now));
+  const todayHours = closedToday ? null : schedule!.days[String(todayIndex)];
   const state = openState(schedule);
+  const closedAhead = upcomingClosedDates(schedule, now).filter((d) => d !== isoDate(now));
 
   return (
     <li className="text-foreground">
@@ -50,7 +61,9 @@ export function WorkingHours({
             <span className="font-medium">
               {todayHours?.open && todayHours?.close
                 ? `Сегодня ${todayHours.open}–${todayHours.close}`
-                : "Сегодня выходной"}
+                : closedToday
+                  ? "Сегодня закрыто"
+                  : "Сегодня выходной"}
             </span>
             {state.open ? <span className="text-xs font-medium text-success">открыто</span> : null}
           </span>
@@ -86,6 +99,12 @@ export function WorkingHours({
               </li>
             );
           })}
+          {closedAhead.length > 0 ? (
+            <li className="pt-1 text-xs text-muted-foreground">
+              Закрыто: {closedAhead.slice(0, 5).map(closedDateLabel).join(", ")}
+              {closedAhead.length > 5 ? ` и ещё ${closedAhead.length - 5}` : ""}
+            </li>
+          ) : null}
         </ul>
       ) : null}
     </li>

@@ -1,4 +1,8 @@
+import { useState } from "react";
+import { X } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
+import { DatePicker } from "@/components/ui/date-picker";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -9,7 +13,14 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { WEEKDAY_FULL, defaultSchedule, scheduleSummary } from "@/lib/platform/booking-slots";
+import {
+  WEEKDAY_FULL,
+  closedDateLabel,
+  defaultSchedule,
+  isoDate,
+  scheduleSummary,
+  upcomingClosedDates,
+} from "@/lib/platform/booking-slots";
 import type { BookingSchedule } from "@/lib/platform/types";
 import { cn } from "@/lib/utils";
 
@@ -54,18 +65,62 @@ function TimeSelect({
 /** Порядок недели с понедельника: getDay() отдаёт 0 = воскресенье. */
 const WEEK_ORDER = [1, 2, 3, 4, 5, 6, 0];
 
+/** Все даты периода включительно; на всякий случай ограничиваем годом. */
+function datesBetween(from: string, to: string): string[] {
+  const start = new Date(`${from}T00:00:00`);
+  const end = new Date(`${to}T00:00:00`);
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || end < start) {
+    return Number.isNaN(start.getTime()) ? [] : [from];
+  }
+  const out: string[] = [];
+  const cursor = new Date(start);
+  while (cursor <= end && out.length < 366) {
+    out.push(isoDate(cursor));
+    cursor.setDate(cursor.getDate() + 1);
+  }
+  return out;
+}
+
 export function BookingScheduleEditor({
   value,
   onChange,
   disabled,
+  bookedOn,
 }: {
   value: BookingSchedule | undefined;
   onChange: (next: BookingSchedule) => void;
   disabled?: boolean;
+  /** Сколько записей уже стоит на дату: предупреждаем, прежде чем закрыть день. */
+  bookedOn?: ((date: string) => number) | undefined;
 }) {
   const schedule = value ?? { ...defaultSchedule(), enabled: false };
+  const [closeFrom, setCloseFrom] = useState("");
+  const [closeTo, setCloseTo] = useState("");
 
   const patch = (next: Partial<BookingSchedule>) => onChange({ ...schedule, ...next });
+
+  const closed = upcomingClosedDates(schedule);
+  // Сколько записей попадёт под закрытие выбранного периода.
+  const affected = (() => {
+    if (!closeFrom || !bookedOn) return 0;
+    let total = 0;
+    for (const date of datesBetween(closeFrom, closeTo || closeFrom)) total += bookedOn(date);
+    return total;
+  })();
+
+  const addClosed = () => {
+    if (!closeFrom) return;
+    const next = new Set([
+      ...(schedule.closedDates ?? []),
+      ...datesBetween(closeFrom, closeTo || closeFrom),
+    ]);
+    patch({ closedDates: [...next].sort() });
+    setCloseFrom("");
+    setCloseTo("");
+  };
+
+  const removeClosed = (date: string) =>
+    patch({ closedDates: (schedule.closedDates ?? []).filter((d) => d !== date) });
 
   const setDay = (day: number, hours: { open: string; close: string } | null) =>
     patch({ days: { ...schedule.days, [String(day)]: hours } });
@@ -191,6 +246,77 @@ export function BookingScheduleEditor({
             })}
           </div>
 
+          <div className="space-y-3 rounded-2xl border border-border p-4">
+            <div>
+              <p className="text-sm font-medium">Выходные и отпуск</p>
+              <p className="mt-0.5 text-sm text-muted-foreground">
+                Закройте конкретные дни — праздник, отпуск или ремонт. В эти даты запись не
+                предлагается, а на странице компании стоит «Закрыто».
+              </p>
+            </div>
+            <div className="flex flex-wrap items-end gap-3">
+              <div className="w-52" data-testid="closed-from">
+                <DatePicker
+                  label="С какого дня"
+                  value={closeFrom}
+                  onChange={(next) => {
+                    setCloseFrom(next);
+                    if (closeTo && closeTo < next) setCloseTo("");
+                  }}
+                />
+              </div>
+              <div className="w-52" data-testid="closed-to">
+                <DatePicker
+                  label="По какой день"
+                  value={closeTo}
+                  onChange={setCloseTo}
+                  {...(closeFrom ? { disabledBefore: new Date(`${closeFrom}T00:00:00`) } : {})}
+                />
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                className="h-11"
+                disabled={disabled || !closeFrom}
+                onClick={addClosed}
+              >
+                Закрыть эти дни
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Один день — заполните только «с». Период — обе даты.
+            </p>
+            {affected > 0 ? (
+              <p className="rounded-xl border border-destructive/25 bg-destructive/5 px-3 py-2 text-sm">
+                На эти даты уже есть записи: {affected}. Закрытие не отменит их — предупредите
+                клиентов и перенесите в разделе «Заявки».
+              </p>
+            ) : null}
+            {closed.length > 0 ? (
+              <div className="flex flex-wrap gap-2">
+                {closed.map((date) => (
+                  <span
+                    key={date}
+                    className="inline-flex items-center gap-1.5 rounded-full bg-secondary px-3 py-1.5 text-xs font-medium"
+                  >
+                    {closedDateLabel(date)}
+                    <button
+                      type="button"
+                      disabled={disabled}
+                      aria-label={`Открыть ${closedDateLabel(date)}`}
+                      onClick={() => removeClosed(date)}
+                      className="text-muted-foreground hover:text-foreground"
+                    >
+                      <X className="size-3.5" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <p className="text-xs text-muted-foreground">Закрытых дней впереди нет.</p>
+            )}
+          </div>
+
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-secondary/40 p-4">
             <p className="min-w-0 text-xs text-muted-foreground">{scheduleSummary(schedule)}</p>
             <Button
@@ -198,7 +324,9 @@ export function BookingScheduleEditor({
               size="sm"
               variant="outline"
               disabled={disabled}
-              onClick={() => onChange(defaultSchedule())}
+              onClick={() =>
+                onChange({ ...defaultSchedule(), closedDates: schedule.closedDates ?? [] })
+              }
             >
               Сбросить к обычному
             </Button>

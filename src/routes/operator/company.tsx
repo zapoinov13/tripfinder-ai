@@ -38,6 +38,7 @@ import { PhoneInput } from "@/components/ui/phone-input";
 import { Textarea } from "@/components/ui/textarea";
 import { readImageFile, youtubeEmbed } from "@/lib/image-file";
 import { useAuth, useRequireAuth } from "@/lib/platform/auth";
+import { requestsForDate } from "@/lib/platform/service-requests";
 import {
   clientCountryOptions,
   companyCountryOptions,
@@ -157,6 +158,10 @@ function OperatorCompanyPage() {
       ...(form.verificationFiles !== undefined
         ? { verificationFiles: form.verificationFiles }
         : {}),
+      ...(form.workingHours !== undefined ? { workingHours: form.workingHours } : {}),
+      ...(form.promoText !== undefined ? { promoText: form.promoText } : {}),
+      ...(form.promoUntil !== undefined ? { promoUntil: form.promoUntil } : {}),
+      ...(form.bookingSchedule !== undefined ? { bookingSchedule: form.bookingSchedule } : {}),
     });
     toast.success("Страница обновлена. Так её видят туристы.");
   };
@@ -461,6 +466,7 @@ function OperatorCompanyPage() {
               value={form.bookingSchedule}
               disabled={readOnly}
               onChange={(bookingSchedule) => setForm({ ...form, bookingSchedule })}
+              bookedOn={(date) => requestsForDate(organization.id, date).length}
             />
           </ProfileSection>
 

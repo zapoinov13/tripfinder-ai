@@ -36,7 +36,12 @@ import {
   verticalLabel,
   type VerticalId,
 } from "@/lib/platform/service-ingest";
-import { isoDate } from "@/lib/platform/booking-slots";
+import {
+  closedDateLabel,
+  isClosedDate,
+  isoDate,
+  upcomingClosedDates,
+} from "@/lib/platform/booking-slots";
 import {
   formatServiceRequestWhen,
   requestsForDate,
@@ -249,6 +254,11 @@ function OperatorDashboard() {
   );
   const todayDate = isoDate(new Date());
   const todayBookings = requestsForDate(organization.id, todayDate);
+  // Разовые выходные: сегодня закрыто или отпуск на подходе.
+  const closedToday = isClosedDate(organization.bookingSchedule, todayDate);
+  const closedAhead = upcomingClosedDates(organization.bookingSchedule).filter(
+    (d) => d !== todayDate,
+  );
   const upcoming = upcomingServiceRequests(organization.id, todayDate, 6);
   const unreadMessages = unreadServiceMessagesForOrg(organization.id);
   // Ожидаемый доход: цены услуг из объявлений, к которым привязаны записи.
@@ -512,7 +522,9 @@ function OperatorDashboard() {
             <section className="surface-card p-6">
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <h2 className="font-display text-lg font-semibold">Сегодня</h2>
+                  <h2 className="font-display text-lg font-semibold">
+                    Сегодня{closedToday ? " · закрыто" : ""}
+                  </h2>
                   <p className="mt-1 text-sm text-muted-foreground">
                     {todayBookings.length > 0
                       ? `${todayBookings.length} ${recordsWord(todayBookings.length)} · ожидаемо ${formatPrice(todayRevenue)}`
@@ -523,6 +535,20 @@ function OperatorDashboard() {
                   <Link to="/operator/requests">Все заявки</Link>
                 </Button>
               </div>
+
+              {closedToday ? (
+                <p className="mt-4 rounded-xl border border-destructive/25 bg-destructive/5 px-4 py-3 text-sm">
+                  Сегодня выходной по вашему расписанию: новых записей не будет.
+                  {todayBookings.length > 0
+                    ? ` Но ${todayBookings.length} ${recordsWord(todayBookings.length)} уже стоит — перенесите или предупредите клиентов.`
+                    : ""}
+                </p>
+              ) : closedAhead.length > 0 ? (
+                <p className="mt-4 text-sm text-muted-foreground">
+                  Закрыто впереди: {closedAhead.slice(0, 4).map(closedDateLabel).join(", ")}
+                  {closedAhead.length > 4 ? ` и ещё ${closedAhead.length - 4}` : ""}.
+                </p>
+              ) : null}
 
               {todayBookings.length > 0 ? (
                 <ul className="mt-5 space-y-2">
@@ -564,7 +590,7 @@ function OperatorDashboard() {
                     </li>
                   ))}
                 </ul>
-              ) : (
+              ) : closedToday ? null : (
                 <div className="mt-5 rounded-2xl border border-dashed border-border bg-secondary/20 px-6 py-8 text-center">
                   <p className="font-medium">На сегодня записей нет</p>
                   <p className="mt-1 text-sm text-muted-foreground">

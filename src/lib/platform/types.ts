@@ -376,6 +376,8 @@ export type BookingSchedule = {
   /** На сколько дней вперёд можно записаться. */
   horizonDays: number;
   days: Record<string, BookingDayHours | null>;
+  /** Разовые закрытые даты (YYYY-MM-DD): праздники, отпуск, ремонт. */
+  closedDates?: string[];
 };
 
 /** Переписка клиента и компании по заявке на запись. */

@@ -53,10 +53,19 @@ export function isoDate(d: Date) {
   ).padStart(2, "0")}`;
 }
 
+/**
+ * Разовый выходной: праздник, отпуск или ремонт.
+ * Такой день закрыт целиком, даже если по неделе он рабочий.
+ */
+export function isClosedDate(schedule: BookingSchedule | undefined, date: string): boolean {
+  return Boolean(schedule?.closedDates?.includes(date));
+}
+
 /** Все слоты дня по расписанию, без учёта занятости. */
 export function slotsForDate(schedule: BookingSchedule, date: string): string[] {
   const parsed = new Date(`${date}T00:00:00`);
   if (Number.isNaN(parsed.getTime())) return [];
+  if (isClosedDate(schedule, date)) return [];
   const hours = schedule.days?.[String(parsed.getDay())];
   if (!hours?.open || !hours?.close) return [];
 
@@ -133,6 +142,37 @@ export function scheduleSummary(schedule: BookingSchedule | undefined): string {
   return parts.join(" · ");
 }
 
+const MONTHS_GEN = [
+  "января",
+  "февраля",
+  "марта",
+  "апреля",
+  "мая",
+  "июня",
+  "июля",
+  "августа",
+  "сентября",
+  "октября",
+  "ноября",
+  "декабря",
+] as const;
+
+/** «5 сентября» — для списка закрытых дат. */
+export function closedDateLabel(date: string): string {
+  const d = new Date(`${date}T00:00:00`);
+  if (Number.isNaN(d.getTime())) return date;
+  return `${d.getDate()} ${MONTHS_GEN[d.getMonth()]}`;
+}
+
+/** Ближайшие закрытые даты начиная с сегодня: прошлое не показываем. */
+export function upcomingClosedDates(
+  schedule: BookingSchedule | undefined,
+  now: Date = new Date(),
+): string[] {
+  const today = isoDate(now);
+  return [...(schedule?.closedDates ?? [])].filter((d) => d >= today).sort();
+}
+
 export type OpenState =
   | { open: true; closesAt: string }
   | { open: false; opensAt: string; opensLabel: string }
@@ -150,7 +190,8 @@ export function openState(
   if (!schedule?.enabled) return unknown;
 
   const minutesNow = now.getHours() * 60 + now.getMinutes();
-  const today = schedule.days?.[String(now.getDay())];
+  const todayClosed = isClosedDate(schedule, isoDate(now));
+  const today = todayClosed ? null : schedule.days?.[String(now.getDay())];
   if (today?.open && today?.close) {
     const from = toMinutes(today.open);
     const till = toMinutes(today.close);
@@ -160,12 +201,21 @@ export function openState(
     }
   }
 
-  // Ищем ближайший рабочий день вперёд.
-  for (let i = 1; i <= 7; i++) {
-    const day = (now.getDay() + i) % 7;
+  // Ищем ближайший рабочий день вперёд, пропуская отпуск и праздники.
+  // Горизонт — две недели: длинный отпуск не должен показывать «откроется завтра».
+  for (let i = 1; i <= 14; i++) {
+    const ahead = new Date(now);
+    ahead.setDate(ahead.getDate() + i);
+    if (isClosedDate(schedule, isoDate(ahead))) continue;
+    const day = ahead.getDay();
     const hours = schedule.days?.[String(day)];
     if (!hours?.open || !hours?.close) continue;
-    const label = i === 1 ? `завтра в ${hours.open}` : `${WEEKDAY_LABELS[day]} в ${hours.open}`;
+    const label =
+      i === 1
+        ? `завтра в ${hours.open}`
+        : i <= 7
+          ? `${WEEKDAY_LABELS[day]} в ${hours.open}`
+          : `${ahead.getDate()} ${MONTHS_GEN[ahead.getMonth()]} в ${hours.open}`;
     return { open: false, opensAt: hours.open, opensLabel: label };
   }
   return unknown;
