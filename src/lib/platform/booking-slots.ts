@@ -132,3 +132,41 @@ export function scheduleSummary(schedule: BookingSchedule | undefined): string {
   }
   return parts.join(" · ");
 }
+
+export type OpenState =
+  | { open: true; closesAt: string }
+  | { open: false; opensAt: string; opensLabel: string }
+  | { open: false; opensAt: ""; opensLabel: "" };
+
+/**
+ * Открыто ли сейчас по расписанию и когда закроется/откроется.
+ * Без расписания вернёт «неизвестно» (пустые поля).
+ */
+export function openState(
+  schedule: BookingSchedule | undefined,
+  now: Date = new Date(),
+): OpenState {
+  const unknown = { open: false as const, opensAt: "" as const, opensLabel: "" as const };
+  if (!schedule?.enabled) return unknown;
+
+  const minutesNow = now.getHours() * 60 + now.getMinutes();
+  const today = schedule.days?.[String(now.getDay())];
+  if (today?.open && today?.close) {
+    const from = toMinutes(today.open);
+    const till = toMinutes(today.close);
+    if (minutesNow >= from && minutesNow < till) return { open: true, closesAt: today.close };
+    if (minutesNow < from) {
+      return { open: false, opensAt: today.open, opensLabel: `сегодня в ${today.open}` };
+    }
+  }
+
+  // Ищем ближайший рабочий день вперёд.
+  for (let i = 1; i <= 7; i++) {
+    const day = (now.getDay() + i) % 7;
+    const hours = schedule.days?.[String(day)];
+    if (!hours?.open || !hours?.close) continue;
+    const label = i === 1 ? `завтра в ${hours.open}` : `${WEEKDAY_LABELS[day]} в ${hours.open}`;
+    return { open: false, opensAt: hours.open, opensLabel: label };
+  }
+  return unknown;
+}

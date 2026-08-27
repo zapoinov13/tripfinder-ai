@@ -24,7 +24,7 @@ import { formatPrice, nightsLabel, tourCover } from "@/data/demo";
 import { youtubeEmbed } from "@/lib/image-file";
 import { useAuth } from "@/lib/platform/auth";
 import { getHotel, trackEvent } from "@/lib/platform/catalog";
-import { scheduleActive, scheduleSummary } from "@/lib/platform/booking-slots";
+import { openState, scheduleActive, scheduleSummary } from "@/lib/platform/booking-slots";
 import {
   carClassLabel,
   sportKindLabel,
@@ -97,6 +97,7 @@ function CompanyPage() {
     );
   }
 
+  const nowOpen = openState(company.bookingSchedule);
   const publishedListings = listings.filter((l) => l.status === "published");
   // «от N ₸» на карточке: минимальная цена среди опубликованных услуг.
   const minPrice = publishedListings.reduce(
@@ -168,52 +169,78 @@ function CompanyPage() {
       <section className="container-page pt-6">
         <div className="relative overflow-hidden rounded-3xl">
           {company.coverUrl ? (
-            <img src={company.coverUrl} alt="" className="h-52 w-full object-cover md:h-72" />
+            <img src={company.coverUrl} alt="" className="h-36 w-full object-cover md:h-52" />
           ) : (
-            <div className="h-44 w-full bg-[linear-gradient(120deg,oklch(0.55_0.13_250),oklch(0.45_0.1_265))] md:h-60" />
+            <div className="h-28 w-full bg-[linear-gradient(120deg,oklch(0.55_0.13_250),oklch(0.45_0.1_265))] md:h-40" />
           )}
           <div className="absolute inset-0 media-scrim" />
         </div>
 
-        <div className="surface-card relative z-10 -mt-14 mx-auto flex flex-wrap items-center gap-5 p-5 md:mx-8 md:p-6">
-          {company.logoUrl ? (
-            <img
-              src={company.logoUrl}
-              alt=""
-              className="size-16 rounded-2xl border border-border object-cover md:size-20"
-            />
-          ) : (
-            <span className="grid size-16 shrink-0 place-items-center rounded-2xl bg-primary/10 font-display text-xl font-semibold text-primary md:size-20">
-              {company.name.slice(0, 2).toUpperCase()}
-            </span>
-          )}
-          <div className="min-w-0 flex-1">
-            <h1 className="flex flex-wrap items-center gap-2 font-display text-2xl font-semibold">
-              {company.name}
+        <div className="surface-card relative z-10 -mt-12 mx-auto p-5 md:mx-8 md:p-6">
+          <div className="flex flex-wrap items-start gap-4 md:items-center md:gap-5">
+            {company.logoUrl ? (
+              <img
+                src={company.logoUrl}
+                alt=""
+                className="size-16 rounded-2xl border border-border object-cover md:size-20"
+              />
+            ) : (
+              <span className="grid size-16 shrink-0 place-items-center rounded-2xl bg-primary/10 font-display text-xl font-semibold text-primary md:size-20">
+                {company.name.slice(0, 2).toUpperCase()}
+              </span>
+            )}
+            <div className="min-w-0 flex-1">
+              <h1 className="font-display text-xl font-semibold md:text-2xl">{company.name}</h1>
               {verified ? (
-                <Badge className="border-0 bg-success/12 text-success">
+                <Badge className="mt-1.5 border-0 bg-success/12 text-success">
                   <BadgeCheck className="mr-1 size-3.5" />
                   Проверенная компания
                 </Badge>
               ) : null}
-            </h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {company.city}, {company.country}
-              {rating ? ` · ★ ${rating.average.toFixed(1)} (${rating.count})` : ""}
-            </p>
-            {(company.services ?? []).length > 0 ? (
-              <div className="mt-2 flex flex-wrap gap-1.5">
-                {company.services!.slice(0, 4).map((s) => (
-                  <span key={s} className="rounded-full bg-secondary px-2.5 py-0.5 text-[11px]">
-                    {s}
+              <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+                {rating ? (
+                  <a href="#reviews" className="inline-flex items-center gap-1 font-medium">
+                    <Star className="size-4 fill-premium text-premium" />
+                    {rating.average.toFixed(1)}
+                    <span className="text-muted-foreground">({rating.count})</span>
+                  </a>
+                ) : null}
+                <span className="text-muted-foreground">
+                  {company.city}, {company.country}
+                </span>
+                {nowOpen.open ? (
+                  <span className="inline-flex items-center gap-1.5 font-medium text-success">
+                    <span className="size-1.5 rounded-full bg-success" />
+                    Открыто до {nowOpen.closesAt}
                   </span>
-                ))}
+                ) : nowOpen.opensLabel ? (
+                  <span className="inline-flex items-center gap-1.5 font-medium text-muted-foreground">
+                    <span className="size-1.5 rounded-full bg-muted-foreground/60" />
+                    Закрыто · откроется {nowOpen.opensLabel}
+                  </span>
+                ) : null}
+                {minPrice > 0 ? (
+                  <span className="text-muted-foreground">
+                    от{" "}
+                    <span className="font-semibold text-foreground">{formatPrice(minPrice)}</span>
+                  </span>
+                ) : null}
               </div>
-            ) : null}
+              {(company.services ?? []).length > 0 ? (
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {company.services!.slice(0, 4).map((s) => (
+                    <span key={s} className="rounded-full bg-secondary px-2.5 py-0.5 text-[11px]">
+                      {s}
+                    </span>
+                  ))}
+                </div>
+              ) : null}
+            </div>
           </div>
-          <div className="flex flex-wrap gap-2">
+
+          <div className="mt-4 flex flex-wrap gap-2 border-t border-border/70 pt-4">
             {wa ? (
-              <Button variant="outline" asChild>
+              <Button variant="outline" size="sm" className="md:h-10 md:px-4" asChild>
                 <a
                   href={`https://wa.me/${wa}`}
                   target="_blank"
@@ -226,7 +253,7 @@ function CompanyPage() {
               </Button>
             ) : null}
             {mapsUrl ? (
-              <Button variant="outline" asChild>
+              <Button variant="outline" size="sm" className="md:h-10 md:px-4" asChild>
                 <a
                   href={mapsUrl}
                   target="_blank"
@@ -240,12 +267,18 @@ function CompanyPage() {
             ) : null}
             {isBusiness && !isOwnStaff ? (
               user ? (
-                <Button variant="outline" disabled={checkedInToday} onClick={checkIn}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="md:h-10 md:px-4"
+                  disabled={checkedInToday}
+                  onClick={checkIn}
+                >
                   <CheckCircle2 className="size-4" />
                   {checkedInToday ? "Визит отмечен" : "Я здесь — отметиться"}
                 </Button>
               ) : (
-                <Button variant="outline" asChild>
+                <Button variant="outline" size="sm" className="md:h-10 md:px-4" asChild>
                   <Link to="/login" search={{ next: `/company/${company.id}` } as never}>
                     <CheckCircle2 className="size-4" />
                     Отметить визит
@@ -255,10 +288,16 @@ function CompanyPage() {
             ) : null}
             {isBusiness ? (
               isOwnStaff ? null : (
-                <Button onClick={() => setRequestOpen(true)}>Оставить заявку</Button>
+                <Button
+                  size="sm"
+                  className="ml-auto md:h-10 md:px-4"
+                  onClick={() => setRequestOpen(true)}
+                >
+                  Оставить заявку
+                </Button>
               )
             ) : (
-              <Button asChild>
+              <Button size="sm" className="ml-auto md:h-10 md:px-4" asChild>
                 <Link to="/request" search={{}}>
                   Оставить заявку
                 </Link>
@@ -439,7 +478,7 @@ function CompanyPage() {
             </section>
           ) : null}
 
-          <section className="surface-card p-6">
+          <section id="reviews" className="scroll-mt-24 surface-card p-6">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <h2 className="font-display text-lg font-semibold">
                 Отзывы {rating ? `· ${rating.average.toFixed(1)} из 5` : ""}
