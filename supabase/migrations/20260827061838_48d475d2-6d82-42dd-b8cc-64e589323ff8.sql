@@ -1,0 +1,1 @@
+REVOKE ALL ON FUNCTION public.prevent_member_role_escalation() FROM public, anon, authenticated;
