@@ -40,6 +40,7 @@ import {
   closedDateLabel,
   isClosedDate,
   isoDate,
+  scheduleActive,
   upcomingClosedDates,
 } from "@/lib/platform/booking-slots";
 import {
@@ -107,56 +108,63 @@ function buildSalesPoints(bookings: Booking[]): SalesChartPoint[] {
     }));
 }
 
+type SetupStep = {
+  id: string;
+  done: boolean;
+  title: string;
+  text: string;
+  to: string;
+  cta: string;
+  /** Без этого шага компания не может принять первого клиента. */
+  essential: boolean;
+};
+
+/**
+ * Путь запуска компании: по порядку, в котором шаги реально нужны.
+ *
+ * Сначала страница — клиенту надо на что-то смотреть. Потом услуги — иначе
+ * записываться не на что. Потом расписание — без него кнопка записи не даёт
+ * выбрать время. Документы идут последними: они дают знак проверки, но не
+ * мешают принимать клиентов.
+ */
 function setupSteps(
   org: Organization,
   openRequests: number,
   activeTours: number,
   sportCount: number,
   businessOnly: boolean,
-) {
+): SetupStep[] {
   const needsDocs =
     org.status === "PENDING_APPROVAL" &&
     !org.verificationSubmittedAt &&
     !(org.verificationFiles?.length || org.documents?.length);
   const profileReady = Boolean(org.about?.trim()) && (org.photos?.length ?? 0) > 0;
+  const sellsListings =
+    businessOnly ||
+    ["sport", "stays", "cars"].some((id) =>
+      categoriesOfServices(org.services ?? []).has(id as never),
+    );
 
   return [
     {
-      done: !needsDocs,
-      title: "Отправить документы на проверку",
-      text: "Знак «Проверенная компания» появится после модерации.",
-      to: "/operator/company",
-      cta: "Загрузить",
-    },
-    {
+      id: "profile",
       done: profileReady,
       title: "Заполнить страницу компании",
-      text: "Фото, описание и контакты повышают доверие туристов.",
+      text: "Фото и описание: это первое, что видит клиент, когда открывает вас.",
       to: "/operator/company",
-      cta: "Открыть",
+      cta: "Заполнить",
+      essential: true,
     },
-    ...(businessOnly
-      ? []
-      : [
-          {
-            done: activeTours > 0,
-            title: "Добавить первый тур",
-            text: "Без туров компания не попадёт в поиск TourGo.",
-            to: "/operator/tours",
-            cta: "Добавить",
-          },
-        ]),
-    ...(businessOnly ||
-    ["sport", "stays", "cars"].some((id) =>
-      categoriesOfServices(org.services ?? []).has(id as never),
-    )
+    ...(sellsListings
       ? [
           {
+            id: "listing",
             done: sportCount > 0,
-            title: "Добавить первое объявление",
-            text: "Жильё, авто или спорт: ссылка из Instagram или сайта + описание, затем публикация в витрине.",
+            title: "Опубликовать первую услугу",
+            text: "Жильё, авто или спорт: ссылка из Instagram или сайта — и карточка попадёт в витрину.",
             to: "/operator/services",
             cta: "Добавить",
+            essential: true,
           },
         ]
       : []),
@@ -164,6 +172,42 @@ function setupSteps(
       ? []
       : [
           {
+            id: "tour",
+            done: activeTours > 0,
+            title: "Добавить первый тур",
+            text: "Без туров компания не попадёт в поиск TourGo.",
+            to: "/operator/tours",
+            cta: "Добавить",
+            essential: true,
+          },
+        ]),
+    ...(businessOnly
+      ? [
+          {
+            id: "schedule",
+            done: scheduleActive(org),
+            title: "Включить запись по времени",
+            text: "Часы приёма и длина слота: без них клиент не сможет выбрать время на вашей странице.",
+            to: "/operator/company",
+            cta: "Настроить",
+            essential: true,
+          },
+        ]
+      : []),
+    {
+      id: "docs",
+      done: !needsDocs,
+      title: "Отправить документы на проверку",
+      text: "Знак «Проверенная компания» появится после модерации. Принимать клиентов можно уже сейчас.",
+      to: "/operator/company",
+      cta: "Загрузить",
+      essential: false,
+    },
+    ...(businessOnly
+      ? []
+      : [
+          {
+            id: "requests",
             done: openRequests === 0,
             title: "Ответить на заявки туристов",
             text:
@@ -172,9 +216,120 @@ function setupSteps(
                 : "Новых заявок пока нет.",
             to: "/operator/requests",
             cta: openRequests > 0 ? "Ответить" : "Смотреть",
+            essential: false,
           },
         ]),
   ];
+}
+
+/**
+ * Экран запуска: пока компания не готова принимать клиентов, главная
+ * показывает один следующий шаг крупно, а остальные — списком под ним.
+ * Колонка нулей новичку ничего не объясняет, поэтому её здесь нет.
+ */
+function LaunchPanel({
+  steps,
+  next,
+  companyId,
+}: {
+  steps: SetupStep[];
+  next: SetupStep;
+  companyId: string;
+}) {
+  const essential = steps.filter((s) => s.essential);
+  const done = essential.filter((s) => s.done).length;
+  const left = essential.length - done;
+
+  return (
+    <section className="mb-6 overflow-hidden rounded-3xl border border-primary/25 bg-primary/[0.04]">
+      <div className="border-b border-primary/15 px-5 py-5 md:px-7 md:py-6">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className="text-xs font-semibold uppercase tracking-wide text-primary">
+              Шаг {done + 1} из {essential.length}
+            </p>
+            <h2 className="mt-1.5 font-display text-xl font-semibold md:text-2xl">{next.title}</h2>
+            <p className="mt-1.5 max-w-xl text-sm leading-relaxed text-foreground/70">
+              {next.text}
+            </p>
+          </div>
+          <Button size="lg" className="shrink-0" asChild>
+            <Link to={next.to}>{next.cta}</Link>
+          </Button>
+        </div>
+        <div className="mt-5 flex items-center gap-3">
+          <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-primary/15">
+            <div
+              className="h-full rounded-full bg-primary transition-all"
+              style={{ width: `${Math.round((done / essential.length) * 100)}%` }}
+            />
+          </div>
+          <span className="shrink-0 text-xs font-semibold text-muted-foreground">
+            {left === 1 ? "остался 1 шаг" : `осталось ${left} ${left < 5 ? "шага" : "шагов"}`}
+          </span>
+        </div>
+      </div>
+
+      <ul className="divide-y divide-border/60 bg-card">
+        {steps.map((step) => {
+          const current = step.id === next.id;
+          return (
+            <li
+              key={step.id}
+              className={cn(
+                "flex items-center gap-3 px-5 py-3 md:px-7",
+                current && "bg-primary/[0.03]",
+              )}
+            >
+              {step.done ? (
+                <CheckCircle2 className="size-4 shrink-0 text-success" />
+              ) : (
+                <Circle
+                  className={cn(
+                    "size-4 shrink-0",
+                    current ? "text-primary" : "text-muted-foreground/60",
+                  )}
+                />
+              )}
+              <span
+                className={cn(
+                  "min-w-0 flex-1 truncate text-sm",
+                  step.done
+                    ? "text-muted-foreground line-through decoration-border"
+                    : current
+                      ? "font-semibold"
+                      : "text-foreground/80",
+                )}
+              >
+                {step.title}
+              </span>
+              {!step.essential ? (
+                <span className="shrink-0 rounded-full bg-secondary px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+                  можно позже
+                </span>
+              ) : null}
+              {!step.done && !current ? (
+                <Button size="sm" variant="ghost" className="shrink-0" asChild>
+                  <Link to={step.to}>{step.cta}</Link>
+                </Button>
+              ) : null}
+            </li>
+          );
+        })}
+      </ul>
+
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border/60 bg-card px-5 py-3 md:px-7">
+        <p className="text-xs text-muted-foreground">
+          Клиенты найдут вас в витрине и в поиске, как только шаги будут закрыты.
+        </p>
+        <Button size="sm" variant="outline" asChild>
+          <Link to="/company/$companyId" params={{ companyId }}>
+            Как видит клиент
+          </Link>
+        </Button>
+      </div>
+    </section>
+  );
 }
 
 function OperatorDashboard() {
@@ -275,6 +430,16 @@ function OperatorDashboard() {
   const myListings = listOrgVertical(organization.id);
   const publishedListings = myListings.filter((l) => l.status === "published");
   const pendingSteps = steps.filter((step) => !step.done);
+  // Пока не сделаны обязательные шаги, компания не может принять клиента:
+  // главная ведёт по ним, а не показывает колонку нулей.
+  const essentialPending = steps.filter((step) => step.essential && !step.done);
+  const launching = essentialPending.length > 0;
+  const nextStep = essentialPending[0];
+  const noActivityYet =
+    pageViews === 0 &&
+    todayBookings.length === 0 &&
+    newServiceRequests === 0 &&
+    bookings.length === 0;
   const topTours = [...orgTours].sort((a, b) => b.bookings - a.bookings).slice(0, 6);
 
   const quickActions = businessOnly
@@ -371,7 +536,11 @@ function OperatorDashboard() {
         )
       }
     >
-      {pendingVerification && !organization.verificationSubmittedAt ? (
+      {launching && nextStep ? (
+        <LaunchPanel steps={steps} next={nextStep} companyId={organization.id} />
+      ) : null}
+
+      {!launching && pendingVerification && !organization.verificationSubmittedAt ? (
         <div className="mb-6 flex flex-col gap-3 rounded-2xl border border-premium/25 bg-premium/10 p-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex gap-3">
             <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-premium/15 text-premium">
@@ -418,7 +587,7 @@ function OperatorDashboard() {
         ))}
       </div>
 
-      {businessOnly ? (
+      {launching && noActivityYet ? null : businessOnly ? (
         <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <KpiCard
             label="Записей сегодня"
@@ -479,7 +648,7 @@ function OperatorDashboard() {
 
       <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(280px,1fr)]">
         <div className="space-y-6">
-          {pendingSteps.length > 0 ? (
+          {!launching && pendingSteps.length > 0 ? (
             <section className="surface-card p-6">
               <div className="flex items-start justify-between gap-3">
                 <div>
@@ -753,7 +922,8 @@ function OperatorDashboard() {
         </aside>
       </div>
 
-      {businessOnly ? (
+      {/* Во время запуска пустой блок объявлений дублирует шаг «Опубликовать услугу». */}
+      {businessOnly && !(launching && myListings.length === 0) ? (
         <section className="surface-card mt-6 overflow-hidden">
           <div className="flex flex-wrap items-center justify-between gap-3 p-6 pb-4">
             <div>

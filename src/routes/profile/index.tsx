@@ -13,6 +13,7 @@ import {
 import { useEffect, useState, type ComponentType } from "react";
 import { toast } from "sonner";
 
+import { NextStepCard } from "@/components/profile/next-step-card";
 import { SiteLayout } from "@/components/site/site-layout";
 import { TouristAccountGate } from "@/components/site/tourist-account-gate";
 import { Button } from "@/components/ui/button";
@@ -99,6 +100,8 @@ function TouristCabinet() {
               {user.city ? ` · ${user.city}` : ""}
             </p>
           </header>
+
+          <NextStepCard userId={user.id} />
 
           <button
             type="button"
