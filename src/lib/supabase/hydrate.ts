@@ -159,6 +159,20 @@ function bookingSchedulePatch(raw: unknown, prev: BookingSchedule | undefined) {
   return value ? { bookingSchedule: value } : {};
 }
 
+/** Настройки уведомлений: пустой объект из БД не перетирает «получать всё». */
+function notifyPrefsPatch(raw: unknown) {
+  if (!raw || typeof raw !== "object") return {};
+  const value = raw as Record<string, unknown>;
+  if (!("requests" in value)) return {};
+  return {
+    notifyPrefs: {
+      requests: value["requests"] !== false,
+      messages: value["messages"] !== false,
+      reviews: value["reviews"] !== false,
+    },
+  };
+}
+
 type Row = Record<string, unknown>;
 
 const str = (v: unknown, fallback = "") => (typeof v === "string" ? v : fallback);
@@ -533,6 +547,7 @@ async function loadUserData(userId: string): Promise<UserDataResult> {
             role: str(r["role"], "TOURIST") as PlatformState["users"][number]["role"],
             status: str(r["status"], "active") as PlatformState["users"][number]["status"],
             ...(r["organization_id"] ? { organizationId: str(r["organization_id"]) } : {}),
+            ...notifyPrefsPatch(r["notify_prefs"]),
             createdAt: str(r["created_at"]),
           })),
         };

@@ -1,5 +1,5 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { Building2, CreditCard, LogOut, ShieldCheck, User } from "lucide-react";
+import { Bell, Building2, CreditCard, LogOut, ShieldCheck, User } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -10,6 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth, useRequireAuth } from "@/lib/platform/auth";
 import { isBusinessOnlyServices } from "@/lib/platform/company-categories";
+import { Switch } from "@/components/ui/switch";
+import type { NotifyPrefs } from "@/lib/platform/types";
 import { usePlatformStore } from "@/lib/platform/hooks";
 import { setState } from "@/lib/platform/store";
 import { getSupabase } from "@/lib/supabase/client";
@@ -47,6 +49,20 @@ function OperatorSettingsPage() {
   const access = roleCopy[role];
   const plan = state.config.operatorPlans.find((p) => p.code === organization.planCode);
   const businessOnly = isBusinessOnlyServices(organization.services);
+  // Пустое поле = получать всё: так ведёт себя аккаунт, который ничего не настраивал.
+  const prefs: NotifyPrefs = {
+    requests: user.notifyPrefs?.requests !== false,
+    messages: user.notifyPrefs?.messages !== false,
+    reviews: user.notifyPrefs?.reviews !== false,
+  };
+  const togglePref = (key: keyof NotifyPrefs, value: boolean) => {
+    const next = { ...prefs, [key]: value };
+    setState((s) => ({
+      ...s,
+      users: s.users.map((u) => (u.id === user.id ? { ...u, notifyPrefs: next } : u)),
+    }));
+    toast.success(value ? "Уведомления включены" : "Уведомления отключены");
+  };
   const isOwner = user.role === "OPERATOR_ADMIN";
   const verified = organization.status === "APPROVED";
 
@@ -161,6 +177,31 @@ function OperatorSettingsPage() {
             <li>Страница компании и сотрудники: {isOwner ? "да" : "только просмотр"}</li>
             <li>Тариф: {isOwner ? "да" : "нет, меняет владелец"}</li>
           </ul>
+        </section>
+
+        <section className="surface-card space-y-4 p-6">
+          <div className="flex items-center gap-2">
+            <Bell className="size-4 text-primary" />
+            <h2 className="font-display text-lg font-semibold">Уведомления</h2>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            О чём вам сигналить. Заявки и записи всё равно видны в кабинете — отключается только
+            уведомление.
+          </p>
+          {[
+            { key: "requests" as const, label: "Новые записи и их статусы" },
+            { key: "messages" as const, label: "Сообщения от клиентов" },
+            { key: "reviews" as const, label: "Новые отзывы" },
+          ].map((row) => (
+            <div key={row.key} className="flex items-center justify-between gap-4">
+              <span className="text-sm">{row.label}</span>
+              <Switch
+                checked={prefs[row.key]}
+                aria-label={row.label}
+                onCheckedChange={(on) => togglePref(row.key, on)}
+              />
+            </div>
+          ))}
         </section>
 
         <section className="surface-card space-y-4 p-6">

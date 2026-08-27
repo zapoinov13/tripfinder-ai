@@ -221,7 +221,8 @@ const sameUser = (a: PlatformUser, b: PlatformUser) =>
   a.status === b.status &&
   a.organizationId === b.organizationId &&
   a.name === b.name &&
-  a.city === b.city;
+  a.city === b.city &&
+  JSON.stringify(a.notifyPrefs ?? {}) === JSON.stringify(b.notifyPrefs ?? {});
 
 const sameOrg = (a: Organization, b: Organization) =>
   a.status === b.status &&
@@ -574,6 +575,7 @@ function collectOps(prev: PlatformState, next: PlatformState): Op[] {
           name: u.name,
           city: u.city,
           organization_id: isUuid(u.organizationId) ? u.organizationId : null,
+          notify_prefs: u.notifyPrefs ?? {},
           updated_at: new Date().toISOString(),
         })
         .eq("id", u.id);

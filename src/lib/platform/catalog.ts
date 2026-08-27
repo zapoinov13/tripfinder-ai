@@ -43,6 +43,15 @@ export function trackEvent(type: string, userId?: string, payload?: Record<strin
   }));
 }
 
+/** Какие типы уведомлений отключаются настройками партнёра. */
+const PREF_BY_TYPE: Record<string, "requests" | "messages" | "reviews"> = {
+  service_request: "requests",
+  service_request_status: "requests",
+  service_request_moved: "requests",
+  service_message: "messages",
+  company_review: "reviews",
+};
+
 export function pushNotification(
   userId: string,
   type: string,
@@ -50,6 +59,13 @@ export function pushNotification(
   body: string,
   payload?: Record<string, unknown>,
 ) {
+  // Партнёр мог отключить этот вид сигналов в настройках кабинета.
+  const pref = PREF_BY_TYPE[type];
+  if (pref) {
+    const prefs = getState().users.find((u) => u.id === userId)?.notifyPrefs;
+    if (prefs && prefs[pref] === false) return;
+  }
+
   const n: PlatformNotification = {
     id: uid(),
     userId,

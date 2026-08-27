@@ -44,7 +44,16 @@ export type PlatformUser = {
   role: Role;
   status: UserStatus;
   organizationId?: string;
+  /** Какие уведомления получать: пустое поле = все. */
+  notifyPrefs?: NotifyPrefs;
   createdAt: string;
+};
+
+/** Тумблеры уведомлений партнёра. */
+export type NotifyPrefs = {
+  requests: boolean;
+  messages: boolean;
+  reviews: boolean;
 };
 
 export type Organization = {
