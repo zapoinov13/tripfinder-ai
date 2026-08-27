@@ -55,6 +55,7 @@ import {
 } from "@/lib/platform/promotions";
 import { setState } from "@/lib/platform/store";
 import type { PromotionType } from "@/lib/platform/types";
+import { recordsWord, requestValue } from "@/lib/platform/business-stats";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/admin/promotions")({
@@ -108,7 +109,30 @@ function AdminPromotionsPage() {
           if (e.type === "COMPANY_PAGE_VIEW") views += 1;
           if (e.type === "COMPANY_CONTACT_CLICK") clicks += 1;
         }
-        return { org, promos, active, spent, views, clicks };
+        // Что кампании дали партнёру: записи, созданные в их окна, и доход по ним.
+        const inPromoWindow = (iso: string) => {
+          const t = new Date(iso).getTime();
+          return promos.some(
+            (p) => t >= new Date(p.startedAt).getTime() && t <= new Date(p.expiresAt).getTime(),
+          );
+        };
+        const promoRequests = state.serviceRequests.filter(
+          (r) => r.organizationId === org.id && inPromoWindow(r.createdAt),
+        );
+        const promoWon = promoRequests.filter(
+          (r) => r.status === "CONFIRMED" || r.status === "DONE",
+        );
+        const promoEarned = promoWon.reduce((sum, r) => sum + requestValue(org.id, r), 0);
+        return {
+          org,
+          promos,
+          active,
+          spent,
+          views,
+          clicks,
+          promoRequests: promoRequests.length,
+          promoEarned,
+        };
       })
       .sort(
         (a, b) =>
@@ -116,7 +140,14 @@ function AdminPromotionsPage() {
           b.org.promotionBalance - a.org.promotionBalance ||
           b.spent - a.spent,
       );
-  }, [state.organizations, state.promotions, state.payments, state.analyticsEvents, now]);
+  }, [
+    state.organizations,
+    state.promotions,
+    state.payments,
+    state.analyticsEvents,
+    state.serviceRequests,
+    now,
+  ]);
 
   const promoPayments = useMemo(
     () => state.payments.filter((p) => p.type === "promotion" && p.status === "paid"),
@@ -187,7 +218,8 @@ function AdminPromotionsPage() {
           <div>
             <h2 className="font-display text-lg font-semibold">Компании</h2>
             <p className="mt-0.5 text-sm text-muted-foreground">
-              Баланс, кампании и эффект за 30 дней. Начисляйте баланс и запускайте продвижение сами.
+              Баланс, кампании и что они принесли партнёру. Начисляйте баланс и запускайте
+              продвижение сами.
             </p>
           </div>
         </div>
@@ -200,86 +232,113 @@ function AdminPromotionsPage() {
                 <TableHead>Кампании</TableHead>
                 <TableHead>Потрачено</TableHead>
                 <TableHead>Эффект (30 дн)</TableHead>
+                <TableHead>Принесло</TableHead>
                 <TableHead></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {rows.map(({ org, promos, active, spent, views, clicks }) => (
-                <TableRow key={org.id} className={cn(active.length > 0 && "bg-success/[0.04]")}>
-                  <TableCell>
-                    <Link
-                      to="/company/$companyId"
-                      params={{ companyId: org.id }}
-                      className="font-medium hover:text-primary hover:underline"
-                    >
-                      {org.name}
-                    </Link>
-                    <div className="text-xs text-muted-foreground">
-                      {org.city} ·{" "}
-                      {(org.services ?? []).slice(0, 2).join(", ") || "услуги не указаны"}
-                    </div>
-                  </TableCell>
-                  <TableCell className="font-semibold tabular-nums">
-                    {formatPrice(org.promotionBalance)}
-                  </TableCell>
-                  <TableCell>
-                    {active.length > 0 ? (
-                      <span className="inline-flex items-center gap-1 font-medium text-success">
-                        <Zap className="size-3.5" />
-                        {active.length} активн.
-                      </span>
-                    ) : (
-                      <span className="text-muted-foreground">нет</span>
-                    )}
-                    {promos.length > active.length ? (
-                      <div className="text-xs text-muted-foreground">всего {promos.length}</div>
-                    ) : null}
-                  </TableCell>
-                  <TableCell className="tabular-nums">{formatPrice(spent)}</TableCell>
-                  <TableCell className="text-sm tabular-nums">
-                    {formatNumber(views)} просм. · {formatNumber(clicks)} клик.
-                  </TableCell>
-                  <TableCell className="whitespace-nowrap">
-                    <div className="flex flex-wrap justify-end gap-1.5">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => {
-                          setTopUpOrgId(org.id);
-                          setTopUpAmount("50000");
-                        }}
+              {rows.map(
+                ({ org, promos, active, spent, views, clicks, promoRequests, promoEarned }) => (
+                  <TableRow key={org.id} className={cn(active.length > 0 && "bg-success/[0.04]")}>
+                    <TableCell>
+                      <Link
+                        to="/company/$companyId"
+                        params={{ companyId: org.id }}
+                        className="font-medium hover:text-primary hover:underline"
                       >
-                        <Wallet className="size-3.5" />
-                        Начислить
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => {
-                          setGrantOrgId(org.id);
-                          setGrantType("BOOST");
-                          setGrantDays("7");
-                          setGrantCharge(false);
-                        }}
-                      >
-                        <Megaphone className="size-3.5" />
-                        Запустить
-                      </Button>
+                        {org.name}
+                      </Link>
+                      <div className="text-xs text-muted-foreground">
+                        {org.city} ·{" "}
+                        {(org.services ?? []).slice(0, 2).join(", ") || "услуги не указаны"}
+                      </div>
+                    </TableCell>
+                    <TableCell className="font-semibold tabular-nums">
+                      {formatPrice(org.promotionBalance)}
+                    </TableCell>
+                    <TableCell>
                       {active.length > 0 ? (
-                        <ConfirmAction
-                          triggerLabel="Стоп"
-                          title="Остановить все кампании компании?"
-                          description={`${org.name}: ${active.length} активных кампаний будут сняты.`}
-                          confirmLabel="Остановить"
-                          destructive
-                          variant="ghost"
-                          onConfirm={() => stopAll(org.id)}
-                        />
+                        <span className="inline-flex items-center gap-1 font-medium text-success">
+                          <Zap className="size-3.5" />
+                          {active.length} активн.
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground">нет</span>
+                      )}
+                      {promos.length > active.length ? (
+                        <div className="text-xs text-muted-foreground">всего {promos.length}</div>
                       ) : null}
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
+                    </TableCell>
+                    <TableCell className="tabular-nums">{formatPrice(spent)}</TableCell>
+                    <TableCell className="text-sm tabular-nums">
+                      {formatNumber(views)} просм. · {formatNumber(clicks)} клик.
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap text-sm">
+                      {promoRequests > 0 ? (
+                        <>
+                          <span className="font-medium">
+                            {formatNumber(promoRequests)} {recordsWord(promoRequests)}
+                          </span>
+                          <span className="block text-xs tabular-nums text-muted-foreground">
+                            {formatPrice(promoEarned)}
+                            {spent > 0 ? (
+                              <span
+                                className={cn(
+                                  "ml-1 font-medium",
+                                  promoEarned >= spent ? "text-success" : "text-muted-foreground",
+                                )}
+                              >
+                                {promoEarned >= spent ? "окупилось" : "не окупилось"}
+                              </span>
+                            ) : null}
+                          </span>
+                        </>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">записей нет</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap">
+                      <div className="flex flex-wrap justify-end gap-1.5">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setTopUpOrgId(org.id);
+                            setTopUpAmount("50000");
+                          }}
+                        >
+                          <Wallet className="size-3.5" />
+                          Начислить
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setGrantOrgId(org.id);
+                            setGrantType("BOOST");
+                            setGrantDays("7");
+                            setGrantCharge(false);
+                          }}
+                        >
+                          <Megaphone className="size-3.5" />
+                          Запустить
+                        </Button>
+                        {active.length > 0 ? (
+                          <ConfirmAction
+                            triggerLabel="Стоп"
+                            title="Остановить все кампании компании?"
+                            description={`${org.name}: ${active.length} активных кампаний будут сняты.`}
+                            confirmLabel="Остановить"
+                            destructive
+                            variant="ghost"
+                            onConfirm={() => stopAll(org.id)}
+                          />
+                        ) : null}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ),
+              )}
             </TableBody>
           </Table>
         </div>

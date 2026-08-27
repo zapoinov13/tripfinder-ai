@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import type { ComponentType } from "react";
 import {
   AlertTriangle,
+  CalendarCheck,
   Building2,
   CheckCircle2,
   Inbox,
@@ -299,22 +300,23 @@ function AdminDashboard() {
       <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
         <StatTile
           icon={Inbox}
-          label="Заявки (лиды)"
-          value={formatNumber(stats.requests.total + serviceRequestsTotal)}
-          hint={
-            serviceRequestsTotal > 0
-              ? `${formatNumber(stats.requests.open)} открыто · ${formatNumber(serviceRequestsTotal)} в компании`
-              : `${formatNumber(stats.requests.open)} открыто`
-          }
+          label="Заявки турфирмам"
+          value={formatNumber(stats.requests.total)}
+          hint={`${formatNumber(stats.requests.open)} открыто · ${formatNumber(stats.offers.total)} предложений`}
           to="/admin/bookings"
-          emphasis={stats.requests.open > 0 || serviceRequestsNew > 0}
+          emphasis={stats.requests.open > 0}
         />
         <StatTile
-          icon={Megaphone}
-          label="Предложений"
-          value={formatNumber(stats.offers.total)}
-          hint="ответы компаний"
+          icon={CalendarCheck}
+          label="Записи в компании"
+          value={formatNumber(serviceRequestsTotal)}
+          hint={
+            serviceRequestsNew > 0
+              ? `${formatNumber(serviceRequestsNew)} ждут ответа`
+              : "зал, жильё, авто"
+          }
           to="/admin/bookings"
+          emphasis={serviceRequestsNew > 0}
         />
         <StatTile
           icon={Ticket}

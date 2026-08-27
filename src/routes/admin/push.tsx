@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Bell, Building2, History, Send, Smartphone, Users } from "lucide-react";
+import { Bell, Building2, History, MoonStar, Send, Smartphone, Users } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
@@ -14,7 +14,8 @@ import { formatNumber } from "@/data/demo";
 import { appendAudit } from "@/lib/platform/catalog";
 import { useAuth, useRequireAuth } from "@/lib/platform/auth";
 import { usePlatformStore } from "@/lib/platform/hooks";
-import { dispatchPushBroadcast } from "@/lib/push/dispatch";
+import { partnerActivity } from "@/lib/platform/business-stats";
+import { dispatchPushBroadcast, dispatchPushNotification } from "@/lib/push/dispatch";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/admin/push")({
@@ -22,12 +23,17 @@ export const Route = createFileRoute("/admin/push")({
   component: AdminPushPage,
 });
 
-type Audience = "all" | "tourists" | "operators";
+type Audience = "all" | "tourists" | "operators" | "sleeping";
 
 const audienceMeta: Record<Audience, { label: string; hint: string; icon: typeof Users }> = {
   all: { label: "Все с приложением", hint: "туристы и партнёры", icon: Smartphone },
   tourists: { label: "Туристы", hint: "клиенты платформы", icon: Users },
   operators: { label: "Партнёры", hint: "компании и их сотрудники", icon: Building2 },
+  sleeping: {
+    label: "Спящие партнёры",
+    hint: "без записей и просмотров 30 дней",
+    icon: MoonStar,
+  },
 };
 
 const templates: Record<Audience, { title: string; body: string; name: string }[]> = {
@@ -53,6 +59,18 @@ const templates: Record<Audience, { title: string; body: string; name: string }[
       name: "Продвижение",
       title: "Поднимите свои предложения",
       body: "Включите продвижение в кабинете: ваши туры и объявления поднимутся в топ витрины.",
+    },
+  ],
+  sleeping: [
+    {
+      name: "Вернуть к работе",
+      title: "Клиенты вас не находят",
+      body: "За месяц ни одной записи. Проверьте страницу компании: фото, часы работы и цены — с ними находят чаще.",
+    },
+    {
+      name: "Предложить продвижение",
+      title: "Поднимем вас в витрине",
+      body: "Ваши объявления давно никто не открывал. Включите продвижение — карточки поднимутся выше похожих.",
     },
   ],
   all: [
@@ -82,8 +100,32 @@ function AdminPushPage() {
     const operators = state.users.filter(
       (u) => u.role === "OPERATOR_ADMIN" || u.role === "OPERATOR_MANAGER",
     ).length;
-    return { tourists, operators, all: tourists + operators };
-  }, [state.users]);
+    // Спящие: сотрудники компаний без записей и просмотров за 30 дней.
+    const sleepingOrgIds = new Set(
+      state.organizations.filter((o) => partnerActivity(o.id, 30).asleep).map((o) => o.id),
+    );
+    const sleeping = state.users.filter(
+      (u) =>
+        (u.role === "OPERATOR_ADMIN" || u.role === "OPERATOR_MANAGER") &&
+        u.organizationId &&
+        sleepingOrgIds.has(u.organizationId),
+    ).length;
+    return { tourists, operators, sleeping, all: tourists + operators };
+  }, [state.users, state.organizations, state.serviceRequests, state.analyticsEvents]);
+
+  const sleepingUserIds = useMemo(() => {
+    const sleepingOrgIds = new Set(
+      state.organizations.filter((o) => partnerActivity(o.id, 30).asleep).map((o) => o.id),
+    );
+    return state.users
+      .filter(
+        (u) =>
+          (u.role === "OPERATOR_ADMIN" || u.role === "OPERATOR_MANAGER") &&
+          u.organizationId &&
+          sleepingOrgIds.has(u.organizationId),
+      )
+      .map((u) => u.id);
+  }, [state.users, state.organizations, state.serviceRequests, state.analyticsEvents]);
 
   const history = useMemo(
     () => state.auditLogs.filter((l) => l.action === "push_broadcast").slice(0, 12),
@@ -99,11 +141,34 @@ function AdminPushPage() {
     }
     setBusy(true);
     try {
-      const res = await dispatchPushBroadcast({
-        title: title.trim(),
-        body: body.trim(),
-        audience,
-      });
+      // «Спящих» сервер не умеет считать сам: этот сегмент строится из записей
+      // и просмотров, поэтому шлём таким партнёрам поимённо.
+      let res: Awaited<ReturnType<typeof dispatchPushBroadcast>>;
+      if (audience === "sleeping") {
+        if (sleepingUserIds.length === 0) {
+          toast.error("Спящих партнёров сейчас нет");
+          return;
+        }
+        const results = await Promise.all(
+          sleepingUserIds.map((userId) =>
+            dispatchPushNotification({
+              userId,
+              title: title.trim(),
+              body: body.trim(),
+              type: "system",
+            }),
+          ),
+        );
+        const delivered = results.filter((r) => r.ok).length;
+        res =
+          delivered > 0 ? { ok: true, targets: delivered } : { ok: false, error: "Не доставлено" };
+      } else {
+        res = await dispatchPushBroadcast({
+          title: title.trim(),
+          body: body.trim(),
+          audience,
+        });
+      }
       if (!res.ok) {
         toast.error(res.error ?? "Не удалось отправить");
         return;
