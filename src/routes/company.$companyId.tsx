@@ -15,6 +15,7 @@ import {
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
+import { CompanyReviewDialog } from "@/components/company/company-review-dialog";
 import { ServiceRequestDialog } from "@/components/company/service-request-dialog";
 import { SiteLayout } from "@/components/site/site-layout";
 import { Badge } from "@/components/ui/badge";
@@ -25,7 +26,7 @@ import { useAuth } from "@/lib/platform/auth";
 import { getHotel, trackEvent } from "@/lib/platform/catalog";
 import { categoriesOfServices } from "@/lib/platform/company-categories";
 import { usePlatformStore } from "@/lib/platform/hooks";
-import { getCompanyRating, getCompanyReviews } from "@/lib/platform/messages";
+import { getCompanyRating, getCompanyReviews, hasReviewed } from "@/lib/platform/messages";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/company/$companyId")({
@@ -47,6 +48,7 @@ function CompanyPage() {
 
   // Просмотр страницы: один раз за визит, свои сотрудники не считаются.
   const [requestOpen, setRequestOpen] = useState(false);
+  const [reviewOpen, setReviewOpen] = useState(false);
 
   useEffect(() => {
     if (!company) return;
@@ -96,6 +98,22 @@ function CompanyPage() {
   const cats = categoriesOfServices(company.services ?? []);
   const isBusiness = cats.has("sport") || cats.has("stays") || cats.has("cars");
   const isOwnStaff = Boolean(user && user.organizationId === company.id);
+  // Отзыв предлагаем тем, кто реально был: выполненная запись или отметка визита.
+  const visitedBefore = Boolean(
+    user &&
+    (state.serviceRequests.some(
+      (r) => r.organizationId === company.id && r.userId === user.id && r.status === "DONE",
+    ) ||
+      state.analyticsEvents.some(
+        (e) =>
+          e.type === "COMPANY_CHECKIN" &&
+          e.userId === user.id &&
+          e.payload?.["companyId"] === company.id,
+      )),
+  );
+  const canReview = Boolean(user && isBusiness && !isOwnStaff && visitedBefore);
+  const alreadyReviewed = Boolean(user && hasReviewed(company.id, user.id));
+
   const checkedInToday = Boolean(
     user &&
     state.analyticsEvents.some(
@@ -325,12 +343,26 @@ function CompanyPage() {
           ) : null}
 
           <section className="surface-card p-6">
-            <h2 className="font-display text-lg font-semibold">
-              Отзывы {rating ? `· ${rating.average.toFixed(1)} из 5` : ""}
-            </h2>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h2 className="font-display text-lg font-semibold">
+                Отзывы {rating ? `· ${rating.average.toFixed(1)} из 5` : ""}
+              </h2>
+              {canReview ? (
+                alreadyReviewed ? (
+                  <span className="text-xs text-muted-foreground">Вы оставили отзыв</span>
+                ) : (
+                  <Button size="sm" variant="outline" onClick={() => setReviewOpen(true)}>
+                    <Star className="size-3.5" />
+                    Оставить отзыв
+                  </Button>
+                )
+              ) : null}
+            </div>
             {reviews.length === 0 ? (
               <p className="mt-3 text-sm text-muted-foreground">
-                Отзывов пока нет. Они появятся, когда туристы съездят с этой компанией.
+                {isBusiness
+                  ? "Отзывов пока нет. Их оставляют клиенты после визита."
+                  : "Отзывов пока нет. Они появятся, когда туристы съездят с этой компанией."}
               </p>
             ) : (
               <div className="mt-4 space-y-4">
@@ -466,6 +498,17 @@ function CompanyPage() {
           ) : null}
         </aside>
       </div>
+
+      {user ? (
+        <CompanyReviewDialog
+          open={reviewOpen}
+          onOpenChange={setReviewOpen}
+          organizationId={company.id}
+          organizationName={company.name}
+          userId={user.id}
+          userName={user.name}
+        />
+      ) : null}
 
       <ServiceRequestDialog
         open={requestOpen}

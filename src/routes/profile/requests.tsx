@@ -1,5 +1,5 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { Inbox, MessageSquare } from "lucide-react";
+import { Inbox, MessageSquare, Star } from "lucide-react";
 import { useState } from "react";
 
 import { DashShell } from "@/components/dash/dash-shell";
@@ -9,8 +9,10 @@ import { Button } from "@/components/ui/button";
 import { formatPrice } from "@/data/demo";
 import { useAuth } from "@/lib/platform/auth";
 import { usePlatformStore } from "@/lib/platform/hooks";
+import { hasReviewed } from "@/lib/platform/messages";
 import type { ServiceRequest } from "@/lib/platform/types";
 import { peopleLabel, requestStatusLabel } from "@/lib/platform/requests";
+import { CompanyReviewDialog } from "@/components/company/company-review-dialog";
 import { ServiceChatDialog } from "@/components/company/service-chat-dialog";
 import {
   cancelServiceRequest,
@@ -45,6 +47,7 @@ function RequestsContent() {
   const { user } = useAuth();
   const state = usePlatformStore();
   const [chatRequest, setChatRequest] = useState<ServiceRequest | null>(null);
+  const [reviewFor, setReviewFor] = useState<ServiceRequest | null>(null);
   if (!user) return null;
 
   const requests = state.tripRequests
@@ -168,6 +171,16 @@ function RequestsContent() {
                         </span>
                       ) : null}
                     </Button>
+                    {r.status === "DONE" ? (
+                      hasReviewed(r.organizationId, user.id) ? (
+                        <span className="text-xs text-muted-foreground">Отзыв оставлен</span>
+                      ) : (
+                        <Button size="sm" onClick={() => setReviewFor(r)}>
+                          <Star className="size-3.5" />
+                          Оставить отзыв
+                        </Button>
+                      )
+                    ) : null}
                     {r.status === "NEW" || r.status === "CONFIRMED" ? (
                       <ConfirmAction
                         triggerLabel="Отменить"
@@ -189,6 +202,19 @@ function RequestsContent() {
             ))}
           </div>
         </section>
+      ) : null}
+
+      {reviewFor ? (
+        <CompanyReviewDialog
+          open
+          onOpenChange={(o) => {
+            if (!o) setReviewFor(null);
+          }}
+          organizationId={reviewFor.organizationId}
+          organizationName={orgName(reviewFor.organizationId)}
+          userId={user.id}
+          userName={user.name}
+        />
       ) : null}
 
       {chatRequest ? (
