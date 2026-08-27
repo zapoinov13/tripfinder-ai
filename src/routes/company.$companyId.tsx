@@ -12,7 +12,7 @@ import {
   Send,
   Star,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { toast } from "sonner";
 
 import { CompanyReviewDialog } from "@/components/company/company-review-dialog";
@@ -25,10 +25,30 @@ import { youtubeEmbed } from "@/lib/image-file";
 import { useAuth } from "@/lib/platform/auth";
 import { getHotel, trackEvent } from "@/lib/platform/catalog";
 import { scheduleActive, scheduleSummary } from "@/lib/platform/booking-slots";
+import {
+  carClassLabel,
+  sportKindLabel,
+  stayKindLabel,
+  type VerticalId,
+} from "@/lib/platform/service-ingest";
+import {
+  listOrgVertical,
+  subscribeVerticalListings,
+  type VerticalListing,
+} from "@/lib/platform/vertical-listings";
 import { categoriesOfServices } from "@/lib/platform/company-categories";
 import { usePlatformStore } from "@/lib/platform/hooks";
 import { getCompanyRating, getCompanyReviews, hasReviewed } from "@/lib/platform/messages";
 import { cn } from "@/lib/utils";
+
+/** Стабильная ссылка для useSyncExternalStore, когда объявлений нет. */
+const EMPTY_LISTINGS: VerticalListing[] = [];
+
+function listingKindLabel(vertical: VerticalId, kind: string) {
+  if (vertical === "sport") return sportKindLabel(kind);
+  if (vertical === "stay") return stayKindLabel(kind);
+  return carClassLabel(kind);
+}
 
 export const Route = createFileRoute("/company/$companyId")({
   head: () => ({
@@ -49,7 +69,13 @@ function CompanyPage() {
 
   // Просмотр страницы: один раз за визит, свои сотрудники не считаются.
   const [requestOpen, setRequestOpen] = useState(false);
+  const [requestListing, setRequestListing] = useState<VerticalListing | null>(null);
   const [reviewOpen, setReviewOpen] = useState(false);
+  const listings = useSyncExternalStore(
+    subscribeVerticalListings,
+    () => (companyId ? listOrgVertical(companyId) : EMPTY_LISTINGS),
+    () => EMPTY_LISTINGS,
+  );
 
   useEffect(() => {
     if (!company) return;
@@ -71,6 +97,12 @@ function CompanyPage() {
     );
   }
 
+  const publishedListings = listings.filter((l) => l.status === "published");
+  // «от N ₸» на карточке: минимальная цена среди опубликованных услуг.
+  const minPrice = publishedListings.reduce(
+    (min, l) => (l.price > 0 && (min === 0 || l.price < min) ? l.price : min),
+    0,
+  );
   const rating = getCompanyRating(company.id);
   const reviews = getCompanyReviews(company.id);
   const tours = state.tours
@@ -255,6 +287,70 @@ function CompanyPage() {
                     </p>
                   ) : null}
                 </div>
+              </div>
+            </section>
+          ) : null}
+
+          {publishedListings.length > 0 ? (
+            <section className="surface-card p-6">
+              <div className="flex flex-wrap items-end justify-between gap-3">
+                <div>
+                  <h2 className="font-display text-lg font-semibold">Услуги и цены</h2>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Выберите, что нужно — запись займёт минуту.
+                  </p>
+                </div>
+                {minPrice > 0 ? (
+                  <p className="text-sm text-muted-foreground">
+                    от{" "}
+                    <span className="font-display text-lg font-semibold text-foreground">
+                      {formatPrice(minPrice)}
+                    </span>
+                  </p>
+                ) : null}
+              </div>
+
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                {publishedListings.map((item) => (
+                  <article
+                    key={item.id}
+                    className="flex flex-col overflow-hidden rounded-2xl border border-border transition-colors hover:border-primary/40"
+                  >
+                    {item.photos?.[0] ? (
+                      <img
+                        src={item.photos[0]}
+                        alt=""
+                        loading="lazy"
+                        className="h-32 w-full object-cover"
+                      />
+                    ) : null}
+                    <div className="flex flex-1 flex-col p-4">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                        {listingKindLabel(item.vertical, item.kind)}
+                      </p>
+                      <h3 className="mt-1 font-display text-base font-semibold">{item.name}</h3>
+                      {item.detail ? (
+                        <p className="mt-1 text-sm text-muted-foreground">{item.detail}</p>
+                      ) : null}
+                      <div className="mt-3 flex flex-wrap items-center justify-between gap-2 pt-1">
+                        <p className="font-display text-lg font-semibold">
+                          {item.price > 0 ? formatPrice(item.price) : "по запросу"}
+                        </p>
+                        {isOwnStaff ? null : (
+                          <Button
+                            size="sm"
+                            onClick={() => {
+                              setRequestListing(item);
+                              setRequestOpen(true);
+                            }}
+                          >
+                            Записаться
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </article>
+                ))}
               </div>
             </section>
           ) : null}
@@ -512,10 +608,17 @@ function CompanyPage() {
       ) : null}
 
       <ServiceRequestDialog
+        key={requestListing?.id ?? "company"}
         open={requestOpen}
-        onOpenChange={setRequestOpen}
+        onOpenChange={(open) => {
+          setRequestOpen(open);
+          if (!open) setRequestListing(null);
+        }}
         organizationId={company.id}
         organizationName={company.name}
+        {...(requestListing
+          ? { listingId: requestListing.id, listingName: requestListing.name }
+          : {})}
       />
     </SiteLayout>
   );
