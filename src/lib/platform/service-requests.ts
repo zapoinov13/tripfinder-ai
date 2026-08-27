@@ -343,3 +343,62 @@ export function rescheduleServiceRequest(
 
   return request;
 }
+
+/**
+ * Напоминание о записи на сегодня или завтра.
+ *
+ * Крона на сервере нет, поэтому проверяем при открытии приложения и
+ * создаём уведомление один раз на заявку и дату — повторно не дёргаем.
+ */
+export function ensureVisitReminders(userId: string, now: Date = new Date()) {
+  const state = getState();
+  const iso = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  const today = iso(now);
+  const tomorrowDate = new Date(now);
+  tomorrowDate.setDate(tomorrowDate.getDate() + 1);
+  const tomorrow = iso(tomorrowDate);
+
+  const soon = state.serviceRequests.filter(
+    (r) =>
+      r.userId === userId && r.status === "CONFIRMED" && (r.date === today || r.date === tomorrow),
+  );
+  if (soon.length === 0) return 0;
+
+  const already = new Set(
+    state.notifications
+      .filter((n) => n.type === "service_visit_reminder")
+      .map((n) => `${String(n.payload?.["requestId"] ?? "")}:${String(n.payload?.["date"] ?? "")}`),
+  );
+
+  let created = 0;
+  for (const request of soon) {
+    if (already.has(`${request.id}:${request.date}`)) continue;
+    const orgName =
+      state.organizations.find((o) => o.id === request.organizationId)?.name ?? "Компания";
+    const when = request.date === today ? "сегодня" : "завтра";
+    pushNotification(
+      userId,
+      "service_visit_reminder",
+      `Запись ${when}${request.time ? ` в ${request.time}` : ""}`,
+      `${orgName}${request.listingName ? ` · ${request.listingName}` : ""}. Не сможете прийти — отмените или напишите компании.`,
+      { requestId: request.id, organizationId: request.organizationId, date: request.date },
+    );
+    created += 1;
+  }
+  return created;
+}
+
+/** Ближайшая подтверждённая запись клиента: её показываем крупно. */
+export function nextVisit(userId: string, now: Date = new Date()): ServiceRequest | null {
+  const iso = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  const today = iso(now);
+  const upcoming = getState()
+    .serviceRequests.filter(
+      (r) =>
+        r.userId === userId && (r.status === "CONFIRMED" || r.status === "NEW") && r.date >= today,
+    )
+    .sort((a, b) => a.date.localeCompare(b.date) || a.time.localeCompare(b.time));
+  return upcoming[0] ?? null;
+}

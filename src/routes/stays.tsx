@@ -3,6 +3,7 @@ import { Building2, MapPin, Search } from "lucide-react";
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 
 import { SiteLayout } from "@/components/site/site-layout";
+import { CompanySignals } from "@/components/site/company-signals";
 import { ServiceRequestDialog } from "@/components/company/service-request-dialog";
 import { Button } from "@/components/ui/button";
 import { DateRangePicker } from "@/components/ui/date-picker";
@@ -91,6 +92,8 @@ function StaysPage() {
 
   const published = usePublishedStays();
   const state = usePlatformStore();
+  // Рейтинг и часы берём из карточек компаний.
+  const orgById = new Map(state.organizations.map((o) => [o.id, o] as const));
   const promoted = useMemo(() => promotedCompanyIds(), [state.promotions]);
 
   useEffect(() => {
@@ -295,6 +298,9 @@ function StaysPage() {
                     ) : (
                       <p className="mt-1 text-sm text-foreground/60">{item.companyName}</p>
                     )
+                  ) : null}
+                  {item.organizationId ? (
+                    <CompanySignals company={orgById.get(item.organizationId)} />
                   ) : null}
                   {item.rating > 0 ? (
                     <p className="mt-2 text-sm text-foreground/70">Рейтинг {item.rating}</p>

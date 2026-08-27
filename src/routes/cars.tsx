@@ -3,6 +3,7 @@ import { Building2, MapPin, Search } from "lucide-react";
 import { useMemo, useState, useSyncExternalStore } from "react";
 
 import { SiteLayout } from "@/components/site/site-layout";
+import { CompanySignals } from "@/components/site/company-signals";
 import { ServiceRequestDialog } from "@/components/company/service-request-dialog";
 import { Button } from "@/components/ui/button";
 import { DateRangePicker } from "@/components/ui/date-picker";
@@ -92,6 +93,8 @@ function CarsPage() {
   const [age, setAge] = useState(params.age ?? "25");
   const published = usePublishedCars();
   const state = usePlatformStore();
+  // Рейтинг и часы берём из карточек компаний.
+  const orgById = new Map(state.organizations.map((o) => [o.id, o] as const));
   const promoted = useMemo(() => promotedCompanyIds(), [state.promotions]);
 
   const cities = params.destination ? (resortsByDestination[params.destination] ?? []) : [];
@@ -302,6 +305,9 @@ function CarsPage() {
                       ) : (
                         <p className="mt-1 text-sm text-foreground/60">{item.companyName}</p>
                       )
+                    ) : null}
+                    {item.organizationId ? (
+                      <CompanySignals company={orgById.get(item.organizationId)} />
                     ) : null}
                     <p className="mt-2 text-sm leading-relaxed text-foreground/70">
                       {item.seats} мест · {item.gearbox} · {item.deposit}

@@ -1,6 +1,6 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { Inbox, MessageSquare, Star } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { DashShell } from "@/components/dash/dash-shell";
 import { profileNav } from "@/components/dash/nav-items";
@@ -16,6 +16,8 @@ import { CompanyReviewDialog } from "@/components/company/company-review-dialog"
 import { ServiceChatDialog } from "@/components/company/service-chat-dialog";
 import {
   cancelServiceRequest,
+  ensureVisitReminders,
+  nextVisit,
   formatServiceRequestWhen,
   serviceRequestStatusClass,
   serviceRequestStatusLabel,
@@ -46,6 +48,10 @@ function MyRequestsPage() {
 function RequestsContent() {
   const { user } = useAuth();
   const state = usePlatformStore();
+  // Крона нет: проверяем ближайшие записи при открытии раздела.
+  useEffect(() => {
+    if (user) ensureVisitReminders(user.id);
+  }, [user]);
   const [chatRequest, setChatRequest] = useState<ServiceRequest | null>(null);
   const [reviewFor, setReviewFor] = useState<ServiceRequest | null>(null);
   if (!user) return null;
@@ -59,6 +65,7 @@ function RequestsContent() {
     .filter((r) => r.userId === user.id)
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   const orgName = (id: string) => state.organizations.find((o) => o.id === id)?.name ?? "Компания";
+  const upcoming = nextVisit(user.id);
 
   return (
     <DashShell
@@ -67,6 +74,42 @@ function RequestsContent() {
       title="Мои заявки"
       subtitle="Заявки турфирмам и записи в компании"
     >
+      {upcoming ? (
+        <section className="mb-6 rounded-3xl border border-primary/25 bg-primary/[0.04] p-5">
+          <p className="text-xs font-semibold uppercase tracking-wide text-primary">
+            Ближайшая запись
+          </p>
+          <div className="mt-2 flex flex-wrap items-end justify-between gap-3">
+            <div className="min-w-0">
+              <p className="font-display text-lg font-semibold">
+                {formatServiceRequestWhen(upcoming.date, upcoming.time)}
+              </p>
+              <p className="mt-0.5 text-sm text-muted-foreground">
+                {orgName(upcoming.organizationId)}
+                {upcoming.listingName ? ` · ${upcoming.listingName}` : ""}
+                {upcoming.status === "NEW" ? " · ждёт подтверждения" : ""}
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Button variant="outline" size="sm" onClick={() => setChatRequest(upcoming)}>
+                <MessageSquare className="size-3.5" />
+                Написать
+                {unreadServiceMessages(upcoming.id, "CLIENT") > 0 ? (
+                  <span className="ml-1 grid size-5 place-items-center rounded-full bg-primary text-[10px] font-semibold text-primary-foreground">
+                    {unreadServiceMessages(upcoming.id, "CLIENT")}
+                  </span>
+                ) : null}
+              </Button>
+              <Button size="sm" asChild>
+                <Link to="/company/$companyId" params={{ companyId: upcoming.organizationId }}>
+                  Открыть компанию
+                </Link>
+              </Button>
+            </div>
+          </div>
+        </section>
+      ) : null}
+
       {requests.length === 0 && serviceRequests.length === 0 ? (
         <div className="surface-card p-8 text-center">
           <Inbox className="mx-auto size-10 text-muted-foreground" />

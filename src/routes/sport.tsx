@@ -3,6 +3,7 @@ import { Building2, MapPin } from "lucide-react";
 import { useMemo, useSyncExternalStore, useState } from "react";
 
 import { SiteLayout } from "@/components/site/site-layout";
+import { CompanySignals } from "@/components/site/company-signals";
 import { ServiceRequestDialog } from "@/components/company/service-request-dialog";
 import { Button } from "@/components/ui/button";
 import { destinations } from "@/data/demo";
@@ -68,6 +69,8 @@ function SportPage() {
 
   const published = usePublishedSports();
   const state = usePlatformStore();
+  // Рейтинг и часы берём из карточек компаний.
+  const orgById = new Map(state.organizations.map((o) => [o.id, o] as const));
   const promoted = useMemo(() => promotedCompanyIds(), [state.promotions]);
 
   const catalog: SportCard[] = [
@@ -224,6 +227,9 @@ function SportPage() {
                     ) : (
                       <p className="mt-1 text-sm text-foreground/60">{item.companyName}</p>
                     )
+                  ) : null}
+                  {item.organizationId ? (
+                    <CompanySignals company={orgById.get(item.organizationId)} />
                   ) : null}
                   {item.slot ? (
                     <p className="mt-2 text-sm text-foreground/70">{item.slot}</p>
