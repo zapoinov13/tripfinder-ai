@@ -45,6 +45,7 @@ import {
 import {
   formatServiceRequestWhen,
   requestsForDate,
+  requestsOnClosedDays,
   serviceRequestStatusClass,
   serviceRequestStatusLabel,
   unreadServiceMessagesForOrg,
@@ -258,6 +259,12 @@ function OperatorDashboard() {
   const closedToday = isClosedDate(organization.bookingSchedule, todayDate);
   const closedAhead = upcomingClosedDates(organization.bookingSchedule).filter(
     (d) => d !== todayDate,
+  );
+  // Записи, которые остались на закрытых днях: их надо перенести руками.
+  const strandedBookings = requestsOnClosedDays(
+    organization.id,
+    upcomingClosedDates(organization.bookingSchedule),
+    todayDate,
   );
   const upcoming = upcomingServiceRequests(organization.id, todayDate, 6);
   const unreadMessages = unreadServiceMessagesForOrg(organization.id);
@@ -548,6 +555,19 @@ function OperatorDashboard() {
                   Закрыто впереди: {closedAhead.slice(0, 4).map(closedDateLabel).join(", ")}
                   {closedAhead.length > 4 ? ` и ещё ${closedAhead.length - 4}` : ""}.
                 </p>
+              ) : null}
+
+              {strandedBookings.length > 0 ? (
+                <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-destructive/25 bg-destructive/5 px-4 py-3">
+                  <p className="min-w-0 text-sm">
+                    На закрытые дни осталось {strandedBookings.length}{" "}
+                    {recordsWord(strandedBookings.length)}: перенесите или отмените — клиент получит
+                    уведомление.
+                  </p>
+                  <Button variant="outline" size="sm" asChild>
+                    <Link to="/operator/requests">Разобрать</Link>
+                  </Button>
+                </div>
               ) : null}
 
               {todayBookings.length > 0 ? (

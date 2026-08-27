@@ -38,6 +38,7 @@ import type { ServiceRequest, ServiceRequestStatus } from "@/lib/platform/types"
 import { usePlatformStore } from "@/lib/platform/hooks";
 import { mealPlainLabel, peopleLabel, declineRequest, sendOffer } from "@/lib/platform/requests";
 import type { TripRequest } from "@/lib/platform/types";
+import { isClosedDate } from "@/lib/platform/booking-slots";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/operator/requests")({
@@ -280,6 +281,12 @@ function BusinessRequestsPage() {
                           ? "Отменена клиентом"
                           : serviceRequestStatusLabel[request.status]}
                       </span>
+                      {(request.status === "NEW" || request.status === "CONFIRMED") &&
+                      isClosedDate(organization.bookingSchedule, request.date) ? (
+                        <span className="rounded-full border border-destructive/30 bg-destructive/5 px-2.5 py-0.5 text-[11px] font-semibold">
+                          День закрыт
+                        </span>
+                      ) : null}
                     </div>
                     <p className="mt-1 text-sm text-muted-foreground">
                       {formatServiceRequestWhen(request.date, request.time)}

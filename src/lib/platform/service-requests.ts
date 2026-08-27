@@ -276,6 +276,28 @@ export function requestsForDate(organizationId: string, date: string): ServiceRe
     .sort((a, b) => a.time.localeCompare(b.time));
 }
 
+/**
+ * Записи, попавшие на закрытые даты: компания поставила выходной уже после
+ * того, как клиент записался. Их надо перенести или отменить вручную.
+ */
+export function requestsOnClosedDays(
+  organizationId: string,
+  closedDates: string[],
+  fromDate: string,
+): ServiceRequest[] {
+  if (closedDates.length === 0) return [];
+  const closed = new Set(closedDates);
+  return getState()
+    .serviceRequests.filter(
+      (r) =>
+        r.organizationId === organizationId &&
+        r.date >= fromDate &&
+        closed.has(r.date) &&
+        (r.status === "NEW" || r.status === "CONFIRMED"),
+    )
+    .sort((a, b) => a.date.localeCompare(b.date) || a.time.localeCompare(b.time));
+}
+
 /** Ближайшие записи начиная с даты, по дню и времени. */
 export function upcomingServiceRequests(
   organizationId: string,
