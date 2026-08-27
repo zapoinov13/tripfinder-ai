@@ -5,18 +5,48 @@ import { cn } from "@/lib/utils";
 
 /** Национальный номер Казахстана: 7 + 10 цифр. */
 const MAX_DIGITS = 11;
+/** Международный номер: E.164, до 15 цифр вместе с кодом страны. */
+const MAX_INTL_DIGITS = 15;
+
+/**
+ * Номер вне Казахстана и России.
+ *
+ * Туристы у нас казахстанские, а компании — дубайские: их +971 нельзя
+ * переписывать в +7. Признак простой и честный: человек сам начал ввод с «+»
+ * и указал не седьмой код страны.
+ */
+function isForeign(raw: string) {
+  const digits = raw.replace(/\D/g, "");
+  return raw.trimStart().startsWith("+") && digits.length > 0 && !digits.startsWith("7");
+}
 
 export function parsePhoneDigits(raw: string) {
-  let digits = raw.replace(/\D/g, "");
+  const digits = raw.replace(/\D/g, "");
   if (!digits) return "";
-  if (digits.startsWith("8")) digits = `7${digits.slice(1)}`;
-  else if (!digits.startsWith("7")) digits = `7${digits}`;
-  return digits.slice(0, MAX_DIGITS);
+  if (isForeign(raw)) return digits.slice(0, MAX_INTL_DIGITS);
+  let kz = digits;
+  if (kz.startsWith("8")) kz = `7${kz.slice(1)}`;
+  else if (!kz.startsWith("7")) kz = `7${kz}`;
+  return kz.slice(0, MAX_DIGITS);
 }
 
 export function formatPhone(raw: string) {
   const digits = parsePhoneDigits(raw);
   if (!digits) return "";
+  // Формат чужого номера не выдумываем: код страны у всех свой длины.
+  // Оставляем набранное как есть, убирая лишние символы и цифры сверх E.164.
+  if (isForeign(raw)) {
+    let seen = 0;
+    let out = "";
+    for (const ch of raw.trimStart().replace(/[^\d+\-() ]/g, "")) {
+      if (/\d/.test(ch)) {
+        if (seen >= MAX_INTL_DIGITS) continue;
+        seen += 1;
+      }
+      out += ch;
+    }
+    return out;
+  }
   const rest = digits.startsWith("7") ? digits.slice(1) : digits;
   const chunks = ["+7"];
   if (rest.length > 0) chunks.push(rest.slice(0, 3));

@@ -407,6 +407,7 @@ export function createSeedState(): PlatformState {
     requestMessages: [],
     serviceRequests: [],
     serviceMessages: [],
+    companyClaims: [],
     companyReviews: [],
     session: null,
   };
@@ -604,6 +605,7 @@ export function createDemoSeedState(): PlatformState {
     requestMessages: [],
     serviceRequests: [],
     serviceMessages: [],
+    companyClaims: [],
     companyReviews: [
       {
         id: "review-1",

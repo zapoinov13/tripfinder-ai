@@ -16,6 +16,7 @@ import type {
   RequestMessage,
   RequestOffer,
   ServiceMessage,
+  CompanyClaim,
   ServiceRequest,
   Subscription,
   TripRequest,
@@ -379,6 +380,22 @@ const serviceMessageRow = (m: ServiceMessage) => ({
 
 const sameServiceMessage = (a: ServiceMessage, b: ServiceMessage) =>
   a.readByClient === b.readByClient && a.readByCompany === b.readByCompany;
+
+const companyClaimRow = (c: CompanyClaim) => ({
+  id: c.id,
+  organization_id: c.organizationId,
+  user_id: c.userId,
+  contact_name: c.contactName,
+  contact_phone: c.contactPhone,
+  contact_email: c.contactEmail,
+  proof: c.proof,
+  status: c.status,
+  decline_reason: c.declineReason ?? "",
+  created_at: c.createdAt,
+  updated_at: c.updatedAt,
+});
+
+const sameCompanyClaim = (a: CompanyClaim, b: CompanyClaim) => a.status === b.status;
 
 function collectOps(prev: PlatformState, next: PlatformState): Op[] {
   const sb = getSupabase();
@@ -777,6 +794,35 @@ function collectOps(prev: PlatformState, next: PlatformState): Op[] {
         .eq("id", m.id);
       report("service_messages.update", error);
     });
+  }
+
+  // Заявки владельцев на карточки, заведённые платформой. Решение принимает
+  // админ, поэтому обновление статуса отправляем только из его сессии.
+  const claims = diff(prev.companyClaims, next.companyClaims, sameCompanyClaim);
+  for (const c of claims.added) {
+    if (!isUuid(c.id) || !isUuid(c.organizationId) || !isOwn(c.userId)) continue;
+    ops.push(async () => {
+      const { error } = await sb.from("company_claims").insert(companyClaimRow(c));
+      report("company_claims.insert", error);
+    });
+  }
+  if (isPlatformAdmin(next)) {
+    for (const c of claims.updated) {
+      if (!isUuid(c.id)) continue;
+      ops.push(async () => {
+        const { error } = await sb
+          .from("company_claims")
+          .update({
+            status: c.status,
+            decline_reason: c.declineReason ?? "",
+            decided_by: c.decidedBy ?? null,
+            decided_at: c.decidedAt ?? null,
+            updated_at: c.updatedAt,
+          })
+          .eq("id", c.id);
+        report("company_claims.update", error);
+      });
+    }
   }
 
   const reviews = diff(prev.companyReviews, next.companyReviews, sameReview);

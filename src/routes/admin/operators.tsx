@@ -17,6 +17,7 @@ import {
   userStatusLabel,
 } from "@/components/admin";
 import { AddCompanyDialog } from "@/components/admin/add-company-dialog";
+import { CompanyClaimsSection } from "@/components/admin/company-claims-section";
 import { DashShell } from "@/components/dash/dash-shell";
 import { useAdminNav } from "@/components/dash/nav-items";
 import { Button } from "@/components/ui/button";
@@ -52,6 +53,7 @@ import {
   type CompanyCategoryId,
 } from "@/lib/platform/company-categories";
 import { partnerActivity, recordsWord } from "@/lib/platform/business-stats";
+import { pendingCompanyClaims } from "@/lib/platform/company-claims";
 import { usePlatformStore } from "@/lib/platform/hooks";
 import { setState } from "@/lib/platform/store";
 import { verificationDocumentLabel } from "@/lib/platform/verification-documents";
@@ -114,6 +116,9 @@ function AdminOperatorsPage() {
     const cats = categoriesOfServices(o.services ?? []);
     return companyCategories.filter((c) => cats.has(c.id)).map((c) => c.label);
   };
+
+  // Владельцы просят передать им карточку, которую завела платформа.
+  const claims = pendingCompanyClaims();
 
   // Люди с бизнес-ролями: живут здесь, а не в «Пользователях».
   const partnerUsers = state.users
@@ -194,11 +199,14 @@ function AdminOperatorsPage() {
           items={[
             { value: "companies", label: "Компании", count: counts.all },
             { value: "staff", label: "Сотрудники", count: partnerUsers.length },
+            { value: "claims", label: "Заявки на компании", count: claims.length },
           ]}
         />
       </div>
 
-      {view === "staff" ? (
+      {view === "claims" ? (
+        <CompanyClaimsSection actorId={user.id} />
+      ) : view === "staff" ? (
         partnerUsers.length === 0 ? (
           <EmptyState
             title="Сотрудников партнёров нет"

@@ -14,6 +14,7 @@ import {
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { toast } from "sonner";
 
+import { ClaimCompanyDialog } from "@/components/company/claim-company-dialog";
 import { CompanyReviewDialog } from "@/components/company/company-review-dialog";
 import { PhotoGallery } from "@/components/company/photo-gallery";
 import { WorkingHours } from "@/components/company/working-hours";
@@ -46,7 +47,6 @@ import {
 import { categoriesOfServices } from "@/lib/platform/company-categories";
 import { usePlatformStore } from "@/lib/platform/hooks";
 import { getCompanyRating, getCompanyReviews, hasReviewed } from "@/lib/platform/messages";
-import { SUPPORT_EMAIL } from "@/lib/contact";
 import { cn } from "@/lib/utils";
 
 /** Стабильная ссылка для useSyncExternalStore, когда объявлений нет. */
@@ -81,6 +81,7 @@ function CompanyPage() {
   const [requestSlot, setRequestSlot] = useState<{ date: string; time: string } | null>(null);
   const [reviewOpen, setReviewOpen] = useState(false);
   const [allReviews, setAllReviews] = useState(false);
+  const [claimOpen, setClaimOpen] = useState(false);
   const listings = useSyncExternalStore(
     subscribeVerticalListings,
     () => (companyId ? listOrgVertical(companyId) : EMPTY_LISTINGS),
@@ -245,9 +246,13 @@ function CompanyPage() {
                 </Badge>
               ) : null}
               {listedByPlatform ? (
-                <Badge className="mt-1.5 border-0 bg-secondary text-muted-foreground">
-                  Карточку собрал TourGo
-                </Badge>
+                // Бейдж — он же вход для владельца: он первым делом смотрит
+                // на шапку своей страницы, а не на карточку контактов внизу.
+                <button type="button" onClick={() => setClaimOpen(true)} className="mt-1.5 block">
+                  <Badge className="border-0 bg-secondary text-muted-foreground hover:bg-secondary/70">
+                    Карточку собрал TourGo · это наша компания
+                  </Badge>
+                </button>
               ) : null}
               <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
                 {rating ? (
@@ -748,12 +753,13 @@ function CompanyPage() {
                   Страницу собрал TourGo по открытым данным. Владелец её ещё не подтвердил — на
                   запись могут ответить не сразу.
                 </p>
-                <a
-                  href={`mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(`Это наша компания: ${company.name}`)}&body=${encodeURIComponent(`Здравствуйте! Хотим забрать страницу компании «${company.name}» (id ${company.id}) на TourGo.`)}`}
+                <button
+                  type="button"
+                  onClick={() => setClaimOpen(true)}
                   className="mt-2 inline-block text-xs font-semibold text-primary hover:underline"
                 >
                   Это наша компания
-                </a>
+                </button>
               </div>
             ) : null}
           </section>
@@ -787,6 +793,15 @@ function CompanyPage() {
             </Button>
           </div>
         </div>
+      ) : null}
+
+      {listedByPlatform ? (
+        <ClaimCompanyDialog
+          open={claimOpen}
+          onOpenChange={setClaimOpen}
+          organizationId={company.id}
+          companyName={company.name}
+        />
       ) : null}
 
       {user ? (

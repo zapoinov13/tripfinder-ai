@@ -53,6 +53,7 @@ function loadFromStorage(): PlatformState | null {
       requestMessages: parsed.requestMessages ?? [],
       serviceRequests: parsed.serviceRequests ?? [],
       serviceMessages: parsed.serviceMessages ?? [],
+      companyClaims: parsed.companyClaims ?? [],
       companyReviews: parsed.companyReviews ?? [],
     };
   } catch {

@@ -135,6 +135,8 @@ export function useAdminNav(): DashItem[] {
   // Бейдж — только текущие проблемы подключений; исторические error-логи
   // никогда не чистятся и держали бы бейдж красным вечно.
   const apiErrors = state.apiConnections.filter((c) => c.status === "error").length;
+  // Заявки «это наша компания» ждут ручного решения — иначе владелец не дождётся.
+  const openClaims = state.companyClaims.filter((c) => c.status === "NEW").length;
 
   const items =
     auth?.user?.role === "PLATFORM_MANAGER"
@@ -142,7 +144,8 @@ export function useAdminNav(): DashItem[] {
       : adminNavBase;
 
   return items.map((item) => {
-    if (item.to === "/admin/operators" && pendingOps > 0) return { ...item, badge: pendingOps };
+    if (item.to === "/admin/operators" && pendingOps + openClaims > 0)
+      return { ...item, badge: pendingOps + openClaims };
     if (item.to === "/admin/api-monitoring" && apiErrors > 0) return { ...item, badge: apiErrors };
     return item;
   });

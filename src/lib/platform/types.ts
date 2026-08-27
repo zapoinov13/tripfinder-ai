@@ -461,6 +461,30 @@ export type Session = {
   createdAt: string;
 };
 
+/**
+ * Заявка владельца на карточку, которую завела платформа.
+ * Решение принимает админ: он и проверяет, что человек — действительно
+ * владелец бизнеса, а не тот, кто первым нашёл страницу.
+ */
+export type CompanyClaimStatus = "NEW" | "APPROVED" | "DECLINED";
+
+export type CompanyClaim = {
+  id: string;
+  organizationId: string;
+  userId: string;
+  contactName: string;
+  contactPhone: string;
+  contactEmail: string;
+  /** Чем подтверждает: сайт, почта на домене, документы. */
+  proof: string;
+  status: CompanyClaimStatus;
+  decidedBy?: string;
+  decidedAt?: string;
+  declineReason?: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
 export type PlatformState = {
   version: number;
   seededAt: string;
@@ -490,6 +514,7 @@ export type PlatformState = {
   requestMessages: RequestMessage[];
   serviceRequests: ServiceRequest[];
   serviceMessages: ServiceMessage[];
+  companyClaims: CompanyClaim[];
   companyReviews: CompanyReview[];
   session: Session | null;
 };
