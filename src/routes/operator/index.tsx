@@ -588,7 +588,7 @@ function OperatorDashboard() {
       </div>
 
       {launching && noActivityYet ? null : businessOnly ? (
-        <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="mt-6 grid grid-cols-2 gap-3 xl:grid-cols-4">
           <KpiCard
             label="Записей сегодня"
             value={formatNumber(todayBookings.length)}
@@ -624,7 +624,7 @@ function OperatorDashboard() {
           />
         </div>
       ) : (
-        <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+        <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5">
           <KpiCard
             label="Новые заявки"
             value={formatNumber(openRequests)}
@@ -937,44 +937,72 @@ function OperatorDashboard() {
             </Button>
           </div>
           {myListings.length > 0 ? (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Объявление</TableHead>
-                    <TableHead>Город</TableHead>
-                    <TableHead>Статус</TableHead>
-                    <TableHead className="text-right">Цена</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {myListings.slice(0, 6).map((l) => (
-                    <TableRow key={l.id}>
-                      <TableCell className="font-medium">
-                        {l.name}
-                        <span className="block text-xs text-muted-foreground">
-                          {verticalLabel(l.vertical)} · {listingKindLabel(l.vertical, l.kind)}
-                        </span>
-                      </TableCell>
-                      <TableCell>{l.city}</TableCell>
-                      <TableCell>
-                        <span
-                          className={cn(
-                            "text-xs font-medium",
-                            l.status === "published" ? "text-success" : "text-muted-foreground",
-                          )}
-                        >
-                          {l.status === "published" ? "Опубликовано" : "Скрыто"}
-                        </span>
-                      </TableCell>
-                      <TableCell className="text-right">
+            <>
+              {/* На телефоне таблица ломает названия по буквам — там список. */}
+              <ul className="divide-y divide-border border-t border-border md:hidden">
+                {myListings.slice(0, 6).map((l) => (
+                  <li key={l.id} className="flex items-start justify-between gap-3 px-5 py-3.5">
+                    <span className="min-w-0">
+                      <span className="block text-sm font-medium">{l.name}</span>
+                      <span className="mt-0.5 block text-xs text-muted-foreground">
+                        {listingKindLabel(l.vertical, l.kind)} · {l.city}
+                      </span>
+                    </span>
+                    <span className="shrink-0 text-right">
+                      <span className="block text-sm font-semibold tabular-nums">
                         {l.price > 0 ? formatPrice(l.price) : "по запросу"}
-                      </TableCell>
+                      </span>
+                      <span
+                        className={cn(
+                          "mt-0.5 block text-[11px] font-medium",
+                          l.status === "published" ? "text-success" : "text-muted-foreground",
+                        )}
+                      >
+                        {l.status === "published" ? "Опубликовано" : "Скрыто"}
+                      </span>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              <div className="hidden overflow-x-auto md:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Объявление</TableHead>
+                      <TableHead>Город</TableHead>
+                      <TableHead>Статус</TableHead>
+                      <TableHead className="text-right">Цена</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+                  </TableHeader>
+                  <TableBody>
+                    {myListings.slice(0, 6).map((l) => (
+                      <TableRow key={l.id}>
+                        <TableCell className="font-medium">
+                          {l.name}
+                          <span className="block text-xs text-muted-foreground">
+                            {verticalLabel(l.vertical)} · {listingKindLabel(l.vertical, l.kind)}
+                          </span>
+                        </TableCell>
+                        <TableCell>{l.city}</TableCell>
+                        <TableCell>
+                          <span
+                            className={cn(
+                              "text-xs font-medium",
+                              l.status === "published" ? "text-success" : "text-muted-foreground",
+                            )}
+                          >
+                            {l.status === "published" ? "Опубликовано" : "Скрыто"}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {l.price > 0 ? formatPrice(l.price) : "по запросу"}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </>
           ) : (
             <div className="border-t border-border px-6 py-10 text-center">
               <Luggage className="mx-auto size-8 text-muted-foreground/70" />

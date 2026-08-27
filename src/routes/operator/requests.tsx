@@ -195,7 +195,7 @@ function BusinessRequestsPage() {
           : "Записи и брони с вашей страницы и объявлений"
       }
     >
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         <KpiCard
           label="Новые"
           value={String(counts.new)}

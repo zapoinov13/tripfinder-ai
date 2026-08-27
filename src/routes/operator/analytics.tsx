@@ -187,7 +187,7 @@ function OperatorAnalyticsPage() {
           </Link>
         </Button>
       </div>
-      <div className="mt-4 grid gap-3 sm:grid-cols-3 xl:grid-cols-6">
+      <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
         <PageStat label="Просмотры страницы" value={pageStats.views} />
         <PageStat label="Маршрут (карта)" value={pageStats.clicks["map"] ?? 0} />
         <PageStat label="WhatsApp" value={pageStats.clicks["whatsapp"] ?? 0} />
@@ -257,7 +257,7 @@ function OperatorAnalyticsPage() {
       >
         {periodTabs}
 
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
           <MetricCard
             label="Просмотры страницы"
             value={formatNumber(bizStats.views)}
@@ -301,7 +301,7 @@ function OperatorAnalyticsPage() {
               </div>
             </div>
 
-            <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="mt-4 grid grid-cols-2 gap-3 xl:grid-cols-4">
               <MoneyTile label="Записей за период" value={formatNumber(money.requests)} />
               <MoneyTile
                 label="Состоялись"
@@ -476,7 +476,7 @@ function OperatorAnalyticsPage() {
     >
       {periodTabs}
 
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
         <MetricCard
           label="Просмотры туров"
           value={formatNumber(data.views)}
@@ -508,7 +508,7 @@ function OperatorAnalyticsPage() {
         />
       </div>
 
-      <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="mt-3 grid grid-cols-2 gap-3 xl:grid-cols-4">
         <KpiCard
           label="Заявки без ответа"
           value={String(data.openRequests)}

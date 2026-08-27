@@ -286,7 +286,7 @@ function OperatorPromotionPage() {
         </Button>
       }
     >
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         <KpiCard
           label="Баланс продвижения"
           value={formatPrice(organization.promotionBalance)}
