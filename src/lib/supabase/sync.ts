@@ -15,6 +15,7 @@ import type {
   PromotionOrder,
   RequestMessage,
   RequestOffer,
+  ServiceMessage,
   ServiceRequest,
   Subscription,
   TripRequest,
@@ -352,6 +353,22 @@ const serviceRequestRow = (r: ServiceRequest) => ({
 
 const sameServiceRequest = (a: ServiceRequest, b: ServiceRequest) =>
   a.status === b.status && a.replyComment === b.replyComment;
+
+const serviceMessageRow = (m: ServiceMessage) => ({
+  id: m.id,
+  request_id: m.requestId,
+  organization_id: m.organizationId,
+  user_id: m.userId,
+  author_side: m.authorSide,
+  author_name: m.authorName,
+  text: m.text,
+  read_by_client: m.readByClient,
+  read_by_company: m.readByCompany,
+  created_at: m.createdAt,
+});
+
+const sameServiceMessage = (a: ServiceMessage, b: ServiceMessage) =>
+  a.readByClient === b.readByClient && a.readByCompany === b.readByCompany;
 
 function collectOps(prev: PlatformState, next: PlatformState): Op[] {
   const sb = getSupabase();
@@ -725,6 +742,28 @@ function collectOps(prev: PlatformState, next: PlatformState): Op[] {
         })
         .eq("id", r.id);
       report("service_requests.update", error);
+    });
+  }
+
+  // Переписка по заявке в компанию.
+  const serviceMessages = diff(prev.serviceMessages, next.serviceMessages, sameServiceMessage);
+  for (const m of serviceMessages.added) {
+    if (!isUuid(m.id) || !isUuid(m.requestId) || !isUuid(m.organizationId) || !isOwn(m.userId)) {
+      continue;
+    }
+    ops.push(async () => {
+      const { error } = await sb.from("service_messages").insert(serviceMessageRow(m));
+      report("service_messages.insert", error);
+    });
+  }
+  for (const m of serviceMessages.updated) {
+    if (!isUuid(m.id)) continue;
+    ops.push(async () => {
+      const { error } = await sb
+        .from("service_messages")
+        .update({ read_by_client: m.readByClient, read_by_company: m.readByCompany })
+        .eq("id", m.id);
+      report("service_messages.update", error);
     });
   }
 

@@ -1,5 +1,5 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { Check, Inbox, Send, Star, X } from "lucide-react";
+import { Check, Inbox, MessageSquare, Send, Star, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
@@ -24,10 +24,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { formatPrice, getHotel, hotels, type Hotel } from "@/data/demo";
 import { useAuth, useRequireAuth } from "@/lib/platform/auth";
 import { isBusinessOnlyServices } from "@/lib/platform/company-categories";
+import { ServiceChatDialog } from "@/components/company/service-chat-dialog";
 import {
   formatServiceRequestWhen,
   serviceRequestStatusClass,
   serviceRequestStatusLabel,
+  unreadServiceMessages,
   updateServiceRequestStatus,
 } from "@/lib/platform/service-requests";
 import type { ServiceRequest, ServiceRequestStatus } from "@/lib/platform/types";
@@ -119,6 +121,7 @@ function BusinessRequestsPage() {
   const state = usePlatformStore();
   const nav = useOperatorNav(organization?.id);
   const [tab, setTab] = useState<ServiceTab>("new");
+  const [chatWith, setChatWith] = useState<ServiceRequest | null>(null);
 
   const mine = useMemo(() => {
     if (!organization) return [];
@@ -232,11 +235,22 @@ function BusinessRequestsPage() {
                       {request.listingName ? ` · ${request.listingName}` : ""}
                     </p>
                   </div>
-                  {request.contactPhone ? (
-                    <Button variant="outline" size="sm" asChild>
-                      <a href={`tel:${request.contactPhone}`}>{request.contactPhone}</a>
+                  <div className="flex shrink-0 flex-wrap items-center gap-2">
+                    {request.contactPhone ? (
+                      <Button variant="outline" size="sm" asChild>
+                        <a href={`tel:${request.contactPhone}`}>{request.contactPhone}</a>
+                      </Button>
+                    ) : null}
+                    <Button variant="outline" size="sm" onClick={() => setChatWith(request)}>
+                      <MessageSquare className="size-3.5" />
+                      Переписка
+                      {unreadServiceMessages(request.id, "COMPANY") > 0 ? (
+                        <span className="ml-1 grid size-5 place-items-center rounded-full bg-primary text-[10px] font-semibold text-primary-foreground">
+                          {unreadServiceMessages(request.id, "COMPANY")}
+                        </span>
+                      ) : null}
                     </Button>
-                  ) : null}
+                  </div>
                 </div>
 
                 {request.comment ? (
@@ -279,6 +293,20 @@ function BusinessRequestsPage() {
           })}
         </div>
       )}
+
+      {chatWith ? (
+        <ServiceChatDialog
+          open
+          onOpenChange={(o) => {
+            if (!o) setChatWith(null);
+          }}
+          request={chatWith}
+          side="COMPANY"
+          authorId={user.id}
+          authorName={user.name}
+          organizationName={organization.name}
+        />
+      ) : null}
     </DashShell>
   );
 }

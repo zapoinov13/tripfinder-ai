@@ -194,6 +194,7 @@ async function loadUserData(userId: string): Promise<UserDataResult> {
     msgRes,
     reviewRes,
     svcReqRes,
+    svcMsgRes,
   ] = await Promise.all([
     sb.from("favorites").select("*").eq("user_id", userId),
     sb.from("comparisons").select("*").eq("user_id", userId).maybeSingle(),
@@ -208,6 +209,7 @@ async function loadUserData(userId: string): Promise<UserDataResult> {
     sb.from("company_reviews").select("*").order("created_at", { ascending: false }).limit(500),
     // RLS отдаёт свои заявки клиенту и заявки компании — её сотрудникам.
     sb.from("service_requests").select("*").order("created_at", { ascending: false }).limit(500),
+    sb.from("service_messages").select("*").order("created_at", { ascending: true }).limit(1000),
   ]);
 
   const profileRow = profileRes.data as Row | null;
@@ -476,6 +478,28 @@ async function loadUserData(userId: string): Promise<UserDataResult> {
             replyComment: str(r["reply_comment"]),
             createdAt: str(r["created_at"]),
             updatedAt: str(r["updated_at"], str(r["created_at"])),
+          })),
+        };
+      }
+
+      if (svcMsgRes.data) {
+        const rows = svcMsgRes.data as Row[];
+        next = {
+          ...next,
+          serviceMessages: rows.map((r) => ({
+            id: str(r["id"]),
+            requestId: str(r["request_id"]),
+            organizationId: str(r["organization_id"]),
+            userId: str(r["user_id"]),
+            authorSide: str(
+              r["author_side"],
+              "CLIENT",
+            ) as PlatformState["serviceMessages"][number]["authorSide"],
+            authorName: str(r["author_name"]),
+            text: str(r["text"]),
+            readByClient: Boolean(r["read_by_client"]),
+            readByCompany: Boolean(r["read_by_company"]),
+            createdAt: str(r["created_at"]),
           })),
         };
       }

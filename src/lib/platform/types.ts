@@ -352,6 +352,21 @@ export type ServiceRequest = {
   updatedAt: string;
 };
 
+/** Переписка клиента и компании по заявке на запись. */
+export type ServiceMessage = {
+  id: string;
+  requestId: string;
+  organizationId: string;
+  /** Автор сообщения: клиент или сотрудник компании. */
+  userId: string;
+  authorSide: "CLIENT" | "COMPANY";
+  authorName: string;
+  text: string;
+  readByClient: boolean;
+  readByCompany: boolean;
+  createdAt: string;
+};
+
 /** Переписка туриста и турфирмы по конкретной заявке. */
 export type RequestMessage = {
   id: string;
@@ -441,6 +456,7 @@ export type PlatformState = {
   requestOffers: RequestOffer[];
   requestMessages: RequestMessage[];
   serviceRequests: ServiceRequest[];
+  serviceMessages: ServiceMessage[];
   companyReviews: CompanyReview[];
   session: Session | null;
 };

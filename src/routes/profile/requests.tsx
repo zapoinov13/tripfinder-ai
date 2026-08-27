@@ -1,5 +1,6 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { CalendarCheck, Inbox } from "lucide-react";
+import { Inbox, MessageSquare } from "lucide-react";
+import { useState } from "react";
 
 import { DashShell } from "@/components/dash/dash-shell";
 import { profileNav } from "@/components/dash/nav-items";
@@ -8,12 +9,15 @@ import { Button } from "@/components/ui/button";
 import { formatPrice } from "@/data/demo";
 import { useAuth } from "@/lib/platform/auth";
 import { usePlatformStore } from "@/lib/platform/hooks";
+import type { ServiceRequest } from "@/lib/platform/types";
 import { peopleLabel, requestStatusLabel } from "@/lib/platform/requests";
+import { ServiceChatDialog } from "@/components/company/service-chat-dialog";
 import {
   cancelServiceRequest,
   formatServiceRequestWhen,
   serviceRequestStatusClass,
   serviceRequestStatusLabel,
+  unreadServiceMessages,
 } from "@/lib/platform/service-requests";
 import { TouristAccountGate } from "@/components/site/tourist-account-gate";
 import { ConfirmAction } from "@/components/admin";
@@ -40,6 +44,7 @@ function MyRequestsPage() {
 function RequestsContent() {
   const { user } = useAuth();
   const state = usePlatformStore();
+  const [chatRequest, setChatRequest] = useState<ServiceRequest | null>(null);
   if (!user) return null;
 
   const requests = state.tripRequests
@@ -153,26 +158,51 @@ function RequestsContent() {
                     </p>
                     {r.comment ? <p className="mt-2 text-sm">{r.comment}</p> : null}
                   </div>
-                  {r.status === "NEW" || r.status === "CONFIRMED" ? (
-                    <ConfirmAction
-                      triggerLabel="Отменить"
-                      title="Отменить запись?"
-                      description={`${orgName(r.organizationId)} увидит, что вы отменили заявку.`}
-                      confirmLabel="Отменить запись"
-                      destructive
-                      variant="outline"
-                      size="sm"
-                      onConfirm={() => {
-                        cancelServiceRequest(r.id, user.id);
-                        toast.success("Запись отменена");
-                      }}
-                    />
-                  ) : null}
+                  <div className="flex shrink-0 flex-wrap items-center gap-2">
+                    <Button variant="outline" size="sm" onClick={() => setChatRequest(r)}>
+                      <MessageSquare className="size-3.5" />
+                      Написать
+                      {unreadServiceMessages(r.id, "CLIENT") > 0 ? (
+                        <span className="ml-1 grid size-5 place-items-center rounded-full bg-primary text-[10px] font-semibold text-primary-foreground">
+                          {unreadServiceMessages(r.id, "CLIENT")}
+                        </span>
+                      ) : null}
+                    </Button>
+                    {r.status === "NEW" || r.status === "CONFIRMED" ? (
+                      <ConfirmAction
+                        triggerLabel="Отменить"
+                        title="Отменить запись?"
+                        description={`${orgName(r.organizationId)} увидит, что вы отменили заявку.`}
+                        confirmLabel="Отменить запись"
+                        destructive
+                        variant="outline"
+                        size="sm"
+                        onConfirm={() => {
+                          cancelServiceRequest(r.id, user.id);
+                          toast.success("Запись отменена");
+                        }}
+                      />
+                    ) : null}
+                  </div>
                 </div>
               </article>
             ))}
           </div>
         </section>
+      ) : null}
+
+      {chatRequest ? (
+        <ServiceChatDialog
+          open
+          onOpenChange={(o) => {
+            if (!o) setChatRequest(null);
+          }}
+          request={chatRequest}
+          side="CLIENT"
+          authorId={user.id}
+          authorName={user.name}
+          organizationName={orgName(chatRequest.organizationId)}
+        />
       ) : null}
     </DashShell>
   );
