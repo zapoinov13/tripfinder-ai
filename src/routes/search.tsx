@@ -34,6 +34,9 @@ import { AMENITIES, amenityLabels, destinations, formatPrice, mealOptions } from
 import { useAuth } from "@/lib/platform/auth";
 import { useTourSearch, searchService } from "@/lib/platform/search-service";
 import { mergeParsedIntoSearchParams, parseTravelQuery } from "@/lib/ai-search";
+import { BusinessResults } from "@/components/site/business-results";
+import { searchBusinesses } from "@/lib/platform/business-search";
+import { subscribeVerticalListings } from "@/lib/platform/vertical-listings";
 import {
   guestsSummary,
   originCities,
@@ -522,6 +525,16 @@ function SearchPage() {
   };
 
   const results = useTourSearch(params as Record<string, unknown>);
+  // Компании и их услуги: ищем по тому же запросу, туровую выдачу не трогаем.
+  // Объявления живут в отдельном хранилище — подписываемся, чтобы блок
+  // обновлялся после гидрации из Supabase.
+  const [listingsVersion, setListingsVersion] = useState(0);
+  useEffect(() => subscribeVerticalListings(() => setListingsVersion((n) => n + 1)), []);
+  const businessHits = useMemo(
+    () => searchBusinesses(params.q ?? "", params.city ?? ""),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [params.q, params.city, listingsVersion],
+  );
   const cheapest = useMemo(
     () =>
       results.reduce<number | null>(
@@ -839,6 +852,8 @@ function SearchPage() {
               </div>
             ) : null}
 
+            <BusinessResults hits={businessHits} />
+
             {loading ? (
               <div
                 className={
@@ -858,7 +873,9 @@ function SearchPage() {
                   Под эти условия туров нет
                 </h2>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  Снимите пару фильтров или выберите другую страну. Варианты появятся сразу.
+                  {businessHits.length > 0
+                    ? "Зато нашлись компании по вашему запросу — они выше. Или снимите пару фильтров."
+                    : "Снимите пару фильтров или выберите другую страну. Варианты появятся сразу."}
                 </p>
                 <div className="mt-5 flex flex-wrap justify-center gap-2">
                   {destinations.slice(0, 4).map((dest) => (
