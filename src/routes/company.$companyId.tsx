@@ -24,6 +24,7 @@ import { formatPrice, nightsLabel, tourCover } from "@/data/demo";
 import { youtubeEmbed } from "@/lib/image-file";
 import { useAuth } from "@/lib/platform/auth";
 import { getHotel, trackEvent } from "@/lib/platform/catalog";
+import { scheduleActive, scheduleSummary } from "@/lib/platform/booking-slots";
 import { categoriesOfServices } from "@/lib/platform/company-categories";
 import { usePlatformStore } from "@/lib/platform/hooks";
 import { getCompanyRating, getCompanyReviews, hasReviewed } from "@/lib/platform/messages";
@@ -416,10 +417,10 @@ function CompanyPage() {
                   onClick={() => trackClick("map")}
                 />
               ) : null}
-              {company.workingHours ? (
-                <li className="flex items-center gap-2 text-foreground">
-                  <Clock className="size-4 shrink-0 text-muted-foreground" />
-                  <span>{company.workingHours}</span>
+              {company.workingHours || scheduleActive(company) ? (
+                <li className="flex items-start gap-2 text-foreground">
+                  <Clock className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+                  <span>{company.workingHours || scheduleSummary(company.bookingSchedule)}</span>
                 </li>
               ) : null}
               {company.phone ? (

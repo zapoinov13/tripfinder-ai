@@ -3,6 +3,7 @@ import {
   BadgeCheck,
   Briefcase,
   Building2,
+  CalendarClock,
   Camera,
   Check,
   ExternalLink,
@@ -22,6 +23,7 @@ import { useMemo, useRef, useState, type ComponentType, type ReactNode } from "r
 import { toast } from "sonner";
 
 import { TabPills } from "@/components/admin";
+import { BookingScheduleEditor } from "@/components/operator/booking-schedule-editor";
 import { DashShell } from "@/components/dash/dash-shell";
 import { useOperatorNav } from "@/components/dash/nav-items";
 import {
@@ -59,11 +61,12 @@ export const Route = createFileRoute("/operator/company")({
 const MAX_PHOTOS = 12;
 const MAX_VIDEOS = 3;
 
-type SectionId = "face" | "contacts" | "services" | "media" | "verification" | "team";
+type SectionId = "face" | "contacts" | "schedule" | "services" | "media" | "verification" | "team";
 
 const sections: { id: SectionId; label: string; icon: ComponentType<{ className?: string }> }[] = [
   { id: "face", label: "Лицо", icon: Building2 },
   { id: "contacts", label: "Контакты", icon: Phone },
+  { id: "schedule", label: "Расписание", icon: CalendarClock },
   { id: "services", label: "Услуги", icon: Briefcase },
   { id: "media", label: "Медиа", icon: Camera },
   { id: "verification", label: "Проверка", icon: ShieldCheck },
@@ -443,6 +446,22 @@ function OperatorCompanyPage() {
               Адрес превращается на странице в кнопку «Маршрут» с Google Картами — клиент строит
               путь в одно касание.
             </p>
+          </ProfileSection>
+
+          <ProfileSection
+            ref={(el) => {
+              sectionRefs.current.schedule = el;
+            }}
+            id="schedule"
+            icon={CalendarClock}
+            title="Расписание записи"
+            description="Часы приёма и длина слота: клиент выберет свободное время сам, занятое исчезнет."
+          >
+            <BookingScheduleEditor
+              value={form.bookingSchedule}
+              disabled={readOnly}
+              onChange={(bookingSchedule) => setForm({ ...form, bookingSchedule })}
+            />
           </ProfileSection>
 
           <ProfileSection

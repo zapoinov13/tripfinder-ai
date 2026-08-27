@@ -196,6 +196,7 @@ const companyProfileRow = (o: Organization) => ({
   languages: o.languages ?? [],
   about: o.about ?? "",
   working_hours: o.workingHours ?? "",
+  booking_schedule: o.bookingSchedule ?? {},
   promo_text: o.promoText ?? "",
   promo_until: o.promoUntil ?? "",
   logo_url: o.logoUrl ?? "",

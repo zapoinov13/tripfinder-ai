@@ -83,6 +83,7 @@ export type Organization = {
   telegram?: string;
   /** Часы работы: показываются на публичной странице. */
   workingHours?: string;
+  bookingSchedule?: BookingSchedule;
   /** Текущая акция и срок её действия (ISO-дата). */
   promoText?: string;
   promoUntil?: string;
@@ -350,6 +351,22 @@ export type ServiceRequest = {
   replyComment?: string;
   createdAt: string;
   updatedAt: string;
+};
+
+/**
+ * Расписание записи: часы по дням недели, длина слота и вместимость.
+ * Ключ дня — номер по Date.getDay(): 0 = воскресенье.
+ */
+export type BookingDayHours = { open: string; close: string };
+
+export type BookingSchedule = {
+  enabled: boolean;
+  slotMinutes: number;
+  /** Сколько записей компания принимает в один слот. */
+  capacity: number;
+  /** На сколько дней вперёд можно записаться. */
+  horizonDays: number;
+  days: Record<string, BookingDayHours | null>;
 };
 
 /** Переписка клиента и компании по заявке на запись. */

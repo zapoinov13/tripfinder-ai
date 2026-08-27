@@ -2,7 +2,12 @@ import { getHotel } from "@/data/demo";
 import type { TourTag } from "@/data/demo";
 import { getSupabase } from "@/lib/supabase/client";
 import { setState } from "@/lib/platform/store";
-import type { PlatformConfig, PlatformState, PlatformTour } from "@/lib/platform/types";
+import type {
+  BookingSchedule,
+  PlatformConfig,
+  PlatformState,
+  PlatformTour,
+} from "@/lib/platform/types";
 
 /** Pull public catalog + config from Supabase into local store (keeps UI reactive). */
 export async function hydrateCatalogFromSupabase() {
@@ -73,6 +78,7 @@ export async function hydrateCatalogFromSupabase() {
               languages: strList(o["languages"]),
               about: str(o["about"], prev?.about ?? ""),
               workingHours: str(o["working_hours"], prev?.workingHours ?? ""),
+              ...bookingSchedulePatch(o["booking_schedule"], prev?.bookingSchedule),
               promoText: str(o["promo_text"], prev?.promoText ?? ""),
               promoUntil: str(o["promo_until"], prev?.promoUntil ?? ""),
               logoUrl: str(o["logo_url"], prev?.logoUrl ?? ""),
@@ -141,6 +147,16 @@ export async function hydrateCatalogFromSupabase() {
     tours: toursRes.data?.length ?? 0,
     hasConfig: Boolean(configRes.data),
   };
+}
+
+/** Расписание записи: из БД, иначе из локального стора; пустое поле не пишем. */
+function bookingSchedulePatch(raw: unknown, prev: BookingSchedule | undefined) {
+  const fromDb =
+    raw && typeof raw === "object" && "enabled" in (raw as Record<string, unknown>)
+      ? (raw as BookingSchedule)
+      : undefined;
+  const value = fromDb ?? prev;
+  return value ? { bookingSchedule: value } : {};
 }
 
 type Row = Record<string, unknown>;
