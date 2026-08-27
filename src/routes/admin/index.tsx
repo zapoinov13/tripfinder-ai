@@ -145,6 +145,9 @@ function AdminDashboard() {
   if (!allowed) return null;
 
   const stats = load.status === "live" ? load.stats : statsFromLocalStore(state);
+  // Заявки клиентов бизнесам приходят из локального стора: RPC обзора их не считает.
+  const serviceRequestsTotal = state.serviceRequests.length;
+  const serviceRequestsNew = state.serviceRequests.filter((r) => r.status === "NEW").length;
   const categories = buildCategoryStats(stats.organizations);
   const topCompanies = [...stats.organizations]
     .sort(
@@ -297,10 +300,14 @@ function AdminDashboard() {
         <StatTile
           icon={Inbox}
           label="Заявки (лиды)"
-          value={formatNumber(stats.requests.total)}
-          hint={`${formatNumber(stats.requests.open)} открыто`}
+          value={formatNumber(stats.requests.total + serviceRequestsTotal)}
+          hint={
+            serviceRequestsTotal > 0
+              ? `${formatNumber(stats.requests.open)} открыто · ${formatNumber(serviceRequestsTotal)} в компании`
+              : `${formatNumber(stats.requests.open)} открыто`
+          }
           to="/admin/bookings"
-          emphasis={stats.requests.open > 0}
+          emphasis={stats.requests.open > 0 || serviceRequestsNew > 0}
         />
         <StatTile
           icon={Megaphone}

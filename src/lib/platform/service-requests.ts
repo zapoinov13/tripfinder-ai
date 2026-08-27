@@ -2,6 +2,33 @@ import { appendAudit, pushNotification, trackEvent } from "./catalog";
 import { getState, nowIso, setState, uid } from "./store";
 import type { ServiceRequest, ServiceRequestStatus } from "./types";
 
+/** Подписи статусов заявки: одни и те же в кабинете, профиле и админке. */
+export const serviceRequestStatusLabel: Record<ServiceRequestStatus, string> = {
+  NEW: "Новая",
+  CONFIRMED: "Подтверждена",
+  DECLINED: "Отклонена",
+  DONE: "Выполнена",
+  CANCELLED: "Отменена",
+};
+
+export const serviceRequestStatusClass: Record<ServiceRequestStatus, string> = {
+  NEW: "bg-primary/12 text-primary",
+  CONFIRMED: "bg-success/12 text-success",
+  DECLINED: "bg-destructive/10 text-destructive",
+  DONE: "bg-secondary text-muted-foreground",
+  CANCELLED: "bg-secondary text-muted-foreground",
+};
+
+/** «вт, 15 сентября, 19:00» — дата и время заявки одной строкой. */
+export function formatServiceRequestWhen(date: string, time: string) {
+  if (!date) return time || "без даты";
+  const parsed = new Date(date);
+  const label = Number.isNaN(parsed.getTime())
+    ? date
+    : parsed.toLocaleDateString("ru-RU", { day: "numeric", month: "long", weekday: "short" });
+  return time ? `${label}, ${time}` : label;
+}
+
 export type ServiceRequestDraft = {
   organizationId: string;
   organizationName: string;

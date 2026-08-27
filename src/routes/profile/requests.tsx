@@ -1,5 +1,5 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
-import { Inbox } from "lucide-react";
+import { CalendarCheck, Inbox } from "lucide-react";
 
 import { DashShell } from "@/components/dash/dash-shell";
 import { profileNav } from "@/components/dash/nav-items";
@@ -9,7 +9,15 @@ import { formatPrice } from "@/data/demo";
 import { useAuth } from "@/lib/platform/auth";
 import { usePlatformStore } from "@/lib/platform/hooks";
 import { peopleLabel, requestStatusLabel } from "@/lib/platform/requests";
+import {
+  cancelServiceRequest,
+  formatServiceRequestWhen,
+  serviceRequestStatusClass,
+  serviceRequestStatusLabel,
+} from "@/lib/platform/service-requests";
 import { TouristAccountGate } from "@/components/site/tourist-account-gate";
+import { ConfirmAction } from "@/components/admin";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/profile/requests")({
   head: () => ({
@@ -38,14 +46,20 @@ function RequestsContent() {
     .filter((r) => r.userId === user.id)
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 
+  // Записи в компании (зал, жильё, авто) — отдельный поток от туровых заявок.
+  const serviceRequests = state.serviceRequests
+    .filter((r) => r.userId === user.id)
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  const orgName = (id: string) => state.organizations.find((o) => o.id === id)?.name ?? "Компания";
+
   return (
     <DashShell
       brand="TourGo"
       items={profileNav}
       title="Мои заявки"
-      subtitle="Заявки турфирмам и предложения по ним"
+      subtitle="Заявки турфирмам и записи в компании"
     >
-      {requests.length === 0 ? (
+      {requests.length === 0 && serviceRequests.length === 0 ? (
         <div className="surface-card p-8 text-center">
           <Inbox className="mx-auto size-10 text-muted-foreground" />
           <p className="mt-4 text-muted-foreground">Вы пока не оставляли заявок</p>
@@ -55,51 +69,111 @@ function RequestsContent() {
             </Link>
           </Button>
         </div>
-      ) : (
-        <div className="space-y-4">
-          {requests.map((r) => {
-            const offers = state.requestOffers.filter((o) => o.requestId === r.id);
-            return (
-              <Link
-                key={r.id}
-                to="/request/$requestId"
-                params={{ requestId: r.id }}
-                className="surface-card block p-5 transition-colors hover:border-primary/40"
-              >
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div>
-                    <p className="font-display text-lg font-semibold">
-                      {r.kind === "assistance"
-                        ? `Помощь в поездке · ${r.destinationLabel}`
-                        : `${r.fromCity} → ${r.destinationLabel}`}
-                    </p>
+      ) : null}
+
+      {requests.length > 0 ? (
+        <section>
+          <h2 className="font-display text-lg font-semibold">Заявки турфирмам</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Турфирмы присылают предложения — вы выбираете лучшее.
+          </p>
+          <div className="mt-4 space-y-4">
+            {requests.map((r) => {
+              const offers = state.requestOffers.filter((o) => o.requestId === r.id);
+              return (
+                <Link
+                  key={r.id}
+                  to="/request/$requestId"
+                  params={{ requestId: r.id }}
+                  className="surface-card block p-5 transition-colors hover:border-primary/40"
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <p className="font-display text-lg font-semibold">
+                        {r.kind === "assistance"
+                          ? `Помощь в поездке · ${r.destinationLabel}`
+                          : `${r.fromCity} → ${r.destinationLabel}`}
+                      </p>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        {fmtDate(r.dateStart)} - {fmtDate(r.dateEnd)} · {peopleLabel(r)} · до{" "}
+                        {formatPrice(r.budget)}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <Badge
+                        className={
+                          r.status === "CHOSEN"
+                            ? "bg-success/12 text-success"
+                            : offers.length > 0
+                              ? "bg-primary/12 text-primary"
+                              : "bg-secondary text-muted-foreground"
+                        }
+                      >
+                        {requestStatusLabel[r.status]}
+                      </Badge>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {offers.length > 0 ? `Предложений: ${offers.length}` : "Ждём предложения"}
+                      </p>
+                    </div>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+      ) : null}
+
+      {serviceRequests.length > 0 ? (
+        <section className={requests.length > 0 ? "mt-8" : ""}>
+          <h2 className="font-display text-lg font-semibold">Записи в компании</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Зал, жильё, авто: компания подтверждает запись и связывается с вами.
+          </p>
+          <div className="mt-4 space-y-3">
+            {serviceRequests.map((r) => (
+              <article key={r.id} className="surface-card p-5">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Link
+                        to="/company/$companyId"
+                        params={{ companyId: r.organizationId }}
+                        className="font-display text-lg font-semibold hover:text-primary"
+                      >
+                        {orgName(r.organizationId)}
+                      </Link>
+                      <Badge className={serviceRequestStatusClass[r.status]}>
+                        {serviceRequestStatusLabel[r.status]}
+                      </Badge>
+                    </div>
                     <p className="mt-1 text-sm text-muted-foreground">
-                      {fmtDate(r.dateStart)} - {fmtDate(r.dateEnd)} · {peopleLabel(r)} · до{" "}
-                      {formatPrice(r.budget)}
+                      {formatServiceRequestWhen(r.date, r.time)}
+                      {r.people > 1 ? ` · ${r.people} чел.` : ""}
+                      {r.listingName ? ` · ${r.listingName}` : ""}
                     </p>
+                    {r.comment ? <p className="mt-2 text-sm">{r.comment}</p> : null}
                   </div>
-                  <div className="text-right">
-                    <Badge
-                      className={
-                        r.status === "CHOSEN"
-                          ? "bg-success/12 text-success"
-                          : offers.length > 0
-                            ? "bg-primary/12 text-primary"
-                            : "bg-secondary text-muted-foreground"
-                      }
-                    >
-                      {requestStatusLabel[r.status]}
-                    </Badge>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      {offers.length > 0 ? `Предложений: ${offers.length}` : "Ждём предложения"}
-                    </p>
-                  </div>
+                  {r.status === "NEW" || r.status === "CONFIRMED" ? (
+                    <ConfirmAction
+                      triggerLabel="Отменить"
+                      title="Отменить запись?"
+                      description={`${orgName(r.organizationId)} увидит, что вы отменили заявку.`}
+                      confirmLabel="Отменить запись"
+                      destructive
+                      variant="outline"
+                      size="sm"
+                      onConfirm={() => {
+                        cancelServiceRequest(r.id, user.id);
+                        toast.success("Запись отменена");
+                      }}
+                    />
+                  ) : null}
                 </div>
-              </Link>
-            );
-          })}
-        </div>
-      )}
+              </article>
+            ))}
+          </div>
+        </section>
+      ) : null}
     </DashShell>
   );
 }

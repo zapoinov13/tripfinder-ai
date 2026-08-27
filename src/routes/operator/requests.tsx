@@ -24,7 +24,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { formatPrice, getHotel, hotels, type Hotel } from "@/data/demo";
 import { useAuth, useRequireAuth } from "@/lib/platform/auth";
 import { isBusinessOnlyServices } from "@/lib/platform/company-categories";
-import { updateServiceRequestStatus } from "@/lib/platform/service-requests";
+import {
+  formatServiceRequestWhen,
+  serviceRequestStatusClass,
+  serviceRequestStatusLabel,
+  updateServiceRequestStatus,
+} from "@/lib/platform/service-requests";
 import type { ServiceRequest, ServiceRequestStatus } from "@/lib/platform/types";
 import { usePlatformStore } from "@/lib/platform/hooks";
 import { mealPlainLabel, peopleLabel, declineRequest, sendOffer } from "@/lib/platform/requests";
@@ -89,14 +94,6 @@ function hotelOptionsForOffer(
   );
 }
 
-const serviceStatusMeta: Record<ServiceRequestStatus, { label: string; className: string }> = {
-  NEW: { label: "Новая", className: "bg-primary/12 text-primary" },
-  CONFIRMED: { label: "Подтверждена", className: "bg-success/12 text-success" },
-  DECLINED: { label: "Отклонена", className: "bg-destructive/10 text-destructive" },
-  DONE: { label: "Выполнена", className: "bg-secondary text-muted-foreground" },
-  CANCELLED: { label: "Отменена клиентом", className: "bg-secondary text-muted-foreground" },
-};
-
 const serviceTabs = [
   { value: "new", label: "Новые" },
   { value: "confirmed", label: "Подтверждённые" },
@@ -114,15 +111,6 @@ function newRequestsLabel(n: number) {
     return `${n} новые заявки ждут ответа`;
   }
   return `${n} новых заявок ждут ответа`;
-}
-
-function fmtRequestDate(date: string, time: string) {
-  if (!date) return time || "без даты";
-  const parsed = new Date(date);
-  const label = Number.isNaN(parsed.getTime())
-    ? date
-    : parsed.toLocaleDateString("ru-RU", { day: "numeric", month: "long", weekday: "short" });
-  return time ? `${label}, ${time}` : label;
 }
 
 /** Кабинет спортзала, проката, посуточной аренды: записи клиентов. */
@@ -219,7 +207,6 @@ function BusinessRequestsPage() {
       ) : (
         <div className="mt-4 space-y-3">
           {visible.map((request) => {
-            const meta = serviceStatusMeta[request.status];
             return (
               <article key={request.id} className="surface-card p-5">
                 <div className="flex flex-wrap items-start justify-between gap-3">
@@ -231,14 +218,16 @@ function BusinessRequestsPage() {
                       <span
                         className={cn(
                           "rounded-full px-2.5 py-0.5 text-[11px] font-semibold",
-                          meta.className,
+                          serviceRequestStatusClass[request.status],
                         )}
                       >
-                        {meta.label}
+                        {request.status === "CANCELLED"
+                          ? "Отменена клиентом"
+                          : serviceRequestStatusLabel[request.status]}
                       </span>
                     </div>
                     <p className="mt-1 text-sm text-muted-foreground">
-                      {fmtRequestDate(request.date, request.time)}
+                      {formatServiceRequestWhen(request.date, request.time)}
                       {request.people > 1 ? ` · ${request.people} чел.` : ""}
                       {request.listingName ? ` · ${request.listingName}` : ""}
                     </p>

@@ -30,6 +30,11 @@ import { formatNumber, formatPrice } from "@/data/demo";
 import { appendAudit } from "@/lib/platform/catalog";
 import { useAuth, useRequireAuth } from "@/lib/platform/auth";
 import { usePlatformStore } from "@/lib/platform/hooks";
+import {
+  formatServiceRequestWhen,
+  serviceRequestStatusClass,
+  serviceRequestStatusLabel,
+} from "@/lib/platform/service-requests";
 import { nowIso, setState } from "@/lib/platform/store";
 import type { BookingStatus, TripRequestStatus } from "@/lib/platform/types";
 
@@ -97,6 +102,28 @@ function AdminBookingsPage() {
     });
   }, [state.bookings, q, status, view]);
 
+  // Заявки клиентов бизнесам (зал, жильё, авто) — отдельный поток от туровых.
+  const serviceRows = useMemo(() => {
+    const query = q.trim().toLowerCase();
+    const orgName = (id: string) =>
+      state.organizations.find((o) => o.id === id)?.name ?? "Компания";
+    return [...state.serviceRequests]
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+      .map((r) => ({ ...r, orgName: orgName(r.organizationId) }))
+      .filter((r) => {
+        if (view !== "services") return true;
+        if (status !== "all" && r.status !== status) return false;
+        if (!query) return true;
+        return (
+          r.orgName.toLowerCase().includes(query) ||
+          r.contactName.toLowerCase().includes(query) ||
+          r.listingName.toLowerCase().includes(query)
+        );
+      });
+  }, [state.serviceRequests, state.organizations, q, status, view]);
+
+  const newServiceRequests = state.serviceRequests.filter((r) => r.status === "NEW").length;
+
   const funnel = useMemo(() => {
     const total = state.tripRequests.length;
     const open = state.tripRequests.filter((r) =>
@@ -137,9 +164,9 @@ function AdminBookingsPage() {
       brand="TourGo Админ"
       items={nav}
       title="Заявки и брони"
-      subtitle="Путь сделки: заявка туриста → предложения компаний → выбор и оплата напрямую."
+      subtitle="Заявки туристов турфирмам, брони туров и записи клиентов в компании."
     >
-      <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 xl:grid-cols-5">
         <KpiLinkCard
           label="Заявки туристов"
           value={formatNumber(funnel.total)}
@@ -165,6 +192,16 @@ function AdminBookingsPage() {
           value={formatNumber(state.bookings.length)}
           hint={funnel.paidSum > 0 ? `оплачено ${formatPrice(funnel.paidSum)}` : "оплат пока нет"}
         />
+        <KpiLinkCard
+          label="Заявки в компании"
+          value={formatNumber(state.serviceRequests.length)}
+          hint={
+            newServiceRequests > 0
+              ? `${formatNumber(newServiceRequests)} ждут ответа`
+              : "записи в залы, жильё, авто"
+          }
+          tone={newServiceRequests > 0 ? "warning" : "default"}
+        />
       </div>
 
       <div className="mt-5 flex flex-wrap items-center gap-3">
@@ -178,6 +215,11 @@ function AdminBookingsPage() {
           items={[
             { value: "requests", label: "Заявки туристов", count: funnel.total },
             { value: "bookings", label: "Брони", count: state.bookings.length },
+            {
+              value: "services",
+              label: "Заявки в компании",
+              count: state.serviceRequests.length,
+            },
           ]}
         />
       </div>
@@ -186,7 +228,13 @@ function AdminBookingsPage() {
         <FilterBar
           search={q}
           onSearchChange={setQ}
-          searchPlaceholder={view === "requests" ? "Турист, направление…" : "Турист, тур, ID…"}
+          searchPlaceholder={
+            view === "requests"
+              ? "Турист, направление…"
+              : view === "services"
+                ? "Компания, клиент, объявление…"
+                : "Турист, тур, ID…"
+          }
           filters={[
             {
               key: "status",
@@ -194,29 +242,100 @@ function AdminBookingsPage() {
               placeholder: "Статус",
               onChange: setStatus,
               options:
-                view === "requests"
+                view === "services"
                   ? [
                       { value: "all", label: "Все статусы" },
-                      ...Object.entries(requestStatusLabel).map(([value, label]) => ({
+                      ...Object.entries(serviceRequestStatusLabel).map(([value, label]) => ({
                         value,
                         label,
                       })),
                     ]
-                  : [
-                      { value: "all", label: "Все статусы" },
-                      { value: "PENDING", label: "Ожидает" },
-                      { value: "AWAITING_PAYMENT", label: "Ждёт оплаты" },
-                      { value: "PAID", label: "Оплачено" },
-                      { value: "CONFIRMED", label: "Подтверждено" },
-                      { value: "CANCELLED", label: "Отменено" },
-                      { value: "COMPLETED", label: "Завершено" },
-                    ],
+                  : view === "requests"
+                    ? [
+                        { value: "all", label: "Все статусы" },
+                        ...Object.entries(requestStatusLabel).map(([value, label]) => ({
+                          value,
+                          label,
+                        })),
+                      ]
+                    : [
+                        { value: "all", label: "Все статусы" },
+                        { value: "PENDING", label: "Ожидает" },
+                        { value: "AWAITING_PAYMENT", label: "Ждёт оплаты" },
+                        { value: "PAID", label: "Оплачено" },
+                        { value: "CONFIRMED", label: "Подтверждено" },
+                        { value: "CANCELLED", label: "Отменено" },
+                        { value: "COMPLETED", label: "Завершено" },
+                      ],
             },
           ]}
         />
       </div>
 
-      {view === "requests" ? (
+      {view === "services" ? (
+        serviceRows.length === 0 ? (
+          <div className="surface-card flex flex-col items-center gap-3 p-10 text-center">
+            <span className="grid size-12 place-items-center rounded-2xl bg-primary-soft text-primary">
+              <Inbox className="size-6" />
+            </span>
+            <div className="max-w-md">
+              <p className="font-display text-base font-semibold">
+                {q.trim() || status !== "all" ? "Ничего не нашли" : "Заявок в компании пока нет"}
+              </p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {q.trim() || status !== "all"
+                  ? "Измените поиск или фильтр статуса."
+                  : "Сюда попадают записи клиентов в залы, жильё и авто: партнёр обрабатывает их в своём кабинете."}
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className="surface-card overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Компания</TableHead>
+                  <TableHead>Клиент</TableHead>
+                  <TableHead>Когда</TableHead>
+                  <TableHead>Статус</TableHead>
+                  <TableHead>Создана</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {serviceRows.map((r) => (
+                  <TableRow key={r.id}>
+                    <TableCell className="font-medium">
+                      {r.orgName}
+                      {r.listingName ? (
+                        <span className="block text-xs text-muted-foreground">{r.listingName}</span>
+                      ) : null}
+                    </TableCell>
+                    <TableCell>
+                      {r.contactName || "Клиент"}
+                      {r.people > 1 ? (
+                        <span className="block text-xs text-muted-foreground">{r.people} чел.</span>
+                      ) : null}
+                    </TableCell>
+                    <TableCell className="text-sm">
+                      {formatServiceRequestWhen(r.date, r.time)}
+                    </TableCell>
+                    <TableCell>
+                      <span
+                        className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${serviceRequestStatusClass[r.status]}`}
+                      >
+                        {serviceRequestStatusLabel[r.status]}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground">
+                      {new Date(r.createdAt).toLocaleDateString("ru-RU")}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        )
+      ) : view === "requests" ? (
         requests.length === 0 ? (
           <div className="surface-card flex flex-col items-center gap-3 p-10 text-center">
             <span className="grid size-12 place-items-center rounded-2xl bg-primary-soft text-primary">
