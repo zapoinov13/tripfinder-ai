@@ -88,6 +88,7 @@ export async function hydrateCatalogFromSupabase() {
               whatsapp: str(o["whatsapp"], prev?.whatsapp ?? ""),
               instagram: str(o["instagram"], prev?.instagram ?? ""),
               telegram: str(o["telegram"], prev?.telegram ?? ""),
+              listedByPlatform: o["listed_by_platform"] === true,
             };
           }),
         };

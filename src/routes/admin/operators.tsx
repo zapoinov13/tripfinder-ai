@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
+import { Plus } from "lucide-react";
 import { toast } from "sonner";
 
 import {
@@ -15,6 +16,7 @@ import {
   toneForUserStatus,
   userStatusLabel,
 } from "@/components/admin";
+import { AddCompanyDialog } from "@/components/admin/add-company-dialog";
 import { DashShell } from "@/components/dash/dash-shell";
 import { useAdminNav } from "@/components/dash/nav-items";
 import { Button } from "@/components/ui/button";
@@ -67,6 +69,7 @@ function AdminOperatorsPage() {
   const { allowed } = useRequireAuth(["PLATFORM_ADMIN", "PLATFORM_MANAGER"]);
   const { user } = useAuth();
   const nav = useAdminNav();
+  const [addingCompany, setAddingCompany] = useState(false);
   const state = usePlatformStore();
   const [view, setView] = useState("companies");
   const [tab, setTab] = useState("all");
@@ -147,7 +150,19 @@ function AdminOperatorsPage() {
       items={nav}
       title="Партнёры"
       subtitle="Все подключённые бизнесы: туры, экскурсии, жильё, авто, спорт. Одобрение, документы и тарифы."
+      actions={
+        <Button size="sm" onClick={() => setAddingCompany(true)}>
+          <Plus className="size-4" />
+          Добавить компанию
+        </Button>
+      }
     >
+      <AddCompanyDialog
+        open={addingCompany}
+        onOpenChange={setAddingCompany}
+        actorId={user?.id ?? ""}
+      />
+
       <div className="mb-4 grid grid-cols-2 gap-3 xl:grid-cols-4">
         <KpiLinkCard
           label="Партнёров"

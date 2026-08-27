@@ -46,6 +46,7 @@ import {
 import { categoriesOfServices } from "@/lib/platform/company-categories";
 import { usePlatformStore } from "@/lib/platform/hooks";
 import { getCompanyRating, getCompanyReviews, hasReviewed } from "@/lib/platform/messages";
+import { SUPPORT_EMAIL } from "@/lib/contact";
 import { cn } from "@/lib/utils";
 
 /** Стабильная ссылка для useSyncExternalStore, когда объявлений нет. */
@@ -127,7 +128,12 @@ function CompanyPage() {
     .slice(0, 6);
   const photos = company.photos ?? [];
   const videos = company.videos ?? [];
-  const verified = company.status === "APPROVED";
+  // Карточку собрала платформа: владелец её ещё не подтвердил, и запись
+  // может остаться без ответа. Честно говорим об этом туристу.
+  const listedByPlatform = company.listedByPlatform === true;
+  // Знак проверки — только тем, кто прошёл модерацию как партнёр. Карточка,
+  // которую завела сама платформа, «проверенной» называться не может.
+  const verified = company.status === "APPROVED" && !listedByPlatform;
   const wa = company.whatsapp?.replace(/\D/g, "") || company.phone?.replace(/\D/g, "") || "";
   const mapsUrl = company.address
     ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
@@ -236,6 +242,11 @@ function CompanyPage() {
                 <Badge className="mt-1.5 border-0 bg-success/12 text-success">
                   <BadgeCheck className="mr-1 size-3.5" />
                   Проверенная компания
+                </Badge>
+              ) : null}
+              {listedByPlatform ? (
+                <Badge className="mt-1.5 border-0 bg-secondary text-muted-foreground">
+                  Карточку собрал TourGo
                 </Badge>
               ) : null}
               <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
@@ -731,6 +742,20 @@ function CompanyPage() {
             <p className="mt-4 text-xs text-muted-foreground">
               Услуги оказывает эта компания. TourGo помогает найти и сравнить предложения.
             </p>
+            {listedByPlatform ? (
+              <div className="mt-4 rounded-xl bg-secondary/50 px-4 py-3">
+                <p className="text-xs leading-relaxed text-muted-foreground">
+                  Страницу собрал TourGo по открытым данным. Владелец её ещё не подтвердил — на
+                  запись могут ответить не сразу.
+                </p>
+                <a
+                  href={`mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(`Это наша компания: ${company.name}`)}&body=${encodeURIComponent(`Здравствуйте! Хотим забрать страницу компании «${company.name}» (id ${company.id}) на TourGo.`)}`}
+                  className="mt-2 inline-block text-xs font-semibold text-primary hover:underline"
+                >
+                  Это наша компания
+                </a>
+              </div>
+            ) : null}
           </section>
 
           {(company.services ?? []).length > 0 ||

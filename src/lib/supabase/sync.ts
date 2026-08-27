@@ -197,6 +197,7 @@ const organizationRow = (o: Organization) => ({
 });
 
 const companyProfileRow = (o: Organization) => ({
+  listed_by_platform: o.listedByPlatform ?? false,
   services: o.services ?? [],
   countries: o.countries ?? [],
   client_countries: o.clientCountries ?? [],
