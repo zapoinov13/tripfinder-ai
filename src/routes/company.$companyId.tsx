@@ -2,7 +2,6 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import {
   BadgeCheck,
   CheckCircle2,
-  Clock,
   Globe,
   Instagram,
   MapPin,
@@ -16,6 +15,7 @@ import { useEffect, useState, useSyncExternalStore } from "react";
 import { toast } from "sonner";
 
 import { CompanyReviewDialog } from "@/components/company/company-review-dialog";
+import { WorkingHours } from "@/components/company/working-hours";
 import { ServiceRequestDialog } from "@/components/company/service-request-dialog";
 import { SiteLayout } from "@/components/site/site-layout";
 import { Badge } from "@/components/ui/badge";
@@ -30,7 +30,6 @@ import {
   isoDate,
   openState,
   scheduleActive,
-  scheduleSummary,
 } from "@/lib/platform/booking-slots";
 import {
   carClassLabel,
@@ -607,23 +606,41 @@ function CompanyPage() {
         </div>
 
         <aside className="space-y-6">
+          {company.address ? (
+            <section className="surface-card p-6">
+              <h2 className="font-display text-lg font-semibold">Как добраться</h2>
+              <p className="mt-2 flex items-start gap-2 text-sm">
+                <MapPin className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+                <span>
+                  {company.address}
+                  <span className="block text-muted-foreground">
+                    {company.city}, {company.country}
+                  </span>
+                </span>
+              </p>
+              {mapsUrl ? (
+                <Button variant="outline" size="sm" className="mt-4 w-full" asChild>
+                  <a
+                    href={mapsUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    onClick={() => trackClick("map")}
+                  >
+                    <MapPin className="size-4" />
+                    Построить маршрут
+                  </a>
+                </Button>
+              ) : null}
+            </section>
+          ) : null}
+
           <section className="surface-card p-6">
             <h2 className="font-display text-lg font-semibold">Контакты</h2>
             <ul className="mt-4 space-y-3 text-sm">
-              {company.address ? (
-                <ContactRow
-                  icon={MapPin}
-                  label={`${company.address}, ${company.city}`}
-                  href={mapsUrl}
-                  onClick={() => trackClick("map")}
-                />
-              ) : null}
-              {company.workingHours || scheduleActive(company) ? (
-                <li className="flex items-start gap-2 text-foreground">
-                  <Clock className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
-                  <span>{company.workingHours || scheduleSummary(company.bookingSchedule)}</span>
-                </li>
-              ) : null}
+              <WorkingHours
+                schedule={company.bookingSchedule}
+                {...(company.workingHours ? { fallbackText: company.workingHours } : {})}
+              />
               {company.phone ? (
                 <ContactRow
                   icon={Phone}
@@ -669,19 +686,6 @@ function CompanyPage() {
                 />
               ) : null}
             </ul>
-            {mapsUrl ? (
-              <Button variant="outline" size="sm" className="mt-4 w-full" asChild>
-                <a
-                  href={mapsUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  onClick={() => trackClick("map")}
-                >
-                  <MapPin className="size-3.5" />
-                  Как добраться — Google Карты
-                </a>
-              </Button>
-            ) : null}
             <p className="mt-4 text-xs text-muted-foreground">
               Услуги оказывает эта компания. TourGo помогает найти и сравнить предложения.
             </p>
