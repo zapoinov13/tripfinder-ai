@@ -7,7 +7,10 @@ import { useOperatorNav } from "@/components/dash/nav-items";
 import { AddVerticalDialog } from "@/components/operator/add-vertical-dialog";
 import { Button } from "@/components/ui/button";
 import { formatKzt } from "@/data/scenario-catalog";
+import { formatPrice } from "@/data/demo";
+import { usePlatformStore } from "@/lib/platform/hooks";
 import { useAuth, useRequireAuth } from "@/lib/platform/auth";
+import { listingPerformance, recordsWord } from "@/lib/platform/business-stats";
 import {
   carClassLabel,
   sportKindLabel,
@@ -59,6 +62,8 @@ function OperatorServicesPage() {
   useEffect(() => {
     if (search.tab) setTab(search.tab);
   }, [search.tab]);
+  const state = usePlatformStore();
+  void state.serviceRequests.length;
   const [adding, setAdding] = useState(false);
   const [, bump] = useState(0);
   const items = useSyncExternalStore(
@@ -66,6 +71,10 @@ function OperatorServicesPage() {
     () => (organization ? listOrgVertical(organization.id, tab) : EMPTY_ITEMS),
     () => EMPTY_ITEMS,
   );
+
+  // Отдача объявлений за 30 дней: сколько записей и денег принесло каждое.
+  const performance = organization ? listingPerformance(organization.id, 30) : [];
+  const statsById = new Map(performance.map((row) => [row.listing.id, row]));
 
   if (!allowed || !organization) return null;
 
@@ -148,6 +157,30 @@ function OperatorServicesPage() {
               <p className="mt-3 font-semibold">
                 {item.price > 0 ? formatKzt(item.price) : "Цена по запросу"}
               </p>
+              {(() => {
+                const stat = statsById.get(item.id);
+                if (!stat || stat.requests === 0) {
+                  return (
+                    <p className="mt-2 text-xs text-muted-foreground">За 30 дней записей не было</p>
+                  );
+                }
+                return (
+                  <p className="mt-2 text-xs">
+                    <span className="font-medium text-foreground">
+                      {stat.requests} {recordsWord(stat.requests)}
+                    </span>
+                    <span className="text-muted-foreground">
+                      {" "}
+                      за 30 дней · состоялись {stat.won}
+                    </span>
+                    {stat.earned > 0 ? (
+                      <span className="block font-medium text-success">
+                        {formatPrice(stat.earned)}
+                      </span>
+                    ) : null}
+                  </p>
+                );
+              })()}
               {item.sourceUrl ? (
                 <a
                   href={item.sourceUrl}

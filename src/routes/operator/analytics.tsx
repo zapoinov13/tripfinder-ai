@@ -32,6 +32,7 @@ import { useOperatorNav } from "@/components/dash/nav-items";
 import { Button } from "@/components/ui/button";
 import { formatNumber, formatPrice, nightsLabel, tourCover } from "@/data/demo";
 import { useAuth, useRequireAuth } from "@/lib/platform/auth";
+import { businessMoney, listingPerformance, recordsWord } from "@/lib/platform/business-stats";
 import { isBusinessOnlyServices } from "@/lib/platform/company-categories";
 import {
   computeOperatorAnalytics,
@@ -146,6 +147,17 @@ function OperatorAnalyticsPage() {
       hasTrend: trend.some((p) => p.views || p.actions),
     };
   }, [organization, period, state.analyticsEvents]);
+
+  const money = useMemo(
+    () => (organization ? businessMoney(organization.id, period) : null),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [organization?.id, period, state.serviceRequests, state.promotions],
+  );
+  const listingRows = useMemo(
+    () => (organization ? listingPerformance(organization.id, period) : []),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [organization?.id, period, state.serviceRequests],
+  );
 
   if (!allowed || !organization || !data) return null;
 
@@ -276,6 +288,96 @@ function OperatorAnalyticsPage() {
             hint={data.rating ? `${data.rating.count} отзывов` : "отзывов пока нет"}
           />
         </div>
+
+        {money && money.requests > 0 ? (
+          <section className="surface-card mt-6 p-6">
+            <div className="flex flex-wrap items-end justify-between gap-3">
+              <div>
+                <h2 className="font-display text-lg font-semibold">Сколько принесли записи</h2>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Считаем по ценам ваших услуг. Клиент платит вам напрямую, поэтому это ожидаемый
+                  доход, а не факт оплаты.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              <MoneyTile label="Записей за период" value={formatNumber(money.requests)} />
+              <MoneyTile
+                label="Состоялись"
+                value={formatNumber(money.won)}
+                hint={
+                  money.requests
+                    ? `${Math.round((money.won / money.requests) * 100)}% от всех`
+                    : undefined
+                }
+                tone="success"
+              />
+              <MoneyTile
+                label="Доход по записям"
+                value={formatPrice(money.earned)}
+                tone="success"
+              />
+              <MoneyTile label="Средний чек" value={formatPrice(money.averageCheck)} />
+            </div>
+
+            {money.fromPromo > 0 || money.organic > 0 ? (
+              <div className="mt-4 grid gap-3 md:grid-cols-2">
+                <div className="rounded-2xl border border-primary/25 bg-primary/[0.04] p-4">
+                  <p className="text-sm font-semibold">С продвижения</p>
+                  <p className="mt-1 font-display text-xl font-semibold">
+                    {formatNumber(money.fromPromo)}{" "}
+                    <span className="text-sm font-medium text-muted-foreground">
+                      {recordsWord(money.fromPromo)}
+                    </span>
+                  </p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    доход {formatPrice(money.promoEarned)}
+                  </p>
+                </div>
+                <div className="rounded-2xl border border-border p-4">
+                  <p className="text-sm font-semibold">Пришли сами</p>
+                  <p className="mt-1 font-display text-xl font-semibold">
+                    {formatNumber(money.organic)}{" "}
+                    <span className="text-sm font-medium text-muted-foreground">
+                      {recordsWord(money.organic)}
+                    </span>
+                  </p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    доход {formatPrice(money.organicEarned)}
+                  </p>
+                </div>
+              </div>
+            ) : null}
+
+            {listingRows.some((row) => row.requests > 0) ? (
+              <div className="mt-5">
+                <p className="text-sm font-medium">Что приносит деньги</p>
+                <ul className="mt-2 space-y-1.5">
+                  {listingRows
+                    .filter((row) => row.requests > 0)
+                    .map((row) => (
+                      <li
+                        key={row.listing.id}
+                        className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border px-4 py-2.5 text-sm"
+                      >
+                        <span className="min-w-0 flex-1 truncate font-medium">
+                          {row.listing.name}
+                        </span>
+                        <span className="text-muted-foreground">
+                          {formatNumber(row.requests)} {recordsWord(row.requests)} · состоялись{" "}
+                          {formatNumber(row.won)}
+                        </span>
+                        <span className="font-semibold tabular-nums">
+                          {formatPrice(row.earned)}
+                        </span>
+                      </li>
+                    ))}
+                </ul>
+              </div>
+            ) : null}
+          </section>
+        ) : null}
 
         <section className="surface-card mt-6 overflow-hidden">
           <div className="border-b border-border bg-secondary/20 px-5 py-4 md:px-6">
@@ -777,6 +879,34 @@ function OperatorAnalyticsPage() {
         </div>
       </div>
     </DashShell>
+  );
+}
+
+/** Плитка денежного блока: значение крупно, подпись мелко. */
+function MoneyTile({
+  label,
+  value,
+  hint,
+  tone,
+}: {
+  label: string;
+  value: string;
+  hint?: string | undefined;
+  tone?: "success" | undefined;
+}) {
+  return (
+    <div className="rounded-2xl border border-border p-4">
+      <p className="text-xs text-muted-foreground">{label}</p>
+      <p
+        className={cn(
+          "mt-1 font-display text-xl font-semibold tabular-nums",
+          tone === "success" && "text-success",
+        )}
+      >
+        {value}
+      </p>
+      {hint ? <p className="mt-0.5 text-xs text-muted-foreground">{hint}</p> : null}
+    </div>
   );
 }
 
