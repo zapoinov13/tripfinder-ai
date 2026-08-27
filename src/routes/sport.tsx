@@ -3,6 +3,7 @@ import { Building2, MapPin } from "lucide-react";
 import { useMemo, useSyncExternalStore, useState } from "react";
 
 import { SiteLayout } from "@/components/site/site-layout";
+import { ServiceRequestDialog } from "@/components/company/service-request-dialog";
 import { Button } from "@/components/ui/button";
 import { destinations } from "@/data/demo";
 import { formatKzt, sportKinds } from "@/data/scenario-catalog";
@@ -57,6 +58,14 @@ function SportPage() {
   const navigate = useNavigate({ from: "/sport" });
   const update = (patch: Search) => void navigate({ search: { ...params, ...patch } as never });
   const [geoHint, setGeoHint] = useState("");
+  // Заявка клиента в компанию-владельца объявления (запись/бронь).
+  const [requestTarget, setRequestTarget] = useState<{
+    organizationId: string;
+    organizationName: string;
+    listingId: string;
+    listingName: string;
+  } | null>(null);
+
   const published = usePublishedSports();
   const state = usePlatformStore();
   const promoted = useMemo(() => promotedCompanyIds(), [state.promotions]);
@@ -242,11 +251,27 @@ function SportPage() {
                   ) : (
                     <p className="mt-4 text-sm text-foreground/60">Цена по запросу</p>
                   )}
-                  <Button className="mt-4" asChild>
-                    <Link to="/request" search={requestFor(`${item.name}, ${item.city}`)}>
-                      Забронировать
-                    </Link>
-                  </Button>
+                  {item.organizationId ? (
+                    <Button
+                      className="mt-4"
+                      onClick={() =>
+                        setRequestTarget({
+                          organizationId: item.organizationId!,
+                          organizationName: item.companyName ?? "Компания",
+                          listingId: item.id,
+                          listingName: item.name,
+                        })
+                      }
+                    >
+                      Записаться
+                    </Button>
+                  ) : (
+                    <Button className="mt-4" asChild>
+                      <Link to="/request" search={requestFor(`${item.name}, ${item.city}`)}>
+                        Забронировать
+                      </Link>
+                    </Button>
+                  )}
                 </article>
               );
             })}
@@ -287,6 +312,19 @@ function SportPage() {
           </div>
         )}
       </div>
+
+      {requestTarget ? (
+        <ServiceRequestDialog
+          open
+          onOpenChange={(open) => {
+            if (!open) setRequestTarget(null);
+          }}
+          organizationId={requestTarget.organizationId}
+          organizationName={requestTarget.organizationName}
+          listingId={requestTarget.listingId}
+          listingName={requestTarget.listingName}
+        />
+      ) : null}
     </SiteLayout>
   );
 }

@@ -50,7 +50,6 @@ export const operatorNav = operatorNavBase;
 
 /** Разделы турфирмы, бессмысленные для «бизнеса без туров» (зал, прокат, жильё). */
 const tourOnlyRoutes = new Set([
-  "/operator/requests",
   "/operator/offers",
   "/operator/tours",
   "/operator/messages",
@@ -63,9 +62,19 @@ export function useOperatorNav(orgId?: string): DashItem[] {
 
   const org = state.organizations.find((o) => o.id === orgId);
   if (org && isBusinessOnlyServices(org.services)) {
+    // «Заявки» у бизнеса — записи клиентов, а не туровые заявки туристов.
+    const newRequests = state.serviceRequests.filter(
+      (r) => r.organizationId === orgId && r.status === "NEW",
+    ).length;
     return operatorNavBase
       .filter((item) => !tourOnlyRoutes.has(item.to))
-      .map((item) => (item.to === "/operator/services" ? { ...item, label: "Объявления" } : item));
+      .map((item) => {
+        if (item.to === "/operator/services") return { ...item, label: "Объявления" };
+        if (item.to === "/operator/requests" && newRequests > 0) {
+          return { ...item, badge: newRequests };
+        }
+        return item;
+      });
   }
 
   const answered = new Set(

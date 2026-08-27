@@ -322,6 +322,36 @@ export type RequestOffer = {
   createdAt: string;
 };
 
+/**
+ * Заявка клиента бизнесу: запись в зал, бронь квартиры или авто.
+ * Это не туровая заявка — здесь нет отелей, ночей и питания, только
+ * дата, время и контакт. Живёт параллельно с TripRequest.
+ */
+export type ServiceRequestStatus = "NEW" | "CONFIRMED" | "DECLINED" | "DONE" | "CANCELLED";
+
+export type ServiceRequest = {
+  id: string;
+  organizationId: string;
+  /** Пусто, если заявку оставил гость без аккаунта. */
+  userId?: string;
+  /** Объявление, из которого пришла заявка (если пришла со страницы компании — пусто). */
+  listingId?: string;
+  listingName: string;
+  contactName: string;
+  contactPhone: string;
+  /** Желаемая дата в формате YYYY-MM-DD. */
+  date: string;
+  /** Желаемое время, например «19:00». */
+  time: string;
+  people: number;
+  comment: string;
+  status: ServiceRequestStatus;
+  /** Ответ компании клиенту при подтверждении или отказе. */
+  replyComment?: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
 /** Переписка туриста и турфирмы по конкретной заявке. */
 export type RequestMessage = {
   id: string;
@@ -410,6 +440,7 @@ export type PlatformState = {
   tripRequests: TripRequest[];
   requestOffers: RequestOffer[];
   requestMessages: RequestMessage[];
+  serviceRequests: ServiceRequest[];
   companyReviews: CompanyReview[];
   session: Session | null;
 };

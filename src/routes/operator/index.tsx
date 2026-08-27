@@ -226,6 +226,9 @@ function OperatorDashboard() {
   const pageViews = companyEvents.filter((e) => e.type === "COMPANY_PAGE_VIEW").length;
   const contactClicks = companyEvents.filter((e) => e.type === "COMPANY_CONTACT_CLICK").length;
   const checkins = companyEvents.filter((e) => e.type === "COMPANY_CHECKIN");
+  const newServiceRequests = state.serviceRequests.filter(
+    (r) => r.organizationId === organization.id && r.status === "NEW",
+  ).length;
   const myListings = listOrgVertical(organization.id);
   const publishedListings = myListings.filter((l) => l.status === "published");
   const pendingSteps = steps.filter((step) => !step.done);
@@ -233,6 +236,13 @@ function OperatorDashboard() {
 
   const quickActions = businessOnly
     ? ([
+        {
+          label: "Заявки",
+          hint: newServiceRequests > 0 ? `${newServiceRequests} новых` : "Открыть",
+          to: "/operator/requests",
+          icon: Inbox,
+          highlight: newServiceRequests > 0,
+        },
         {
           label: "Объявления",
           hint: `${publishedListings.length} опубликовано`,
@@ -252,13 +262,6 @@ function OperatorDashboard() {
           hint: formatPrice(organization.promotionBalance),
           to: "/operator/promotion",
           icon: Megaphone,
-          highlight: false,
-        },
-        {
-          label: "Статистика",
-          hint: `${formatNumber(pageViews)} просмотров`,
-          to: "/operator/analytics",
-          icon: TrendingUp,
           highlight: false,
         },
       ] as const)
@@ -391,13 +394,10 @@ function OperatorDashboard() {
             emphasis={checkins.length > 0}
           />
           <KpiCard
-            label="Объявления"
-            value={formatNumber(publishedListings.length)}
-            hint={
-              myListings.length > publishedListings.length
-                ? `скрыто ${myListings.length - publishedListings.length}`
-                : "опубликованы в витрине"
-            }
+            label="Новые заявки"
+            value={formatNumber(newServiceRequests)}
+            hint={newServiceRequests > 0 ? "ждут ответа" : "всё обработано"}
+            emphasis={newServiceRequests > 0}
           />
         </div>
       ) : (

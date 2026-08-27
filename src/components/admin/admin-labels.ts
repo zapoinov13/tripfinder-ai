@@ -127,6 +127,10 @@ export const auditActionLabel: Record<string, string> = {
   seed: "Инициализация платформы",
   push_broadcast: "Push-рассылка",
   platform_config_update: "Изменены настройки платформы",
+  service_request_confirmed: "Заявка клиента подтверждена",
+  service_request_declined: "Заявка клиента отклонена",
+  service_request_done: "Заявка клиента выполнена",
+  service_request_cancelled: "Заявка клиента отменена",
 };
 
 export const auditEntityLabel: Record<string, string> = {
@@ -138,6 +142,7 @@ export const auditEntityLabel: Record<string, string> = {
   promotion: "продвижение",
   api_connection: "API-подключение",
   store: "хранилище",
+  service_request: "заявка клиента",
 };
 
 // Ключи должны совпадать с типами, которые реально пишет trackEvent(...).
@@ -161,6 +166,7 @@ export const eventLabel: Record<string, string> = {
   COMPANY_PAGE_VIEW: "Просмотры компаний",
   COMPANY_CONTACT_CLICK: "Клики по контактам",
   COMPANY_CHECKIN: "Визиты из приложения",
+  SERVICE_REQUEST_CREATED: "Заявки в компании",
 };
 
 export type BadgeTone = "neutral" | "success" | "warning" | "danger" | "info" | "premium";

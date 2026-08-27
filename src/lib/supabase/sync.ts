@@ -15,6 +15,7 @@ import type {
   PromotionOrder,
   RequestMessage,
   RequestOffer,
+  ServiceRequest,
   Subscription,
   TripRequest,
 } from "@/lib/platform/types";
@@ -330,6 +331,27 @@ const sameReview = (a: CompanyReview, b: CompanyReview) =>
   a.replyAt === b.replyAt &&
   a.replyByUserId === b.replyByUserId &&
   a.replyByName === b.replyByName;
+
+const serviceRequestRow = (r: ServiceRequest) => ({
+  id: r.id,
+  organization_id: r.organizationId,
+  user_id: isUuid(r.userId) ? r.userId : null,
+  listing_id: r.listingId ?? null,
+  listing_name: r.listingName,
+  contact_name: r.contactName,
+  contact_phone: r.contactPhone,
+  date: r.date,
+  time: r.time,
+  people: r.people,
+  comment: r.comment,
+  status: r.status,
+  reply_comment: r.replyComment ?? "",
+  created_at: r.createdAt,
+  updated_at: r.updatedAt,
+});
+
+const sameServiceRequest = (a: ServiceRequest, b: ServiceRequest) =>
+  a.status === b.status && a.replyComment === b.replyComment;
 
 function collectOps(prev: PlatformState, next: PlatformState): Op[] {
   const sb = getSupabase();
@@ -679,6 +701,30 @@ function collectOps(prev: PlatformState, next: PlatformState): Op[] {
         .update({ read_by_tourist: m.readByTourist, read_by_company: m.readByCompany })
         .eq("id", m.id);
       report("request_messages.update", error);
+    });
+  }
+
+  // Заявки клиентов бизнесу: создаёт клиент, статус меняет компания.
+  const serviceRequests = diff(prev.serviceRequests, next.serviceRequests, sameServiceRequest);
+  for (const r of serviceRequests.added) {
+    if (!isUuid(r.id) || !isUuid(r.organizationId)) continue;
+    ops.push(async () => {
+      const { error } = await sb.from("service_requests").insert(serviceRequestRow(r));
+      report("service_requests.insert", error);
+    });
+  }
+  for (const r of serviceRequests.updated) {
+    if (!isUuid(r.id)) continue;
+    ops.push(async () => {
+      const { error } = await sb
+        .from("service_requests")
+        .update({
+          status: r.status,
+          reply_comment: r.replyComment ?? "",
+          updated_at: r.updatedAt,
+        })
+        .eq("id", r.id);
+      report("service_requests.update", error);
     });
   }
 

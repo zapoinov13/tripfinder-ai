@@ -12,9 +12,10 @@ import {
   Send,
   Star,
 } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
+import { ServiceRequestDialog } from "@/components/company/service-request-dialog";
 import { SiteLayout } from "@/components/site/site-layout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -45,6 +46,8 @@ function CompanyPage() {
   const userId = user?.id;
 
   // Просмотр страницы: один раз за визит, свои сотрудники не считаются.
+  const [requestOpen, setRequestOpen] = useState(false);
+
   useEffect(() => {
     if (!company) return;
     if (user && user.organizationId === company.id) return;
@@ -199,11 +202,17 @@ function CompanyPage() {
                 </Button>
               )
             ) : null}
-            <Button asChild>
-              <Link to="/request" search={{}}>
-                Оставить заявку
-              </Link>
-            </Button>
+            {isBusiness ? (
+              isOwnStaff ? null : (
+                <Button onClick={() => setRequestOpen(true)}>Оставить заявку</Button>
+              )
+            ) : (
+              <Button asChild>
+                <Link to="/request" search={{}}>
+                  Оставить заявку
+                </Link>
+              </Button>
+            )}
           </div>
         </div>
       </section>
@@ -457,6 +466,13 @@ function CompanyPage() {
           ) : null}
         </aside>
       </div>
+
+      <ServiceRequestDialog
+        open={requestOpen}
+        onOpenChange={setRequestOpen}
+        organizationId={company.id}
+        organizationName={company.name}
+      />
     </SiteLayout>
   );
 }

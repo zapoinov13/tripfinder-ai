@@ -1,0 +1,139 @@
+import { appendAudit, pushNotification, trackEvent } from "./catalog";
+import { getState, nowIso, setState, uid } from "./store";
+import type { ServiceRequest, ServiceRequestStatus } from "./types";
+
+export type ServiceRequestDraft = {
+  organizationId: string;
+  organizationName: string;
+  userId?: string;
+  listingId?: string;
+  listingName: string;
+  contactName: string;
+  contactPhone: string;
+  date: string;
+  time: string;
+  people: number;
+  comment: string;
+};
+
+/** Клиент оставляет заявку бизнесу: запись в зал, бронь квартиры или авто. */
+export function createServiceRequest(draft: ServiceRequestDraft): ServiceRequest {
+  const request: ServiceRequest = {
+    id: uid(),
+    organizationId: draft.organizationId,
+    ...(draft.userId ? { userId: draft.userId } : {}),
+    ...(draft.listingId ? { listingId: draft.listingId } : {}),
+    listingName: draft.listingName,
+    contactName: draft.contactName.trim(),
+    contactPhone: draft.contactPhone.trim(),
+    date: draft.date,
+    time: draft.time,
+    people: Math.max(1, draft.people),
+    comment: draft.comment.trim(),
+    status: "NEW",
+    createdAt: nowIso(),
+    updatedAt: nowIso(),
+  };
+
+  setState((s) => ({ ...s, serviceRequests: [request, ...s.serviceRequests] }));
+
+  trackEvent("SERVICE_REQUEST_CREATED", draft.userId, {
+    companyId: draft.organizationId,
+    listingId: draft.listingId ?? "",
+  });
+
+  // Уведомляем всех сотрудников компании: заявку увидит тот, кто зайдёт первым.
+  // pushNotification сам вызывает setState, поэтому список читаем снаружи.
+  const staff = getState().users.filter((u) => u.organizationId === draft.organizationId);
+  for (const member of staff) {
+    pushNotification(
+      member.id,
+      "service_request",
+      "Новая заявка от клиента",
+      `${request.contactName}: ${request.listingName || "запись"} на ${request.date}${
+        request.time ? ` в ${request.time}` : ""
+      }.`,
+      { requestId: request.id, organizationId: draft.organizationId },
+    );
+  }
+
+  return request;
+}
+
+const statusMessage: Record<string, { title: string; body: (name: string) => string }> = {
+  CONFIRMED: {
+    title: "Заявка подтверждена",
+    body: (name) => `${name} подтвердил вашу запись. Ждём вас!`,
+  },
+  DECLINED: {
+    title: "Заявка отклонена",
+    body: (name) => `${name} не может принять вас в это время. Попробуйте другую дату.`,
+  },
+  DONE: {
+    title: "Спасибо за визит",
+    body: (name) => `${name} отметил вашу заявку выполненной. Оставьте отзыв — это поможет другим.`,
+  },
+};
+
+/** Компания меняет статус заявки и, при желании, пишет ответ клиенту. */
+export function updateServiceRequestStatus(
+  requestId: string,
+  status: ServiceRequestStatus,
+  options: { actorId: string; organizationName: string; replyComment?: string } = {
+    actorId: "",
+    organizationName: "",
+  },
+) {
+  let target: ServiceRequest | null = null;
+  setState((s) => ({
+    ...s,
+    serviceRequests: s.serviceRequests.map((r) => {
+      if (r.id !== requestId) return r;
+      target = {
+        ...r,
+        status,
+        ...(options.replyComment !== undefined ? { replyComment: options.replyComment } : {}),
+        updatedAt: nowIso(),
+      };
+      return target;
+    }),
+  }));
+
+  if (!target) return null;
+  const request: ServiceRequest = target;
+
+  const message = statusMessage[status];
+  if (message && request.userId) {
+    pushNotification(
+      request.userId,
+      "service_request_status",
+      message.title,
+      message.body(options.organizationName || "Компания"),
+      { requestId: request.id, organizationId: request.organizationId },
+    );
+  }
+
+  if (options.actorId) {
+    appendAudit({
+      actorId: options.actorId,
+      action: `service_request_${status.toLowerCase()}`,
+      entityType: "service_request",
+      entityId: request.id,
+      meta: { organizationId: request.organizationId },
+    });
+  }
+
+  return request;
+}
+
+/** Клиент отменяет свою заявку. */
+export function cancelServiceRequest(requestId: string, userId: string) {
+  setState((s) => ({
+    ...s,
+    serviceRequests: s.serviceRequests.map((r) =>
+      r.id === requestId && r.userId === userId
+        ? { ...r, status: "CANCELLED" as const, updatedAt: nowIso() }
+        : r,
+    ),
+  }));
+}

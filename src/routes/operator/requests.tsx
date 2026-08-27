@@ -1,9 +1,10 @@
-import { Navigate, createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
 import { Check, Inbox, Send, Star, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
-import { DashShell } from "@/components/dash/dash-shell";
+import { TabPills } from "@/components/admin";
+import { DashShell, KpiCard } from "@/components/dash/dash-shell";
 import { useOperatorNav } from "@/components/dash/nav-items";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -23,6 +24,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { formatPrice, getHotel, hotels, type Hotel } from "@/data/demo";
 import { useAuth, useRequireAuth } from "@/lib/platform/auth";
 import { isBusinessOnlyServices } from "@/lib/platform/company-categories";
+import { updateServiceRequestStatus } from "@/lib/platform/service-requests";
+import type { ServiceRequest, ServiceRequestStatus } from "@/lib/platform/types";
 import { usePlatformStore } from "@/lib/platform/hooks";
 import { mealPlainLabel, peopleLabel, declineRequest, sendOffer } from "@/lib/platform/requests";
 import type { TripRequest } from "@/lib/platform/types";
@@ -86,6 +89,211 @@ function hotelOptionsForOffer(
   );
 }
 
+const serviceStatusMeta: Record<ServiceRequestStatus, { label: string; className: string }> = {
+  NEW: { label: "Новая", className: "bg-primary/12 text-primary" },
+  CONFIRMED: { label: "Подтверждена", className: "bg-success/12 text-success" },
+  DECLINED: { label: "Отклонена", className: "bg-destructive/10 text-destructive" },
+  DONE: { label: "Выполнена", className: "bg-secondary text-muted-foreground" },
+  CANCELLED: { label: "Отменена клиентом", className: "bg-secondary text-muted-foreground" },
+};
+
+const serviceTabs = [
+  { value: "new", label: "Новые" },
+  { value: "confirmed", label: "Подтверждённые" },
+  { value: "archive", label: "Архив" },
+] as const;
+
+type ServiceTab = (typeof serviceTabs)[number]["value"];
+
+/** «1 новая заявка», «2 новые заявки», «5 новых заявок» */
+function newRequestsLabel(n: number) {
+  const mod10 = n % 10;
+  const mod100 = n % 100;
+  if (mod10 === 1 && mod100 !== 11) return `${n} новая заявка ждёт ответа`;
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) {
+    return `${n} новые заявки ждут ответа`;
+  }
+  return `${n} новых заявок ждут ответа`;
+}
+
+function fmtRequestDate(date: string, time: string) {
+  if (!date) return time || "без даты";
+  const parsed = new Date(date);
+  const label = Number.isNaN(parsed.getTime())
+    ? date
+    : parsed.toLocaleDateString("ru-RU", { day: "numeric", month: "long", weekday: "short" });
+  return time ? `${label}, ${time}` : label;
+}
+
+/** Кабинет спортзала, проката, посуточной аренды: записи клиентов. */
+function BusinessRequestsPage() {
+  const { organization, user } = useAuth();
+  const state = usePlatformStore();
+  const nav = useOperatorNav(organization?.id);
+  const [tab, setTab] = useState<ServiceTab>("new");
+
+  const mine = useMemo(() => {
+    if (!organization) return [];
+    return state.serviceRequests
+      .filter((r) => r.organizationId === organization.id)
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  }, [state.serviceRequests, organization]);
+
+  if (!organization || !user) return null;
+
+  const counts = {
+    new: mine.filter((r) => r.status === "NEW").length,
+    confirmed: mine.filter((r) => r.status === "CONFIRMED").length,
+    archive: mine.filter((r) => ["DONE", "DECLINED", "CANCELLED"].includes(r.status)).length,
+  };
+
+  const visible = mine.filter((r) => {
+    if (tab === "new") return r.status === "NEW";
+    if (tab === "confirmed") return r.status === "CONFIRMED";
+    return ["DONE", "DECLINED", "CANCELLED"].includes(r.status);
+  });
+
+  const setStatus = (request: ServiceRequest, status: ServiceRequestStatus, toastText: string) => {
+    updateServiceRequestStatus(request.id, status, {
+      actorId: user.id,
+      organizationName: organization.name,
+    });
+    toast.success(toastText);
+  };
+
+  return (
+    <DashShell
+      brand={organization.name}
+      items={nav}
+      title="Заявки клиентов"
+      subtitle={
+        counts.new > 0
+          ? newRequestsLabel(counts.new)
+          : "Записи и брони с вашей страницы и объявлений"
+      }
+    >
+      <div className="grid gap-3 sm:grid-cols-3">
+        <KpiCard
+          label="Новые"
+          value={String(counts.new)}
+          hint={counts.new > 0 ? "ждут ответа" : "всё обработано"}
+          emphasis={counts.new > 0}
+        />
+        <KpiCard label="Подтверждённые" value={String(counts.confirmed)} hint="клиенты придут" />
+        <KpiCard label="Всего заявок" value={String(mine.length)} hint="за всё время" />
+      </div>
+
+      <div className="mt-6">
+        <TabPills
+          value={tab}
+          onChange={(v: string) => setTab(v as ServiceTab)}
+          items={serviceTabs.map((t) => ({
+            value: t.value,
+            label: `${t.label} (${counts[t.value]})`,
+          }))}
+        />
+      </div>
+
+      {visible.length === 0 ? (
+        <div className="surface-card p-10 text-center">
+          <Inbox className="mx-auto size-10 text-muted-foreground/70" />
+          <p className="mt-4 font-medium">
+            {tab === "new" ? "Новых заявок нет" : "Здесь пока пусто"}
+          </p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {tab === "new"
+              ? "Клиенты оставляют заявки на странице компании и в объявлениях. Заполните страницу и опубликуйте карточки — заявки появятся здесь."
+              : "Обработанные заявки будут собираться в этой вкладке."}
+          </p>
+          <div className="mt-4 flex flex-wrap justify-center gap-2">
+            <Button size="sm" asChild>
+              <Link to="/operator/services">Мои объявления</Link>
+            </Button>
+            <Button size="sm" variant="outline" asChild>
+              <Link to="/company/$companyId" params={{ companyId: organization.id }}>
+                Моя страница
+              </Link>
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <div className="mt-4 space-y-3">
+          {visible.map((request) => {
+            const meta = serviceStatusMeta[request.status];
+            return (
+              <article key={request.id} className="surface-card p-5">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h3 className="font-display text-lg font-semibold">
+                        {request.contactName || "Клиент"}
+                      </h3>
+                      <span
+                        className={cn(
+                          "rounded-full px-2.5 py-0.5 text-[11px] font-semibold",
+                          meta.className,
+                        )}
+                      >
+                        {meta.label}
+                      </span>
+                    </div>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {fmtRequestDate(request.date, request.time)}
+                      {request.people > 1 ? ` · ${request.people} чел.` : ""}
+                      {request.listingName ? ` · ${request.listingName}` : ""}
+                    </p>
+                  </div>
+                  {request.contactPhone ? (
+                    <Button variant="outline" size="sm" asChild>
+                      <a href={`tel:${request.contactPhone}`}>{request.contactPhone}</a>
+                    </Button>
+                  ) : null}
+                </div>
+
+                {request.comment ? (
+                  <p className="mt-3 rounded-xl bg-secondary/40 px-4 py-3 text-sm">
+                    {request.comment}
+                  </p>
+                ) : null}
+
+                {request.status === "NEW" ? (
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <Button
+                      size="sm"
+                      onClick={() => setStatus(request, "CONFIRMED", "Заявка подтверждена")}
+                    >
+                      Подтвердить
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setStatus(request, "DECLINED", "Заявка отклонена")}
+                    >
+                      Не можем принять
+                    </Button>
+                  </div>
+                ) : null}
+
+                {request.status === "CONFIRMED" ? (
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setStatus(request, "DONE", "Заявка закрыта")}
+                    >
+                      Клиент пришёл
+                    </Button>
+                  </div>
+                ) : null}
+              </article>
+            );
+          })}
+        </div>
+      )}
+    </DashShell>
+  );
+}
+
 function OperatorRequestsPage() {
   const { allowed } = useRequireAuth(["OPERATOR_ADMIN", "OPERATOR_MANAGER"]);
   const { organization, user } = useAuth();
@@ -108,8 +316,10 @@ function OperatorRequestsPage() {
   }, [state.tripRequests, state.requestOffers, organization]);
 
   if (!allowed || !organization) return null;
+
+  // «Бизнес без туров»: заявки клиентов на запись, а не туровые заявки туристов.
   if (isBusinessOnlyServices(organization.services)) {
-    return <Navigate to="/operator/services" />;
+    return <BusinessRequestsPage />;
   }
 
   return (

@@ -193,6 +193,7 @@ async function loadUserData(userId: string): Promise<UserDataResult> {
     offerRes,
     msgRes,
     reviewRes,
+    svcReqRes,
   ] = await Promise.all([
     sb.from("favorites").select("*").eq("user_id", userId),
     sb.from("comparisons").select("*").eq("user_id", userId).maybeSingle(),
@@ -205,6 +206,8 @@ async function loadUserData(userId: string): Promise<UserDataResult> {
     sb.from("request_offers").select("*").order("created_at", { ascending: false }).limit(500),
     sb.from("request_messages").select("*").order("created_at", { ascending: true }).limit(1000),
     sb.from("company_reviews").select("*").order("created_at", { ascending: false }).limit(500),
+    // RLS отдаёт свои заявки клиенту и заявки компании — её сотрудникам.
+    sb.from("service_requests").select("*").order("created_at", { ascending: false }).limit(500),
   ]);
 
   const profileRow = profileRes.data as Row | null;
@@ -449,6 +452,30 @@ async function loadUserData(userId: string): Promise<UserDataResult> {
             ...(r["reply_at"] ? { replyAt: str(r["reply_at"]) } : {}),
             ...(r["reply_by_user_id"] ? { replyByUserId: str(r["reply_by_user_id"]) } : {}),
             ...(r["reply_by_name"] ? { replyByName: str(r["reply_by_name"]) } : {}),
+          })),
+        };
+      }
+
+      if (svcReqRes.data) {
+        const rows = svcReqRes.data as Row[];
+        next = {
+          ...next,
+          serviceRequests: rows.map((r) => ({
+            id: str(r["id"]),
+            organizationId: str(r["organization_id"]),
+            ...(r["user_id"] ? { userId: str(r["user_id"]) } : {}),
+            ...(r["listing_id"] ? { listingId: str(r["listing_id"]) } : {}),
+            listingName: str(r["listing_name"]),
+            contactName: str(r["contact_name"]),
+            contactPhone: str(r["contact_phone"]),
+            date: str(r["date"]),
+            time: str(r["time"]),
+            people: num(r["people"], 1),
+            comment: str(r["comment"]),
+            status: str(r["status"], "NEW") as PlatformState["serviceRequests"][number]["status"],
+            replyComment: str(r["reply_comment"]),
+            createdAt: str(r["created_at"]),
+            updatedAt: str(r["updated_at"], str(r["created_at"])),
           })),
         };
       }

@@ -3,6 +3,7 @@ import { Building2, MapPin, Search } from "lucide-react";
 import { useMemo, useState, useSyncExternalStore } from "react";
 
 import { SiteLayout } from "@/components/site/site-layout";
+import { ServiceRequestDialog } from "@/components/company/service-request-dialog";
 import { Button } from "@/components/ui/button";
 import { DateRangePicker } from "@/components/ui/date-picker";
 import { resortsByDestination } from "@/data/demo";
@@ -80,6 +81,14 @@ function CarsPage() {
   const navigate = useNavigate({ from: "/cars" });
   const update = (patch: Search) => void navigate({ search: { ...params, ...patch } as never });
   const [geoHint, setGeoHint] = useState("");
+  // Заявка клиента в компанию-владельца объявления (запись/бронь).
+  const [requestTarget, setRequestTarget] = useState<{
+    organizationId: string;
+    organizationName: string;
+    listingId: string;
+    listingName: string;
+  } | null>(null);
+
   const [age, setAge] = useState(params.age ?? "25");
   const published = usePublishedCars();
   const state = usePlatformStore();
@@ -343,14 +352,30 @@ function CarsPage() {
                     ) : (
                       <p className="mt-4 text-sm text-foreground/60">Цена по запросу</p>
                     )}
-                    <Button className="mt-4" asChild>
-                      <Link
-                        to="/request"
-                        search={requestFor(`Аренда ${item.name} в ${item.city}, без водителя`)}
+                    {item.organizationId ? (
+                      <Button
+                        className="mt-4"
+                        onClick={() =>
+                          setRequestTarget({
+                            organizationId: item.organizationId!,
+                            organizationName: item.companyName ?? "Компания",
+                            listingId: item.id,
+                            listingName: item.name,
+                          })
+                        }
                       >
                         Запросить авто
-                      </Link>
-                    </Button>
+                      </Button>
+                    ) : (
+                      <Button className="mt-4" asChild>
+                        <Link
+                          to="/request"
+                          search={requestFor(`Аренда ${item.name} в ${item.city}, без водителя`)}
+                        >
+                          Запросить авто
+                        </Link>
+                      </Button>
+                    )}
                   </article>
                 );
               })}
@@ -395,6 +420,19 @@ function CarsPage() {
           )}
         </div>
       </div>
+
+      {requestTarget ? (
+        <ServiceRequestDialog
+          open
+          onOpenChange={(open) => {
+            if (!open) setRequestTarget(null);
+          }}
+          organizationId={requestTarget.organizationId}
+          organizationName={requestTarget.organizationName}
+          listingId={requestTarget.listingId}
+          listingName={requestTarget.listingName}
+        />
+      ) : null}
     </SiteLayout>
   );
 }
