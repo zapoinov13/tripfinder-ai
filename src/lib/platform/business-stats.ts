@@ -130,3 +130,52 @@ export function listingPerformance(organizationId: string, days: number) {
     })
     .sort((a, b) => b.earned - a.earned || b.requests - a.requests);
 }
+
+export type PartnerActivity = {
+  /** Записи клиентов за период. */
+  requests: number;
+  /** Состоявшиеся записи. */
+  won: number;
+  /** Доход по ценам услуг. */
+  earned: number;
+  /** Просмотры публичной страницы. */
+  views: number;
+  /** Последняя активность: запись или просмотр страницы. */
+  lastActivityAt: string | null;
+  /** Ни записей, ни просмотров за период. */
+  asleep: boolean;
+};
+
+/**
+ * Срез активности партнёра для админки: живой он или спит.
+ * Считаем по записям клиентов и просмотрам страницы компании.
+ */
+export function partnerActivity(organizationId: string, days = 30): PartnerActivity {
+  const state = getState();
+  const since = Date.now() - days * 24 * 60 * 60 * 1000;
+
+  const requests = state.serviceRequests.filter(
+    (r) => r.organizationId === organizationId && new Date(r.createdAt).getTime() >= since,
+  );
+  const wonRequests = requests.filter((r) => WON.has(r.status));
+  const earned = wonRequests.reduce((sum, r) => sum + requestValue(organizationId, r), 0);
+
+  const views = state.analyticsEvents.filter(
+    (e) =>
+      e.type === "COMPANY_PAGE_VIEW" &&
+      e.payload?.["companyId"] === organizationId &&
+      new Date(e.createdAt).getTime() >= since,
+  );
+
+  const stamps = [...requests.map((r) => r.createdAt), ...views.map((e) => e.createdAt)].sort();
+  const lastActivityAt = stamps.length > 0 ? stamps[stamps.length - 1]! : null;
+
+  return {
+    requests: requests.length,
+    won: wonRequests.length,
+    earned,
+    views: views.length,
+    lastActivityAt,
+    asleep: requests.length === 0 && views.length === 0,
+  };
+}

@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import {
   ConfirmAction,
   EmptyState,
+  KpiLinkCard,
   StatusBadge,
   TabPills,
   orgName,
@@ -39,7 +40,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { formatNumber } from "@/data/demo";
+import { formatNumber, formatPrice } from "@/data/demo";
+import { cn } from "@/lib/utils";
 import { appendAudit, pushNotification } from "@/lib/platform/catalog";
 import { useAuth, useRequireAuth } from "@/lib/platform/auth";
 import {
@@ -47,6 +49,7 @@ import {
   companyCategories,
   type CompanyCategoryId,
 } from "@/lib/platform/company-categories";
+import { partnerActivity, recordsWord } from "@/lib/platform/business-stats";
 import { usePlatformStore } from "@/lib/platform/hooks";
 import { setState } from "@/lib/platform/store";
 import { verificationDocumentLabel } from "@/lib/platform/verification-documents";
@@ -68,6 +71,7 @@ function AdminOperatorsPage() {
   const [view, setView] = useState("companies");
   const [tab, setTab] = useState("all");
   const [category, setCategory] = useState("all");
+  const [life, setLife] = useState("all");
   const [docsOrg, setDocsOrg] = useState<Organization | null>(null);
   const counts = useMemo(() => {
     const all = state.organizations.length;
@@ -78,6 +82,14 @@ function AdminOperatorsPage() {
     return { all, pending, approved, rejected, suspended };
   }, [state.organizations]);
 
+  // Активность за 30 дней: кто реально работает, а кто подключился и заглох.
+  const activityById = new Map(
+    state.organizations.map((o) => [o.id, partnerActivity(o.id, 30)] as const),
+  );
+  const liveCount = [...activityById.values()].filter((a) => !a.asleep).length;
+  const totalRequests = [...activityById.values()].reduce((sum, a) => sum + a.requests, 0);
+  const totalEarned = [...activityById.values()].reduce((sum, a) => sum + a.earned, 0);
+
   if (!allowed || !user) return null;
 
   const orgs = state.organizations.filter((o) => {
@@ -85,6 +97,8 @@ function AdminOperatorsPage() {
       const cats = categoriesOfServices(o.services ?? []);
       if (!cats.has(category as CompanyCategoryId)) return false;
     }
+    if (life === "live" && activityById.get(o.id)?.asleep !== false) return false;
+    if (life === "asleep" && activityById.get(o.id)?.asleep !== true) return false;
     if (tab === "all") return true;
     if (tab === "pending") return o.status === "PENDING_APPROVAL";
     if (tab === "approved") return o.status === "APPROVED";
@@ -134,6 +148,30 @@ function AdminOperatorsPage() {
       title="Партнёры"
       subtitle="Все подключённые бизнесы: туры, экскурсии, жильё, авто, спорт. Одобрение, документы и тарифы."
     >
+      <div className="mb-4 grid grid-cols-2 gap-3 xl:grid-cols-4">
+        <KpiLinkCard
+          label="Партнёров"
+          value={formatNumber(counts.all)}
+          hint={`${formatNumber(counts.pending)} ждут одобрения`}
+          tone={counts.pending > 0 ? "warning" : "default"}
+        />
+        <KpiLinkCard
+          label="Работают"
+          value={formatNumber(liveCount)}
+          hint={`${formatNumber(counts.all - liveCount)} без активности 30 дней`}
+        />
+        <KpiLinkCard
+          label="Записей за 30 дней"
+          value={formatNumber(totalRequests)}
+          hint="клиенты записались к партнёрам"
+        />
+        <KpiLinkCard
+          label="Оборот партнёров"
+          value={formatPrice(totalEarned)}
+          hint="по ценам услуг, оплата мимо платформы"
+        />
+      </div>
+
       <div className="mb-4">
         <TabPills
           value={view}
@@ -267,6 +305,25 @@ function AdminOperatorsPage() {
                 { value: "suspended", label: "Приостановлены", count: counts.suspended },
               ]}
             />
+            <div className="flex flex-wrap gap-1.5">
+              {[
+                { value: "all", label: "Все" },
+                { value: "live", label: `Работают (${liveCount})` },
+                { value: "asleep", label: `Спят (${counts.all - liveCount})` },
+              ].map((f) => (
+                <button
+                  key={f.value}
+                  type="button"
+                  onClick={() => setLife(f.value)}
+                  className={cn(
+                    "rounded-full px-3 py-1.5 text-xs font-semibold",
+                    life === f.value ? "bg-secondary text-foreground" : "text-muted-foreground",
+                  )}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
             <Select value={category} onValueChange={setCategory}>
               <SelectTrigger className="w-52">
                 <SelectValue />
@@ -294,6 +351,7 @@ function AdminOperatorsPage() {
                     <TableHead>Статус</TableHead>
                     <TableHead>Документы</TableHead>
                     <TableHead>Тариф</TableHead>
+                    <TableHead>Активность 30 дней</TableHead>
                     <TableHead>Туры / брони</TableHead>
                     <TableHead>Действия</TableHead>
                   </TableRow>
@@ -385,6 +443,29 @@ function AdminOperatorsPage() {
                           <div className="mt-1 text-xs text-muted-foreground">
                             лимит {formatNumber(plan?.tourLimit ?? 0)} туров
                           </div>
+                        </TableCell>
+                        <TableCell className="whitespace-nowrap text-sm">
+                          {(() => {
+                            const a = activityById.get(o.id);
+                            if (!a || a.asleep) {
+                              return (
+                                <span className="rounded-full bg-secondary px-2.5 py-0.5 text-[11px] font-semibold text-muted-foreground">
+                                  спит
+                                </span>
+                              );
+                            }
+                            return (
+                              <>
+                                <span className="font-medium">
+                                  {formatNumber(a.requests)} {recordsWord(a.requests)}
+                                </span>
+                                <span className="block text-xs text-muted-foreground">
+                                  {formatNumber(a.views)} просмотров
+                                  {a.earned > 0 ? ` · ${formatPrice(a.earned)}` : ""}
+                                </span>
+                              </>
+                            );
+                          })()}
                         </TableCell>
                         <TableCell className="text-sm">
                           {formatNumber(tourCount)} / {formatNumber(bookingCount)}
