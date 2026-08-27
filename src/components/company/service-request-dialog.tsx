@@ -42,12 +42,16 @@ export function ServiceRequestDialog({
   organizationName,
   listingId,
   listingName,
+  initialDate,
+  initialTime,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   organizationId: string;
   organizationName: string;
   listingId?: string;
+  initialDate?: string;
+  initialTime?: string;
   listingName?: string;
 }) {
   const { user } = useAuth();
@@ -62,9 +66,9 @@ export function ServiceRequestDialog({
   );
   const [name, setName] = useState(user?.name ?? "");
   const [phone, setPhone] = useState("");
-  const [date, setDate] = useState(todayIso());
+  const [date, setDate] = useState(initialDate ?? todayIso());
   const effectiveDate = bySlots ? (openDates.includes(date) ? date : (openDates[0] ?? "")) : date;
-  const [time, setTime] = useState("");
+  const [time, setTime] = useState(initialTime ?? "");
   const [people, setPeople] = useState(1);
   const [comment, setComment] = useState("");
   const [sending, setSending] = useState(false);

@@ -24,7 +24,14 @@ import { formatPrice, nightsLabel, tourCover } from "@/data/demo";
 import { youtubeEmbed } from "@/lib/image-file";
 import { useAuth } from "@/lib/platform/auth";
 import { getHotel, trackEvent } from "@/lib/platform/catalog";
-import { openState, scheduleActive, scheduleSummary } from "@/lib/platform/booking-slots";
+import {
+  availableSlots,
+  bookableDates,
+  isoDate,
+  openState,
+  scheduleActive,
+  scheduleSummary,
+} from "@/lib/platform/booking-slots";
 import {
   carClassLabel,
   sportKindLabel,
@@ -70,6 +77,7 @@ function CompanyPage() {
   // Просмотр страницы: один раз за визит, свои сотрудники не считаются.
   const [requestOpen, setRequestOpen] = useState(false);
   const [requestListing, setRequestListing] = useState<VerticalListing | null>(null);
+  const [requestSlot, setRequestSlot] = useState<{ date: string; time: string } | null>(null);
   const [reviewOpen, setReviewOpen] = useState(false);
   const listings = useSyncExternalStore(
     subscribeVerticalListings,
@@ -97,6 +105,7 @@ function CompanyPage() {
     );
   }
 
+  const todayLocal = isoDate(new Date());
   const nowOpen = openState(company.bookingSchedule);
   const publishedListings = listings.filter((l) => l.status === "published");
   // «от N ₸» на карточке: минимальная цена среди опубликованных услуг.
@@ -132,6 +141,31 @@ function CompanyPage() {
   const cats = categoriesOfServices(company.services ?? []);
   const isBusiness = cats.has("sport") || cats.has("stays") || cats.has("cars");
   const isOwnStaff = Boolean(user && user.organizationId === company.id);
+  // Ближайшие свободные окна: показываем прямо на странице, чтобы запись
+  // была в один тап, без открытия формы и поиска времени.
+  const nextSlots = (() => {
+    if (!scheduleActive(company) || isOwnStaff) return [];
+    const out: { date: string; time: string }[] = [];
+    for (const date of bookableDates(company).slice(0, 4)) {
+      for (const slot of availableSlots(company, date)) {
+        if (slot.full) continue;
+        out.push({ date, time: slot.time });
+        if (out.length >= 4) return out;
+        break;
+      }
+    }
+    return out;
+  })();
+
+  const openRequest = (
+    listing: VerticalListing | null,
+    slot: { date: string; time: string } | null,
+  ) => {
+    setRequestListing(listing);
+    setRequestSlot(slot);
+    setRequestOpen(true);
+  };
+
   // Отзыв предлагаем тем, кто реально был: выполненная запись или отметка визита.
   const visitedBefore = Boolean(
     user &&
@@ -214,9 +248,9 @@ function CompanyPage() {
                     Открыто до {nowOpen.closesAt}
                   </span>
                 ) : nowOpen.opensLabel ? (
-                  <span className="inline-flex items-center gap-1.5 font-medium text-muted-foreground">
-                    <span className="size-1.5 rounded-full bg-muted-foreground/60" />
-                    Закрыто · откроется {nowOpen.opensLabel}
+                  <span className="inline-flex items-baseline gap-1.5 font-medium text-muted-foreground">
+                    <span className="size-1.5 shrink-0 rounded-full bg-muted-foreground/60" />
+                    Откроется {nowOpen.opensLabel}
                   </span>
                 ) : null}
                 {minPrice > 0 ? (
@@ -307,7 +341,7 @@ function CompanyPage() {
         </div>
       </section>
 
-      <div className="container-page grid gap-6 py-10 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+      <div className="container-page grid gap-6 py-10 pb-44 md:pb-10 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
         <div className="space-y-6">
           {promoActive ? (
             <section className="overflow-hidden rounded-3xl border border-premium/30 bg-[linear-gradient(120deg,oklch(0.97_0.03_85),oklch(0.98_0.015_60))] p-6">
@@ -326,6 +360,44 @@ function CompanyPage() {
                     </p>
                   ) : null}
                 </div>
+              </div>
+            </section>
+          ) : null}
+
+          {nextSlots.length > 0 ? (
+            <section className="surface-card p-6">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <h2 className="font-display text-lg font-semibold">Ближайшее свободное</h2>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Нажмите время — заполните имя и телефон, это всё.
+                  </p>
+                </div>
+              </div>
+              <div className="mt-4 flex flex-wrap gap-2">
+                {nextSlots.map((slot) => {
+                  const day = new Date(`${slot.date}T00:00:00`);
+                  const isToday = slot.date === todayLocal;
+                  return (
+                    <button
+                      key={`${slot.date}-${slot.time}`}
+                      type="button"
+                      onClick={() => openRequest(null, slot)}
+                      className="rounded-2xl border border-border px-4 py-2.5 text-left transition-colors hover:border-primary/50 hover:bg-primary/[0.03]"
+                    >
+                      <span className="block text-[11px] uppercase tracking-wide text-muted-foreground">
+                        {isToday
+                          ? "сегодня"
+                          : day.toLocaleDateString("ru-RU", {
+                              weekday: "short",
+                              day: "numeric",
+                              month: "short",
+                            })}
+                      </span>
+                      <span className="block font-display text-lg font-semibold">{slot.time}</span>
+                    </button>
+                  );
+                })}
               </div>
             </section>
           ) : null}
@@ -376,13 +448,7 @@ function CompanyPage() {
                           {item.price > 0 ? formatPrice(item.price) : "по запросу"}
                         </p>
                         {isOwnStaff ? null : (
-                          <Button
-                            size="sm"
-                            onClick={() => {
-                              setRequestListing(item);
-                              setRequestOpen(true);
-                            }}
-                          >
+                          <Button size="sm" onClick={() => openRequest(item, null)}>
                             Записаться
                           </Button>
                         )}
@@ -635,6 +701,23 @@ function CompanyPage() {
         </aside>
       </div>
 
+      {isBusiness && !isOwnStaff ? (
+        <div className="fixed inset-x-0 bottom-[calc(4.25rem+env(safe-area-inset-bottom))] z-30 border-t border-border bg-background/95 p-3 backdrop-blur md:hidden">
+          <div className="flex items-center gap-3">
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-semibold">{company.name}</p>
+              <p className="truncate text-xs text-muted-foreground">
+                {minPrice > 0 ? `от ${formatPrice(minPrice)}` : "запись без предоплаты"}
+                {nowOpen.open ? ` · открыто до ${nowOpen.closesAt}` : ""}
+              </p>
+            </div>
+            <Button className="shrink-0" onClick={() => openRequest(null, nextSlots[0] ?? null)}>
+              Записаться
+            </Button>
+          </div>
+        </div>
+      ) : null}
+
       {user ? (
         <CompanyReviewDialog
           open={reviewOpen}
@@ -647,17 +730,21 @@ function CompanyPage() {
       ) : null}
 
       <ServiceRequestDialog
-        key={requestListing?.id ?? "company"}
+        key={`${requestListing?.id ?? "company"}:${requestSlot?.date ?? ""}:${requestSlot?.time ?? ""}`}
         open={requestOpen}
         onOpenChange={(open) => {
           setRequestOpen(open);
-          if (!open) setRequestListing(null);
+          if (!open) {
+            setRequestListing(null);
+            setRequestSlot(null);
+          }
         }}
         organizationId={company.id}
         organizationName={company.name}
         {...(requestListing
           ? { listingId: requestListing.id, listingName: requestListing.name }
           : {})}
+        {...(requestSlot ? { initialDate: requestSlot.date, initialTime: requestSlot.time } : {})}
       />
     </SiteLayout>
   );
