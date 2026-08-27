@@ -259,3 +259,43 @@ export function markServiceThreadRead(requestId: string, side: "CLIENT" | "COMPA
     ),
   }));
 }
+
+// ---------------------------------------------------------------------------
+// Срезы для кабинета: что у бизнеса происходит сегодня и дальше.
+// ---------------------------------------------------------------------------
+
+/** Активные записи (новые и подтверждённые) на конкретный день, по времени. */
+export function requestsForDate(organizationId: string, date: string): ServiceRequest[] {
+  return getState()
+    .serviceRequests.filter(
+      (r) =>
+        r.organizationId === organizationId &&
+        r.date === date &&
+        (r.status === "NEW" || r.status === "CONFIRMED"),
+    )
+    .sort((a, b) => a.time.localeCompare(b.time));
+}
+
+/** Ближайшие записи начиная с даты, по дню и времени. */
+export function upcomingServiceRequests(
+  organizationId: string,
+  fromDate: string,
+  limit = 10,
+): ServiceRequest[] {
+  return getState()
+    .serviceRequests.filter(
+      (r) =>
+        r.organizationId === organizationId &&
+        r.date >= fromDate &&
+        (r.status === "NEW" || r.status === "CONFIRMED"),
+    )
+    .sort((a, b) => a.date.localeCompare(b.date) || a.time.localeCompare(b.time))
+    .slice(0, limit);
+}
+
+/** Непрочитанные сообщения клиентов по всем заявкам компании. */
+export function unreadServiceMessagesForOrg(organizationId: string): number {
+  return getState().serviceMessages.filter(
+    (m) => m.organizationId === organizationId && m.authorSide === "CLIENT" && !m.readByCompany,
+  ).length;
+}

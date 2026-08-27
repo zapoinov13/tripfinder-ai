@@ -28,6 +28,7 @@ import { useAutoApiSync } from "@/lib/platform/api-sync";
 import { useAuth, useRequireAuth } from "@/lib/platform/auth";
 import { categoriesOfServices, isBusinessOnlyServices } from "@/lib/platform/company-categories";
 import { usePlatformStore } from "@/lib/platform/hooks";
+import { getCompanyRating } from "@/lib/platform/messages";
 import {
   carClassLabel,
   sportKindLabel,
@@ -35,6 +36,15 @@ import {
   verticalLabel,
   type VerticalId,
 } from "@/lib/platform/service-ingest";
+import { isoDate } from "@/lib/platform/booking-slots";
+import {
+  formatServiceRequestWhen,
+  requestsForDate,
+  serviceRequestStatusClass,
+  serviceRequestStatusLabel,
+  unreadServiceMessagesForOrg,
+  upcomingServiceRequests,
+} from "@/lib/platform/service-requests";
 import { listOrgVertical } from "@/lib/platform/vertical-listings";
 import type { Booking, Organization } from "@/lib/platform/types";
 import { cn } from "@/lib/utils";
@@ -52,6 +62,15 @@ function listingKindLabel(vertical: VerticalId, kind: string) {
   if (vertical === "sport") return sportKindLabel(kind);
   if (vertical === "stay") return stayKindLabel(kind);
   return carClassLabel(kind);
+}
+
+/** «1 запись», «2 записи», «5 записей» */
+function recordsCountLabel(n: number) {
+  const mod10 = n % 10;
+  const mod100 = n % 100;
+  if (mod10 === 1 && mod100 !== 11) return "запись";
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return "записи";
+  return "записей";
 }
 
 /** «1 объявление», «2 объявления», «5 объявлений» */
@@ -229,6 +248,21 @@ function OperatorDashboard() {
   const newServiceRequests = state.serviceRequests.filter(
     (r) => r.organizationId === organization.id && r.status === "NEW",
   ).length;
+  const orgRating = getCompanyRating(organization.id);
+  const activePromo = state.promotions.find(
+    (p) =>
+      p.organizationId === organization.id &&
+      p.status === "ACTIVE" &&
+      new Date(p.expiresAt).getTime() > Date.now(),
+  );
+  const todayDate = isoDate(new Date());
+  const todayBookings = requestsForDate(organization.id, todayDate);
+  const upcoming = upcomingServiceRequests(organization.id, todayDate, 6);
+  const unreadMessages = unreadServiceMessagesForOrg(organization.id);
+  // Ожидаемый доход: цены услуг из объявлений, к которым привязаны записи.
+  const priceOf = (listingId: string | undefined) =>
+    listingId ? (listOrgVertical(organization.id).find((l) => l.id === listingId)?.price ?? 0) : 0;
+  const todayRevenue = todayBookings.reduce((sum, r) => sum + priceOf(r.listingId) * r.people, 0);
   const myListings = listOrgVertical(organization.id);
   const publishedListings = myListings.filter((l) => l.status === "published");
   const pendingSteps = steps.filter((step) => !step.done);
@@ -378,26 +412,37 @@ function OperatorDashboard() {
       {businessOnly ? (
         <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <KpiCard
-            label="Просмотры страницы"
-            value={formatNumber(pageViews)}
-            hint="открыли вашу компанию"
-          />
-          <KpiCard
-            label="Клики по контактам"
-            value={formatNumber(contactClicks)}
-            hint="WhatsApp, звонки, маршрут"
-          />
-          <KpiCard
-            label="Визиты из приложения"
-            value={formatNumber(checkins.length)}
-            hint="нажали «Я здесь»"
-            emphasis={checkins.length > 0}
+            label="Записей сегодня"
+            value={formatNumber(todayBookings.length)}
+            hint={
+              todayBookings.length > 0
+                ? `ожидаемо ${formatPrice(todayRevenue)}`
+                : "на сегодня пусто"
+            }
+            emphasis={todayBookings.length > 0}
           />
           <KpiCard
             label="Новые заявки"
             value={formatNumber(newServiceRequests)}
             hint={newServiceRequests > 0 ? "ждут ответа" : "всё обработано"}
             emphasis={newServiceRequests > 0}
+          />
+          <KpiCard
+            label="Сообщения"
+            value={formatNumber(unreadMessages)}
+            hint={
+              unreadMessages > 0
+                ? unreadMessages % 10 === 1 && unreadMessages % 100 !== 11
+                  ? "непрочитанное"
+                  : "непрочитанных"
+                : "всё прочитано"
+            }
+            emphasis={unreadMessages > 0}
+          />
+          <KpiCard
+            label="Просмотры страницы"
+            value={formatNumber(pageViews)}
+            hint={`${formatNumber(contactClicks)} кликов · ${formatNumber(checkins.length)} визитов`}
           />
         </div>
       ) : (
@@ -474,50 +519,99 @@ function OperatorDashboard() {
           ) : businessOnly ? (
             <section className="surface-card p-6">
               <div className="flex items-center justify-between gap-3">
-                <h2 className="font-display text-lg font-semibold">Жизнь страницы</h2>
+                <div>
+                  <h2 className="font-display text-lg font-semibold">Сегодня</h2>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    {todayBookings.length > 0
+                      ? `${todayBookings.length} ${recordsCountLabel(todayBookings.length)} · ожидаемо ${formatPrice(todayRevenue)}`
+                      : "Записей на сегодня нет"}
+                  </p>
+                </div>
                 <Button variant="outline" size="sm" asChild>
-                  <Link to="/operator/analytics">Вся статистика</Link>
+                  <Link to="/operator/requests">Все заявки</Link>
                 </Button>
               </div>
-              {checkins.length > 0 || pageViews > 0 ? (
-                <div className="mt-5 space-y-2">
-                  {checkins.slice(0, 8).map((e) => (
-                    <div
-                      key={e.id}
-                      className="flex items-center justify-between gap-3 rounded-xl border border-border px-4 py-3 text-sm"
+
+              {todayBookings.length > 0 ? (
+                <ul className="mt-5 space-y-2">
+                  {todayBookings.map((r) => (
+                    <li
+                      key={r.id}
+                      className="flex flex-wrap items-center gap-3 rounded-xl border border-border px-4 py-3"
                     >
-                      <span className="font-medium">
-                        {String(e.payload?.["userName"] ?? "Гость")}
+                      <span className="font-display text-lg font-semibold tabular-nums">
+                        {r.time || "—"}
                       </span>
-                      <span className="text-xs text-muted-foreground">
-                        отметился «Я здесь» ·{" "}
-                        {new Date(e.createdAt).toLocaleDateString("ru-RU", {
-                          day: "numeric",
-                          month: "short",
-                        })}
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-sm font-medium">
+                          {r.contactName || "Клиент"}
+                          {r.people > 1 ? ` · ${r.people} чел.` : ""}
+                        </span>
+                        {r.listingName ? (
+                          <span className="block truncate text-xs text-muted-foreground">
+                            {r.listingName}
+                          </span>
+                        ) : null}
                       </span>
-                    </div>
+                      <span
+                        className={cn(
+                          "rounded-full px-2.5 py-0.5 text-[11px] font-semibold",
+                          serviceRequestStatusClass[r.status],
+                        )}
+                      >
+                        {serviceRequestStatusLabel[r.status]}
+                      </span>
+                      {r.contactPhone ? (
+                        <a
+                          href={`tel:${r.contactPhone}`}
+                          className="text-sm font-medium text-primary hover:underline"
+                        >
+                          {r.contactPhone}
+                        </a>
+                      ) : null}
+                    </li>
                   ))}
-                  {checkins.length === 0 ? (
-                    <p className="rounded-xl border border-dashed border-border px-4 py-6 text-center text-sm text-muted-foreground">
-                      Страницу уже смотрят ({formatNumber(pageViews)}), визитов из приложения пока
-                      нет. Повесьте QR на входе — клиенты будут отмечаться «Я здесь».
-                    </p>
-                  ) : null}
-                </div>
+                </ul>
               ) : (
-                <div className="mt-5 flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-secondary/20 px-6 py-12 text-center">
-                  <TrendingUp className="size-8 text-muted-foreground/70" />
-                  <p className="mt-3 font-medium">Пока нет просмотров</p>
-                  <p className="mt-1 max-w-sm text-sm text-muted-foreground">
-                    Опубликуйте объявления и делитесь страницей компании — здесь появятся просмотры,
-                    клики по контактам и визиты клиентов.
+                <div className="mt-5 rounded-2xl border border-dashed border-border bg-secondary/20 px-6 py-8 text-center">
+                  <p className="font-medium">На сегодня записей нет</p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    {upcoming.length > 0
+                      ? "Ближайшие записи — ниже."
+                      : "Клиенты записываются со страницы компании и из объявлений."}
                   </p>
-                  <Button size="sm" className="mt-4" asChild>
-                    <Link to="/operator/services">Добавить объявление</Link>
-                  </Button>
                 </div>
               )}
+
+              {upcoming.filter((r) => r.date !== todayDate).length > 0 ? (
+                <div className="mt-5 border-t border-border pt-4">
+                  <p className="text-sm font-medium">Дальше</p>
+                  <ul className="mt-2 space-y-1.5">
+                    {upcoming
+                      .filter((r) => r.date !== todayDate)
+                      .slice(0, 4)
+                      .map((r) => (
+                        <li
+                          key={r.id}
+                          className="flex flex-wrap items-center justify-between gap-2 text-sm"
+                        >
+                          <span className="text-muted-foreground">
+                            {formatServiceRequestWhen(r.date, r.time)}
+                          </span>
+                          <span className="font-medium">
+                            {r.contactName || "Клиент"}
+                            {r.listingName ? (
+                              <span className="font-normal text-muted-foreground">
+                                {" "}
+                                · {r.listingName}
+                              </span>
+                            ) : null}
+                          </span>
+                        </li>
+                      ))}
+                  </ul>
+                </div>
+              ) : null}
             </section>
           ) : (
             <section className="surface-card p-6">
@@ -574,6 +668,29 @@ function OperatorDashboard() {
                 </dd>
               </div>
             )}
+            <div className="flex items-start justify-between gap-3">
+              <dt className="text-muted-foreground">Рейтинг</dt>
+              <dd className="font-medium">
+                {orgRating
+                  ? `${orgRating.average.toFixed(1)} ★ (${orgRating.count})`
+                  : "нет отзывов"}
+              </dd>
+            </div>
+            <div className="flex items-start justify-between gap-3">
+              <dt className="text-muted-foreground">Продвижение</dt>
+              <dd className="text-right font-medium">
+                {activePromo ? (
+                  <>
+                    <span className="text-success">идёт</span>
+                    <span className="block text-xs font-normal text-muted-foreground">
+                      до {new Date(activePromo.expiresAt).toLocaleDateString("ru-RU")}
+                    </span>
+                  </>
+                ) : (
+                  "не включено"
+                )}
+              </dd>
+            </div>
             <div className="flex items-start justify-between gap-3">
               <dt className="text-muted-foreground">Баланс продвижения</dt>
               <dd className="font-medium tabular-nums">
