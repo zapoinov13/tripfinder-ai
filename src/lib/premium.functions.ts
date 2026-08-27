@@ -14,7 +14,11 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 export const activatePremiumSubscription = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    if (process.env["PREMIUM_MOCK_CHECKOUT"] !== "true") {
+    // Мок-оплата — только для стендов. На проде флаг не действует даже если
+    // его выставили: иначе любой вошедший получил бы Premium бесплатно.
+    const isProduction =
+      process.env["VERCEL_ENV"] === "production" || process.env["NODE_ENV"] === "production";
+    if (isProduction || process.env["PREMIUM_MOCK_CHECKOUT"] !== "true") {
       throw new Error("Оплата Premium ещё не подключена. Активация возможна только после оплаты.");
     }
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");

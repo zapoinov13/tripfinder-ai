@@ -1,5 +1,5 @@
 import { appendAudit, trackEvent } from "./catalog";
-import { mockPaymentProvider } from "./adapters";
+import { purchasePromotion as purchasePromotionOnServer } from "./promotion.functions";
 import { getState, nowIso, setState, uid } from "./store";
 import type { Organization, PromotionOrder, PromotionType } from "./types";
 
@@ -195,70 +195,42 @@ async function executePromotionPurchase(
   org: Organization,
 ): Promise<PurchasePromotionResult> {
   const days = Math.max(1, Math.min(90, Math.round(input.days)));
-  const price = calcPromotionPrice(input.type, days);
-  if (price <= 0) return { ok: false, reason: "Некорректная цена" };
-
   const payFromBalance = input.payFromBalance !== false;
-  let paidFromBalance = false;
 
-  if (payFromBalance) {
-    if (org.promotionBalance < price) {
-      return {
-        ok: false,
-        reason: `На балансе ${org.promotionBalance.toLocaleString("ru-RU")} ₸, нужно ${price.toLocaleString("ru-RU")} ₸`,
-      };
-    }
-    paidFromBalance = true;
-  } else {
-    await mockPaymentProvider.createPayment({
-      amount: price,
-      currency: "KZT",
-      type: "promotion",
-      metadata: { tourId: input.tourId, type: input.type, days },
-    });
-  }
+  // Кампанию создаёт сервер: цену считает он, баланс списывает он же, а
+  // таблицы promotions и payments закрыты для записи из браузера. Локальный
+  // стор обновляем строкой, которую вернул сервер, чтобы кабинет не ждал
+  // следующей гидрации.
+  const res = await purchasePromotionOnServer({
+    data: {
+      organizationId: input.organizationId,
+      tourOfferId: input.tourId,
+      type: input.type,
+      days,
+      payFromBalance,
+    },
+  });
+  if (!res.ok) return { ok: false, reason: res.reason };
 
-  const started = nowIso();
-  const expires = new Date(Date.now() + days * 86400000).toISOString();
   const promotion: PromotionOrder = {
-    id: uid(),
-    organizationId: input.organizationId,
-    tourOfferId: input.tourId,
-    type: input.type,
-    durationDays: days,
-    price,
+    id: res.promotion.id,
+    organizationId: res.promotion.organizationId,
+    tourOfferId: res.promotion.tourOfferId,
+    type: res.promotion.type as PromotionType,
+    durationDays: res.promotion.durationDays,
+    price: res.promotion.price,
     currency: "KZT",
     status: "ACTIVE",
-    startedAt: started,
-    expiresAt: expires,
+    startedAt: res.promotion.startedAt,
+    expiresAt: res.promotion.expiresAt,
   };
 
   setState((s) => ({
     ...s,
     promotions: [promotion, ...s.promotions],
-    organizations: paidFromBalance
-      ? s.organizations.map((o) =>
-          o.id === input.organizationId
-            ? { ...o, promotionBalance: o.promotionBalance - price }
-            : o,
-        )
-      : s.organizations,
-    payments: [
-      {
-        id: uid(),
-        userId: input.userId,
-        organizationId: input.organizationId,
-        amount: price,
-        currency: "KZT",
-        type: "promotion",
-        provider: paidFromBalance ? "balance" : "mock",
-        providerPaymentId: paidFromBalance ? `balance-${promotion.id}` : uid(),
-        status: "paid",
-        createdAt: nowIso(),
-        metadata: { tourId: input.tourId, type: input.type, days, promotionId: promotion.id },
-      },
-      ...s.payments,
-    ],
+    organizations: s.organizations.map((o) =>
+      o.id === input.organizationId ? { ...o, promotionBalance: res.balance } : o,
+    ),
   }));
 
   syncTourPromotionTags(input.tourId);
@@ -268,15 +240,15 @@ async function executePromotionPurchase(
     action: "promotion_purchased",
     entityType: "promotion",
     entityId: promotion.id,
-    meta: { type: input.type, days, paidFromBalance },
+    meta: { type: input.type, days, paidFromBalance: payFromBalance },
   });
   trackEvent("PROMOTION_PURCHASED", input.userId, {
     type: input.type,
     tourId: input.tourId,
-    paidFromBalance,
+    paidFromBalance: payFromBalance,
   });
 
-  return { ok: true, promotion, paidFromBalance };
+  return { ok: true, promotion, paidFromBalance: payFromBalance };
 }
 
 /**

@@ -32,6 +32,13 @@ let started = false;
 /** Пишем в БД только то, что принадлежит текущему пользователю (RLS всё равно отклонит чужое). */
 const isOwn = (userId: string | undefined) => Boolean(userId) && userId === authedUserId;
 
+/** Часть таблиц пишет только платформа: проверяем роль текущего входа. */
+function isPlatformAdmin(state: PlatformState): boolean {
+  if (!authedUserId) return false;
+  const role = state.users.find((u) => u.id === authedUserId)?.role;
+  return role === "PLATFORM_ADMIN" || role === "PLATFORM_MANAGER";
+}
+
 function report(table: string, error: { message: string } | null) {
   if (error) console.warn(`[sync] ${table}: ${error.message}`);
 }
@@ -402,14 +409,10 @@ function collectOps(prev: PlatformState, next: PlatformState): Op[] {
     });
   }
 
-  const payments = diff(prev.payments, next.payments, () => true);
-  for (const p of payments.added) {
-    if (!isUuid(p.id) || !isOwn(p.userId)) continue;
-    ops.push(async () => {
-      const { error } = await sb.from("payments").insert(paymentRow(p));
-      report("payments.insert", error);
-    });
-  }
+  // Платежи из браузера не отправляем: записи о деньгах создаёт сервер
+  // (покупка продвижения, активация Premium). Таблица закрыта на запись,
+  // и локальные строки — только для мгновенного отображения до гидрации.
+  void paymentRow;
 
   const subs = diff(prev.subscriptions, next.subscriptions, () => true);
   for (const s of subs.added) {
@@ -651,13 +654,18 @@ function collectOps(prev: PlatformState, next: PlatformState): Op[] {
     });
   }
 
-  const promos = diff(prev.promotions, next.promotions, samePromotion);
-  for (const p of [...promos.added, ...promos.updated]) {
-    if (!isUuid(p.id) || !isUuid(p.organizationId)) continue;
-    ops.push(async () => {
-      const { error } = await sb.from("promotions").upsert(promotionRow(p));
-      report("promotions.upsert", error);
-    });
+  // Кампании продвижения покупает сервер: иначе партнёр вписывал бы себе
+  // продвижение напрямую, минуя оплату. Исключение — админ платформы: он
+  // включает продвижение вручную из своей панели, и база это разрешает.
+  if (isPlatformAdmin(next)) {
+    const promos = diff(prev.promotions, next.promotions, samePromotion);
+    for (const p of [...promos.added, ...promos.updated]) {
+      if (!isUuid(p.id) || !isUuid(p.organizationId)) continue;
+      ops.push(async () => {
+        const { error } = await sb.from("promotions").upsert(promotionRow(p));
+        report("promotions.upsert", error);
+      });
+    }
   }
 
   const requests = diff(prev.tripRequests, next.tripRequests, sameTripRequest);
