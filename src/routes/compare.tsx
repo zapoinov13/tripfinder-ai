@@ -15,6 +15,7 @@ import {
 } from "@/data/demo";
 import { useTourState } from "@/lib/tour-state";
 import { aiRecommendationService } from "@/lib/platform/ai-services";
+import { tourSeller } from "@/lib/platform/tour-seller";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/compare")({
@@ -46,7 +47,7 @@ function ComparePage() {
 
   const fields: Array<[string, (t: Tour) => string]> = [
     ["Отель", (t) => getHotel(t.hotelId).name],
-    ["Поставщик", (t) => getOperator(t.operatorId).name],
+    ["Поставщик", (t) => tourSeller(t).name],
     ["Цена", (t) => formatPrice(t.price)],
     ["Рейтинг", (t) => `${getHotel(t.hotelId).rating.toFixed(1)} / 10`],
     ["Звёзды", (t) => `${getHotel(t.hotelId).stars}★`],

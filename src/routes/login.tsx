@@ -142,7 +142,11 @@ function LoginPage() {
       </details>
       <p className="mt-5 text-center text-sm text-muted-foreground">
         Нет аккаунта?{" "}
-        <Link to="/registration" className="font-medium text-primary">
+        <Link
+          to="/registration"
+          search={next ? ({ next } as never) : ({} as never)}
+          className="font-medium text-primary"
+        >
           Зарегистрироваться
         </Link>
       </p>

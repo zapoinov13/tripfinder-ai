@@ -312,7 +312,9 @@ function SportPage() {
                 className="mt-4 bg-primary-foreground text-ink hover:bg-primary-foreground/90"
                 asChild
               >
-                <Link to="/company-signup">Добавить компанию</Link>
+                <Link to="/company-signup" search={{ category: "sport" } as never}>
+                  Добавить компанию
+                </Link>
               </Button>
             </div>
           </div>

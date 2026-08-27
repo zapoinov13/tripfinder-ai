@@ -55,6 +55,7 @@ import { aiExplanationService } from "@/lib/platform/ai-services";
 import { createBookingFlow } from "@/lib/platform/booking";
 import { getHotel, trackEvent } from "@/lib/platform/catalog";
 import { useTourState } from "@/lib/tour-state";
+import { tourSeller } from "@/lib/platform/tour-seller";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -150,7 +151,9 @@ function TourPage() {
   const isPremiumDeal = tour.tags.includes("premium") && Boolean(tour.premiumPrice);
   const displayPrice =
     isPremiumDeal && isPremium && tour.premiumPrice ? tour.premiumPrice : tour.price;
-  const trust = supplierTrustScore(operator.id);
+  // Компания-продавец: живая организация платформы, а не строка каталога.
+  const seller = tourSeller(tour);
+  const trust = supplierTrustScore(seller.orgId ?? operator?.id ?? tour.operatorId);
   const whatsappText = encodeURIComponent(
     `Здравствуйте! Хочу уточнить предложение TourGo: ${hotel.name}, ${tour.dateStart}–${tour.dateEnd}, ${formatPrice(displayPrice)}. ID брони: ${confirmedId || tour.id}`,
   );
@@ -255,8 +258,8 @@ function TourPage() {
                 <div>
                   <h2 className="font-display text-xl font-semibold">Поставщик и доверие</h2>
                   <p className="mt-2 text-sm text-muted-foreground">
-                    {operator.name} подключён к TourGo как проверенный поставщик. Мы фиксируем
-                    заявку, проверку цены и историю статусов в кабинете.
+                    {seller.name} подключён к TourGo как проверенный поставщик. Мы фиксируем заявку,
+                    проверку цены и историю статусов в кабинете.
                   </p>
                 </div>
                 <span className="inline-flex items-center gap-2 rounded-full bg-success/10 px-3 py-1.5 text-sm font-semibold text-success">
@@ -264,6 +267,13 @@ function TourPage() {
                   Проверен
                 </span>
               </div>
+              {seller.orgId ? (
+                <Button variant="outline" size="sm" className="mt-4" asChild>
+                  <Link to="/company/$companyId" params={{ companyId: seller.orgId }}>
+                    Страница компании
+                  </Link>
+                </Button>
+              ) : null}
               <div className="mt-5 grid gap-3 sm:grid-cols-3">
                 {[
                   { label: "Рейтинг поставщика", value: `${trust.rating} / 5` },
@@ -477,7 +487,7 @@ function TourPage() {
                     {formatPrice(displayPrice)}
                   </div>
                 )}
-                <div className="mt-1 text-xs text-muted-foreground">от {operator.name}</div>
+                <div className="mt-1 text-xs text-muted-foreground">от {seller.name}</div>
               </div>
 
               <div className="mt-5 grid gap-2 text-xs text-muted-foreground">
@@ -596,9 +606,31 @@ function TourPage() {
             <div className="mt-2 font-display text-xl font-semibold">
               {formatPrice(displayPrice)}
             </div>
-            <div className="text-xs text-muted-foreground">от {operator.name}</div>
+            <div className="text-xs text-muted-foreground">от {seller.name}</div>
           </div>
-          {bookingStep === "form" ? (
+          {bookingStep === "form" && !isAuthenticated ? (
+            /*
+              Гостю честно говорим про вход сразу, а не после заполнения формы:
+              бронь привязывается к аккаунту, чтобы её было видно в «Поездках».
+            */
+            <div className="space-y-3">
+              <p className="text-sm leading-relaxed text-muted-foreground">
+                Бронь сохраняется в вашем аккаунте: там будет статус, номер заявки и переписка с
+                компанией. Войдите или создайте аккаунт — вернём вас на этот тур.
+              </p>
+              <Button asChild className="w-full">
+                <Link to="/login" search={{ next: `/tour/${tour.id}` } as never}>
+                  Войти
+                </Link>
+              </Button>
+              <Button variant="outline" asChild className="w-full">
+                <Link to="/registration" search={{ next: `/tour/${tour.id}` } as never}>
+                  Создать аккаунт за минуту
+                </Link>
+              </Button>
+            </div>
+          ) : null}
+          {bookingStep === "form" && isAuthenticated ? (
             <div className="space-y-3">
               <div className="grid gap-2 rounded-2xl border border-border p-4 text-sm">
                 {[

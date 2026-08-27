@@ -16,6 +16,7 @@ import {
 } from "@/data/demo";
 import { useAuth } from "@/lib/platform/auth";
 import { getHotel } from "@/lib/platform/catalog";
+import { tourSeller } from "@/lib/platform/tour-seller";
 import { useTourState } from "@/lib/tour-state";
 import { cn } from "@/lib/utils";
 
@@ -62,7 +63,9 @@ export function TourCard({
   bestPrice?: boolean;
 }) {
   const hotel = getHotel(tour.hotelId);
-  const operator = getOperator(tour.operatorId);
+  // Название компании берём у организации платформы: каталог поставщиков
+  // для партнёрских туров показывает чужое имя.
+  const seller = tourSeller(tour);
   const cover = tourCover(tour, hotel);
   const shots = tourPhotos(tour, hotel);
   const title = tour.title || hotel.name;
@@ -258,7 +261,7 @@ export function TourCard({
             <div className="truncate text-xs text-muted-foreground">
               {lockedPremium
                 ? "Для подписчиков"
-                : `${guestsLabel(tour.adults, tour.children)} · ${operator.name}`}
+                : `${guestsLabel(tour.adults, tour.children)} · ${seller.name}`}
             </div>
           </div>
           {layout === "row" ? (

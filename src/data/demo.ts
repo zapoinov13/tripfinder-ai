@@ -715,7 +715,12 @@ export const getDestination = (id: string) => destinations.find((d) => d.id === 
 export const getResorts = (id: string) => resortsByDestination[id] ?? [];
 export const getToursByDestination = (id: string) =>
   tours.filter((t) => getHotel(t.hotelId).destinationId === id);
-export const getOperator = (id: string) => operators.find((o) => o.id === id)!;
+/**
+ * Строка каталога поставщиков. Туры живой компании ссылаются на организацию
+ * (operatorOrgId), и здесь совпадения может не быть — отдаём undefined, а не
+ * падаем: название продавца берут из tourSeller().
+ */
+export const getOperator = (id: string) => operators.find((o) => o.id === id);
 /** Prefer platform store tour when available (client), else static seed */
 export const getTour = (id: string) => {
   const live = readPlatformStore()?.tours?.find((t) => t.id === id);

@@ -1,3 +1,4 @@
+import type { CompanyCategoryId } from "@/lib/platform/company-categories";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, Check } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -20,14 +21,32 @@ import {
 } from "@/lib/platform/company";
 import { cn } from "@/lib/utils";
 
+/** Категории, с витрин которых можно прийти на регистрацию. */
+const CATEGORY_PARAM: Record<string, CompanyCategoryId> = {
+  tours: "tours",
+  excursions: "excursions",
+  stays: "stays",
+  cars: "cars",
+  sport: "sport",
+  transfers: "transfers",
+  help: "help",
+};
+
 export const Route = createFileRoute("/company-signup")({
+  // ?category=sport с витрины «Спорт»: направление уже выбрано, партнёру
+  // не нужно искать его заново на третьем шаге.
+  validateSearch: (search: Record<string, unknown>): { category?: CompanyCategoryId } => {
+    const raw = typeof search["category"] === "string" ? search["category"] : "";
+    const id = CATEGORY_PARAM[raw];
+    return id ? { category: id } : {};
+  },
   head: () => ({
     meta: [
-      { title: "Добавить турфирму: получать заявки от туристов · TourGo" },
+      { title: "Подключить компанию: заявки и записи клиентов · TourGo" },
       {
         name: "description",
         content:
-          "Откройте кабинет: туристы оставляют заявки, вы отвечаете ценой. Клиент и оплата - ваши.",
+          "Откройте кабинет: клиенты оставляют заявки и записываются, вы отвечаете. Оплата — напрямую вам.",
       },
     ],
   }),
@@ -90,7 +109,9 @@ function CompanySignupPage() {
     website: "",
     about: "",
   });
-  const [categories, setCategories] = useState<string[]>([]);
+  const fromVitrine = Route.useSearch().category;
+  const vitrineLabel = companyCategories.find((c) => c.id === fromVitrine)?.label.toLowerCase();
+  const [categories, setCategories] = useState<string[]>(fromVitrine ? [fromVitrine] : []);
   const [services, setServices] = useState<string[]>([]);
   const [countries, setCountries] = useState<string[]>(["ОАЭ"]);
   const [clientCountries, setClientCountries] = useState<string[]>(["Казахстан"]);
@@ -285,13 +306,15 @@ function CompanySignupPage() {
     <SiteLayout>
       <div className="border-b border-border/70 bg-secondary/25">
         <div className="container-page py-6 md:py-8">
-          <p className="text-sm font-medium text-primary">Кабинет турфирмы на TourGo</p>
+          <p className="text-sm font-medium text-primary">Кабинет компании на TourGo</p>
           <h1 className="mt-1 font-display text-3xl font-semibold md:text-4xl">
-            Подключите компанию и получайте заявки
+            {vitrineLabel
+              ? `Подключите компанию: ${vitrineLabel}`
+              : "Подключите компанию и получайте клиентов"}
           </h1>
           <p className="mt-2 max-w-2xl text-sm text-muted-foreground md:text-base">
-            Несколько коротких шагов. Сразу можно выкладывать туры и отвечать туристам. Знак
-            проверки появится после документов.
+            Несколько коротких шагов. Сразу можно публиковать услуги и отвечать клиентам — туры,
+            жильё, авто, спорт. Знак проверки появится после документов.
           </p>
         </div>
       </div>
