@@ -16,9 +16,10 @@ import { useRequireAuth } from "@/lib/platform/auth";
 import { usePlatformStore } from "@/lib/platform/hooks";
 import type { AuditLog } from "@/lib/platform/types";
 import { cn } from "@/lib/utils";
+import { privatePage } from "@/lib/seo";
 
 export const Route = createFileRoute("/admin/audit-logs")({
-  head: () => ({ meta: [{ title: "Журнал аудита · Админ" }] }),
+  head: () => privatePage("Журнал аудита · Админ"),
   component: AdminAuditLogsPage,
 });
 

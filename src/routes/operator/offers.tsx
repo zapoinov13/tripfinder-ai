@@ -14,9 +14,10 @@ import { usePlatformStore } from "@/lib/platform/hooks";
 import { peopleLabel } from "@/lib/platform/requests";
 import type { RequestOffer, RequestOfferStatus, TripRequest } from "@/lib/platform/types";
 import { cn } from "@/lib/utils";
+import { privatePage } from "@/lib/seo";
 
 export const Route = createFileRoute("/operator/offers")({
-  head: () => ({ meta: [{ title: "Мои предложения · TourGo" }] }),
+  head: () => privatePage("Мои предложения · TourGo"),
   component: OperatorOffersPage,
 });
 

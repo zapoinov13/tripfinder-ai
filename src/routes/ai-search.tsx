@@ -7,6 +7,7 @@ import { SiteLayout } from "@/components/site/site-layout";
 import { Button } from "@/components/ui/button";
 import { routeTravelIntent } from "@/lib/scenario-router";
 import { speechErrorMessage, speechService } from "@/lib/speech-service";
+import { seo } from "@/lib/seo";
 
 const examples = [
   "Хочу в Дубай на неделю",
@@ -24,16 +25,13 @@ export const Route = createFileRoute("/ai-search")({
     const next = routeTravelIntent(q);
     throw redirect({ to: next.to, search: next.search as never });
   },
-  head: () => ({
-    meta: [
-      { title: "Поиск · TourGo" },
-      {
-        name: "description",
-        content:
-          "Опишите поездку своими словами. TourGo откроет нужный раздел и покажет предложения компаний.",
-      },
-    ],
-  }),
+  head: () =>
+    seo({
+      title: "Подбор поездки своими словами",
+      description:
+        "Опишите поездку обычным языком, и TourGo откроет нужный раздел с подходящими предложениями компаний.",
+      path: "/ai-search",
+    }),
   component: AiSearchPage,
 });
 

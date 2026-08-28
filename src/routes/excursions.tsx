@@ -53,6 +53,7 @@ import {
 } from "@/data/excursions";
 import { placeFromQuery } from "@/lib/scenario-router";
 import { cn } from "@/lib/utils";
+import { seo } from "@/lib/seo";
 
 type Search = { destination?: string; city?: string; q?: string };
 
@@ -64,16 +65,13 @@ export const Route = createFileRoute("/excursions")({
     ...(typeof search["city"] === "string" && search["city"] ? { city: search["city"] } : {}),
     ...(typeof search["q"] === "string" && search["q"] ? { q: search["q"] } : {}),
   }),
-  head: () => ({
-    meta: [
-      { title: "Экскурсии и развлечения · TourGo" },
-      {
-        name: "description",
-        content:
-          "Сафари, яхты, обзорные туры, парки и трансферы. Сравните цены компаний в одном месте.",
-      },
-    ],
-  }),
+  head: () =>
+    seo({
+      title: "Экскурсии и развлечения",
+      description:
+        "Сафари, яхты, обзорные туры, парки и трансферы от местных компаний. Цены и отзывы в одном списке.",
+      path: "/excursions",
+    }),
   component: ExcursionsPage,
 });
 

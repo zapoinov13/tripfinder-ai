@@ -11,9 +11,10 @@ import { isBusinessOnlyServices } from "@/lib/platform/company-categories";
 import { usePlatformStore } from "@/lib/platform/hooks";
 import { getCompanyThreads } from "@/lib/platform/messages";
 import { cn } from "@/lib/utils";
+import { privatePage } from "@/lib/seo";
 
 export const Route = createFileRoute("/operator/messages")({
-  head: () => ({ meta: [{ title: "Сообщения · TourGo" }] }),
+  head: () => privatePage("Сообщения · TourGo"),
   component: OperatorMessagesPage,
 });
 

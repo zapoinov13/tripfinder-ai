@@ -1,22 +1,32 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { BadgeCheck, Mail, Scale, ShieldCheck, Users, Sparkles } from "lucide-react";
 
-import { FaqSection } from "@/components/site/faq-section";
+import { FaqSection, faqLd } from "@/components/site/faq-section";
 import { SiteLayout } from "@/components/site/site-layout";
 import { SUPPORT_EMAIL, SUPPORT_MAILTO } from "@/lib/contact";
 import { Button } from "@/components/ui/button";
 import { destinations, heroImage } from "@/data/demo";
 import { travelScenarios } from "@/data/scenarios";
+import { breadcrumbLd, jsonLd, seo } from "@/lib/seo";
 
 export const Route = createFileRoute("/about")({
   head: () => ({
-    meta: [
-      { title: "О TourGo: как сравнить туры и выбрать турфирму" },
-      {
-        name: "description",
-        content:
-          "TourGo: туры, экскурсии, жильё, авто, спорт и помощь в поездке. Сравниваете предложения компаний и платите напрямую.",
-      },
+    ...seo({
+      title: "О TourGo: как сравнить туры и выбрать турфирму",
+      description:
+        "Как устроен TourGo: компании публикуют предложения, вы сравниваете цены и платите напрямую выбранной фирме, без комиссии сверху.",
+      path: "/about",
+      type: "article",
+    }),
+    // Вопросы со страницы — те же, что в разметке: Google покажет их в выдаче.
+    scripts: [
+      jsonLd([
+        faqLd,
+        breadcrumbLd([
+          { name: "Главная", path: "/" },
+          { name: "О сервисе", path: "/about" },
+        ]),
+      ]),
     ],
   }),
   component: AboutPage,

@@ -57,17 +57,30 @@ import { getHotel, trackEvent } from "@/lib/platform/catalog";
 import { useTourState } from "@/lib/tour-state";
 import { tourSeller } from "@/lib/platform/tour-seller";
 import { cn } from "@/lib/utils";
+import { fetchPublicTour } from "@/lib/seo-data";
+import { absoluteUrl, breadcrumbLd, jsonLd, seo } from "@/lib/seo";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 export const Route = createFileRoute("/tour/$tourId")({
-  loader: ({ params }) => {
-    const tour = getTour(params.tourId);
+  /**
+   * На сервере в сторе только демо-каталог, поэтому ссылка на настоящее
+   * предложение открывалась как «не найдено» — и таким же уходила в индекс.
+   * Не нашли локально — берём строку из публичной таблицы предложений.
+   */
+  loader: async ({ params }) => {
+    const tour = getTour(params.tourId) ?? (await fetchPublicTour(params.tourId));
     if (!tour) throw notFound();
-    const hotel = getHotel(tour.hotelId);
+    let hotel;
+    try {
+      hotel = getHotel(tour.hotelId);
+    } catch {
+      throw notFound();
+    }
     return { tour, hotel, operator: getOperator(tour.operatorId) };
   },
-  head: ({ loaderData }) => {
+  head: ({ loaderData, params }) => {
+    const path = `/tour/${params.tourId}`;
     if (!loaderData) {
       return {
         meta: [
@@ -77,14 +90,43 @@ export const Route = createFileRoute("/tour/$tourId")({
       };
     }
     const { hotel, tour } = loaderData;
-    const title = `${hotel.name}, ${hotel.city}: ${offerCategoryLabels[tour.offerCategory ?? "tour"]} за ${formatPrice(tour.price)}`;
-    const description = `${hotel.name} ${hotel.stars}★ · ${tour.meal} · ${nightsLabel(tour.nights)} · рейтинг ${hotel.rating}. Проверяем цену и наличие перед бронью.`;
+    const kind = offerCategoryLabels[tour.offerCategory ?? "tour"];
+    const head = seo({
+      title: `${hotel.name}, ${hotel.city}: ${kind} за ${formatPrice(tour.price)}`,
+      description: `${hotel.name} ${hotel.stars}★ в городе ${hotel.city}${tour.meal ? `, питание ${tour.meal}` : ""}, ${nightsLabel(tour.nights)}, рейтинг ${hotel.rating}. Цену и наличие компания подтверждает перед бронью.`,
+      path,
+      type: "product",
+      ...(hotel.image ? { image: hotel.image } : {}),
+    });
+
     return {
-      meta: [
-        { title },
-        { name: "description", content: description },
-        { property: "og:title", content: title },
-        { property: "og:description", content: description },
+      ...head,
+      scripts: [
+        jsonLd([
+          {
+            "@context": "https://schema.org",
+            "@type": "Product",
+            name: `${kind}: ${hotel.name}, ${hotel.city}`,
+            ...(hotel.image ? { image: hotel.image } : {}),
+            description: `${hotel.stars}★, ${nightsLabel(tour.nights)}${tour.meal ? `, ${tour.meal}` : ""}`,
+            offers: {
+              "@type": "Offer",
+              price: tour.price,
+              // Статичный демо-тур описан типом Tour: у него нет валюты и статуса.
+              priceCurrency: "currency" in tour ? tour.currency : "KZT",
+              url: absoluteUrl(path),
+              availability:
+                !("status" in tour) || tour.status === "active"
+                  ? "https://schema.org/InStock"
+                  : "https://schema.org/OutOfStock",
+            },
+          },
+          breadcrumbLd([
+            { name: "Главная", path: "/" },
+            { name: "Туры", path: "/search" },
+            { name: `${hotel.name}, ${hotel.city}`, path },
+          ]),
+        ]),
       ],
     };
   },

@@ -15,9 +15,10 @@ import { usePlatformStore } from "@/lib/platform/hooks";
 import { nowIso, setState, uid } from "@/lib/platform/store";
 import type { OperatorPlanCode } from "@/lib/platform/types";
 import { cn } from "@/lib/utils";
+import { privatePage } from "@/lib/seo";
 
 export const Route = createFileRoute("/operator/billing")({
-  head: () => ({ meta: [{ title: "Тариф · TourGo" }] }),
+  head: () => privatePage("Тариф · TourGo"),
   component: OperatorBillingPage,
 });
 

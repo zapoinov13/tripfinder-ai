@@ -34,6 +34,7 @@ export const Route = createFileRoute("/request/")({
   }),
   head: () => ({
     meta: [
+      { name: "robots", content: "noindex, nofollow" },
       { title: "Заявка турфирмам: получите несколько цен на одну поездку · TourGo" },
       {
         name: "description",

@@ -48,6 +48,7 @@ import {
   type SortKey,
 } from "@/lib/search";
 import { cn } from "@/lib/utils";
+import { seo } from "@/lib/seo";
 
 export const Route = createFileRoute("/search")({
   validateSearch: validateSearchParams,
@@ -83,21 +84,13 @@ export const Route = createFileRoute("/search")({
       });
     }
   },
-  head: () => ({
-    meta: [
-      { title: "Туры: куда хотите поехать · TourGo" },
-      {
-        name: "description",
-        content:
-          "Сравнивайте туры: страна, даты, отель и цена от проверенных турфирм. Выбираете лучшее. Платите компании напрямую.",
-      },
-      { property: "og:title", content: "Туры: куда хотите поехать · TourGo" },
-      {
-        property: "og:description",
-        content: "Фильтры по стране, датам, питанию и бюджету. Несколько компаний в одной витрине.",
-      },
-    ],
-  }),
+  head: () =>
+    seo({
+      title: "Поиск туров: сравнение цен компаний",
+      description:
+        "Найдите тур по датам, бюджету и отелю. Предложения разных компаний рядом: сравните и напишите напрямую.",
+      path: "/search",
+    }),
   component: SearchPage,
 });
 

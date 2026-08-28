@@ -4,14 +4,17 @@ import { Mail, MessageCircle } from "lucide-react";
 import { SiteLayout } from "@/components/site/site-layout";
 import { Button } from "@/components/ui/button";
 import { SUPPORT_EMAIL, SUPPORT_MAILTO } from "@/lib/contact";
+import { seo } from "@/lib/seo";
 
 export const Route = createFileRoute("/support")({
-  head: () => ({
-    meta: [
-      { title: "Поддержка · TourGo" },
-      { name: "description", content: "Связаться с поддержкой TourGo и получить помощь." },
-    ],
-  }),
+  head: () =>
+    seo({
+      title: "Поддержка и частые вопросы",
+      description:
+        "Ответы на частые вопросы о заявках, оплате и работе с компаниями. Не нашли ответ — напишите в поддержку TourGo.",
+      path: "/support",
+      type: "article",
+    }),
   component: SupportPage,
 });
 

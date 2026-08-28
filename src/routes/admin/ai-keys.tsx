@@ -25,9 +25,10 @@ import type { AiSettingsView } from "@/lib/ai-settings.functions";
 import { useRequireAuth } from "@/lib/platform/auth";
 import { usePlatformStore } from "@/lib/platform/hooks";
 import { cn } from "@/lib/utils";
+import { privatePage } from "@/lib/seo";
 
 export const Route = createFileRoute("/admin/ai-keys")({
-  head: () => ({ meta: [{ title: "AI и ключи API · Админ TourGo" }] }),
+  head: () => privatePage("AI и ключи API · Админ TourGo"),
   component: AdminAiKeysPage,
 });
 

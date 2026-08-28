@@ -11,6 +11,7 @@ import { useAuth } from "@/lib/platform/auth";
 import { DEMO_PASSWORD } from "@/lib/platform/seed";
 import { getState } from "@/lib/platform/store";
 import { migrateAnonymousToUser } from "@/lib/platform/user-data";
+import { privatePage } from "@/lib/seo";
 
 export const Route = createFileRoute("/registration")({
   // Куда вернуть человека после регистрации: он пришёл сюда с карточки тура
@@ -19,15 +20,7 @@ export const Route = createFileRoute("/registration")({
     typeof search["next"] === "string" && /^\/(?![/\\])/.test(search["next"])
       ? { next: search["next"] }
       : {},
-  head: () => ({
-    meta: [
-      { title: "Регистрация · TourGo" },
-      {
-        name: "description",
-        content: "Создайте аккаунт туриста или подключите компанию к TourGo.",
-      },
-    ],
-  }),
+  head: () => privatePage("Регистрация"),
   component: RegistrationPage,
 });
 

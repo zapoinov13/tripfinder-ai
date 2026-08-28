@@ -37,9 +37,10 @@ import {
 } from "@/lib/platform/service-requests";
 import { nowIso, setState } from "@/lib/platform/store";
 import type { BookingStatus, TripRequestStatus } from "@/lib/platform/types";
+import { privatePage } from "@/lib/seo";
 
 export const Route = createFileRoute("/admin/bookings")({
-  head: () => ({ meta: [{ title: "Заявки и брони · Админ" }] }),
+  head: () => privatePage("Заявки и брони · Админ"),
   component: AdminBookingsPage,
 });
 

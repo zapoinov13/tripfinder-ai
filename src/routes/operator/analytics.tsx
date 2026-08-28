@@ -42,9 +42,10 @@ import {
 } from "@/lib/platform/operator-analytics";
 import { usePlatformStore } from "@/lib/platform/hooks";
 import { cn } from "@/lib/utils";
+import { privatePage } from "@/lib/seo";
 
 export const Route = createFileRoute("/operator/analytics")({
-  head: () => ({ meta: [{ title: "Аналитика · TourGo" }] }),
+  head: () => privatePage("Аналитика · TourGo"),
   component: OperatorAnalyticsPage,
 });
 

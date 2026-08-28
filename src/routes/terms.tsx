@@ -2,17 +2,17 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 
 import { SiteLayout } from "@/components/site/site-layout";
 import { Button } from "@/components/ui/button";
+import { seo } from "@/lib/seo";
 
 export const Route = createFileRoute("/terms")({
-  head: () => ({
-    meta: [
-      { title: "Условия использования · TourGo" },
-      {
-        name: "description",
-        content: "Условия использования маркетплейса TourGo для туристов и турфирм.",
-      },
-    ],
-  }),
+  head: () =>
+    seo({
+      title: "Условия использования",
+      description:
+        "Условия использования сервиса TourGo: правила размещения, ответственность сторон и порядок работы с компаниями.",
+      path: "/terms",
+      type: "article",
+    }),
   component: TermsPage,
 });
 

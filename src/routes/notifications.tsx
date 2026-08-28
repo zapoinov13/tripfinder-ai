@@ -7,18 +7,10 @@ import { SUPPORT_EMAIL } from "@/lib/contact";
 import { useAuth } from "@/lib/platform/auth";
 import { usePlatformStore } from "@/lib/platform/hooks";
 import { setState } from "@/lib/platform/store";
+import { privatePage } from "@/lib/seo";
 
 export const Route = createFileRoute("/notifications")({
-  head: () => ({
-    meta: [
-      { title: "Уведомления · TourGo" },
-      {
-        name: "description",
-        content:
-          "Центр уведомлений: бронирования, снижение цены, Premium deals и важные обновления.",
-      },
-    ],
-  }),
+  head: () => privatePage("Уведомления"),
   component: NotificationsPage,
 });
 

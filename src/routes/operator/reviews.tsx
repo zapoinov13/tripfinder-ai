@@ -12,9 +12,10 @@ import { usePlatformStore } from "@/lib/platform/hooks";
 import { getCompanyRating, getCompanyReviews, replyToCompanyReview } from "@/lib/platform/messages";
 import type { CompanyReview } from "@/lib/platform/types";
 import { cn } from "@/lib/utils";
+import { privatePage } from "@/lib/seo";
 
 export const Route = createFileRoute("/operator/reviews")({
-  head: () => ({ meta: [{ title: "Отзывы · TourGo" }] }),
+  head: () => privatePage("Отзывы · TourGo"),
   component: OperatorReviewsPage,
 });
 

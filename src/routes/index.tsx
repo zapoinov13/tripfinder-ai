@@ -12,18 +12,16 @@ import { Button } from "@/components/ui/button";
 import { destinations } from "@/data/demo";
 import { usePlatformStore } from "@/lib/platform/hooks";
 import { b2bNav, travelScenarios } from "@/data/scenarios";
+import { seo } from "@/lib/seo";
 
 export const Route = createFileRoute("/")({
-  head: () => ({
-    meta: [
-      { title: "TourGo: сравните цены на туры, экскурсии, жильё и помощь в поездке" },
-      {
-        name: "description",
-        content:
-          "Сравните предложения компаний и купите выгоднее. Туры, экскурсии, жильё, авто и помощь в одном месте. Платите напрямую выбранной фирме.",
-      },
-    ],
-  }),
+  head: () =>
+    seo({
+      title: "TourGo: туры, экскурсии, жильё и авто от проверенных компаний",
+      description:
+        "Сравните предложения компаний в одном месте и заплатите напрямую выбранной фирме. Туры, экскурсии, жильё, авто, спорт и помощь в поездке.",
+      path: "/",
+    }),
   component: Index,
 });
 

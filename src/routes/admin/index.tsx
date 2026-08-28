@@ -44,9 +44,10 @@ import {
   statsFromLocalStore,
   type AdminOverviewStats,
 } from "@/lib/supabase/admin-stats";
+import { privatePage } from "@/lib/seo";
 
 export const Route = createFileRoute("/admin/")({
-  head: () => ({ meta: [{ title: "Админ · TourGo" }] }),
+  head: () => privatePage("Админ · TourGo"),
   component: AdminDashboard,
 });
 

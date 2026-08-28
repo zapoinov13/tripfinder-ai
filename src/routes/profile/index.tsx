@@ -40,6 +40,7 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/profile/")({
   head: () => ({
     meta: [
+      { name: "robots", content: "noindex, nofollow" },
       { title: "Личный кабинет · TourGo" },
       {
         name: "description",

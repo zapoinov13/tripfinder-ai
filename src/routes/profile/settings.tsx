@@ -30,9 +30,10 @@ import {
 } from "@/lib/native/push";
 import { setState } from "@/lib/platform/store";
 import { TouristAccountGate } from "@/components/site/tourist-account-gate";
+import { privatePage } from "@/lib/seo";
 
 export const Route = createFileRoute("/profile/settings")({
-  head: () => ({ meta: [{ title: "Данные туриста · TourGo" }] }),
+  head: () => privatePage("Данные туриста · TourGo"),
   component: SettingsPage,
 });
 

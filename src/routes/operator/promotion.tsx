@@ -37,9 +37,10 @@ import {
 import { listOrgVertical } from "@/lib/platform/vertical-listings";
 import type { PromotionType } from "@/lib/platform/types";
 import { cn } from "@/lib/utils";
+import { privatePage } from "@/lib/seo";
 
 export const Route = createFileRoute("/operator/promotion")({
-  head: () => ({ meta: [{ title: "Продвижение · TourGo" }] }),
+  head: () => privatePage("Продвижение · TourGo"),
   component: OperatorPromotionPage,
 });
 

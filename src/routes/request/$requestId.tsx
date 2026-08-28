@@ -31,7 +31,7 @@ import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/request/$requestId")({
   head: () => ({
-    meta: [{ title: "Ваша заявка · TourGo" }],
+    meta: [{ name: "robots", content: "noindex, nofollow" }, { title: "Ваша заявка · TourGo" }],
   }),
   component: RequestStatusPage,
 });

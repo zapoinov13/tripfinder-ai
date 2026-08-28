@@ -20,9 +20,10 @@ import { useRequireAuth } from "@/lib/platform/auth";
 import { usePlatformStore } from "@/lib/platform/hooks";
 import type { PlatformState } from "@/lib/platform/types";
 import { cn } from "@/lib/utils";
+import { privatePage } from "@/lib/seo";
 
 export const Route = createFileRoute("/admin/payments")({
-  head: () => ({ meta: [{ title: "Деньги · Админ" }] }),
+  head: () => privatePage("Деньги · Админ"),
   component: AdminPaymentsPage,
 });
 

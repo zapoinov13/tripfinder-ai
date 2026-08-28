@@ -31,9 +31,10 @@ import { appendAudit } from "@/lib/platform/catalog";
 import { useAuth, useRequireAuth } from "@/lib/platform/auth";
 import { usePlatformStore } from "@/lib/platform/hooks";
 import { SUPPLIER_FEED_EXAMPLE } from "@/lib/platform/supplier-feed";
+import { privatePage } from "@/lib/seo";
 
 export const Route = createFileRoute("/admin/api-monitoring")({
-  head: () => ({ meta: [{ title: "Мониторинг API · Админ" }] }),
+  head: () => privatePage("Мониторинг API · Админ"),
   component: AdminApiMonitoringPage,
 });
 

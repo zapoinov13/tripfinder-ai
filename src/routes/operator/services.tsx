@@ -27,6 +27,7 @@ import {
 } from "@/lib/platform/vertical-listings";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { privatePage } from "@/lib/seo";
 
 const tabs: { id: VerticalId; vitrine: "/sport" | "/stays" | "/cars"; service: string }[] = [
   { id: "stay", vitrine: "/stays", service: "Отели" },
@@ -40,7 +41,7 @@ export const Route = createFileRoute("/operator/services")({
       ? { tab: search["tab"] }
       : {}),
   }),
-  head: () => ({ meta: [{ title: "Объявления · TourGo" }] }),
+  head: () => privatePage("Объявления · TourGo"),
   component: OperatorServicesPage,
 });
 

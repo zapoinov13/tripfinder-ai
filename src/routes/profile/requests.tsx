@@ -29,7 +29,7 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/profile/requests")({
   head: () => ({
-    meta: [{ title: "Мои заявки · TourGo" }],
+    meta: [{ name: "robots", content: "noindex, nofollow" }, { title: "Мои заявки · TourGo" }],
   }),
   component: MyRequestsPage,
 });

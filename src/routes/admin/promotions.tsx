@@ -58,9 +58,10 @@ import { setState } from "@/lib/platform/store";
 import type { PromotionType } from "@/lib/platform/types";
 import { pluralRu, recordsWord, requestValue } from "@/lib/platform/business-stats";
 import { cn } from "@/lib/utils";
+import { privatePage } from "@/lib/seo";
 
 export const Route = createFileRoute("/admin/promotions")({
-  head: () => ({ meta: [{ title: "Продвижение · Админ" }] }),
+  head: () => privatePage("Продвижение · Админ"),
   component: AdminPromotionsPage,
 });
 
@@ -521,7 +522,9 @@ function AdminPromotionsPage() {
 
                 <p className="mt-2 text-xs text-muted-foreground">
                   {price > 0 ? `${formatPrice(Math.round(price / 7))} в день` : "бесплатно"} ·{" "}
-                  {sold > 0 ? `${formatNumber(sold)} ${pluralRu(sold, "запуск", "запуска", "запусков")}` : "ещё не покупали"}
+                  {sold > 0
+                    ? `${formatNumber(sold)} ${pluralRu(sold, "запуск", "запуска", "запусков")}`
+                    : "ещё не покупали"}
                 </p>
               </div>
             );

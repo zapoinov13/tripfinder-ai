@@ -16,9 +16,10 @@ import { useAuth, useRequireAuth } from "@/lib/platform/auth";
 import { isBusinessOnlyServices } from "@/lib/platform/company-categories";
 import { setBookingStatus } from "@/lib/platform/booking";
 import { usePlatformStore } from "@/lib/platform/hooks";
+import { privatePage } from "@/lib/seo";
 
 export const Route = createFileRoute("/operator/bookings")({
-  head: () => ({ meta: [{ title: "Бронирования оператора · TourGo" }] }),
+  head: () => privatePage("Бронирования оператора · TourGo"),
   component: OperatorBookingsPage,
 });
 

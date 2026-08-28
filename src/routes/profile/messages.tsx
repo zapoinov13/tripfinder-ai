@@ -12,9 +12,10 @@ import { usePlatformStore } from "@/lib/platform/hooks";
 import { getTouristThreads } from "@/lib/platform/messages";
 import { cn } from "@/lib/utils";
 import { TouristAccountGate } from "@/components/site/tourist-account-gate";
+import { privatePage } from "@/lib/seo";
 
 export const Route = createFileRoute("/profile/messages")({
-  head: () => ({ meta: [{ title: "Сообщения · TourGo" }] }),
+  head: () => privatePage("Сообщения · TourGo"),
   component: TouristMessagesPage,
 });
 

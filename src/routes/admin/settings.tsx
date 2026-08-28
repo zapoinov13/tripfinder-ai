@@ -21,9 +21,10 @@ import { STORE_KEY } from "@/lib/platform/seed";
 import { resetPlatformStore, setState } from "@/lib/platform/store";
 import type { PlatformConfig } from "@/lib/platform/types";
 import { cn } from "@/lib/utils";
+import { privatePage } from "@/lib/seo";
 
 export const Route = createFileRoute("/admin/settings")({
-  head: () => ({ meta: [{ title: "Настройки · Админ" }] }),
+  head: () => privatePage("Настройки · Админ"),
   component: AdminSettingsPage,
 });
 

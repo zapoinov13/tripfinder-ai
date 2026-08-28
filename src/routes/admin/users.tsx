@@ -38,9 +38,10 @@ import type { Role } from "@/lib/platform-contracts";
 import { usePlatformStore } from "@/lib/platform/hooks";
 import { setState } from "@/lib/platform/store";
 import { cn } from "@/lib/utils";
+import { privatePage } from "@/lib/seo";
 
 export const Route = createFileRoute("/admin/users")({
-  head: () => ({ meta: [{ title: "Пользователи · Админ TourGo" }] }),
+  head: () => privatePage("Пользователи · Админ TourGo"),
   component: AdminUsersPage,
 });
 

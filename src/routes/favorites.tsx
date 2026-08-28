@@ -6,19 +6,10 @@ import { TourCard } from "@/components/tours/tour-card";
 import { Button } from "@/components/ui/button";
 import { getTour } from "@/data/demo";
 import { useTourState } from "@/lib/tour-state";
+import { privatePage } from "@/lib/seo";
 
 export const Route = createFileRoute("/favorites")({
-  head: () => ({
-    meta: [
-      { title: "Избранные туры · TourGo" },
-      {
-        name: "description",
-        content: "Сохранённые туры: вернитесь к понравившимся предложениям и сравните их.",
-      },
-      { property: "og:title", content: "Избранные туры · TourGo" },
-      { property: "og:description", content: "Ваши сохранённые туры в одном месте." },
-    ],
-  }),
+  head: () => privatePage("Избранное"),
   component: FavoritesPage,
 });
 

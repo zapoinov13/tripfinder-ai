@@ -43,9 +43,10 @@ import {
   type Period,
 } from "@/lib/platform/marketing-stats";
 import { cn } from "@/lib/utils";
+import { privatePage } from "@/lib/seo";
 
 export const Route = createFileRoute("/admin/analytics")({
-  head: () => ({ meta: [{ title: "Аналитика · Админ" }] }),
+  head: () => privatePage("Аналитика · Админ"),
   component: AdminAnalyticsPage,
 });
 

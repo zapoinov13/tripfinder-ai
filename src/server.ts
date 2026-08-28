@@ -2,6 +2,37 @@ import "./lib/error-capture";
 
 import { consumeLastCapturedError } from "./lib/error-capture";
 import { renderErrorPage } from "./lib/error-page";
+import { buildRobots, buildSitemap } from "./lib/sitemap";
+
+/**
+ * robots.txt и карта сайта отдаются до роутера: это не страницы приложения.
+ *
+ * Домен берём из самого запроса — так оба файла верны и на превью-деплое, и
+ * после переезда на свой домен, без правки конфигов.
+ */
+async function sitemapResponse(request: Request): Promise<Response | null> {
+  const { pathname, origin } = new URL(request.url);
+  if (pathname === "/robots.txt") {
+    return new Response(buildRobots(origin), {
+      headers: {
+        "content-type": "text/plain; charset=utf-8",
+        "cache-control": "public, max-age=3600",
+      },
+    });
+  }
+  if (pathname !== "/sitemap.xml") return null;
+  try {
+    return new Response(await buildSitemap(origin), {
+      headers: {
+        "content-type": "application/xml; charset=utf-8",
+        "cache-control": "public, max-age=3600",
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}
 
 type ServerEntry = {
   fetch: (request: Request, env: unknown, ctx: unknown) => Promise<Response> | Response;
@@ -47,6 +78,9 @@ function isH3SwallowedErrorBody(body: string): boolean {
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     try {
+      const sitemap = await sitemapResponse(request);
+      if (sitemap) return sitemap;
+
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
       return await normalizeCatastrophicSsrResponse(response);

@@ -7,9 +7,10 @@ import { TourCard } from "@/components/tours/tour-card";
 import { Button } from "@/components/ui/button";
 import { getTour } from "@/data/demo";
 import { useTourState } from "@/lib/tour-state";
+import { privatePage } from "@/lib/seo";
 
 export const Route = createFileRoute("/profile/favorites")({
-  head: () => ({ meta: [{ title: "Избранное · TourGo" }] }),
+  head: () => privatePage("Избранное · TourGo"),
   component: FavoritesProfilePage,
 });
 

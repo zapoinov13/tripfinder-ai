@@ -9,23 +9,16 @@ import {
 import { SiteLayout } from "@/components/site/site-layout";
 import { VitrineHeader } from "@/components/site/vitrine-filters";
 import { destinations } from "@/data/demo";
+import { seo } from "@/lib/seo";
 
 export const Route = createFileRoute("/destinations")({
-  head: () => ({
-    meta: [
-      { title: "Направления: куда поехать · TourGo" },
-      {
-        name: "description",
-        content:
-          "Страны и курорты с турами от разных компаний. Откройте направление и сравните цены рядом.",
-      },
-      { property: "og:title", content: "Направления · TourGo" },
-      {
-        property: "og:description",
-        content: "Выберите страну и сравните предложения турфирм.",
-      },
-    ],
-  }),
+  head: () =>
+    seo({
+      title: "Направления: куда поехать",
+      description:
+        "Страны и курорты с турами от разных компаний. Откройте направление и сравните цены предложений рядом.",
+      path: "/destinations",
+    }),
   component: DestinationsPage,
 });
 

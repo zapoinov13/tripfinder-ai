@@ -15,9 +15,10 @@ import type { NotifyPrefs } from "@/lib/platform/types";
 import { usePlatformStore } from "@/lib/platform/hooks";
 import { setState } from "@/lib/platform/store";
 import { getSupabase } from "@/lib/supabase/client";
+import { privatePage } from "@/lib/seo";
 
 export const Route = createFileRoute("/operator/settings")({
-  head: () => ({ meta: [{ title: "Настройки · TourGo" }] }),
+  head: () => privatePage("Настройки · TourGo"),
   component: OperatorSettingsPage,
 });
 

@@ -17,9 +17,10 @@ import { usePlatformStore } from "@/lib/platform/hooks";
 import { partnerActivity } from "@/lib/platform/business-stats";
 import { dispatchPushBroadcast, dispatchPushNotification } from "@/lib/push/dispatch";
 import { cn } from "@/lib/utils";
+import { privatePage } from "@/lib/seo";
 
 export const Route = createFileRoute("/admin/push")({
-  head: () => ({ meta: [{ title: "Push · TourGo Админ" }] }),
+  head: () => privatePage("Push · TourGo Админ"),
   component: AdminPushPage,
 });
 

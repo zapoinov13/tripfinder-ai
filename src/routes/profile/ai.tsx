@@ -6,9 +6,10 @@ import { TouristAccountGate } from "@/components/site/tourist-account-gate";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/platform/auth";
 import { usePlatformStore } from "@/lib/platform/hooks";
+import { privatePage } from "@/lib/seo";
 
 export const Route = createFileRoute("/profile/ai")({
-  head: () => ({ meta: [{ title: "AI-поиски · TourGo" }] }),
+  head: () => privatePage("AI-поиски · TourGo"),
   component: AiHistoryPage,
 });
 

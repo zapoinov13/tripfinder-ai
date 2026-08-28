@@ -40,9 +40,10 @@ import { mealPlainLabel, peopleLabel, declineRequest, sendOffer } from "@/lib/pl
 import type { TripRequest } from "@/lib/platform/types";
 import { isClosedDate } from "@/lib/platform/booking-slots";
 import { cn } from "@/lib/utils";
+import { privatePage } from "@/lib/seo";
 
 export const Route = createFileRoute("/operator/requests")({
-  head: () => ({ meta: [{ title: "Заявки туристов · TourGo" }] }),
+  head: () => privatePage("Заявки туристов · TourGo"),
   component: OperatorRequestsPage,
 });
 

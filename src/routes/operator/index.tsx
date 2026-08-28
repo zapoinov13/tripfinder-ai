@@ -60,7 +60,10 @@ import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/operator/")({
   head: () => ({
-    meta: [{ title: "Кабинет компании · TourGo" }],
+    meta: [
+      { name: "robots", content: "noindex, nofollow" },
+      { title: "Кабинет компании · TourGo" },
+    ],
   }),
   component: OperatorDashboard,
 });

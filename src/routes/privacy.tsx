@@ -3,17 +3,16 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import { SiteLayout } from "@/components/site/site-layout";
 import { Button } from "@/components/ui/button";
 import { SUPPORT_EMAIL, SUPPORT_MAILTO } from "@/lib/contact";
+import { seo } from "@/lib/seo";
 
 export const Route = createFileRoute("/privacy")({
-  head: () => ({
-    meta: [
-      { title: "Политика конфиденциальности · TourGo" },
-      {
-        name: "description",
-        content: "Как TourGo обрабатывает персональные данные туристов и турфирм.",
-      },
-    ],
-  }),
+  head: () =>
+    seo({
+      title: "Политика конфиденциальности",
+      description: "Какие данные собирает TourGo, зачем они нужны и как ими управлять.",
+      path: "/privacy",
+      type: "article",
+    }),
   component: PrivacyPage,
 });
 

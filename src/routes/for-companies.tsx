@@ -23,18 +23,16 @@ import { destinations, formatPrice, heroImage } from "@/data/demo";
 import { travelScenarios } from "@/data/scenarios";
 import { useAuth } from "@/lib/platform/auth";
 import { cn } from "@/lib/utils";
+import { seo } from "@/lib/seo";
 
 export const Route = createFileRoute("/for-companies")({
-  head: () => ({
-    meta: [
-      { title: "Для турфирм: заявки от туристов в кабинет · TourGo" },
-      {
-        name: "description",
-        content:
-          "Туристы оставляют одну заявку с бюджетом. Вы отвечаете ценой в кабинете. Клиент и оплата - ваши, без комиссии с тура.",
-      },
-    ],
-  }),
+  head: () =>
+    seo({
+      title: "Для турфирм: заявки от туристов в кабинет",
+      description:
+        "Туристы оставляют заявку с бюджетом, вы отвечаете ценой в кабинете. Клиент и оплата ваши, без комиссии с тура.",
+      path: "/for-companies",
+    }),
   component: ForCompaniesPage,
 });
 

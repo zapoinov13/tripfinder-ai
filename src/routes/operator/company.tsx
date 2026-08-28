@@ -53,9 +53,10 @@ import { DEMO_PASSWORD } from "@/lib/platform/seed";
 import { nowIso, setState, uid } from "@/lib/platform/store";
 import type { Organization } from "@/lib/platform/types";
 import { cn } from "@/lib/utils";
+import { privatePage } from "@/lib/seo";
 
 export const Route = createFileRoute("/operator/company")({
-  head: () => ({ meta: [{ title: "Страница компании · TourGo" }] }),
+  head: () => privatePage("Страница компании · TourGo"),
   component: OperatorCompanyPage,
 });
 

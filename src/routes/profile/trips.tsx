@@ -13,6 +13,7 @@ import { useTourState } from "@/lib/tour-state";
 export const Route = createFileRoute("/profile/trips")({
   head: () => ({
     meta: [
+      { name: "robots", content: "noindex, nofollow" },
       { title: "Поездки · TourGo" },
       {
         name: "description",

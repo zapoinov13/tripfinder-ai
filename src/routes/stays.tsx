@@ -25,6 +25,7 @@ import {
   type VerticalListing,
 } from "@/lib/platform/vertical-listings";
 import { cn } from "@/lib/utils";
+import { seo } from "@/lib/seo";
 
 type Search = {
   destination?: string;
@@ -63,15 +64,13 @@ export const Route = createFileRoute("/stays")({
     ...(typeof search["checkIn"] === "string" ? { checkIn: search["checkIn"] } : {}),
     ...(typeof search["checkOut"] === "string" ? { checkOut: search["checkOut"] } : {}),
   }),
-  head: () => ({
-    meta: [
-      { title: "Жильё: отели, квартиры и виллы · TourGo" },
-      {
-        name: "description",
-        content: "Отели, апартаменты и виллы от компаний. Сравните цены и запросите предложение.",
-      },
-    ],
-  }),
+  head: () =>
+    seo({
+      title: "Жильё: апартаменты, виллы, отели",
+      description:
+        "Апартаменты, виллы и отели от компаний напрямую. Сравните цены и условия и напишите владельцу без посредников.",
+      path: "/stays",
+    }),
   component: StaysPage,
 });
 

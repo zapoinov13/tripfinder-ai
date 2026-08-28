@@ -19,6 +19,7 @@ import { TourStateProvider } from "@/lib/tour-state";
 import { hydrateVerticalListingsFromSupabase } from "@/lib/platform/vertical-listings";
 import { hydrateCatalogFromSupabase } from "@/lib/supabase/hydrate";
 import { isSupabaseConfigured } from "@/lib/supabase/client";
+import { DEFAULT_OG_IMAGE, jsonLd, seo, SITE_NAME, SITE_URL } from "@/lib/seo";
 
 function NotFoundComponent() {
   return (
@@ -80,16 +81,6 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   );
 }
 
-/**
- * Обложка для ссылок в мессенджерах и соцсетях.
- *
- * Абсолютный адрес нужен Twitter/X; остальные площадки разрешают путь от корня.
- * Домен берём из VITE_SITE_URL — пока его нет, отдаём путь, и превью работает
- * везде, кроме X.
- */
-const siteUrl = (import.meta.env["VITE_SITE_URL"] as string | undefined)?.replace(/\/$/, "") ?? "";
-const ogImage = `${siteUrl}/og-cover.png`;
-
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({
     meta: [
@@ -99,38 +90,50 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
       { name: "apple-mobile-web-app-title", content: "TourGo" },
-      { title: "TourGo: всё для путешествия в одном месте" },
-      {
-        name: "description",
-        content:
-          "Всё для путешествия в одном месте: туры, экскурсии, жильё, авто, спорт и помощь в поездке.",
-      },
-      {
-        property: "og:title",
-        content: "TourGo: всё для путешествия в одном месте",
-      },
-      {
-        property: "og:description",
-        content:
-          "Туры, экскурсии, жильё, авто, спорт и помощь в поездке. Платите напрямую выбранной компании.",
-      },
-      { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      {
-        name: "twitter:title",
-        content: "TourGo: всё для путешествия в одном месте",
-      },
-      {
-        name: "twitter:description",
-        content:
-          "Туры, экскурсии, жильё, авто, спорт и помощь в поездке. Платите напрямую выбранной компании.",
-      },
-      { property: "og:image", content: ogImage },
+      { property: "og:site_name", content: SITE_NAME },
+      { property: "og:locale", content: "ru_RU" },
       { property: "og:image:width", content: "1200" },
       { property: "og:image:height", content: "630" },
-      { property: "og:locale", content: "ru_RU" },
-      { property: "og:site_name", content: "TourGo" },
-      { name: "twitter:image", content: ogImage },
+      // Дальше — значения по умолчанию: каждая страница перекрывает их своими.
+      ...seo({
+        title: "TourGo: туры, экскурсии, жильё и авто от проверенных компаний",
+        description:
+          "Сравните предложения компаний в одном месте и заплатите напрямую выбранной фирме. Туры, экскурсии, жильё, авто, спорт и помощь в поездке.",
+        path: "/",
+      }).meta,
+    ],
+    scripts: [
+      /* Знание о самой площадке: имя, логотип и поиск прямо из выдачи Google. */
+      jsonLd([
+        {
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          "@id": `${SITE_URL}/#organization`,
+          name: SITE_NAME,
+          url: SITE_URL || "/",
+          logo: DEFAULT_OG_IMAGE,
+          description:
+            "Маркетплейс поездок: туры, экскурсии, жильё, авто и спорт от проверенных компаний.",
+        },
+        {
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          "@id": `${SITE_URL}/#website`,
+          name: SITE_NAME,
+          url: SITE_URL || "/",
+          inLanguage: "ru-RU",
+          publisher: { "@id": `${SITE_URL}/#organization` },
+          potentialAction: {
+            "@type": "SearchAction",
+            target: {
+              "@type": "EntryPoint",
+              urlTemplate: `${SITE_URL}/search?q={search_term_string}`,
+            },
+            "query-input": "required name=search_term_string",
+          },
+        },
+      ]),
     ],
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },

@@ -8,18 +8,16 @@ import { trackEvent } from "@/lib/platform/catalog";
 import { usePlatformStore } from "@/lib/platform/hooks";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { seo } from "@/lib/seo";
 
 export const Route = createFileRoute("/premium")({
-  head: () => ({
-    meta: [
-      { title: "Premium: закрытые цены и эксклюзивные туры | TourGo" },
-      {
-        name: "description",
-        content:
-          "Premium открывает доступ к эксклюзивным ценам, горящим турам, раннему доступу и AI-рекомендациям.",
-      },
-    ],
-  }),
+  head: () =>
+    seo({
+      title: "TourGo Premium: закрытые цены",
+      description:
+        "Подписка с доступом к закрытым ценам и предложениям, которых нет в открытом поиске.",
+      path: "/premium",
+    }),
   component: PremiumPage,
 });
 

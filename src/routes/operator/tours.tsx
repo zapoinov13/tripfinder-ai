@@ -15,6 +15,7 @@ import { usePlatformStore } from "@/lib/platform/hooks";
 import { nowIso, setState } from "@/lib/platform/store";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { privatePage } from "@/lib/seo";
 
 type Search = { add?: "api" | "1" };
 
@@ -24,7 +25,7 @@ export const Route = createFileRoute("/operator/tours")({
       ? { add: search["add"] as "api" | "1" }
       : {}),
   }),
-  head: () => ({ meta: [{ title: "Мои туры · TourGo" }] }),
+  head: () => privatePage("Мои туры · TourGo"),
   component: OperatorToursPage,
 });
 

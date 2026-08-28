@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { formatNumber, getDestination, getResorts, getToursByDestination } from "@/data/demo";
 import { cityCover } from "@/data/photos";
 import { cn } from "@/lib/utils";
+import { absoluteUrl, breadcrumbLd, jsonLd, seo } from "@/lib/seo";
 
 export const Route = createFileRoute("/destination/$destinationId")({
   loader: ({ params }) => {
@@ -20,7 +21,8 @@ export const Route = createFileRoute("/destination/$destinationId")({
     if (!dest) throw notFound();
     return { dest };
   },
-  head: ({ loaderData }) => {
+  head: ({ loaderData, params }) => {
+    const path = `/destination/${params.destinationId}`;
     if (!loaderData) {
       return {
         meta: [
@@ -29,21 +31,33 @@ export const Route = createFileRoute("/destination/$destinationId")({
         ],
       };
     }
-    const title = `Туры в ${loaderData.dest.country}: курорты и цены | TourGo`;
-    const description = `Все курорты направления ${loaderData.dest.country}: ${getResorts(
-      loaderData.dest.id,
-    )
+    const { dest } = loaderData;
+    const resorts = getResorts(dest.id)
       .slice(0, 4)
-      .map((r) => r.name)
-      .join(", ")} и другие. Сравните туры от проверенных операторов.`;
+      .map((r) => r.name);
+    const head = seo({
+      title: `Туры в ${dest.country}: курорты и цены`,
+      description: `Курорты направления ${dest.country}${resorts.length ? `: ${resorts.join(", ")}` : ""}. Сравните предложения компаний по датам и бюджету и напишите напрямую.`,
+      path,
+      ...(dest.image ? { image: dest.image } : {}),
+    });
     return {
-      meta: [
-        { title },
-        { name: "description", content: description },
-        { property: "og:title", content: title },
-        { property: "og:description", content: description },
-        { property: "og:type", content: "website" },
-        { name: "twitter:card", content: "summary_large_image" },
+      ...head,
+      scripts: [
+        jsonLd([
+          {
+            "@context": "https://schema.org",
+            "@type": "Place",
+            name: dest.country,
+            ...(dest.image ? { image: dest.image } : {}),
+            url: absoluteUrl(path),
+          },
+          breadcrumbLd([
+            { name: "Главная", path: "/" },
+            { name: "Направления", path: "/destinations" },
+            { name: dest.country, path },
+          ]),
+        ]),
       ],
     };
   },

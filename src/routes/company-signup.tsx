@@ -20,6 +20,7 @@ import {
   updateCompanyProfile,
 } from "@/lib/platform/company";
 import { cn } from "@/lib/utils";
+import { seo } from "@/lib/seo";
 
 /** Категории, с витрин которых можно прийти на регистрацию. */
 const CATEGORY_PARAM: Record<string, CompanyCategoryId> = {
@@ -40,16 +41,13 @@ export const Route = createFileRoute("/company-signup")({
     const id = CATEGORY_PARAM[raw];
     return id ? { category: id } : {};
   },
-  head: () => ({
-    meta: [
-      { title: "Подключить компанию: заявки и записи клиентов · TourGo" },
-      {
-        name: "description",
-        content:
-          "Откройте кабинет: клиенты оставляют заявки и записываются, вы отвечаете. Оплата — напрямую вам.",
-      },
-    ],
-  }),
+  head: () =>
+    seo({
+      title: "Подключить компанию к TourGo",
+      description:
+        "Заведите кабинет за несколько шагов: публикуйте услуги, отвечайте на заявки и получайте клиентов из поиска.",
+      path: "/company-signup",
+    }),
   component: CompanySignupPage,
 });
 

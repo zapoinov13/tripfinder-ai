@@ -46,6 +46,9 @@ import {
 } from "@/lib/platform/vertical-listings";
 import { categoriesOfServices } from "@/lib/platform/company-categories";
 import { usePlatformStore } from "@/lib/platform/hooks";
+import { getState } from "@/lib/platform/store";
+import { fetchPublicCompany } from "@/lib/seo-data";
+import { absoluteUrl, breadcrumbLd, clampDescription, jsonLd, seo } from "@/lib/seo";
 import { getCompanyRating, getCompanyReviews, hasReviewed } from "@/lib/platform/messages";
 import { cn } from "@/lib/utils";
 
@@ -58,10 +61,95 @@ function listingKindLabel(vertical: VerticalId, kind: string) {
   return carClassLabel(kind);
 }
 
+/** Что компания продаёт — словами, для описания в выдаче. */
+function servicesLine(services: string[] | null | undefined): string {
+  const list = (services ?? []).filter(Boolean).slice(0, 4);
+  return list.length ? list.join(", ") : "услуги для туристов";
+}
+
 export const Route = createFileRoute("/company/$companyId")({
-  head: () => ({
-    meta: [{ title: "Туристическая компания · TourGo" }],
-  }),
+  /**
+   * Каталог живёт в браузере, поэтому на сервере компании из базы нет — и все
+   * карточки уходили в выдачу с одним заголовком «Туристическая компания».
+   * Здесь страница на сервере забирает свою строку из публичного представления.
+   */
+  loader: async ({ params }) => {
+    const local = getState().organizations.find((o) => o.id === params.companyId);
+    if (local) {
+      return {
+        seo: {
+          id: local.id,
+          name: local.name,
+          city: local.city,
+          country: local.country,
+          about: local.about ?? null,
+          image: local.logoUrl ?? local.coverUrl ?? null,
+          website: local.website ?? null,
+          services: local.services ?? null,
+        },
+      };
+    }
+    const remote = await fetchPublicCompany(params.companyId);
+    return {
+      seo: remote
+        ? {
+            id: remote.id,
+            name: remote.name,
+            city: remote.city,
+            country: remote.country,
+            about: remote.about,
+            image: remote.logo_url ?? remote.cover_url,
+            website: remote.website,
+            services: remote.services,
+          }
+        : null,
+    };
+  },
+  head: ({ loaderData, params }) => {
+    const company = loaderData?.seo;
+    const path = `/company/${params.companyId}`;
+    if (!company) {
+      return {
+        meta: [{ title: "Компания не найдена · TourGo" }, { name: "robots", content: "noindex" }],
+      };
+    }
+    const where = [company.city, company.country].filter(Boolean).join(", ");
+    const head = seo({
+      title: `${company.name}${where ? ` — ${where}` : ""}: цены, услуги и отзывы`,
+      description:
+        company.about?.trim() ||
+        `${company.name}${where ? ` в городе ${company.city}` : ""}: ${servicesLine(company.services)}. Цены, часы работы, отзывы и запись напрямую.`,
+      path,
+      ...(company.image ? { image: company.image } : {}),
+    });
+    return {
+      ...head,
+      scripts: [
+        jsonLd([
+          {
+            "@context": "https://schema.org",
+            "@type": "TravelAgency",
+            "@id": absoluteUrl(path),
+            name: company.name,
+            url: absoluteUrl(path),
+            ...(company.image ? { image: company.image } : {}),
+            ...(company.about ? { description: clampDescription(company.about, 300) } : {}),
+            ...(company.website ? { sameAs: [company.website] } : {}),
+            address: {
+              "@type": "PostalAddress",
+              addressLocality: company.city,
+              addressCountry: company.country,
+            },
+          },
+          breadcrumbLd([
+            { name: "Главная", path: "/" },
+            { name: "Компании", path: "/search" },
+            { name: company.name, path },
+          ]),
+        ]),
+      ],
+    };
+  },
   component: CompanyPage,
 });
 

@@ -17,19 +17,10 @@ import { useTourState } from "@/lib/tour-state";
 import { aiRecommendationService } from "@/lib/platform/ai-services";
 import { tourSeller } from "@/lib/platform/tour-seller";
 import { cn } from "@/lib/utils";
+import { privatePage } from "@/lib/seo";
 
 export const Route = createFileRoute("/compare")({
-  head: () => ({
-    meta: [
-      { title: "Сравнение туров · TourGo" },
-      {
-        name: "description",
-        content: "Сравните выбранные туры по цене, отелю, питанию, перелёту и удобствам.",
-      },
-      { property: "og:title", content: "Сравните туры · TourGo" },
-      { property: "og:description", content: "Все параметры выбранных туров рядом." },
-    ],
-  }),
+  head: () => privatePage("Сравнение туров"),
   component: ComparePage,
 });
 

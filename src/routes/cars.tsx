@@ -24,6 +24,7 @@ import {
   type VerticalListing,
 } from "@/lib/platform/vertical-listings";
 import { cn } from "@/lib/utils";
+import { seo } from "@/lib/seo";
 
 type Search = {
   destination?: string;
@@ -62,15 +63,13 @@ export const Route = createFileRoute("/cars")({
     ...(typeof search["dropoff"] === "string" ? { dropoff: search["dropoff"] } : {}),
     ...(typeof search["age"] === "string" ? { age: search["age"] } : {}),
   }),
-  head: () => ({
-    meta: [
-      { title: "Аренда авто без водителя · TourGo" },
-      {
-        name: "description",
-        content: "Машины без водителя от компаний. Сравните цены и запросите авто.",
-      },
-    ],
-  }),
+  head: () =>
+    seo({
+      title: "Аренда авто без водителя",
+      description:
+        "Машины без водителя от проверенных компаний: цены, класс авто и условия рядом. Сравните и оставьте заявку за минуту.",
+      path: "/cars",
+    }),
   component: CarsPage,
 });
 

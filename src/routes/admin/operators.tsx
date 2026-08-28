@@ -60,9 +60,10 @@ import { usePlatformStore } from "@/lib/platform/hooks";
 import { setState } from "@/lib/platform/store";
 import { verificationDocumentLabel } from "@/lib/platform/verification-documents";
 import type { OperatorPlanCode, Organization, OrganizationStatus } from "@/lib/platform/types";
+import { privatePage } from "@/lib/seo";
 
 export const Route = createFileRoute("/admin/operators")({
-  head: () => ({ meta: [{ title: "Партнёры · Админ TourGo" }] }),
+  head: () => privatePage("Партнёры · Админ TourGo"),
   component: AdminOperatorsPage,
 });
 

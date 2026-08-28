@@ -22,6 +22,7 @@ import { Button } from "@/components/ui/button";
 import { VoiceTextarea } from "@/components/ui/voice-textarea";
 import { destinations, formatPrice, resortsByDestination } from "@/data/demo";
 import { cn } from "@/lib/utils";
+import { seo } from "@/lib/seo";
 
 type Search = { destination?: string; city?: string; wish?: string };
 
@@ -33,16 +34,13 @@ export const Route = createFileRoute("/assistance")({
     ...(typeof search["city"] === "string" && search["city"] ? { city: search["city"] } : {}),
     ...(typeof search["wish"] === "string" && search["wish"] ? { wish: search["wish"] } : {}),
   }),
-  head: () => ({
-    meta: [
-      { title: "Помощь в поездке · TourGo" },
-      {
-        name: "description",
-        content:
-          "Опишите задачу своими словами. Водитель, гид, бронь, фотограф: компании пришлют предложения.",
-      },
-    ],
-  }),
+  head: () =>
+    seo({
+      title: "Помощь в поездке: водитель, гид, бронь",
+      description:
+        "Опишите задачу своими словами: водитель, гид, бронь столика, фотограф. Компании пришлют предложения с ценой.",
+      path: "/assistance",
+    }),
   component: AssistancePage,
 });
 

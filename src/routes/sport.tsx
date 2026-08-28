@@ -20,6 +20,7 @@ import { usePlatformStore } from "@/lib/platform/hooks";
 import { companyPromoBadge, promotedCompanyIds } from "@/lib/platform/promotions";
 import { listPublishedSports, subscribeSportListings } from "@/lib/platform/sport-listings";
 import { cn } from "@/lib/utils";
+import { seo } from "@/lib/seo";
 
 type Search = { destination?: string; city?: string; kind?: string; q?: string };
 
@@ -44,15 +45,13 @@ export const Route = createFileRoute("/sport")({
     ...(typeof search["kind"] === "string" ? { kind: search["kind"] } : {}),
     ...(typeof search["q"] === "string" ? { q: search["q"] } : {}),
   }),
-  head: () => ({
-    meta: [
-      { title: "Спорт в поездке · TourGo" },
-      {
-        name: "description",
-        content: "Залы, йога, падел, теннис и тренеры от компаний. Сравните цены и забронируйте.",
-      },
-    ],
-  }),
+  head: () =>
+    seo({
+      title: "Спорт и активный отдых",
+      description:
+        "Падел, теннис, дайвинг, фитнес и другие занятия от местных клубов. Свободные слоты, цены и запись онлайн.",
+      path: "/sport",
+    }),
   component: SportPage,
 });
 

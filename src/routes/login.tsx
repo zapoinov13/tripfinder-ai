@@ -11,14 +11,10 @@ import { useAuth } from "@/lib/platform/auth";
 import { getPostLoginPath } from "@/lib/platform/routing";
 import { getState } from "@/lib/platform/store";
 import { migrateAnonymousToUser } from "@/lib/platform/user-data";
+import { privatePage } from "@/lib/seo";
 
 export const Route = createFileRoute("/login")({
-  head: () => ({
-    meta: [
-      { title: "Вход · TourGo" },
-      { name: "description", content: "Войдите в личный кабинет TourGo." },
-    ],
-  }),
+  head: () => privatePage("Вход"),
   validateSearch: (search: Record<string, unknown>): { next?: string } =>
     // Только внутренние пути: внешний redirect после логина недопустим.
     // «//evil.com» и «/\evil.com» браузер трактует как protocol-relative URL — отсекаем.
