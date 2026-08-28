@@ -1,8 +1,9 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
-import type { ComponentType } from "react";
+import type { ComponentType, ReactNode } from "react";
 import {
   AlertTriangle,
+  ArrowUpRight,
   CalendarCheck,
   Building2,
   CheckCircle2,
@@ -31,6 +32,7 @@ import {
 import { formatNumber, formatPrice } from "@/data/demo";
 import { useRequireAuth } from "@/lib/platform/auth";
 import { usePlatformStore } from "@/lib/platform/hooks";
+import { cn } from "@/lib/utils";
 import {
   buildCategoryStats,
   fetchAdminOverviewStats,
@@ -114,9 +116,73 @@ function StatTile({
       >
         <Icon className="size-4" />
       </span>
-      <p className="mt-2.5 truncate text-xs text-muted-foreground">{label}</p>
-      <p className="mt-0.5 truncate font-display text-xl font-semibold tabular-nums">{value}</p>
-      <p className="mt-0.5 truncate text-[11px] text-muted-foreground">{hint}</p>
+      {/* Многоточие вместо «Заявки турфирмам» ничего не сообщает: пусть
+          подпись переносится на вторую строку. */}
+      <p className="mt-2.5 text-xs leading-tight text-muted-foreground">{label}</p>
+      <p className="mt-1 truncate font-display text-xl font-semibold tabular-nums">{value}</p>
+      <p className="mt-0.5 text-[11px] leading-tight text-muted-foreground">{hint}</p>
+    </Link>
+  );
+}
+
+/**
+ * Три главные цифры платформы.
+ *
+ * Раньше это была тёмная лента во всю ширину: она спорила со светлой админкой
+ * и тянула взгляд на себя вместо того, чтобы показывать цифры. Теперь карточки
+ * того же семейства, что и остальные плитки, но крупнее и с цветным акцентом —
+ * иерархия видна, а страница остаётся спокойной.
+ */
+function HeroStat({
+  icon: Icon,
+  label,
+  value,
+  hint,
+  to,
+  tone = "neutral",
+}: {
+  icon: ComponentType<{ className?: string }>;
+  label: string;
+  value: string;
+  hint: ReactNode;
+  to: string;
+  tone?: "neutral" | "primary" | "success";
+}) {
+  const chip =
+    tone === "primary"
+      ? "bg-primary text-primary-foreground"
+      : tone === "success"
+        ? "bg-success/15 text-success"
+        : "bg-secondary text-foreground";
+  const glow =
+    tone === "primary"
+      ? "from-primary/[0.07]"
+      : tone === "success"
+        ? "from-success/[0.08]"
+        : "from-secondary/60";
+
+  return (
+    <Link
+      to={to}
+      className="surface-card group relative overflow-hidden p-5 transition-colors hover:border-primary/30 md:p-6"
+    >
+      <span
+        className={cn(
+          "pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b to-transparent",
+          glow,
+        )}
+      />
+      <span className="relative flex items-center gap-2.5">
+        <span className={cn("grid size-9 place-items-center rounded-xl", chip)}>
+          <Icon className="size-[18px]" />
+        </span>
+        <span className="text-sm font-medium text-muted-foreground">{label}</span>
+        <ArrowUpRight className="ml-auto size-4 text-muted-foreground/40 transition-colors group-hover:text-primary" />
+      </span>
+      <p className="relative mt-4 font-display text-[2.15rem] font-semibold leading-none tabular-nums tracking-tight md:text-[2.5rem]">
+        {value}
+      </p>
+      <p className="relative mt-2.5 text-sm text-muted-foreground">{hint}</p>
     </Link>
   );
 }
@@ -238,66 +304,42 @@ function AdminDashboard() {
         </div>
       ) : null}
 
-      {/* Три главные цифры платформы — тёмная лента, как фирменный блок на главной. */}
-      <div className="overflow-hidden rounded-3xl bg-ink text-primary-foreground">
-        <div className="grid divide-y divide-primary-foreground/10 sm:grid-cols-3 sm:divide-x sm:divide-y-0">
-          <Link
-            to="/admin/users"
-            className="group p-6 transition-colors hover:bg-primary-foreground/5 md:p-7"
-          >
-            <div className="flex items-center gap-2 text-sm text-primary-foreground/60">
-              <Users className="size-4" />
-              Пользователи
-            </div>
-            <p className="mt-3 font-display text-4xl font-semibold tabular-nums tracking-tight">
-              {formatNumber(stats.users.total)}
-            </p>
-            <p className="mt-2 text-sm text-primary-foreground/60">
-              туристов {formatNumber(stats.users.tourists)} · +{formatNumber(stats.users.new7d)} за
-              7 дней
-            </p>
-          </Link>
-          <Link
-            to="/admin/operators"
-            className="group p-6 transition-colors hover:bg-primary-foreground/5 md:p-7"
-          >
-            <div className="flex items-center gap-2 text-sm text-primary-foreground/60">
-              <Building2 className="size-4" />
-              Партнёры
-            </div>
-            <p className="mt-3 font-display text-4xl font-semibold tabular-nums tracking-tight">
-              {formatNumber(stats.companies.total)}
-            </p>
-            <p className="mt-2 text-sm text-primary-foreground/60">
-              {stats.companies.pending > 0 ? (
-                <span className="font-medium text-premium">
-                  {formatNumber(stats.companies.pending)} ждут одобрения
-                </span>
-              ) : (
-                `${formatNumber(stats.companies.approved)} одобрено`
-              )}
-            </p>
-          </Link>
-          <Link
-            to="/admin/bookings"
-            className="group p-6 transition-colors hover:bg-primary-foreground/5 md:p-7"
-          >
-            <div className="flex items-center gap-2 text-sm text-primary-foreground/60">
-              <Wallet className="size-4" />
-              Оборот (GMV)
-            </div>
-            <p className="mt-3 font-display text-4xl font-semibold tabular-nums tracking-tight">
-              {formatPrice(stats.bookings.gmv)}
-            </p>
-            <p className="mt-2 text-sm text-primary-foreground/60">
-              доход платформы {formatPrice(revenueTotal)}
-            </p>
-          </Link>
-        </div>
+      <div className="grid gap-3 sm:grid-cols-3">
+        <HeroStat
+          icon={Users}
+          label="Пользователи"
+          value={formatNumber(stats.users.total)}
+          hint={`туристов ${formatNumber(stats.users.tourists)} · +${formatNumber(stats.users.new7d)} за 7 дней`}
+          to="/admin/users"
+        />
+        <HeroStat
+          icon={Building2}
+          label="Партнёры"
+          value={formatNumber(stats.companies.total)}
+          tone={stats.companies.pending > 0 ? "primary" : "neutral"}
+          hint={
+            stats.companies.pending > 0 ? (
+              <span className="font-medium text-primary">
+                {formatNumber(stats.companies.pending)} ждут одобрения
+              </span>
+            ) : (
+              `${formatNumber(stats.companies.approved)} одобрено`
+            )
+          }
+          to="/admin/operators"
+        />
+        <HeroStat
+          icon={Wallet}
+          label="Оборот (GMV)"
+          value={formatPrice(stats.bookings.gmv)}
+          tone={stats.bookings.gmv > 0 ? "success" : "neutral"}
+          hint={`доход платформы ${formatPrice(revenueTotal)}`}
+          to="/admin/bookings"
+        />
       </div>
 
       {/* Остальные метрики — компактные плитки с иконками. */}
-      <div className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
+      <div className="mt-3 grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
         <StatTile
           icon={Inbox}
           label="Заявки турфирмам"
@@ -375,9 +417,11 @@ function AdminDashboard() {
                         {c.bookingsSum > 0 ? ` · ${formatPrice(c.bookingsSum)}` : ""}
                       </span>
                     </div>
-                    <div className="h-2 overflow-hidden rounded-full bg-secondary">
+                    {/* Полоса — шкала «кто активнее», а не тревога: тонкая и
+                        приглушённая, чтобы не кричала при одинаковых числах. */}
+                    <div className="h-1.5 overflow-hidden rounded-full bg-secondary">
                       <div
-                        className="h-full rounded-full bg-primary"
+                        className="h-full rounded-full bg-primary/70"
                         style={{ width: `${Math.max(6, (c.companies / max) * 100)}%` }}
                       />
                     </div>
