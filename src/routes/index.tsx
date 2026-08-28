@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 
 import heroImage from "@/assets/hero.jpg";
 import { AiIntentBar } from "@/components/site/ai-intent-bar";
+import { DestinationRail, HotToursRail } from "@/components/site/home-rails";
 import { SiteLayout } from "@/components/site/site-layout";
 import { SafeImage } from "@/components/media/safe-image";
 import { TourCard } from "@/components/tours/tour-card";
@@ -47,9 +48,8 @@ const how = [
 function Index() {
   // Горящие туры — только реальные предложения компаний; пусто — секция скрыта.
   const state = usePlatformStore();
-  const liveHotTours = state.tours
-    .filter((t) => t.status === "active" && t.tags.includes("hot"))
-    .slice(0, 4);
+  const liveTours = state.tours.filter((t) => t.status === "active");
+  const liveHotTours = liveTours.filter((t) => t.tags.includes("hot")).slice(0, 6);
 
   return (
     <SiteLayout>
@@ -129,83 +129,9 @@ function Index() {
         </section>
       </div>
 
-      <section className="container-page mt-8 md:mt-10">
-        <SectionHead
-          title="Куда едут чаще всего"
-          subtitle="Внутри каждой страны живые цены сразу от нескольких компаний"
-          action={
-            <Button variant="outline" asChild>
-              <Link to="/destinations">Все направления</Link>
-            </Button>
-          }
-        />
-        {/* Мобильный: окно 2x2 со свайпом вбок, тем же жестом, что туры и экскурсии. */}
-        <div className="-mx-4 mt-5 grid snap-x snap-mandatory grid-flow-col grid-rows-2 auto-cols-[44%] gap-2.5 overflow-x-auto scroll-pl-4 px-4 pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:mx-0 md:mt-6 md:auto-cols-auto md:grid-flow-row md:grid-cols-5 md:gap-4 md:overflow-visible md:px-0 md:pb-0">
-          {destinations.map((dest) => (
-            <Link
-              key={dest.id}
-              to="/search"
-              search={{ destination: dest.id } as never}
-              className="hover-lift group relative block snap-start overflow-hidden rounded-2xl md:rounded-3xl"
-            >
-              <SafeImage
-                src={dest.image}
-                alt={dest.country}
-                loading="lazy"
-                className="h-44 w-full object-cover transition-transform duration-700 group-hover:scale-105 md:h-56"
-              />
-              <div className="absolute inset-0 media-scrim-strong" />
-              <div className="absolute inset-x-0 bottom-0 p-3 text-primary-foreground md:p-4">
-                <h3 className="font-display text-[15px] font-semibold leading-tight md:text-lg">
-                  {dest.flag} {dest.country}
-                </h3>
-                <p className="mt-0.5 text-[11px] leading-tight text-primary-foreground/80 md:text-sm">
-                  {dest.city}
-                </p>
-              </div>
-            </Link>
-          ))}
-        </div>
-        <SeeRestLink to="/destinations" label="Все направления" />
-      </section>
+      <DestinationRail tours={liveTours} />
 
-      {liveHotTours.length > 0 ? (
-        <section className="mt-10 bg-gradient-to-b from-primary-soft/60 via-primary-soft/25 to-transparent md:mt-14">
-          {/* Тёплая полоса выделяет горящие туры среди остальных секций. */}
-          <div className="container-page py-6 md:py-8">
-            <div className="inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-1 text-xs font-semibold uppercase tracking-[0.08em] text-primary-foreground">
-              <Flame className="size-3.5" />
-              Осталось мало мест
-            </div>
-            <div className="mt-3">
-              <SectionHead
-                title="Горящие туры"
-                subtitle="Компании уже снизили цену на ближайшие вылеты. Такие предложения разбирают за пару дней"
-                action={
-                  <Button variant="outline" asChild>
-                    <Link to="/search" search={{ offers: "hot" } as never}>
-                      Смотреть остальные
-                    </Link>
-                  </Button>
-                }
-              />
-            </div>
-            {/* Мобильный: горизонтальная карусель, как у экскурсий ниже. */}
-            <div className="-mx-4 mt-5 flex snap-x snap-mandatory scroll-pl-4 gap-4 overflow-x-auto px-4 pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:grid sm:grid-cols-2 sm:overflow-visible sm:pb-0 md:mx-0 md:mt-6 md:gap-4 md:px-0 lg:grid-cols-4">
-              {liveHotTours.map((tour) => (
-                <div key={tour.id} className="w-[85%] shrink-0 snap-start snap-always sm:w-auto">
-                  <TourCard tour={tour} layout="grid" />
-                </div>
-              ))}
-            </div>
-            <SeeRestLink
-              to="/search"
-              search={{ offers: "hot" }}
-              label="Смотреть остальные горящие туры"
-            />
-          </div>
-        </section>
-      ) : null}
+      <HotToursRail tours={liveHotTours} />
 
       <section className="container-page mt-10 md:mt-14">
         <div className="rounded-3xl bg-ink px-5 py-7 text-primary-foreground md:rounded-[2rem] md:px-10 md:py-10">
