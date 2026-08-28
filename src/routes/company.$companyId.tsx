@@ -1,4 +1,4 @@
-import { Link, createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute, notFound } from "@tanstack/react-router";
 import {
   BadgeCheck,
   CheckCircle2,
@@ -81,7 +81,12 @@ export const Route = createFileRoute("/company/$companyId")({
    */
   loader: async ({ params }) => {
     const local = getState().organizations.find((o) => o.id === params.companyId);
-    return { company: local ?? (await fetchPublicCompany(params.companyId)) };
+    if (local) return { company: local };
+    const remote = await fetchPublicCompany(params.companyId);
+    // Такой компании точно нет — отвечаем 404, чтобы адрес не попал в индекс.
+    // Если базу спросить не вышло, страницу отдаём: каталог подтянется в браузере.
+    if (remote === null) throw notFound();
+    return { company: remote };
   },
   head: ({ loaderData, params }) => {
     const company = loaderData?.company;

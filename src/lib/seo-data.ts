@@ -14,9 +14,20 @@ import type { Organization, PlatformTour } from "@/lib/platform/types";
 
 const REQUEST_TIMEOUT_MS = 2500;
 
-async function selectOne<T>(table: string, id: string, columns: string): Promise<T | null> {
+/**
+ * Строка из публичного представления.
+ *
+ * Различаем два «нет»: null — спросили и такой строки нет; undefined — спросить
+ * не вышло. По первому можно честно отдать 404, по второму нельзя: иначе сбой
+ * сети превратит живую компанию в удалённую.
+ */
+async function selectOne<T>(
+  table: string,
+  id: string,
+  columns: string,
+): Promise<T | null | undefined> {
   const { url, publishableKey } = resolveSupabaseConfig();
-  if (!url || !publishableKey) return null;
+  if (!url || !publishableKey) return undefined;
 
   const query = `${url}/rest/v1/${table}?select=${encodeURIComponent(columns)}&id=eq.${encodeURIComponent(id)}&limit=1`;
   try {
@@ -25,11 +36,11 @@ async function selectOne<T>(table: string, id: string, columns: string): Promise
       headers: { apikey: publishableKey, authorization: `Bearer ${publishableKey}` },
       signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     });
-    if (!response.ok) return null;
+    if (!response.ok) return undefined;
     const rows = (await response.json()) as T[];
     return rows[0] ?? null;
   } catch {
-    return null;
+    return undefined;
   }
 }
 
@@ -41,13 +52,13 @@ async function selectOne<T>(table: string, id: string, columns: string): Promise
  * Полей меньше, чем в базе (телефон и расписание закрыты для анонимных), —
  * недостающее заполняем пустыми значениями, а не выдумываем.
  */
-export async function fetchPublicCompany(id: string): Promise<Organization | null> {
+export async function fetchPublicCompany(id: string): Promise<Organization | null | undefined> {
   const row = await selectOne<Record<string, unknown>>(
     "organizations_public",
     id,
     "id,name,city,country,about,logo_url,cover_url,photos,videos,website,services,languages,countries,client_countries,instagram,telegram,created_at,plan_code",
   );
-  if (!row) return null;
+  if (!row) return row === null ? null : undefined;
   const str = (key: string, fallback = "") =>
     typeof row[key] === "string" ? (row[key] as string) : fallback;
   const list = (key: string) =>
@@ -94,9 +105,9 @@ export async function fetchPublicCompany(id: string): Promise<Organization | nul
  * Без этого ссылка на реальный тур открывалась как «предложение не найдено»:
  * сервер знает только демо-каталог, а страница рендерится на сервере.
  */
-export async function fetchPublicTour(id: string): Promise<PlatformTour | null> {
+export async function fetchPublicTour(id: string): Promise<PlatformTour | null | undefined> {
   const row = await selectOne<Record<string, unknown>>("tour_offers", id, "*");
-  if (!row) return null;
+  if (!row) return row === null ? null : undefined;
   const str = (key: string, fallback = "") =>
     typeof row[key] === "string" ? (row[key] as string) : fallback;
   const num = (key: string, fallback = 0) =>

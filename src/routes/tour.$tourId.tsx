@@ -70,6 +70,8 @@ export const Route = createFileRoute("/tour/$tourId")({
    */
   loader: async ({ params }) => {
     const tour = getTour(params.tourId) ?? (await fetchPublicTour(params.tourId));
+    // undefined здесь означает «базу спросить не вышло», но показывать
+    // предложение без цены и дат нечестно: ведём на «не найдено» в обоих случаях.
     if (!tour) throw notFound();
     let hotel;
     try {
