@@ -1,80 +1,84 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Heart, Home, Search, User } from "lucide-react";
+import { Bell, Heart, Home, Search, User } from "lucide-react";
 
-import { useShowAppTabBar } from "@/hooks/use-native-app";
+import { useOptionalAuth } from "@/lib/platform/auth";
+import { usePlatformStore } from "@/lib/platform/hooks";
 import { cn } from "@/lib/utils";
 
-const tabs = [
+import { TabBarShell, type TabItem } from "./tab-bar-shell";
+
+/**
+ * Нижняя навигация туриста.
+ *
+ * Рисует её лейаут, а не глобальный список путей: раньше бар жил в корне
+ * приложения и решал по адресу, показываться ему или нет, — и оказывался
+ * поверх кабинета партнёра с подсвеченной «Главной». Теперь бар принадлежит
+ * тому, кому предназначен.
+ */
+const tabs: TabItem[] = [
   {
     id: "home",
     label: "Главная",
     to: "/",
     icon: Home,
-    match: (path: string) => path === "/",
-  },
-  {
-    id: "saved",
-    label: "Избранное",
-    to: "/favorites",
-    icon: Heart,
-    match: (path: string) => path === "/favorites" || path === "/profile/favorites",
+    match: (path) => path === "/",
   },
   {
     id: "search",
     label: "Поиск",
     to: "/ai-search",
     icon: Search,
-    match: (path: string) => path === "/ai-search",
+    match: (path) => path === "/ai-search" || path === "/search",
+  },
+  {
+    id: "saved",
+    label: "Избранное",
+    to: "/favorites",
+    icon: Heart,
+    match: (path) => path === "/favorites" || path === "/profile/favorites",
+  },
+  {
+    id: "alerts",
+    label: "Уведомления",
+    to: "/notifications",
+    icon: Bell,
+    match: (path) => path === "/notifications",
   },
   {
     id: "profile",
     label: "Профиль",
     to: "/profile",
     icon: User,
-    match: (path: string) =>
+    match: (path) =>
       path === "/profile" ||
-      path === "/profile/" ||
-      path.startsWith("/profile/") ||
+      (path.startsWith("/profile/") && path !== "/profile/favorites") ||
       path.startsWith("/request") ||
-      path === "/notifications" ||
       path === "/premium",
   },
-] as const;
+];
 
 export function AppTabBar() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const show = useShowAppTabBar();
+  const auth = useOptionalAuth();
+  const state = usePlatformStore();
 
-  if (!show) return null;
+  // Непрочитанные — единственная причина, по которой человек возвращается сам.
+  const unread = auth?.user
+    ? state.notifications.filter((n) => n.userId === auth.user?.id && !n.read).length
+    : 0;
 
   return (
-    <nav
-      className="fixed inset-x-0 bottom-0 z-40 overflow-visible border-t border-border bg-background/95 pt-3 backdrop-blur-xl md:hidden"
-      aria-label="Основная навигация"
-      style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
-    >
-      <div className="grid grid-cols-4 items-end">
-        {tabs.map((tab) => {
-          const active = tab.match(pathname);
-          return (
-            <Link
-              key={tab.id}
-              to={tab.to}
-              search={{} as never}
-              className={cn(
-                "flex min-h-[3.5rem] flex-col items-center justify-center gap-0.5 px-1 py-2 text-[11px] font-medium transition-colors active:opacity-70",
-                active ? "text-primary" : "text-muted-foreground",
-              )}
-            >
-              <tab.icon className={cn("size-[22px]", active && "stroke-[2.35px]")} aria-hidden />
-              <span className={cn(active && "font-semibold")}>{tab.label}</span>
-            </Link>
-          );
-        })}
-      </div>
-    </nav>
+    <TabBarShell
+      tabs={tabs.map((tab) => (tab.id === "alerts" ? { ...tab, badge: unread } : tab))}
+      pathname={pathname}
+    />
   );
 }
 
-/** @deprecated Use AppTabBar */
+/** Запас под фиксированный бар: контент не должен прятаться под ним. */
+export const tabBarPaddingClass = "pb-[calc(5.75rem+env(safe-area-inset-bottom))] md:pb-0";
+
+/** @deprecated Используйте AppTabBar */
 export const MobileNav = AppTabBar;
+
+export { cn };

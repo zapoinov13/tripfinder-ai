@@ -29,7 +29,13 @@ function AiHistoryContent() {
   const items = state.aiSearches.filter((a) => a.userId === user.id);
 
   return (
-    <DashShell brand="TourGo" items={profileNav} title="AI-поиски" subtitle="История запросов">
+    <DashShell
+      tabs="tourist"
+      brand="TourGo"
+      items={profileNav}
+      title="AI-поиски"
+      subtitle="История запросов"
+    >
       {items.length === 0 ? (
         <div className="surface-card p-8 text-center">
           <p className="text-muted-foreground">История пуста</p>

@@ -89,6 +89,7 @@ function OperatorOffersPage() {
 
   return (
     <DashShell
+      tabs="partner"
       brand={organization.name}
       items={nav}
       title="Мои предложения"

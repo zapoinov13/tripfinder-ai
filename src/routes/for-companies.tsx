@@ -135,7 +135,7 @@ function ForCompaniesPage() {
   const cover = destinations.find((d) => d.id === "uae")?.image ?? heroImage;
 
   return (
-    <SiteLayout>
+    <SiteLayout hideTabBar>
       <section className="relative isolate overflow-hidden">
         <img src={cover} alt="" className="h-[460px] w-full object-cover sm:h-[500px]" />
         <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/75 to-ink/40" />

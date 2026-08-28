@@ -506,6 +506,7 @@ function OperatorDashboard() {
 
   return (
     <DashShell
+      tabs="partner"
       brand={organization.name}
       items={nav}
       title={businessOnly ? "Кабинет компании" : "Кабинет турфирмы"}

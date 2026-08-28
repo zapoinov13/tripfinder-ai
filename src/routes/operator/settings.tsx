@@ -105,6 +105,7 @@ function OperatorSettingsPage() {
 
   return (
     <DashShell
+      tabs="partner"
       brand={organization.name}
       items={nav}
       title="Настройки"

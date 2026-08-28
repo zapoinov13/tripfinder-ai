@@ -186,6 +186,7 @@ function BusinessRequestsPage() {
 
   return (
     <DashShell
+      tabs="partner"
       brand={organization.name}
       items={nav}
       title="Заявки клиентов"
@@ -418,6 +419,7 @@ function OperatorRequestsPage() {
 
   return (
     <DashShell
+      tabs="partner"
       brand={organization.name}
       items={nav}
       title="Заявки туристов"

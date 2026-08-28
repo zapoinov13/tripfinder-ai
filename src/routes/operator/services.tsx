@@ -82,6 +82,7 @@ function OperatorServicesPage() {
 
   return (
     <DashShell
+      tabs="partner"
       brand={organization.name}
       items={nav}
       title="Объявления"

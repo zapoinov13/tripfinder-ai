@@ -271,7 +271,7 @@ function CompanySignupPage() {
   // вместо тоста. Черновик компании сохранён и достроится после входа.
   if (pendingEmail) {
     return (
-      <SiteLayout>
+      <SiteLayout hideTabBar>
         <div className="container-page py-16">
           <div className="surface-card mx-auto max-w-lg p-8 text-center">
             <span className="mx-auto grid size-14 place-items-center rounded-2xl bg-primary-soft text-primary">
@@ -303,7 +303,7 @@ function CompanySignupPage() {
   }
 
   return (
-    <SiteLayout>
+    <SiteLayout hideTabBar>
       <div className="border-b border-border/70 bg-secondary/25">
         <div className="container-page py-6 md:py-8">
           <p className="text-sm font-medium text-primary">Кабинет компании на TourGo</p>

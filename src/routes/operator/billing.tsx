@@ -72,6 +72,7 @@ function OperatorBillingPage() {
   if (!allowed || !organization || !user) {
     return (
       <DashShell
+        tabs="partner"
         brand="TourGo"
         items={nav}
         title="Тариф"
@@ -172,6 +173,7 @@ function OperatorBillingPage() {
 
   return (
     <DashShell
+      tabs="partner"
       brand={organization.name}
       items={nav}
       title="Тариф"

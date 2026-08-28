@@ -1,8 +1,9 @@
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { Menu, Plane } from "lucide-react";
-import type { ComponentType, ReactNode } from "react";
+import { useState, type ComponentType, type ReactNode } from "react";
 
-import { useAppTabBarPaddingClass } from "@/hooks/use-native-app";
+import { PartnerTabBar } from "@/components/dash/partner-tab-bar";
+import { AppTabBar, tabBarPaddingClass } from "@/components/site/app-tab-bar";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
@@ -45,7 +46,7 @@ export function DashShell({
   brand,
   actions,
   children,
-  showAppTabs = false,
+  tabs,
 }: {
   items: DashItem[];
   title: string;
@@ -53,11 +54,13 @@ export function DashShell({
   brand: string;
   actions?: ReactNode;
   children: ReactNode;
-  showAppTabs?: boolean;
+  /**
+   * Какая нижняя навигация нужна на телефоне. Решает страница, а не глобальный
+   * список путей: у партнёра свои разделы, у туриста свои, админке она не нужна.
+   */
+  tabs?: "tourist" | "partner";
 }) {
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const tabPadding = useAppTabBarPaddingClass();
-  const tabs = showAppTabs || pathname.startsWith("/profile");
+  const [menuOpen, setMenuOpen] = useState(false);
 
   return (
     <div className="flex min-h-screen bg-secondary/30">
@@ -80,7 +83,7 @@ export function DashShell({
             оставалось «Кабинет к...». Там она уходит на свою строку.
           */}
           <div className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-3 gap-y-3 px-4 py-4 sm:grid-cols-[auto_minmax(0,1fr)_auto] md:px-8">
-            <Sheet>
+            <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon" className="lg:hidden" aria-label="Меню">
                   <Menu className="size-5" />
@@ -108,8 +111,11 @@ export function DashShell({
             ) : null}
           </div>
         </header>
-        <div className={cn("p-4 md:p-8", tabs && tabPadding)}>{children}</div>
+        <div className={cn("p-4 md:p-8", tabs && tabBarPaddingClass)}>{children}</div>
       </div>
+
+      {tabs === "partner" ? <PartnerTabBar onMore={() => setMenuOpen(true)} /> : null}
+      {tabs === "tourist" ? <AppTabBar /> : null}
     </div>
   );
 }

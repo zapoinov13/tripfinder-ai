@@ -49,6 +49,7 @@ function MessagesContent() {
 
   return (
     <DashShell
+      tabs="tourist"
       brand="TourGo"
       items={profileNav}
       title="Сообщения"

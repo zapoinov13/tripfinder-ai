@@ -30,7 +30,13 @@ function FavoritesContent() {
   const tours = favorites.map((id) => getTour(id)).filter(Boolean);
 
   return (
-    <DashShell brand="TourGo" items={profileNav} title="Избранное" subtitle="Сохранённые туры">
+    <DashShell
+      tabs="tourist"
+      brand="TourGo"
+      items={profileNav}
+      title="Избранное"
+      subtitle="Сохранённые туры"
+    >
       {tours.length === 0 ? (
         <div className="surface-card p-8 text-center">
           <p className="text-muted-foreground">Список пуст</p>

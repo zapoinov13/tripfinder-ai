@@ -36,6 +36,7 @@ function OperatorBookingsPage() {
 
   return (
     <DashShell
+      tabs="partner"
       brand={organization.name}
       items={nav}
       title="Бронирования"

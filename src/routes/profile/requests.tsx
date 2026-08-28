@@ -69,6 +69,7 @@ function RequestsContent() {
 
   return (
     <DashShell
+      tabs="tourist"
       brand="TourGo"
       items={profileNav}
       title="Мои заявки"

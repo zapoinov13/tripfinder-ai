@@ -272,6 +272,7 @@ function OperatorPromotionPage() {
 
   return (
     <DashShell
+      tabs="partner"
       brand={organization.name}
       items={nav}
       title="Продвижение"

@@ -60,6 +60,7 @@ function SettingsContent() {
 
   return (
     <DashShell
+      tabs="tourist"
       brand="TourGo"
       items={profileNav}
       title="Данные туриста"

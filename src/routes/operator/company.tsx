@@ -173,6 +173,7 @@ function OperatorCompanyPage() {
 
   return (
     <DashShell
+      tabs="partner"
       brand={organization.name}
       items={nav}
       title="Страница компании"

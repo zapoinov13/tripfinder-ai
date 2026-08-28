@@ -42,6 +42,7 @@ function TripsContent() {
 
   return (
     <DashShell
+      tabs="tourist"
       brand="TourGo"
       items={profileNav}
       title="Поездки"

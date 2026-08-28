@@ -44,7 +44,7 @@ function RegistrationPage() {
   });
 
   return (
-    <SiteLayout>
+    <SiteLayout hideTabBar>
       <div className="container-page py-10">
         <div className="mx-auto max-w-3xl">
           <h1 className="font-display text-3xl font-semibold md:text-4xl">Регистрация</h1>

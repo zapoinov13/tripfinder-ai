@@ -242,6 +242,7 @@ function OperatorAnalyticsPage() {
   if (businessOnly && bizStats) {
     return (
       <DashShell
+        tabs="partner"
         brand={organization.name}
         items={nav}
         title="Статистика"
@@ -461,6 +462,7 @@ function OperatorAnalyticsPage() {
 
   return (
     <DashShell
+      tabs="partner"
       brand={organization.name}
       items={nav}
       title="Аналитика"

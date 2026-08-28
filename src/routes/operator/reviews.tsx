@@ -44,6 +44,7 @@ function OperatorReviewsPage() {
 
   return (
     <DashShell
+      tabs="partner"
       brand={organization.name}
       items={nav}
       title="Отзывы"
