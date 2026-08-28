@@ -29,7 +29,7 @@ export const travelScenarios: TravelScenario[] = [
     title: "Экскурсии",
     navTitle: "Экскурсии",
     hint: "Сафари, яхты, билеты и парки на месте",
-    shortHint: "Сафари и билеты",
+    shortHint: "Сафари, билеты",
     icon: Ticket,
   },
   {
