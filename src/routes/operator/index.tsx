@@ -50,6 +50,7 @@ import {
   serviceRequestStatusClass,
   serviceRequestStatusLabel,
   unreadServiceMessagesForOrg,
+  updateServiceRequestStatus,
   upcomingServiceRequests,
 } from "@/lib/platform/service-requests";
 import { recordsWord } from "@/lib/platform/business-stats";
@@ -560,7 +561,8 @@ function OperatorDashboard() {
         </div>
       ) : null}
 
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:gap-3">
+      {/* На телефоне эти же разделы лежат в нижнем баре — дублировать не нужно. */}
+      <div className="hidden grid-cols-2 gap-2 sm:grid sm:grid-cols-4 lg:gap-3">
         {quickActions.map((action) => (
           <Link
             key={action.to}
@@ -588,339 +590,365 @@ function OperatorDashboard() {
         ))}
       </div>
 
-      {launching && noActivityYet ? null : businessOnly ? (
-        <div className="mt-6 grid grid-cols-2 gap-3 xl:grid-cols-4">
-          <KpiCard
-            label="Записей сегодня"
-            value={formatNumber(todayBookings.length)}
-            hint={
-              todayBookings.length > 0
-                ? `ожидаемо ${formatPrice(todayRevenue)}`
-                : "на сегодня пусто"
-            }
-            emphasis={todayBookings.length > 0}
-          />
-          <KpiCard
-            label="Новые заявки"
-            value={formatNumber(newServiceRequests)}
-            hint={newServiceRequests > 0 ? "ждут ответа" : "всё обработано"}
-            emphasis={newServiceRequests > 0}
-          />
-          <KpiCard
-            label="Сообщения"
-            value={formatNumber(unreadMessages)}
-            hint={
-              unreadMessages > 0
-                ? unreadMessages % 10 === 1 && unreadMessages % 100 !== 11
-                  ? "непрочитанное"
-                  : "непрочитанных"
-                : "всё прочитано"
-            }
-            emphasis={unreadMessages > 0}
-          />
-          <KpiCard
-            label="Просмотры страницы"
-            value={formatNumber(pageViews)}
-            hint={`${formatNumber(contactClicks)} кликов · ${formatNumber(checkins.length)} визитов`}
-          />
-        </div>
-      ) : (
-        <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5">
-          <KpiCard
-            label="Новые заявки"
-            value={formatNumber(openRequests)}
-            hint={openRequests > 0 ? "ждут ответа" : "всё отвечено"}
-            emphasis={openRequests > 0}
-          />
-          <KpiCard
-            label="Мои предложения"
-            value={formatNumber(myOffers.length)}
-            hint={`выбрали вас ${chosenOffers}`}
-          />
-          <KpiCard
-            label="Активные туры"
-            value={formatNumber(active.length)}
-            hint={`лимит ${plan ? plan.tourLimit + organization.additionalTourLimit : "нет"}`}
-          />
-          <KpiCard label="Просмотры" value={formatNumber(views)} />
-          <KpiCard label="Продажи" value={formatPrice(revenue)} />
-        </div>
-      )}
+      {/* Телефон: сначала «кто ко мне сегодня», цифры ниже. Экран шире — как было. */}
+      <div className="flex flex-col">
+        {launching && noActivityYet ? null : businessOnly ? (
+          <div className="order-2 mt-6 grid grid-cols-2 gap-3 sm:order-none xl:grid-cols-4">
+            <KpiCard
+              label="Записей сегодня"
+              value={formatNumber(todayBookings.length)}
+              hint={
+                todayBookings.length > 0
+                  ? `ожидаемо ${formatPrice(todayRevenue)}`
+                  : "на сегодня пусто"
+              }
+              emphasis={todayBookings.length > 0}
+            />
+            <KpiCard
+              label="Новые заявки"
+              value={formatNumber(newServiceRequests)}
+              hint={newServiceRequests > 0 ? "ждут ответа" : "всё обработано"}
+              emphasis={newServiceRequests > 0}
+            />
+            <KpiCard
+              label="Сообщения"
+              value={formatNumber(unreadMessages)}
+              hint={
+                unreadMessages > 0
+                  ? unreadMessages % 10 === 1 && unreadMessages % 100 !== 11
+                    ? "непрочитанное"
+                    : "непрочитанных"
+                  : "всё прочитано"
+              }
+              emphasis={unreadMessages > 0}
+            />
+            <KpiCard
+              label="Просмотры страницы"
+              value={formatNumber(pageViews)}
+              hint={`${formatNumber(contactClicks)} кликов · ${formatNumber(checkins.length)} визитов`}
+            />
+          </div>
+        ) : (
+          <div className="order-2 mt-6 grid grid-cols-2 gap-3 sm:order-none sm:grid-cols-3 xl:grid-cols-5">
+            <KpiCard
+              label="Новые заявки"
+              value={formatNumber(openRequests)}
+              hint={openRequests > 0 ? "ждут ответа" : "всё отвечено"}
+              emphasis={openRequests > 0}
+            />
+            <KpiCard
+              label="Мои предложения"
+              value={formatNumber(myOffers.length)}
+              hint={`выбрали вас ${chosenOffers}`}
+            />
+            <KpiCard
+              label="Активные туры"
+              value={formatNumber(active.length)}
+              hint={`лимит ${plan ? plan.tourLimit + organization.additionalTourLimit : "нет"}`}
+            />
+            <KpiCard label="Просмотры" value={formatNumber(views)} />
+            <KpiCard label="Продажи" value={formatPrice(revenue)} />
+          </div>
+        )}
 
-      <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(280px,1fr)]">
-        <div className="space-y-6">
-          {!launching && pendingSteps.length > 0 ? (
-            <section className="surface-card p-6">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <h2 className="font-display text-lg font-semibold">С чего начать</h2>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    {pendingSteps.length} шагов до полной готовности кабинета
-                  </p>
+        <div className="order-1 grid gap-6 sm:order-none sm:mt-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(280px,1fr)]">
+          <div className="space-y-6">
+            {!launching && pendingSteps.length > 0 ? (
+              <section className="surface-card p-6">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <h2 className="font-display text-lg font-semibold">С чего начать</h2>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {pendingSteps.length} шагов до полной готовности кабинета
+                    </p>
+                  </div>
+                  <span className="rounded-full bg-secondary px-2.5 py-1 text-xs font-semibold tabular-nums">
+                    {steps.filter((s) => s.done).length}/{steps.length}
+                  </span>
                 </div>
-                <span className="rounded-full bg-secondary px-2.5 py-1 text-xs font-semibold tabular-nums">
-                  {steps.filter((s) => s.done).length}/{steps.length}
-                </span>
-              </div>
-              <ul className="mt-5 space-y-2">
-                {steps.map((step) => (
-                  <li
-                    key={step.title}
-                    className={cn(
-                      "flex items-start gap-3 rounded-xl border px-4 py-3",
-                      step.done
-                        ? "border-border/60 bg-secondary/30"
-                        : "border-border bg-background",
-                    )}
-                  >
-                    {step.done ? (
-                      <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-success" />
-                    ) : (
-                      <Circle className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
-                    )}
-                    <div className="min-w-0 flex-1">
-                      <p
-                        className={cn("text-sm font-medium", step.done && "text-muted-foreground")}
-                      >
-                        {step.title}
-                      </p>
-                      <p className="mt-0.5 text-xs text-muted-foreground">{step.text}</p>
-                    </div>
-                    {!step.done ? (
-                      <Button size="sm" variant="outline" className="shrink-0" asChild>
-                        <Link to={step.to}>{step.cta}</Link>
-                      </Button>
-                    ) : null}
-                  </li>
-                ))}
-              </ul>
-            </section>
-          ) : businessOnly ? (
-            <section className="surface-card p-6">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <h2 className="font-display text-lg font-semibold">
-                    Сегодня{closedToday ? " · закрыто" : ""}
-                  </h2>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    {todayBookings.length > 0
-                      ? `${todayBookings.length} ${recordsWord(todayBookings.length)} · ожидаемо ${formatPrice(todayRevenue)}`
-                      : "Записей на сегодня нет"}
-                  </p>
-                </div>
-                <Button variant="outline" size="sm" asChild>
-                  <Link to="/operator/requests">Все заявки</Link>
-                </Button>
-              </div>
-
-              {closedToday ? (
-                <p className="mt-4 rounded-xl border border-destructive/25 bg-destructive/5 px-4 py-3 text-sm">
-                  Сегодня выходной по вашему расписанию: новых записей не будет.
-                  {todayBookings.length > 0
-                    ? ` Но ${todayBookings.length} ${recordsWord(todayBookings.length)} уже стоит — перенесите или предупредите клиентов.`
-                    : ""}
-                </p>
-              ) : closedAhead.length > 0 ? (
-                <p className="mt-4 text-sm text-muted-foreground">
-                  Закрыто впереди: {closedAhead.slice(0, 4).map(closedDateLabel).join(", ")}
-                  {closedAhead.length > 4 ? ` и ещё ${closedAhead.length - 4}` : ""}.
-                </p>
-              ) : null}
-
-              {strandedBookings.length > 0 ? (
-                <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-destructive/25 bg-destructive/5 px-4 py-3">
-                  <p className="min-w-0 text-sm">
-                    На закрытые дни осталось {strandedBookings.length}{" "}
-                    {recordsWord(strandedBookings.length)}: перенесите или отмените — клиент получит
-                    уведомление.
-                  </p>
-                  <Button variant="outline" size="sm" asChild>
-                    <Link to="/operator/requests">Разобрать</Link>
-                  </Button>
-                </div>
-              ) : null}
-
-              {todayBookings.length > 0 ? (
                 <ul className="mt-5 space-y-2">
-                  {todayBookings.map((r) => (
+                  {steps.map((step) => (
                     <li
-                      key={r.id}
-                      className="flex flex-wrap items-center gap-3 rounded-xl border border-border px-4 py-3"
+                      key={step.title}
+                      className={cn(
+                        "flex items-start gap-3 rounded-xl border px-4 py-3",
+                        step.done
+                          ? "border-border/60 bg-secondary/30"
+                          : "border-border bg-background",
+                      )}
                     >
-                      <span className="font-display text-lg font-semibold tabular-nums">
-                        {r.time || "—"}
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="block truncate text-sm font-medium">
-                          {r.contactName || "Клиент"}
-                          {r.people > 1 ? ` · ${r.people} чел.` : ""}
-                        </span>
-                        {r.listingName ? (
-                          <span className="block truncate text-xs text-muted-foreground">
-                            {r.listingName}
-                          </span>
-                        ) : null}
-                      </span>
-                      <span
-                        className={cn(
-                          "rounded-full px-2.5 py-0.5 text-[11px] font-semibold",
-                          serviceRequestStatusClass[r.status],
-                        )}
-                      >
-                        {serviceRequestStatusLabel[r.status]}
-                      </span>
-                      {r.contactPhone ? (
-                        <a
-                          href={`tel:${r.contactPhone}`}
-                          className="text-sm font-medium text-primary hover:underline"
+                      {step.done ? (
+                        <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-success" />
+                      ) : (
+                        <Circle className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <p
+                          className={cn(
+                            "text-sm font-medium",
+                            step.done && "text-muted-foreground",
+                          )}
                         >
-                          {r.contactPhone}
-                        </a>
+                          {step.title}
+                        </p>
+                        <p className="mt-0.5 text-xs text-muted-foreground">{step.text}</p>
+                      </div>
+                      {!step.done ? (
+                        <Button size="sm" variant="outline" className="shrink-0" asChild>
+                          <Link to={step.to}>{step.cta}</Link>
+                        </Button>
                       ) : null}
                     </li>
                   ))}
                 </ul>
-              ) : closedToday ? null : (
-                <div className="mt-5 rounded-2xl border border-dashed border-border bg-secondary/20 px-6 py-8 text-center">
-                  <p className="font-medium">На сегодня записей нет</p>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    {upcoming.length > 0
-                      ? "Ближайшие записи — ниже."
-                      : "Клиенты записываются со страницы компании и из объявлений."}
-                  </p>
-                </div>
-              )}
-
-              {upcoming.filter((r) => r.date !== todayDate).length > 0 ? (
-                <div className="mt-5 border-t border-border pt-4">
-                  <p className="text-sm font-medium">Дальше</p>
-                  <ul className="mt-2 space-y-1.5">
-                    {upcoming
-                      .filter((r) => r.date !== todayDate)
-                      .slice(0, 4)
-                      .map((r) => (
-                        <li
-                          key={r.id}
-                          className="flex flex-wrap items-center justify-between gap-2 text-sm"
-                        >
-                          <span className="text-muted-foreground">
-                            {formatServiceRequestWhen(r.date, r.time)}
-                          </span>
-                          <span className="font-medium">
-                            {r.contactName || "Клиент"}
-                            {r.listingName ? (
-                              <span className="font-normal text-muted-foreground">
-                                {" "}
-                                · {r.listingName}
-                              </span>
-                            ) : null}
-                          </span>
-                        </li>
-                      ))}
-                  </ul>
-                </div>
-              ) : null}
-            </section>
-          ) : (
-            <section className="surface-card p-6">
-              <div className="flex items-center justify-between gap-3">
-                <h2 className="font-display text-lg font-semibold">Продажи</h2>
-                {revenue > 0 ? (
-                  <span className="text-sm font-medium text-success">
-                    {formatPrice(revenue)} всего
-                  </span>
-                ) : null}
-              </div>
-              <div className="mt-6 h-72">
-                {salesPoints.length > 0 ? (
-                  <SalesChart points={salesPoints} />
-                ) : (
-                  <div className="flex h-full flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-secondary/20 px-6 text-center">
-                    <TrendingUp className="size-8 text-muted-foreground/70" />
-                    <p className="mt-3 font-medium">Пока нет продаж</p>
-                    <p className="mt-1 max-w-sm text-sm text-muted-foreground">
-                      Отвечайте на заявки и продвигайте туры. График появится после первых оплат.
+              </section>
+            ) : businessOnly ? (
+              <section className="surface-card p-6">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <h2 className="font-display text-lg font-semibold">
+                      Сегодня{closedToday ? " · закрыто" : ""}
+                    </h2>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {todayBookings.length > 0
+                        ? `${todayBookings.length} ${recordsWord(todayBookings.length)} · ожидаемо ${formatPrice(todayRevenue)}`
+                        : "Записей на сегодня нет"}
                     </p>
-                    <Button size="sm" className="mt-4" asChild>
-                      <Link to="/operator/requests">Смотреть заявки</Link>
+                  </div>
+                  <Button variant="outline" size="sm" asChild>
+                    <Link to="/operator/requests">Все заявки</Link>
+                  </Button>
+                </div>
+
+                {closedToday ? (
+                  <p className="mt-4 rounded-xl border border-destructive/25 bg-destructive/5 px-4 py-3 text-sm">
+                    Сегодня выходной по вашему расписанию: новых записей не будет.
+                    {todayBookings.length > 0
+                      ? ` Но ${todayBookings.length} ${recordsWord(todayBookings.length)} уже стоит — перенесите или предупредите клиентов.`
+                      : ""}
+                  </p>
+                ) : closedAhead.length > 0 ? (
+                  <p className="mt-4 text-sm text-muted-foreground">
+                    Закрыто впереди: {closedAhead.slice(0, 4).map(closedDateLabel).join(", ")}
+                    {closedAhead.length > 4 ? ` и ещё ${closedAhead.length - 4}` : ""}.
+                  </p>
+                ) : null}
+
+                {strandedBookings.length > 0 ? (
+                  <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-destructive/25 bg-destructive/5 px-4 py-3">
+                    <p className="min-w-0 text-sm">
+                      На закрытые дни осталось {strandedBookings.length}{" "}
+                      {recordsWord(strandedBookings.length)}: перенесите или отмените — клиент
+                      получит уведомление.
+                    </p>
+                    <Button variant="outline" size="sm" asChild>
+                      <Link to="/operator/requests">Разобрать</Link>
                     </Button>
                   </div>
-                )}
-              </div>
-            </section>
-          )}
-        </div>
+                ) : null}
 
-        <aside className="surface-card flex flex-col p-6">
-          <h2 className="font-display text-lg font-semibold">Состояние</h2>
-          <dl className="mt-5 space-y-4 text-sm">
-            <div className="flex items-start justify-between gap-3">
-              <dt className="text-muted-foreground">Тариф</dt>
-              <dd className="font-medium">{organization.planCode}</dd>
-            </div>
-            <div className="flex items-start justify-between gap-3">
-              <dt className="text-muted-foreground">Проверка</dt>
-              <dd className={cn("font-medium", verified ? "text-success" : "text-premium")}>
-                {verified
-                  ? "Проверена"
-                  : organization.verificationSubmittedAt
-                    ? "На модерации"
-                    : "Не отправлена"}
-              </dd>
-            </div>
-            {businessOnly ? null : (
+                {todayBookings.length > 0 ? (
+                  <ul className="mt-5 space-y-2">
+                    {todayBookings.map((r) => (
+                      <li
+                        key={r.id}
+                        className="flex flex-wrap items-center gap-3 rounded-xl border border-border px-4 py-3"
+                      >
+                        <span className="font-display text-lg font-semibold tabular-nums">
+                          {r.time || "—"}
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate text-sm font-medium">
+                            {r.contactName || "Клиент"}
+                            {r.people > 1 ? ` · ${r.people} чел.` : ""}
+                          </span>
+                          {/* На телефоне название услуги важнее аккуратного обрезания. */}
+                          {r.listingName ? (
+                            <span className="block text-xs text-muted-foreground sm:truncate">
+                              {r.listingName}
+                            </span>
+                          ) : null}
+                        </span>
+                        <span
+                          className={cn(
+                            "rounded-full px-2.5 py-0.5 text-[11px] font-semibold",
+                            serviceRequestStatusClass[r.status],
+                          )}
+                        >
+                          {serviceRequestStatusLabel[r.status]}
+                        </span>
+                        {/* Ответить, не уходя с экрана: день партнёр смотрит с телефона. */}
+                        <span className="flex w-full items-center gap-2 sm:w-auto">
+                          {r.contactPhone ? (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="flex-1 sm:flex-none"
+                              asChild
+                            >
+                              <a href={`tel:${r.contactPhone}`}>Позвонить</a>
+                            </Button>
+                          ) : null}
+                          {r.status === "NEW" ? (
+                            <Button
+                              size="sm"
+                              className="flex-1 sm:flex-none"
+                              onClick={() =>
+                                updateServiceRequestStatus(r.id, "CONFIRMED", {
+                                  actorId: user.id,
+                                  organizationName: organization.name,
+                                })
+                              }
+                            >
+                              Подтвердить
+                            </Button>
+                          ) : null}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : closedToday ? null : (
+                  <div className="mt-5 rounded-2xl border border-dashed border-border bg-secondary/20 px-6 py-8 text-center">
+                    <p className="font-medium">На сегодня записей нет</p>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {upcoming.length > 0
+                        ? "Ближайшие записи — ниже."
+                        : "Клиенты записываются со страницы компании и из объявлений."}
+                    </p>
+                  </div>
+                )}
+
+                {upcoming.filter((r) => r.date !== todayDate).length > 0 ? (
+                  <div className="mt-5 border-t border-border pt-4">
+                    <p className="text-sm font-medium">Дальше</p>
+                    <ul className="mt-2 space-y-1.5">
+                      {upcoming
+                        .filter((r) => r.date !== todayDate)
+                        .slice(0, 4)
+                        .map((r) => (
+                          <li
+                            key={r.id}
+                            className="flex flex-wrap items-center justify-between gap-2 text-sm"
+                          >
+                            <span className="text-muted-foreground">
+                              {formatServiceRequestWhen(r.date, r.time)}
+                            </span>
+                            <span className="font-medium">
+                              {r.contactName || "Клиент"}
+                              {r.listingName ? (
+                                <span className="font-normal text-muted-foreground">
+                                  {" "}
+                                  · {r.listingName}
+                                </span>
+                              ) : null}
+                            </span>
+                          </li>
+                        ))}
+                    </ul>
+                  </div>
+                ) : null}
+              </section>
+            ) : (
+              <section className="surface-card p-6">
+                <div className="flex items-center justify-between gap-3">
+                  <h2 className="font-display text-lg font-semibold">Продажи</h2>
+                  {revenue > 0 ? (
+                    <span className="text-sm font-medium text-success">
+                      {formatPrice(revenue)} всего
+                    </span>
+                  ) : null}
+                </div>
+                <div className="mt-6 h-72">
+                  {salesPoints.length > 0 ? (
+                    <SalesChart points={salesPoints} />
+                  ) : (
+                    <div className="flex h-full flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-secondary/20 px-6 text-center">
+                      <TrendingUp className="size-8 text-muted-foreground/70" />
+                      <p className="mt-3 font-medium">Пока нет продаж</p>
+                      <p className="mt-1 max-w-sm text-sm text-muted-foreground">
+                        Отвечайте на заявки и продвигайте туры. График появится после первых оплат.
+                      </p>
+                      <Button size="sm" className="mt-4" asChild>
+                        <Link to="/operator/requests">Смотреть заявки</Link>
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </section>
+            )}
+          </div>
+
+          <aside className="surface-card flex flex-col p-6">
+            <h2 className="font-display text-lg font-semibold">Состояние</h2>
+            <dl className="mt-5 space-y-4 text-sm">
               <div className="flex items-start justify-between gap-3">
-                <dt className="text-muted-foreground">Каталог API</dt>
-                <dd className="font-medium">
-                  {api?.status === "connected" ? "Подключён" : "Не настроен"}
+                <dt className="text-muted-foreground">Тариф</dt>
+                <dd className="font-medium">{organization.planCode}</dd>
+              </div>
+              <div className="flex items-start justify-between gap-3">
+                <dt className="text-muted-foreground">Проверка</dt>
+                <dd className={cn("font-medium", verified ? "text-success" : "text-premium")}>
+                  {verified
+                    ? "Проверена"
+                    : organization.verificationSubmittedAt
+                      ? "На модерации"
+                      : "Не отправлена"}
                 </dd>
               </div>
-            )}
-            <div className="flex items-start justify-between gap-3">
-              <dt className="text-muted-foreground">Рейтинг</dt>
-              <dd className="font-medium">
-                {orgRating
-                  ? `${orgRating.average.toFixed(1)} ★ (${orgRating.count})`
-                  : "нет отзывов"}
-              </dd>
-            </div>
-            <div className="flex items-start justify-between gap-3">
-              <dt className="text-muted-foreground">Продвижение</dt>
-              <dd className="text-right font-medium">
-                {activePromo ? (
-                  <>
-                    <span className="text-success">идёт</span>
-                    <span className="block text-xs font-normal text-muted-foreground">
-                      до {new Date(activePromo.expiresAt).toLocaleDateString("ru-RU")}
-                    </span>
-                  </>
-                ) : (
-                  "не включено"
-                )}
-              </dd>
-            </div>
-            <div className="flex items-start justify-between gap-3">
-              <dt className="text-muted-foreground">Баланс продвижения</dt>
-              <dd className="font-medium tabular-nums">
-                {formatPrice(organization.promotionBalance)}
-              </dd>
-            </div>
-          </dl>
+              {businessOnly ? null : (
+                <div className="flex items-start justify-between gap-3">
+                  <dt className="text-muted-foreground">Каталог API</dt>
+                  <dd className="font-medium">
+                    {api?.status === "connected" ? "Подключён" : "Не настроен"}
+                  </dd>
+                </div>
+              )}
+              <div className="flex items-start justify-between gap-3">
+                <dt className="text-muted-foreground">Рейтинг</dt>
+                <dd className="font-medium">
+                  {orgRating
+                    ? `${orgRating.average.toFixed(1)} ★ (${orgRating.count})`
+                    : "нет отзывов"}
+                </dd>
+              </div>
+              <div className="flex items-start justify-between gap-3">
+                <dt className="text-muted-foreground">Продвижение</dt>
+                <dd className="text-right font-medium">
+                  {activePromo ? (
+                    <>
+                      <span className="text-success">идёт</span>
+                      <span className="block text-xs font-normal text-muted-foreground">
+                        до {new Date(activePromo.expiresAt).toLocaleDateString("ru-RU")}
+                      </span>
+                    </>
+                  ) : (
+                    "не включено"
+                  )}
+                </dd>
+              </div>
+              <div className="flex items-start justify-between gap-3">
+                <dt className="text-muted-foreground">Баланс продвижения</dt>
+                <dd className="font-medium tabular-nums">
+                  {formatPrice(organization.promotionBalance)}
+                </dd>
+              </div>
+            </dl>
 
-          <div className="mt-auto space-y-2 pt-6">
-            {!businessOnly && api?.status !== "connected" ? (
+            <div className="mt-auto space-y-2 pt-6">
+              {!businessOnly && api?.status !== "connected" ? (
+                <Button variant="outline" size="sm" className="w-full" asChild>
+                  <Link to="/operator/tours" search={{ add: "api" }}>
+                    <Cable className="size-4" />
+                    Загрузить по API
+                  </Link>
+                </Button>
+              ) : null}
               <Button variant="outline" size="sm" className="w-full" asChild>
-                <Link to="/operator/tours" search={{ add: "api" }}>
-                  <Cable className="size-4" />
-                  Загрузить по API
-                </Link>
+                <Link to="/operator/billing">Тариф и лимиты</Link>
               </Button>
-            ) : null}
-            <Button variant="outline" size="sm" className="w-full" asChild>
-              <Link to="/operator/billing">Тариф и лимиты</Link>
-            </Button>
-          </div>
-        </aside>
+            </div>
+          </aside>
+        </div>
       </div>
 
       {/* Во время запуска пустой блок объявлений дублирует шаг «Опубликовать услугу». */}
