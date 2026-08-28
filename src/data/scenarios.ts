@@ -57,7 +57,7 @@ export const travelScenarios: TravelScenario[] = [
     title: "Спорт",
     navTitle: "Спорт",
     hint: "Залы, падел, тренировки в поездке",
-    shortHint: "Залы и падел",
+    shortHint: "Залы и фитнес",
     icon: Dumbbell,
   },
   {
