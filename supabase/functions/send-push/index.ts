@@ -15,6 +15,36 @@ type Body = {
   audience?: "all" | "tourists" | "operators";
 };
 
+/**
+ * Вызов от Database Webhook: строка уведомления уже создана триггером базы,
+ * от нас нужна только доставка на телефон. Пишет её база, значит подделать
+ * отправителя нельзя — но сам вызов закрываем общим секретом.
+ */
+type WebhookBody = {
+  type: "INSERT" | "UPDATE" | "DELETE";
+  table: string;
+  record?: {
+    id?: string;
+    user_id?: string;
+    type?: string;
+    title?: string;
+    body?: string;
+    payload?: Record<string, unknown>;
+  };
+};
+
+/** Какой тумблер в настройках отвечает за этот вид уведомлений. */
+const PREF_BY_TYPE: Record<string, "requests" | "messages" | "reviews"> = {
+  service_request: "requests",
+  service_request_status: "requests",
+  request_offer: "requests",
+  request_offer_status: "requests",
+  booking: "requests",
+  service_message: "messages",
+  message: "messages",
+  company_review: "reviews",
+};
+
 type ServiceAccount = {
   client_email: string;
   private_key: string;
@@ -181,6 +211,59 @@ async function sendFcm(
   return outcome;
 }
 
+/**
+ * Доставка уведомления, которое база уже записала.
+ *
+ * Триггеры пишут уведомления второй стороне — партнёру о новой записи,
+ * клиенту об ответе. На экран телефона это само не улетит: здесь и есть тот
+ * шаг, который превращает строку в базе в пуш.
+ */
+async function deliverFromWebhook(
+  admin: ReturnType<typeof createClient>,
+  record: NonNullable<WebhookBody["record"]>,
+) {
+  const userId = record.user_id;
+  const title = record.title?.trim();
+  const body = record.body?.trim();
+  if (!userId || !title || !body) {
+    return { ok: true, skipped: "empty" as const };
+  }
+
+  // Человек мог отключить этот вид сигналов в настройках.
+  const pref = PREF_BY_TYPE[record.type ?? ""];
+  if (pref) {
+    const { data: profile } = await admin
+      .from("profiles")
+      .select("notify_prefs")
+      .eq("id", userId)
+      .maybeSingle();
+    const prefs = (profile?.notify_prefs ?? {}) as Record<string, boolean | undefined>;
+    if (prefs[pref] === false) return { ok: true, skipped: "muted" as const };
+  }
+
+  const account = readServiceAccount();
+  if (!account) return { ok: true, skipped: "fcm_not_configured" as const };
+
+  const { data: tokenRows } = await admin
+    .from("device_tokens")
+    .select("token")
+    .eq("user_id", userId);
+  const tokens = (tokenRows ?? []).map((row) => row.token).filter(Boolean) as string[];
+  if (tokens.length === 0) return { ok: true, skipped: "no_devices" as const };
+
+  const stringData = Object.fromEntries(
+    Object.entries({ ...(record.payload ?? {}), type: record.type ?? "system" }).map(([k, v]) => [
+      k,
+      String(v),
+    ]),
+  );
+  const result = await sendFcm(account, tokens, title, body, stringData);
+  if (result.stale.length) {
+    await admin.from("device_tokens").delete().in("token", result.stale);
+  }
+  return { ok: true, tokensSent: result.sent, staleRemoved: result.stale.length };
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -190,6 +273,30 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+
+    // Вебхук базы: приходит без пользовательского токена, поэтому закрыт
+    // отдельным секретом. Проверяем до чтения тела как пользовательского.
+    const webhookSecret = Deno.env.get("PUSH_WEBHOOK_SECRET");
+    const givenSecret = req.headers.get("x-webhook-secret");
+    if (webhookSecret && givenSecret) {
+      if (givenSecret !== webhookSecret) {
+        return new Response(JSON.stringify({ error: "Forbidden" }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const hook = (await req.json()) as WebhookBody;
+      if (hook.type !== "INSERT" || hook.table !== "notifications" || !hook.record) {
+        return new Response(JSON.stringify({ ok: true, skipped: "not_insert" }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const admin = createClient(supabaseUrl, serviceKey);
+      const outcome = await deliverFromWebhook(admin, hook.record);
+      return new Response(JSON.stringify(outcome), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
