@@ -17,7 +17,9 @@ import {
   userStatusLabel,
 } from "@/components/admin";
 import { AddCompanyDialog } from "@/components/admin/add-company-dialog";
+import { AddTourForCompanyDialog } from "@/components/admin/add-tour-for-company-dialog";
 import { CompanyClaimsSection } from "@/components/admin/company-claims-section";
+import { AddTourDialog } from "@/components/operator/add-tour-dialog";
 import { DashShell } from "@/components/dash/dash-shell";
 import { useAdminNav } from "@/components/dash/nav-items";
 import { Button } from "@/components/ui/button";
@@ -72,6 +74,9 @@ function AdminOperatorsPage() {
   const { user } = useAuth();
   const nav = useAdminNav();
   const [addingCompany, setAddingCompany] = useState(false);
+  // Наполнение витрины турами: сначала выбираем компанию-продавца.
+  const [pickingTourOrg, setPickingTourOrg] = useState(false);
+  const [tourOrgId, setTourOrgId] = useState<string | null>(null);
   const state = usePlatformStore();
   const [view, setView] = useState("companies");
   const [tab, setTab] = useState("all");
@@ -156,10 +161,16 @@ function AdminOperatorsPage() {
       title="Партнёры"
       subtitle="Все подключённые бизнесы: туры, экскурсии, жильё, авто, спорт. Одобрение, документы и тарифы."
       actions={
-        <Button size="sm" onClick={() => setAddingCompany(true)}>
-          <Plus className="size-4" />
-          Добавить компанию
-        </Button>
+        <>
+          <Button size="sm" onClick={() => setAddingCompany(true)}>
+            <Plus className="size-4" />
+            Добавить компанию
+          </Button>
+          <Button size="sm" variant="outline" onClick={() => setPickingTourOrg(true)}>
+            <Plus className="size-4" />
+            Добавить тур
+          </Button>
+        </>
       }
     >
       <AddCompanyDialog
@@ -167,6 +178,17 @@ function AdminOperatorsPage() {
         onOpenChange={setAddingCompany}
         actorId={user?.id ?? ""}
       />
+
+      <AddTourForCompanyDialog
+        open={pickingTourOrg}
+        onOpenChange={setPickingTourOrg}
+        onPick={(orgId) => {
+          setPickingTourOrg(false);
+          setTourOrgId(orgId);
+        }}
+      />
+
+      {tourOrgId ? <AddTourDialog orgId={tourOrgId} onClose={() => setTourOrgId(null)} /> : null}
 
       <div className="mb-4 grid grid-cols-2 gap-3 xl:grid-cols-4">
         <KpiLinkCard
