@@ -2,45 +2,31 @@ import { Link } from "@tanstack/react-router";
 import { Mail, Plane } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { b2bNav, travelScenarios } from "@/data/scenarios";
+import { b2bNav } from "@/data/scenarios";
 import { SUPPORT_EMAIL, SUPPORT_MAILTO } from "@/lib/contact";
 import { cn } from "@/lib/utils";
 
 /**
  * Подвал.
  *
- * На телефоне разделы уже лежат в нижнем баре и в меню — повторять их третий
- * раз незачем: там остаётся только то, чего больше нигде нет, — поддержка,
- * правовые страницы и вход для компаний. Полная карта сайта живёт на широком
- * экране, где она к месту и помогает поиску.
+ * Разделы путешествий стоят в шапке на каждой странице, а на телефоне ещё и
+ * в нижнем баре. Дублировать их списком внизу незачем — в подвале остаётся
+ * только то, чего больше нигде нет: поддержка, правовые страницы и вход для
+ * компаний.
  */
 
-const columns = [
-  {
-    title: "Путешествия",
-    links: travelScenarios.map((item) => ({ label: item.title, to: item.to })),
-  },
-  {
-    title: "Компания",
-    links: [
-      { label: "О TourGo", to: "/about" },
-      { label: b2bNav.title, to: b2bNav.to },
-      { label: "Добавить турфирму", to: "/company-signup" },
-      { label: "Контакты", to: "/about", hash: "contacts" },
-    ],
-  },
-  {
-    title: "Справка",
-    links: [
-      { label: "Вопросы", to: "/about", hash: "faq" },
-      { label: "Поддержка", to: "/support" },
-      { label: "Условия", to: "/terms" },
-      { label: "Конфиденциальность", to: "/privacy" },
-    ],
-  },
+/** Широкий экран: всё, чего нет в шапке. */
+const siteLinks = [
+  { label: "О TourGo", to: "/about" },
+  { label: "Добавить турфирму", to: "/company-signup" },
+  { label: "Контакты", to: "/about", hash: "contacts" },
+  { label: "Вопросы", to: "/about", hash: "faq" },
+  { label: "Поддержка", to: "/support" },
+  { label: "Условия", to: "/terms" },
+  { label: "Конфиденциальность", to: "/privacy" },
 ];
 
-/** Ссылки, которых нет ни в баре, ни в меню. */
+/** Телефон: ссылок ещё меньше — разделы уже в баре и в меню. */
 const essentials = [
   { label: "Поддержка", to: "/support" },
   { label: "О TourGo", to: "/about" },
@@ -118,42 +104,26 @@ export function SiteFooter({ className }: { className?: string }) {
             </Button>
           </div>
 
-          <div className="mt-10 grid grid-cols-4 gap-8">
-            {columns.map((col) => (
-              <div key={col.title}>
-                <h3 className="text-xs font-semibold uppercase tracking-[0.16em] text-primary-foreground/50">
-                  {col.title}
-                </h3>
-                <ul className="mt-4 space-y-3">
-                  {col.links.map((link, i) => (
-                    <li key={`${link.label}-${i}`}>
-                      <Link
-                        to={link.to}
-                        {...("hash" in link && link.hash ? { hash: link.hash } : {})}
-                        className="text-sm text-primary-foreground/75 transition-colors hover:text-primary-foreground"
-                      >
-                        {link.label}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-            <div>
-              <h3 className="text-xs font-semibold uppercase tracking-[0.16em] text-primary-foreground/50">
-                Связь
-              </h3>
-              <p className="mt-4 text-sm text-primary-foreground/75">
-                Напишите, если заявка зависла или компания не отвечает.
-              </p>
-              <a
-                href={SUPPORT_MAILTO}
-                className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-primary-foreground hover:underline"
+          {/* Разделы путешествий стоят в шапке на каждой странице — второй
+              список здесь ничего не добавляет. Оставляем то, чего в шапке нет. */}
+          <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
+            {siteLinks.map((link) => (
+              <Link
+                key={link.to + link.label}
+                to={link.to}
+                {...("hash" in link && link.hash ? { hash: link.hash } : {})}
+                className="text-sm text-primary-foreground/75 transition-colors hover:text-primary-foreground"
               >
-                <Mail className="size-4" />
-                {SUPPORT_EMAIL}
-              </a>
-            </div>
+                {link.label}
+              </Link>
+            ))}
+            <a
+              href={SUPPORT_MAILTO}
+              className="inline-flex items-center gap-2 text-sm font-medium text-primary-foreground hover:underline"
+            >
+              <Mail className="size-4" />
+              {SUPPORT_EMAIL}
+            </a>
           </div>
         </div>
 
