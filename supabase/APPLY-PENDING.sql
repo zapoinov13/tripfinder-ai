@@ -502,3 +502,30 @@ comment on function private.guard_service_message() is
   'Сторона и имя автора сообщения выводятся из личности пишущего.';
 comment on function private.guard_service_request_update() is
   'Статус записи меняет компания; клиенту доступна только отмена.';
+
+
+-- ===========================================================================
+-- ПРИЛОЖЕНИЕ (по желанию). Вебхук пуша через SQL вместо кликов в дашборде.
+--
+-- Делает то же, что Database → Webhooks: на каждую новую строку в
+-- notifications дёргает функцию send-push, чтобы уведомление ушло на телефон.
+-- Нужно, только если не хотите заполнять форму вебхука руками.
+--
+-- Перед запуском заменить ДВА значения:
+--   ВАШ_СЕКРЕТ    — то же, что в Edge Function Secrets → PUSH_WEBHOOK_SECRET
+--   ВАШ_ANON_KEY  — Project Settings → API → anon / publishable key
+-- Без Authorization шлюз Supabase не пропустит вызов до функции.
+-- ===========================================================================
+
+-- create extension if not exists pg_net with schema extensions;
+--
+-- drop trigger if exists push_on_notification on public.notifications;
+-- create trigger push_on_notification
+--   after insert on public.notifications
+--   for each row execute function supabase_functions.http_request(
+--     'https://mgyufoyornzbwvgdfojb.supabase.co/functions/v1/send-push',
+--     'POST',
+--     '{"Content-Type":"application/json","x-webhook-secret":"ВАШ_СЕКРЕТ","Authorization":"Bearer ВАШ_ANON_KEY"}',
+--     '{}',
+--     '5000'
+--   );

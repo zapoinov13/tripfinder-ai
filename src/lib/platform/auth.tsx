@@ -21,6 +21,7 @@ import { usePlatformStore } from "./hooks";
 import { DEMO_PASSWORD } from "./seed";
 import { getState, nowIso, setState, uid } from "./store";
 import type { Organization, PlatformUser } from "./types";
+import { humanAuthError } from "./auth-errors";
 
 type AuthResult = { ok: boolean; error?: string };
 
@@ -308,7 +309,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       if (error || !data.user) {
         if (!import.meta.env.DEV) {
-          return { ok: false, error: error?.message ?? "Неверный email или пароль" };
+          return { ok: false, error: humanAuthError(error?.message, "Неверный email или пароль") };
         }
         const local = getState().users.find(
           (u) => u.email.toLowerCase() === email.trim().toLowerCase(),
@@ -328,7 +329,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           toast.success(`С возвращением, ${local.name}`);
           return { ok: true };
         }
-        return { ok: false, error: error?.message ?? "Неверный email или пароль" };
+        return { ok: false, error: humanAuthError(error?.message, "Неверный email или пароль") };
       }
       const profile = await fetchProfile(data.user.id);
       if (profile?.status === "suspended") {
@@ -410,7 +411,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         provider: "apple",
         options: { redirectTo },
       });
-      if (error) return { ok: false, error: error.message };
+      if (error) return { ok: false, error: humanAuthError(error.message, "Не удалось войти") };
       return { ok: true };
     }
 
@@ -423,7 +424,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       token: flow.idToken,
     });
     if (error || !data.user) {
-      return { ok: false, error: error?.message ?? "Не удалось войти через Apple" };
+      return { ok: false, error: humanAuthError(error?.message, "Не удалось войти через Apple") };
     }
 
     const profile = await fetchProfile(data.user.id);
@@ -540,7 +541,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           },
         });
         if (error || !data.user) {
-          return { ok: false, error: error?.message ?? "Ошибка регистрации" };
+          return {
+            ok: false,
+            error: humanAuthError(error?.message, "Не удалось зарегистрироваться"),
+          };
         }
         // При включённом подтверждении email signUp не даёт сессию: анонимный
         // upsert профиля срежет RLS, а локальная «сессия» будет фиктивной.
@@ -664,7 +668,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           },
         });
         if (error || !data.user) {
-          return { ok: false, error: error?.message ?? "Ошибка регистрации" };
+          return {
+            ok: false,
+            error: humanAuthError(error?.message, "Не удалось зарегистрироваться"),
+          };
         }
 
         // При включённом подтверждении email signUp не даёт сессию, а без неё
@@ -685,7 +692,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const message =
             orgErr === "already_in_organization"
               ? "У этого аккаунта уже есть компания"
-              : (orgErr ?? "Не удалось создать организацию");
+              : humanAuthError(orgErr, "Не удалось создать компанию. Попробуйте ещё раз.");
           return { ok: false, error: message };
         }
         setState((s) => ({
@@ -700,7 +707,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           role: "OPERATOR_ADMIN",
           organization_id: org.id,
         });
-        toast.success("Заявка отправлена (Supabase): PENDING_APPROVAL");
+        toast.success("Компания создана. Кабинет открыт — можно публиковать услуги.");
         return { ok: true };
       }
 
