@@ -7,6 +7,7 @@ import {
   mediaTitleClass,
 } from "@/components/media/media-card-overlay";
 import { SiteLayout } from "@/components/site/site-layout";
+import { VitrineHeader } from "@/components/site/vitrine-filters";
 import { destinations } from "@/data/demo";
 
 export const Route = createFileRoute("/destinations")({
@@ -31,12 +32,13 @@ export const Route = createFileRoute("/destinations")({
 function DestinationsPage() {
   return (
     <SiteLayout>
-      <div className="container-page py-10">
-        <h1 className="font-display text-3xl font-semibold md:text-4xl">Куда поехать</h1>
-        <p className="mt-2 max-w-2xl text-muted-foreground">
-          Выберите страну: внутри туры от разных компаний с ценами, отелями и питанием рядом.
-        </p>
-        <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="container-page py-8 md:py-12">
+        <VitrineHeader
+          section="Направления"
+          title="Куда поехать"
+          subtitle="Выберите страну: внутри туры от разных компаний с ценами, отелями и питанием рядом."
+        />
+        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {destinations.map((dest) => (
             <Link
               key={dest.id}

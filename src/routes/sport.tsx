@@ -8,6 +8,7 @@ import {
   CityRow,
   KindRow,
   SortRow,
+  VitrineHeader,
   citiesWithOffers,
   isOpenNow,
   type VitrineSort,
@@ -144,13 +145,11 @@ function SportPage() {
   return (
     <SiteLayout>
       <div className="container-page py-8 md:py-12">
-        <p className="text-sm font-medium text-primary">Спорт</p>
-        <h1 className="mt-1 font-display text-3xl font-semibold md:text-5xl">
-          Чем хотите заняться?
-        </h1>
-        <p className="mt-2 max-w-xl text-base leading-relaxed text-foreground/70">
-          Залы, падел, йога и тренеры от компаний. Сравните цены и забронируйте.
-        </p>
+        <VitrineHeader
+          section="Спорт"
+          title="Чем хотите заняться?"
+          subtitle="Залы, падел, йога и тренеры от компаний. Сравните цены и забронируйте."
+        />
 
         <CityRow cities={cities} value={params.city} onChange={(city) => update({ city })} />
 

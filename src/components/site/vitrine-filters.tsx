@@ -14,6 +14,33 @@ import { cn } from "@/lib/utils";
  * сейчас» и «где дешевле».
  */
 
+/**
+ * Шапка раздела: одна и та же во всех витринах.
+ *
+ * Разделы открывались по-разному — где-то тёмная обложка во весь экран,
+ * где-то счётчики с нулями, где-то просто заголовок. Человек не должен
+ * заново понимать, где он оказался: раздел, вопрос, одна строка объяснения.
+ */
+export function VitrineHeader({
+  section,
+  title,
+  subtitle,
+}: {
+  section: string;
+  title: string;
+  subtitle: string;
+}) {
+  return (
+    <header>
+      <p className="text-sm font-medium text-primary">{section}</p>
+      <h1 className="mt-1 font-display text-3xl font-semibold tracking-tight md:text-5xl">
+        {title}
+      </h1>
+      <p className="mt-2 max-w-xl text-base leading-relaxed text-foreground/70">{subtitle}</p>
+    </header>
+  );
+}
+
 export type VitrineKind = { id: string; label: string; emoji?: string; icon?: LucideIcon };
 
 /** Города, в которых на витрине реально что-то есть. */

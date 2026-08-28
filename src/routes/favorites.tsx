@@ -28,8 +28,10 @@ function FavoritesPage() {
 
   return (
     <SiteLayout>
-      <div className="container-page py-10">
-        <h1 className="font-display text-3xl font-semibold md:text-4xl">♡ Избранное</h1>
+      <div className="container-page py-8 md:py-12">
+        <h1 className="font-display text-3xl font-semibold tracking-tight md:text-4xl">
+          Избранное
+        </h1>
         <p className="mt-2 text-muted-foreground">
           {list.length > 0 ? `Сохранено туров: ${list.length}` : "Пока пусто"}
         </p>

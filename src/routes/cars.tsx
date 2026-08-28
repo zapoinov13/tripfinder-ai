@@ -7,6 +7,7 @@ import { CompanySignals } from "@/components/site/company-signals";
 import {
   CityRow,
   SortRow,
+  VitrineHeader,
   citiesWithOffers,
   isOpenNow,
   type VitrineSort,
@@ -174,11 +175,11 @@ function CarsPage() {
   return (
     <SiteLayout>
       <div className="container-page py-8 md:py-12">
-        <p className="text-sm font-medium text-primary">Аренда авто</p>
-        <h1 className="mt-1 font-display text-3xl font-semibold md:text-5xl">Где нужна машина?</h1>
-        <p className="mt-2 max-w-xl text-base leading-relaxed text-foreground/70">
-          Только авто без водителя. Машину с водителем ищите в разделе «Помощь в поездке».
-        </p>
+        <VitrineHeader
+          section="Аренда авто"
+          title="Где нужна машина?"
+          subtitle="Только авто без водителя. Машину с водителем ищите в разделе «Помощь в поездке»."
+        />
 
         {/* Города — из самих объявлений: пока это Дубай, дальше добавятся сами. */}
         <CityRow cities={offerCities} value={params.city} onChange={(city) => update({ city })} />

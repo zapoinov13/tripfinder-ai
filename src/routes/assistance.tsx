@@ -17,6 +17,7 @@ import {
 import { useState } from "react";
 
 import { SiteLayout } from "@/components/site/site-layout";
+import { VitrineHeader } from "@/components/site/vitrine-filters";
 import { Button } from "@/components/ui/button";
 import { VoiceTextarea } from "@/components/ui/voice-textarea";
 import { destinations, formatPrice, resortsByDestination } from "@/data/demo";
@@ -157,46 +158,29 @@ function AssistancePage() {
 
   return (
     <SiteLayout>
-      <section className="relative isolate overflow-hidden">
-        <img
-          src={dest?.image ?? destinations[1]?.image ?? destinations[0]!.image}
-          alt=""
-          className="h-[420px] w-full object-cover sm:h-[460px]"
+      {/* Раздел открывается так же, как остальные витрины: обложка во весь
+          экран заставляла заново понимать, куда человек попал. */}
+      <section className="container-page pt-8 md:pt-12">
+        <VitrineHeader
+          section="Помощь в поездке"
+          title="Что вам нужно?"
+          subtitle="Опишите задачу словами или голосом. Водитель, гид, бронь, фотограф — компании пришлют предложения."
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/70 to-ink/35" />
-        <div className="container-page absolute inset-x-0 top-0 flex h-full flex-col justify-end pb-8 pt-24">
-          <p className="inline-flex w-fit items-center gap-2 rounded-full bg-primary-foreground/12 px-3 py-1 text-xs font-semibold text-primary-foreground">
-            <LifeBuoy className="size-3.5" />
-            Помощь в поездке
-          </p>
-          <h1 className="mt-4 max-w-3xl font-display text-3xl font-semibold leading-tight text-primary-foreground md:text-5xl">
-            Что вам нужно?
-          </h1>
-          <p className="mt-3 max-w-xl text-base leading-relaxed text-primary-foreground/88 md:text-lg">
-            Опишите задачу своими словами или голосом. Водитель, гид, бронь, фотограф: компании
-            пришлют предложения.
-          </p>
-          <div className="mt-6 flex flex-wrap gap-3">
-            <Button size="lg" asChild>
-              <Link to="/request" search={requestSearch()}>
-                Оставить заявку
-              </Link>
-            </Button>
-            <Button
-              size="lg"
-              variant="secondary"
-              className="bg-primary-foreground/12 text-primary-foreground hover:bg-primary-foreground/20"
-              asChild
-            >
-              <Link to="/excursions" search={dest ? { destination: dest.id } : {}}>
-                Смотреть экскурсии
-              </Link>
-            </Button>
-          </div>
+        <div className="mt-5 flex flex-wrap gap-2.5">
+          <Button size="lg" asChild>
+            <Link to="/request" search={requestSearch()}>
+              Оставить заявку
+            </Link>
+          </Button>
+          <Button size="lg" variant="outline" asChild>
+            <Link to="/excursions" search={dest ? { destination: dest.id } : {}}>
+              Смотреть экскурсии
+            </Link>
+          </Button>
         </div>
       </section>
 
-      <div className="border-b border-border/70 bg-card">
+      <div className="mt-6 border-y border-border/70 bg-card">
         <div className="container-page grid gap-3 py-4 sm:grid-cols-3">
           {[
             { icon: Clock, text: "Заявка уходит компаниям сразу" },

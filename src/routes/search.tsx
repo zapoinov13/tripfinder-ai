@@ -14,6 +14,7 @@ import {
 import { useEffect, useMemo, useState } from "react";
 
 import { SiteLayout } from "@/components/site/site-layout";
+import { VitrineHeader } from "@/components/site/vitrine-filters";
 import { TourCard } from "@/components/tours/tour-card";
 import { TourCardSkeleton } from "@/components/tours/tour-card-skeleton";
 import { Button } from "@/components/ui/button";
@@ -641,13 +642,11 @@ function SearchPage() {
     <SiteLayout>
       <div className="border-b border-border/70 bg-secondary/25">
         <div className="container-page py-6 md:py-8">
-          <p className="text-sm font-medium text-primary">Туры</p>
-          <h1 className="mt-1 font-display text-3xl font-semibold md:text-4xl">
-            Куда хотите поехать?
-          </h1>
-          <p className="mt-2 max-w-2xl text-base leading-relaxed text-foreground/70">
-            Ищите через поля или выберите страну ниже. Внутри туры разных компаний.
-          </p>
+          <VitrineHeader
+            section="Туры"
+            title="Куда хотите поехать?"
+            subtitle="Ищите через поля или выберите страну ниже. Внутри туры разных компаний."
+          />
         </div>
       </div>
 

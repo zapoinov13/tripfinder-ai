@@ -24,6 +24,7 @@ import {
 } from "@/components/media/media-card-overlay";
 import { SafeImage } from "@/components/media/safe-image";
 import { SiteLayout } from "@/components/site/site-layout";
+import { VitrineHeader } from "@/components/site/vitrine-filters";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -196,48 +197,32 @@ function ExcursionsPage() {
         />
         <div className="absolute inset-0 bg-gradient-to-r from-background via-background/95 to-background/70" />
         <div className="container-page relative py-8 md:py-10">
-          <p className="text-sm font-medium text-primary">Экскурсии</p>
-          <h1 className="mt-1 max-w-3xl font-display text-3xl font-semibold md:text-4xl">
-            {step === 1
-              ? "Где вы находитесь?"
-              : step === 2
-                ? `Города в ${dest?.country}`
-                : `${city}, ${dest?.country}`}
-          </h1>
-          <p className="mt-2 max-w-2xl text-base leading-relaxed text-foreground/70">
-            {step === 1
-              ? "Определите местоположение или выберите страну. Потом выберите, что хотите сделать."
-              : step === 2
-                ? "Где именно вы отдыхаете? Программы привязаны к городу."
-                : `${countLabel(list.length)} в этом городе. Откройте карточку или оставьте заявку.`}
-          </p>
+          <VitrineHeader
+            section="Экскурсии"
+            title={
+              step === 1
+                ? "Куда хотите съездить?"
+                : step === 2
+                  ? `Города в ${dest?.country}`
+                  : `${city}, ${dest?.country}`
+            }
+            subtitle={
+              step === 1
+                ? "Сафари, яхты, парки и билеты от компаний. Выберите страну и что хотите сделать."
+                : step === 2
+                  ? "Где именно вы отдыхаете? Программы привязаны к городу."
+                  : `${countLabel(list.length)} в этом городе. Откройте карточку или оставьте заявку.`
+            }
+          />
 
-          <div className="mt-5 flex flex-wrap gap-3">
-            <StatPill label="Стран" value={String(stats.countries)} />
-            <StatPill label="Городов" value={String(stats.cities)} />
-            <StatPill label="Программ" value={String(stats.programs)} />
-            <StatPill label="От" value={formatPrice(stats.minPrice)} />
-          </div>
-
-          {step === 1 ? (
-            <div className="mt-5">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => {
-                  if (!navigator.geolocation) {
-                    go({ destination: "uae", city: "Дубай" });
-                    return;
-                  }
-                  navigator.geolocation.getCurrentPosition(
-                    () => go({ destination: "uae", city: "Дубай" }),
-                    () => go({ destination: "uae", city: "Дубай" }),
-                  );
-                }}
-              >
-                <MapPin className="size-4" />
-                Использовать моё местоположение
-              </Button>
+          {/* Счётчики с нулями обещали то, чего в витрине нет: показываем их,
+              только когда есть что считать. */}
+          {stats.programs > 0 ? (
+            <div className="mt-5 flex flex-wrap gap-3">
+              <StatPill label="Стран" value={String(stats.countries)} />
+              <StatPill label="Городов" value={String(stats.cities)} />
+              <StatPill label="Программ" value={String(stats.programs)} />
+              <StatPill label="От" value={formatPrice(stats.minPrice)} />
             </div>
           ) : null}
 

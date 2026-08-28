@@ -7,6 +7,7 @@ import { CompanySignals } from "@/components/site/company-signals";
 import {
   CityRow,
   SortRow,
+  VitrineHeader,
   citiesWithOffers,
   isOpenNow,
   type VitrineSort,
@@ -180,10 +181,11 @@ function StaysPage() {
   return (
     <SiteLayout>
       <div className="container-page py-8 md:py-12">
-        <p className="text-sm font-medium text-primary">Жильё</p>
-        <h1 className="mt-1 font-display text-3xl font-semibold md:text-5xl">
-          Где хотите остановиться?
-        </h1>
+        <VitrineHeader
+          section="Жильё"
+          title="Где хотите остановиться?"
+          subtitle="Отели, апартаменты и виллы от компаний. Цены и условия — сразу, без переписки."
+        />
         <form
           className="surface-card mt-6 grid gap-3 p-3 md:grid-cols-[1.2fr_1fr_auto] md:items-end"
           onSubmit={(e) => {
