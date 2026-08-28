@@ -27,20 +27,27 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
+/**
+ * Три шага платформы. На телефоне читают одну строку, а не абзац, поэтому у
+ * каждого шага есть короткая суть — она говорит то же самое, но за секунду.
+ */
 const how = [
   {
     icon: Sparkles,
     title: "Скажите, что нужно",
+    short: "Опишите поездку словами — покажем подходящее",
     text: "Опишите поездку своими словами: AI откроет нужный раздел и покажет подходящие варианты.",
   },
   {
     icon: Wallet,
     title: "Сравните и выберите",
+    short: "Один тур — цены сразу нескольких компаний",
     text: "Один и тот же тур у разных компаний стоит по-разному. У нас эта разница видна сразу, без переписки в чатах.",
   },
   {
     icon: ShieldCheck,
     title: "Бронируйте напрямую",
+    short: "Оплата компании. Комиссии с туриста нет",
     text: "Договор и оплата у выбранной компании. TourGo не берёт комиссию с туриста: цена не растёт.",
   },
 ];
@@ -150,26 +157,42 @@ function Index() {
             </div>
           </div>
 
-          <ol className="mt-6 grid gap-3 md:mt-8 md:grid-cols-3 md:gap-4">
+          {/* Телефон: три строки, каждая говорит суть. Пустые заголовки с
+              крупными цифрами занимали пол-экрана и не объясняли ничего. */}
+          <ol className="mt-5 space-y-2.5 md:hidden">
+            {how.map((item, i) => (
+              <li key={item.title} className="flex items-start gap-3">
+                <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground">
+                  <item.icon className="size-[18px]" />
+                </span>
+                <span className="min-w-0 pt-0.5">
+                  <span className="block font-display text-[15px] font-semibold leading-tight">
+                    {i + 1}. {item.title}
+                  </span>
+                  <span className="mt-0.5 block text-[13px] leading-snug text-primary-foreground/70">
+                    {item.short}
+                  </span>
+                </span>
+              </li>
+            ))}
+          </ol>
+
+          <ol className="mt-8 hidden gap-4 md:grid md:grid-cols-3">
             {how.map((item, i) => (
               <li
                 key={item.title}
-                className="relative rounded-2xl bg-primary-foreground/[0.06] p-3.5 ring-1 ring-primary-foreground/10 md:p-5"
+                className="relative rounded-2xl bg-primary-foreground/[0.06] p-5 ring-1 ring-primary-foreground/10"
               >
                 <div className="flex items-center gap-3">
-                  <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground md:size-10">
-                    <item.icon className="size-[18px] md:size-5" />
+                  <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground">
+                    <item.icon className="size-5" />
                   </span>
-                  <span className="font-display text-3xl font-semibold text-primary-foreground/25 md:text-4xl">
+                  <span className="font-display text-4xl font-semibold text-primary-foreground/25">
                     {String(i + 1).padStart(2, "0")}
                   </span>
                 </div>
-                <h3 className="mt-3 font-display text-base font-semibold md:text-lg">
-                  {item.title}
-                </h3>
-                {/* На телефоне это последний блок главной: заголовков хватает,
-                    подробности читают на широком экране. */}
-                <p className="mt-1.5 hidden text-sm leading-relaxed text-primary-foreground/70 md:block">
+                <h3 className="mt-3 font-display text-lg font-semibold">{item.title}</h3>
+                <p className="mt-1.5 text-sm leading-relaxed text-primary-foreground/70">
                   {item.text}
                 </p>
               </li>
@@ -186,7 +209,8 @@ function Index() {
             <Button
               size="lg"
               variant="outline"
-              className="w-full border-primary-foreground/25 bg-transparent text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground sm:w-auto"
+              // Горящие уже отдельным блоком выше — на телефоне это второй раз.
+              className="hidden w-full border-primary-foreground/25 bg-transparent text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground sm:inline-flex sm:w-auto"
               asChild
             >
               <Link to="/search" search={{ offers: "hot" } as never}>
