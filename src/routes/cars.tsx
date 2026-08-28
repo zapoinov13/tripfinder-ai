@@ -4,11 +4,17 @@ import { useMemo, useState, useSyncExternalStore } from "react";
 
 import { SiteLayout } from "@/components/site/site-layout";
 import { CompanySignals } from "@/components/site/company-signals";
+import {
+  CityRow,
+  SortRow,
+  citiesWithOffers,
+  isOpenNow,
+  type VitrineSort,
+} from "@/components/site/vitrine-filters";
 import { ServiceRequestDialog } from "@/components/company/service-request-dialog";
 import { Button } from "@/components/ui/button";
 import { DateRangePicker } from "@/components/ui/date-picker";
-import { resortsByDestination } from "@/data/demo";
-import { carClasses, formatKzt, popularCarCountries } from "@/data/scenario-catalog";
+import { carClasses, formatKzt } from "@/data/scenario-catalog";
 import { usePlatformStore } from "@/lib/platform/hooks";
 import { companyPromoBadge, promotedCompanyIds } from "@/lib/platform/promotions";
 import {
@@ -81,7 +87,7 @@ function CarsPage() {
   const params = Route.useSearch();
   const navigate = useNavigate({ from: "/cars" });
   const update = (patch: Search) => void navigate({ search: { ...params, ...patch } as never });
-  const [geoHint, setGeoHint] = useState("");
+  const [sort, setSort] = useState<VitrineSort>("default");
   // Заявка клиента в компанию-владельца объявления (запись/бронь).
   const [requestTarget, setRequestTarget] = useState<{
     organizationId: string;
@@ -97,7 +103,6 @@ function CarsPage() {
   const orgById = new Map(state.organizations.map((o) => [o.id, o] as const));
   const promoted = useMemo(() => promotedCompanyIds(), [state.promotions]);
 
-  const cities = params.destination ? (resortsByDestination[params.destination] ?? []) : [];
   const needle = (params.q ?? "").toLowerCase();
 
   const catalog: CarCard[] = [
@@ -141,19 +146,23 @@ function CarsPage() {
     return true;
   });
 
-  const useLocation = () => {
-    if (!navigator.geolocation) {
-      setGeoHint("Геолокация недоступна, выберите страну вручную");
-      return;
-    }
-    navigator.geolocation.getCurrentPosition(
-      () => {
-        setGeoHint("Определили регион. Проверьте город и даты.");
-        update({ destination: "uae", city: "Дубай" });
-      },
-      () => setGeoHint("Не удалось определить место, выберите страну"),
-    );
-  };
+  // Города и порядок показа — по факту объявлений.
+  const offerCities = citiesWithOffers(catalog);
+  const openNow = (item: CarCard) =>
+    Boolean(item.organizationId && isOpenNow(orgById.get(item.organizationId)));
+  const openCount = list.filter(openNow).length;
+  const filtered = sort === "open" ? list.filter(openNow) : list;
+  const sorted =
+    sort === "cheap"
+      ? [...filtered].sort((a, b) => (a.price || Infinity) - (b.price || Infinity))
+      : filtered;
+  const orderedList =
+    sort === "cheap"
+      ? sorted
+      : [
+          ...sorted.filter((i) => i.organizationId && promoted.has(i.organizationId)),
+          ...sorted.filter((i) => !i.organizationId || !promoted.has(i.organizationId)),
+        ];
 
   const requestFor = (wish: string) => ({
     kind: "assistance" as const,
@@ -171,49 +180,8 @@ function CarsPage() {
           Только авто без водителя. Машину с водителем ищите в разделе «Помощь в поездке».
         </p>
 
-        <div className="mt-6 flex flex-wrap gap-3">
-          <Button type="button" variant="outline" onClick={useLocation}>
-            Использовать моё местоположение
-          </Button>
-          {geoHint ? <p className="self-center text-sm text-foreground/70">{geoHint}</p> : null}
-        </div>
-
-        <h2 className="mt-10 font-display text-2xl font-semibold">Популярные страны</h2>
-        <div className="mt-4 flex flex-wrap gap-2">
-          {popularCarCountries.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => update({ destination: item.id, city: "" })}
-              className={cn(
-                "rounded-full border px-4 py-2 text-sm font-semibold",
-                params.destination === item.id
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "border-border bg-card",
-              )}
-            >
-              {item.flag} {item.country}
-            </button>
-          ))}
-        </div>
-
-        {cities.length ? (
-          <div className="mt-4 flex flex-wrap gap-2">
-            {cities.map((city) => (
-              <button
-                key={city.name}
-                type="button"
-                onClick={() => update({ city: city.name })}
-                className={cn(
-                  "rounded-full px-3 py-1.5 text-sm",
-                  params.city === city.name ? "bg-ink text-primary-foreground" : "bg-secondary",
-                )}
-              >
-                {city.name}
-              </button>
-            ))}
-          </div>
-        ) : null}
+        {/* Города — из самих объявлений: пока это Дубай, дальше добавятся сами. */}
+        <CityRow cities={offerCities} value={params.city} onChange={(city) => update({ city })} />
 
         <form
           className="surface-card mt-8 grid gap-3 p-4 md:grid-cols-[1fr_10rem_auto] md:items-end"
@@ -266,11 +234,12 @@ function CarsPage() {
 
         <div id="cars-results" className="mt-8 scroll-mt-28">
           {list.length > 0 ? (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {[
-                ...list.filter((i) => i.organizationId && promoted.has(i.organizationId)),
-                ...list.filter((i) => !i.organizationId || !promoted.has(i.organizationId)),
-              ].map((item) => {
+            <SortRow value={sort} onChange={setSort} openCount={openCount} />
+          ) : null}
+
+          {orderedList.length > 0 ? (
+            <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {orderedList.map((item) => {
                 const badge = item.organizationId
                   ? companyPromoBadge(promoted.get(item.organizationId))
                   : null;

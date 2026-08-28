@@ -4,6 +4,13 @@ import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 
 import { SiteLayout } from "@/components/site/site-layout";
 import { CompanySignals } from "@/components/site/company-signals";
+import {
+  CityRow,
+  SortRow,
+  citiesWithOffers,
+  isOpenNow,
+  type VitrineSort,
+} from "@/components/site/vitrine-filters";
 import { ServiceRequestDialog } from "@/components/company/service-request-dialog";
 import { Button } from "@/components/ui/button";
 import { DateRangePicker } from "@/components/ui/date-picker";
@@ -82,6 +89,7 @@ function StaysPage() {
   const navigate = useNavigate({ from: "/stays" });
   const update = (patch: Search) => void navigate({ search: { ...params, ...patch } as never });
   const [city, setCity] = useState(params.city ?? params.q ?? "");
+  const [sort, setSort] = useState<VitrineSort>("default");
   // Заявка клиента в компанию-владельца объявления (запись/бронь).
   const [requestTarget, setRequestTarget] = useState<{
     organizationId: string;
@@ -138,6 +146,24 @@ function StaysPage() {
       )
     );
   });
+
+  // Города и порядок показа — по факту, а не по списку курортов из демо.
+  const cities = citiesWithOffers(catalog);
+  const openNow = (item: StayCard) =>
+    Boolean(item.organizationId && isOpenNow(orgById.get(item.organizationId)));
+  const openCount = list.filter(openNow).length;
+  const filtered = sort === "open" ? list.filter(openNow) : list;
+  const sorted =
+    sort === "cheap"
+      ? [...filtered].sort((a, b) => (a.price || Infinity) - (b.price || Infinity))
+      : filtered;
+  const orderedList =
+    sort === "cheap"
+      ? sorted
+      : [
+          ...sorted.filter((i) => i.organizationId && promoted.has(i.organizationId)),
+          ...sorted.filter((i) => !i.organizationId || !promoted.has(i.organizationId)),
+        ];
 
   const dest = destinations.find((d) => d.id === params.destination);
   const areas = dest
@@ -204,27 +230,15 @@ function StaysPage() {
           </Button>
         </form>
 
-        <h2 className="mt-10 font-display text-2xl font-semibold">Популярные направления</h2>
-        <div className="mt-4 flex flex-wrap gap-2">
-          {popularStayCities.map((item) => (
-            <button
-              key={item.name}
-              type="button"
-              onClick={() => {
-                setCity(item.city);
-                update({ destination: item.destinationId, city: item.city });
-              }}
-              className={cn(
-                "rounded-full border px-4 py-2 text-sm font-semibold",
-                params.city === item.city
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "border-border bg-card hover:border-primary/40",
-              )}
-            >
-              {item.name}
-            </button>
-          ))}
-        </div>
+        {/* Города — из самих объявлений: витрина не обещает то, чего в ней нет. */}
+        <CityRow
+          cities={cities}
+          value={params.city}
+          onChange={(next) => {
+            setCity(next);
+            update({ city: next });
+          }}
+        />
 
         <div className="mt-6 flex flex-wrap gap-2">
           {stayKinds.map((kind) => (
@@ -257,12 +271,11 @@ function StaysPage() {
           </div>
         ) : null}
 
-        {list.length > 0 ? (
-          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {[
-              ...list.filter((i) => i.organizationId && promoted.has(i.organizationId)),
-              ...list.filter((i) => !i.organizationId || !promoted.has(i.organizationId)),
-            ].map((item) => {
+        {list.length > 0 ? <SortRow value={sort} onChange={setSort} openCount={openCount} /> : null}
+
+        {orderedList.length > 0 ? (
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {orderedList.map((item) => {
               const badge = item.organizationId
                 ? companyPromoBadge(promoted.get(item.organizationId))
                 : null;

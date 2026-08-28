@@ -4,9 +4,16 @@ import { useMemo, useSyncExternalStore, useState } from "react";
 
 import { SiteLayout } from "@/components/site/site-layout";
 import { CompanySignals } from "@/components/site/company-signals";
+import {
+  CityRow,
+  KindRow,
+  SortRow,
+  citiesWithOffers,
+  isOpenNow,
+  type VitrineSort,
+} from "@/components/site/vitrine-filters";
 import { ServiceRequestDialog } from "@/components/company/service-request-dialog";
 import { Button } from "@/components/ui/button";
-import { destinations } from "@/data/demo";
 import { formatKzt, sportKinds } from "@/data/scenario-catalog";
 import { usePlatformStore } from "@/lib/platform/hooks";
 import { companyPromoBadge, promotedCompanyIds } from "@/lib/platform/promotions";
@@ -58,7 +65,7 @@ function SportPage() {
   const params = Route.useSearch();
   const navigate = useNavigate({ from: "/sport" });
   const update = (patch: Search) => void navigate({ search: { ...params, ...patch } as never });
-  const [geoHint, setGeoHint] = useState("");
+  const [sort, setSort] = useState<VitrineSort>("default");
   // Заявка клиента в компанию-владельца объявления (запись/бронь).
   const [requestTarget, setRequestTarget] = useState<{
     organizationId: string;
@@ -106,25 +113,26 @@ function SportPage() {
     return true;
   });
 
-  // Продвигаемые компании — выше в витрине (стабильно, без пересортировки прочих).
-  const orderedList = [
-    ...list.filter((i) => i.organizationId && promoted.has(i.organizationId)),
-    ...list.filter((i) => !i.organizationId || !promoted.has(i.organizationId)),
-  ];
+  // Города берём из самих объявлений: пока это Дубай, дальше добавятся сами.
+  const cities = citiesWithOffers(catalog);
+  const openNow = (item: SportCard) =>
+    Boolean(item.organizationId && isOpenNow(orgById.get(item.organizationId)));
+  const openCount = list.filter(openNow).length;
 
-  const useLocation = () => {
-    if (!navigator.geolocation) {
-      setGeoHint("Выберите город вручную");
-      return;
-    }
-    navigator.geolocation.getCurrentPosition(
-      () => {
-        setGeoHint("Похоже, вы в Дубае");
-        update({ destination: "uae", city: "Дубай" });
-      },
-      () => setGeoHint("Не удалось определить место"),
-    );
-  };
+  const filtered = sort === "open" ? list.filter(openNow) : list;
+  const sorted =
+    sort === "cheap"
+      ? [...filtered].sort((a, b) => (a.price || Infinity) - (b.price || Infinity))
+      : filtered;
+
+  // Продвигаемые компании — выше в витрине (стабильно, без пересортировки прочих).
+  const orderedList =
+    sort === "cheap"
+      ? sorted
+      : [
+          ...sorted.filter((i) => i.organizationId && promoted.has(i.organizationId)),
+          ...sorted.filter((i) => !i.organizationId || !promoted.has(i.organizationId)),
+        ];
 
   const requestFor = (wish: string) => ({
     kind: "assistance" as const,
@@ -144,53 +152,14 @@ function SportPage() {
           Залы, падел, йога и тренеры от компаний. Сравните цены и забронируйте.
         </p>
 
-        <div className="mt-6 flex flex-wrap gap-3">
-          <Button type="button" variant="outline" onClick={useLocation}>
-            <MapPin className="size-4" />
-            Использовать моё местоположение
-          </Button>
-          {geoHint ? <p className="self-center text-sm text-foreground/70">{geoHint}</p> : null}
-        </div>
+        <CityRow cities={cities} value={params.city} onChange={(city) => update({ city })} />
 
-        <div className="mt-6 flex flex-wrap gap-2">
-          {destinations.slice(0, 8).map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => update({ destination: item.id, city: item.city })}
-              className={cn(
-                "rounded-full border px-4 py-2 text-sm font-semibold",
-                params.destination === item.id
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "border-border bg-card",
-              )}
-            >
-              {item.flag} {item.city}
-            </button>
-          ))}
-        </div>
+        <KindRow kinds={sportKinds} value={params.kind} onChange={(kind) => update({ kind })} />
 
-        <div className="mt-8 grid grid-cols-2 gap-3 md:grid-cols-5">
-          {sportKinds.map((kind) => (
-            <button
-              key={kind.id}
-              type="button"
-              onClick={() => update({ kind: params.kind === kind.id ? "" : kind.id })}
-              className={cn(
-                "surface-card min-h-[6.5rem] p-4 text-left",
-                params.kind === kind.id && "ring-2 ring-primary",
-              )}
-            >
-              <span className="text-2xl">{kind.emoji}</span>
-              <span className="mt-2 block font-display text-sm font-semibold leading-snug md:text-base">
-                {kind.label}
-              </span>
-            </button>
-          ))}
-        </div>
+        {list.length > 0 ? <SortRow value={sort} onChange={setSort} openCount={openCount} /> : null}
 
-        {list.length > 0 ? (
-          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {orderedList.length > 0 ? (
+          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {orderedList.map((item) => {
               const badge = item.organizationId
                 ? companyPromoBadge(promoted.get(item.organizationId))
