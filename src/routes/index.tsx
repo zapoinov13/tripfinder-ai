@@ -53,16 +53,18 @@ function Index() {
 
   return (
     <SiteLayout>
-      <div className="flex min-h-[calc(100svh-4rem)] flex-col md:min-h-0">
+      {/* На телефоне блок больше не растянут на весь экран: пустота под плитками
+          отодвигала направления за сгиб, и до первой цены было два экрана. */}
+      <div className="flex flex-col">
         <section className="md:container-page md:py-14">
           <div className="relative overflow-hidden md:rounded-[2.5rem]">
             <img
               src={heroImage}
               alt="Пляж и курорт: подбор туров на TourGo"
-              className="h-[13.5rem] w-full object-cover object-[center_32%] animate-soft-zoom sm:h-[15rem] md:h-[32rem]"
+              className="h-[10.5rem] w-full object-cover object-[center_32%] animate-soft-zoom sm:h-[13rem] md:h-[32rem]"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/45 to-ink/10" />
-            <div className="absolute inset-x-0 bottom-0 px-4 pb-8 pt-10 text-primary-foreground md:p-10">
+            <div className="absolute inset-x-0 bottom-0 px-4 pb-5 pt-10 text-primary-foreground md:p-10">
               <p className="hidden font-display text-3xl font-semibold tracking-tight md:mb-5 md:block">
                 TourGo
               </p>
@@ -80,7 +82,7 @@ function Index() {
           </div>
         </section>
 
-        <section className="flex flex-1 flex-col px-4 pb-[calc(5.75rem+env(safe-area-inset-bottom))] md:container-page md:px-8 md:pb-0">
+        <section className="flex flex-col px-4 md:container-page md:px-8">
           <Link
             to="/ai-search"
             search={{} as never}
@@ -98,7 +100,7 @@ function Index() {
                 key={item.id}
                 to={item.to}
                 search={{} as never}
-                className="flex h-[4.25rem] items-center gap-3 rounded-2xl bg-card px-3 ring-1 ring-black/[0.06] md:surface-card md:h-auto md:min-h-[11.5rem] md:flex-col md:items-start md:justify-between md:gap-5 md:p-6 md:ring-0 md:transition-transform md:hover:-translate-y-1"
+                className="flex h-16 items-center gap-3 rounded-2xl bg-card px-3 ring-1 ring-black/[0.06] md:surface-card md:h-auto md:min-h-[11.5rem] md:flex-col md:items-start md:justify-between md:gap-5 md:p-6 md:ring-0 md:transition-transform md:hover:-translate-y-1"
               >
                 <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-ink text-primary-foreground md:size-12 md:rounded-2xl">
                   <item.icon className="size-5 md:size-[1.35rem]" strokeWidth={1.75} aria-hidden />
@@ -121,7 +123,9 @@ function Index() {
 
           <Link
             to={b2bNav.to}
-            className="mt-auto flex h-12 shrink-0 items-center justify-center gap-2 rounded-2xl bg-ink text-[15px] font-semibold text-primary-foreground md:mt-8 md:h-14 md:w-auto md:self-start md:px-8"
+            // Турист скачал приложение ради поездки: вход для компаний ему на первом
+            // экране не нужен — он есть в меню и в подвале.
+            className="mt-3 hidden h-11 shrink-0 items-center justify-center gap-2 rounded-2xl bg-ink text-[15px] font-semibold text-primary-foreground md:mt-8 md:flex md:h-14 md:w-auto md:self-start md:px-8"
           >
             <Building2 className="size-4 md:size-5" />
             {b2bNav.title}
@@ -150,7 +154,7 @@ function Index() {
             {how.map((item, i) => (
               <li
                 key={item.title}
-                className="relative rounded-2xl bg-primary-foreground/[0.06] p-4 ring-1 ring-primary-foreground/10 md:p-5"
+                className="relative rounded-2xl bg-primary-foreground/[0.06] p-3.5 ring-1 ring-primary-foreground/10 md:p-5"
               >
                 <div className="flex items-center gap-3">
                   <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground md:size-10">
@@ -163,7 +167,9 @@ function Index() {
                 <h3 className="mt-3 font-display text-base font-semibold md:text-lg">
                   {item.title}
                 </h3>
-                <p className="mt-1.5 text-sm leading-relaxed text-primary-foreground/70">
+                {/* На телефоне это последний блок главной: заголовков хватает,
+                    подробности читают на широком экране. */}
+                <p className="mt-1.5 hidden text-sm leading-relaxed text-primary-foreground/70 md:block">
                   {item.text}
                 </p>
               </li>
