@@ -19,6 +19,7 @@ import { carClasses, formatKzt } from "@/data/scenario-catalog";
 import { usePlatformStore } from "@/lib/platform/hooks";
 import { companyPromoBadge, promotedCompanyIds } from "@/lib/platform/promotions";
 import {
+  fetchPublishedVertical,
   listPublishedVertical,
   subscribeVerticalListings,
   type VerticalListing,
@@ -63,6 +64,15 @@ export const Route = createFileRoute("/cars")({
     ...(typeof search["dropoff"] === "string" ? { dropoff: search["dropoff"] } : {}),
     ...(typeof search["age"] === "string" ? { age: search["age"] } : {}),
   }),
+  /**
+   * Витрина рендерится на сервере, где браузерный стор объявлений пуст, — и
+   * страница раздела уходила в индекс с текстом «пока ничего нет». Загрузчик
+   * берёт опубликованные объявления сам; в браузере, где каталог уже загружен,
+   * запрос не делается.
+   */
+  loader: async () => ({
+    listings: listPublishedVertical("car").length ? [] : await fetchPublishedVertical("car"),
+  }),
   head: () =>
     seo({
       title: "Аренда авто без водителя",
@@ -97,7 +107,10 @@ function CarsPage() {
   } | null>(null);
 
   const [age, setAge] = useState(params.age ?? "25");
-  const published = usePublishedCars();
+  const stored = usePublishedCars();
+  // До загрузки каталога показываем то, что пришло с сервера.
+  const fromLoader = Route.useLoaderData().listings;
+  const published = stored.length ? stored : fromLoader;
   const state = usePlatformStore();
   // Рейтинг и часы берём из карточек компаний.
   const orgById = new Map(state.organizations.map((o) => [o.id, o] as const));

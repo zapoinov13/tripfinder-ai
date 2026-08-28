@@ -1,4 +1,5 @@
 import { getSupabase } from "@/lib/supabase/client";
+import { resolveSupabaseConfig } from "@/lib/supabase/config";
 
 import type { VerticalId, VerticalOfferDraft } from "./service-ingest";
 
@@ -213,6 +214,36 @@ export async function hydrateVerticalListingsFromSupabase() {
   );
   writeAll(merged);
   return { ok: true as const, listings: merged.length };
+}
+
+/**
+ * Опубликованные объявления раздела прямо из базы, без браузерного стора.
+ *
+ * Витрины рендерятся на сервере, где стор пуст, — и поисковик видел «пока
+ * ничего нет» на всех страницах разделов. Здесь страница на сервере берёт
+ * список сама; в браузере после загрузки каталога его заменяет обычный стор.
+ */
+export async function fetchPublishedVertical(vertical: VerticalId): Promise<VerticalListing[]> {
+  const { url, publishableKey } = resolveSupabaseConfig();
+  if (!url || !publishableKey) return [];
+  try {
+    const response = await fetch(
+      `${url}/rest/v1/vertical_listings?select=*&status=eq.published&vertical=eq.${vertical}&limit=200`,
+      {
+        headers: { apikey: publishableKey, authorization: `Bearer ${publishableKey}` },
+        signal: AbortSignal.timeout(3000),
+      },
+    );
+    if (!response.ok) return [];
+    const rows = (await response.json()) as Record<string, unknown>[];
+    return rows.flatMap((row) => {
+      const mapped = fromRow(row);
+      return mapped ? [mapped] : [];
+    });
+  } catch {
+    // Витрина без списка всё равно откроется: каталог приедет в браузер.
+    return [];
+  }
 }
 
 export function subscribeVerticalListings(onChange: Listener) {

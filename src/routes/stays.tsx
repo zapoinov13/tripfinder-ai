@@ -20,6 +20,7 @@ import { formatKzt, popularStayCities, stayAreas, stayKinds } from "@/data/scena
 import { usePlatformStore } from "@/lib/platform/hooks";
 import { companyPromoBadge, promotedCompanyIds } from "@/lib/platform/promotions";
 import {
+  fetchPublishedVertical,
   listPublishedVertical,
   subscribeVerticalListings,
   type VerticalListing,
@@ -64,6 +65,15 @@ export const Route = createFileRoute("/stays")({
     ...(typeof search["checkIn"] === "string" ? { checkIn: search["checkIn"] } : {}),
     ...(typeof search["checkOut"] === "string" ? { checkOut: search["checkOut"] } : {}),
   }),
+  /**
+   * Витрина рендерится на сервере, где браузерный стор объявлений пуст, — и
+   * страница раздела уходила в индекс с текстом «пока ничего нет». Загрузчик
+   * берёт опубликованные объявления сам; в браузере, где каталог уже загружен,
+   * запрос не делается.
+   */
+  loader: async () => ({
+    listings: listPublishedVertical("stay").length ? [] : await fetchPublishedVertical("stay"),
+  }),
   head: () =>
     seo({
       title: "Жильё: апартаменты, виллы, отели",
@@ -98,7 +108,10 @@ function StaysPage() {
     listingName: string;
   } | null>(null);
 
-  const published = usePublishedStays();
+  const stored = usePublishedStays();
+  // До загрузки каталога показываем то, что пришло с сервера.
+  const fromLoader = Route.useLoaderData().listings;
+  const published = stored.length ? stored : fromLoader;
   const state = usePlatformStore();
   // Рейтинг и часы берём из карточек компаний.
   const orgById = new Map(state.organizations.map((o) => [o.id, o] as const));
