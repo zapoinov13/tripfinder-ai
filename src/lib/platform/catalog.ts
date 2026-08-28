@@ -80,12 +80,17 @@ export function pushNotification(
     ...s,
     notifications: [n, ...s.notifications],
   }));
-  void dispatchPushNotification({
-    userId,
-    title,
-    body,
-    type,
-    ...(payload ? { data: payload } : {}),
-  });
+  // Уведомление второй стороне создаёт база: триггеры знают, кто с кем связан,
+  // а edge-функция чужой userId и не примет. Отсюда шлём только себе —
+  // напоминания и подтверждения самому пользователю.
+  if (userId === getState().session?.userId) {
+    void dispatchPushNotification({
+      userId,
+      title,
+      body,
+      type,
+      ...(payload ? { data: payload } : {}),
+    });
+  }
   return n;
 }
