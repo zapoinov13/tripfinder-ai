@@ -40,7 +40,7 @@ export function DestinationRail({ tours }: { tours: Tour[] }) {
         Популярные направления
       </h2>
       <p className="mt-1 text-sm text-muted-foreground">
-        Цены живые — от компаний, которые сейчас продают эти туры
+        Цены от компаний, которые сейчас продают эти туры
       </p>
 
       <div className="-mx-4 mt-4 flex snap-x snap-mandatory gap-3 overflow-x-auto scroll-pl-4 px-4 pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:mx-0 md:grid md:grid-cols-4 md:gap-4 md:overflow-visible md:px-0 lg:grid-cols-5">
