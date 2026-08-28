@@ -26,3 +26,4 @@ export { EmptyState } from "./empty-state";
 export { FilterBar, TabPills } from "./filter-bar";
 export { ConfirmAction } from "./confirm-action";
 export { userName, userEmail, orgName, tourTitle, formatRelativeRu } from "./lookups";
+export { auditView, auditToneClass, ROUTINE_ACTIONS } from "./audit-view";

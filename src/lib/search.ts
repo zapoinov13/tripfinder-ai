@@ -250,7 +250,7 @@ function shiftDays(isoDate: string, days: number) {
   return d.toISOString().slice(0, 10);
 }
 
-export function sortTours(list: Tour[], sort: SortKey): Tour[] {
+export function sortTours(list: Tour[], sort: SortKey, weights?: Partial<RankingWeights>): Tour[] {
   const out = [...list];
   switch (sort) {
     case "price-asc":
@@ -270,26 +270,47 @@ export function sortTours(list: Tour[], sort: SortKey): Tour[] {
     case "hot":
       return out.sort((a, b) => Number(b.tags.includes("hot")) - Number(a.tags.includes("hot")));
     case "match":
-      return out.sort((a, b) => rankingScore(b) - rankingScore(a));
+      return out.sort((a, b) => rankingScore(b, weights) - rankingScore(a, weights));
     default:
-      return out.sort((a, b) => rankingScore(b) - rankingScore(a));
+      return out.sort((a, b) => rankingScore(b, weights) - rankingScore(a, weights));
   }
 }
 
-export function rankingScore(t: Tour) {
+/** Из чего складывается место тура в выдаче. */
+export type RankingWeights = {
+  relevance: number;
+  price: number;
+  quality: number;
+  rating: number;
+  availability: number;
+  conversion: number;
+  freshness: number;
+  sponsored: number;
+  premium: number;
+};
+
+/**
+ * Вес каждого слагаемого настраивается в админке.
+ *
+ * Раньше веса из конфига сводились к одному среднему множителю на весь балл —
+ * то есть не меняли порядок вообще, сколько их ни крути. Теперь вес умножает
+ * своё слагаемое: поднять «цену» действительно значит показывать дешёвое выше.
+ */
+export function rankingScore(t: Tour, weights?: Partial<RankingWeights>) {
   const hotel = getHotel(t.hotelId);
-  const relevanceScore = t.tags.includes("best") ? 24 : 12;
-  const priceScore = Math.max(0, 22 - t.price / 180000);
-  const qualityScore = hotel.stars * 3;
-  const ratingScore = hotel.rating * 3;
-  const availabilityScore = t.transfer ? 6 : 3;
-  const conversionScore = Math.min(10, t.bookings / 4);
-  const freshnessScore = Math.max(
-    0,
-    8 - (Date.now() - new Date(t.createdAt).getTime()) / 86400000 / 45,
-  );
-  const sponsoredScore = t.tags.includes("sponsored") ? 4 : 0;
-  const premiumScore = t.tags.includes("premium") ? 5 : 0;
+  const w = (key: keyof RankingWeights) => weights?.[key] ?? 1;
+
+  const relevanceScore = (t.tags.includes("best") ? 24 : 12) * w("relevance");
+  const priceScore = Math.max(0, 22 - t.price / 180000) * w("price");
+  const qualityScore = hotel.stars * 3 * w("quality");
+  const ratingScore = hotel.rating * 3 * w("rating");
+  const availabilityScore = (t.transfer ? 6 : 3) * w("availability");
+  const conversionScore = Math.min(10, t.bookings / 4) * w("conversion");
+  const freshnessScore =
+    Math.max(0, 8 - (Date.now() - new Date(t.createdAt).getTime()) / 86400000 / 45) *
+    w("freshness");
+  const sponsoredScore = (t.tags.includes("sponsored") ? 4 : 0) * w("sponsored");
+  const premiumScore = (t.tags.includes("premium") ? 5 : 0) * w("premium");
 
   return (
     relevanceScore +

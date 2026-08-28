@@ -133,6 +133,25 @@ export const auditActionLabel: Record<string, string> = {
   service_request_cancelled: "Заявка клиента отменена",
   service_request_moved: "Запись перенесена",
   service_visit_reminder: "Напоминание о записи",
+  login: "Вход в аккаунт",
+  logout: "Выход из аккаунта",
+  migrate_anonymous_state: "Перенос данных гостя в аккаунт",
+  delete_account: "Аккаунт удалён владельцем",
+  booking_confirmed: "Бронь подтверждена",
+  booking_status_change: "Смена статуса брони",
+  trip_request_created: "Новая заявка на подбор тура",
+  offer_sent: "Отправлено предложение по заявке",
+  offer_chosen: "Турист выбрал предложение",
+  tour_published: "Тур опубликован",
+  supplier_feed_applied: "Импорт туров из фида",
+  operator_plan_change: "Партнёр сменил тариф",
+  company_listed_by_platform: "Компания заведена платформой",
+  company_claim_created: "Заявка на владение компанией",
+  company_claim_approved: "Компания передана владельцу",
+  company_claim_declined: "Заявка на владение отклонена",
+  company_verification_submitted: "Компания отправила документы",
+  company_review_added: "Новый отзыв о компании",
+  company_review_replied: "Ответ компании на отзыв",
 };
 
 export const auditEntityLabel: Record<string, string> = {
@@ -145,6 +164,11 @@ export const auditEntityLabel: Record<string, string> = {
   api_connection: "API-подключение",
   store: "хранилище",
   service_request: "заявка клиента",
+  company_claim: "заявка на владение",
+  company_review: "отзыв",
+  trip_request: "заявка на подбор",
+  request_offer: "предложение",
+  session: "сессия",
 };
 
 // Ключи должны совпадать с типами, которые реально пишет trackEvent(...).

@@ -62,7 +62,7 @@ export class SearchService {
     const scored = withPromo.map((t) => {
       const hotel = getHotel(t.hotelId);
       const haystack = buildTourSearchHaystack(t as Tour, hotel);
-      const base = rankingScore(t as Tour) * averageWeight(weights);
+      const base = rankingScore(t as Tour, weights);
       const textBoost = query ? textRelevanceScore(haystack, query) : 0;
       return {
         tour: t as PlatformTour,
@@ -79,11 +79,12 @@ export class SearchService {
     const sorted = sortTours(
       scored.map((s) => s.tour) as Tour[],
       params.sort as SortKey,
+      weights,
     ) as PlatformTour[];
 
     return sorted.map((t) => {
       const hit = scored.find((s) => s.tour.id === t.id);
-      return { ...t, finalScore: hit?.finalScore ?? rankingScore(t as Tour) };
+      return { ...t, finalScore: hit?.finalScore ?? rankingScore(t as Tour, weights) };
     });
   }
 
@@ -102,11 +103,6 @@ export class SearchService {
   getById(id: string) {
     return getActiveTours().find((t) => t.id === id);
   }
-}
-
-function averageWeight(w: Record<string, number>) {
-  const vals = Object.values(w);
-  return vals.reduce((a, b) => a + b, 0) / Math.max(1, vals.length);
 }
 
 function shift(isoDate: string, days: number) {

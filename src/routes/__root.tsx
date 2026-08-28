@@ -12,7 +12,7 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { NativeBootstrap } from "@/components/native/native-bootstrap";
 import { NativeNetworkBanner } from "@/components/native/network-banner";
-import { reportLovableError } from "../lib/lovable-error-reporting";
+import { reportRuntimeError } from "../lib/editor-error-reporting";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/lib/platform/auth";
 import { TourStateProvider } from "@/lib/tour-state";
@@ -25,16 +25,16 @@ function NotFoundComponent() {
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
         <h1 className="text-7xl font-bold text-foreground">404</h1>
-        <h2 className="mt-4 text-xl font-semibold text-foreground">Page not found</h2>
+        <h2 className="mt-4 text-xl font-semibold text-foreground">Страница не найдена</h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          The page you're looking for doesn't exist or has been moved.
+          Такой страницы нет или она переехала. Начните с главной — оттуда открывается всё.
         </p>
         <div className="mt-6">
           <Link
             to="/"
             className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
-            Go home
+            На главную
           </Link>
         </div>
       </div>
@@ -46,17 +46,17 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   console.error(error);
   const router = useRouter();
   useEffect(() => {
-    reportLovableError(error, { boundary: "tanstack_root_error_component" });
+    reportRuntimeError(error, { boundary: "tanstack_root_error_component" });
   }, [error]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
         <h1 className="text-xl font-semibold tracking-tight text-foreground">
-          This page didn't load
+          Страница не открылась
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Something went wrong on our end. You can try refreshing or head back home.
+          Это на нашей стороне. Обновите страницу или вернитесь на главную — данные не потерялись.
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
@@ -66,19 +66,29 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
             }}
             className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
-            Try again
+            Попробовать снова
           </button>
           <a
             href="/"
             className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
           >
-            Go home
+            На главную
           </a>
         </div>
       </div>
     </div>
   );
 }
+
+/**
+ * Обложка для ссылок в мессенджерах и соцсетях.
+ *
+ * Абсолютный адрес нужен Twitter/X; остальные площадки разрешают путь от корня.
+ * Домен берём из VITE_SITE_URL — пока его нет, отдаём путь, и превью работает
+ * везде, кроме X.
+ */
+const siteUrl = (import.meta.env["VITE_SITE_URL"] as string | undefined)?.replace(/\/$/, "") ?? "";
+const ogImage = `${siteUrl}/og-cover.png`;
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   head: () => ({
@@ -106,7 +116,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:site", content: "@Lovable" },
       {
         name: "twitter:title",
         content: "TourGo: всё для путешествия в одном месте",
@@ -116,16 +125,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content:
           "Туры, экскурсии, жильё, авто, спорт и помощь в поездке. Платите напрямую выбранной компании.",
       },
-      {
-        property: "og:image",
-        content:
-          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/324f72f0-8940-4e4a-88ed-890c8f9e59e4/id-preview-7349a270--1f9480c7-348a-4034-8bb8-191f4d4f153d.lovable.app-1785600063132.png",
-      },
-      {
-        name: "twitter:image",
-        content:
-          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/324f72f0-8940-4e4a-88ed-890c8f9e59e4/id-preview-7349a270--1f9480c7-348a-4034-8bb8-191f4d4f153d.lovable.app-1785600063132.png",
-      },
+      { property: "og:image", content: ogImage },
+      { property: "og:image:width", content: "1200" },
+      { property: "og:image:height", content: "630" },
+      { property: "og:locale", content: "ru_RU" },
+      { property: "og:site_name", content: "TourGo" },
+      { name: "twitter:image", content: ogImage },
     ],
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },

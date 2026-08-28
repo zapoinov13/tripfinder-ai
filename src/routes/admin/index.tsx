@@ -9,7 +9,6 @@ import {
   CheckCircle2,
   Inbox,
   Luggage,
-  Megaphone,
   RefreshCw,
   Smartphone,
   Ticket,
@@ -17,7 +16,13 @@ import {
   Wallet,
 } from "lucide-react";
 
-import { auditActionLabel, formatRelativeRu, orgName, userName } from "@/components/admin";
+import {
+  auditToneClass,
+  auditView,
+  formatRelativeRu,
+  orgName,
+  ROUTINE_ACTIONS,
+} from "@/components/admin";
 import { useAdminNav } from "@/components/dash/nav-items";
 import { DashShell } from "@/components/dash/dash-shell";
 import { Button } from "@/components/ui/button";
@@ -58,30 +63,6 @@ type LoadState =
   | { status: "loading" }
   | { status: "live"; stats: AdminOverviewStats }
   | { status: "fallback"; reason: string };
-
-/** Человеческая строка «что именно и кто» для записи аудита. */
-function auditDetail(log: {
-  actorId?: string;
-  entityType: string;
-  entityId?: string;
-  meta?: Record<string, unknown>;
-}): string {
-  const parts: string[] = [];
-  const meta = log.meta ?? {};
-  const pick = (key: string) => {
-    const v = meta[key];
-    return typeof v === "string" && v ? v : null;
-  };
-  const target = pick("email") ?? pick("name");
-  if (target) parts.push(target);
-  else if (log.entityType === "organization" && log.entityId) parts.push(orgName(log.entityId));
-  else if (log.entityType === "user" && log.entityId) parts.push(userName(log.entityId));
-  if (typeof meta["amount"] === "number") parts.push(formatPrice(meta["amount"]));
-  if (pick("plan")) parts.push(`тариф ${pick("plan")}`);
-  if (pick("status")) parts.push(String(pick("status")));
-  if (log.actorId) parts.push(`— ${userName(log.actorId)}`);
-  return parts.join(" · ");
-}
 
 function StatTile({
   icon: Icon,
@@ -235,10 +216,17 @@ function AdminDashboard() {
   );
   const connErrors = state.apiConnections.filter((c) => c.status === "error");
 
+  const pendingClaims = state.companyClaims.filter((c) => c.status === "NEW");
+
   const attention: Array<{ title: string; detail: string; to: string }> = [
     ...pendingOps.map((o) => ({
       title: "Компания ждёт одобрения",
       detail: o.name,
+      to: "/admin/operators",
+    })),
+    ...pendingClaims.map((c) => ({
+      title: "Владелец просит доступ к карточке",
+      detail: `${orgName(c.organizationId)} · ${c.contactName}`,
       to: "/admin/operators",
     })),
     ...connErrors.map((c) => ({
@@ -257,6 +245,13 @@ function AdminDashboard() {
       to: "/admin/payments",
     })),
   ];
+
+  /* Вход и перенос гостевых данных случаются каждый день у каждого — в обзоре
+     они вытесняли единственную запись о том, что кто-то удалил компанию. */
+  const recentActions = state.auditLogs
+    .filter((log) => !ROUTINE_ACTIONS.has(log.action))
+    .slice(0, 8)
+    .map((log) => ({ log, view: auditView(log) }));
 
   return (
     <DashShell
@@ -388,7 +383,7 @@ function AdminDashboard() {
           hint={
             revenueEntries.length
               ? `${revenueLabel[revenueEntries[0]![0]] ?? revenueEntries[0]![0]}: ${formatPrice(revenueEntries[0]![1])}`
-              : "платежей пока нет"
+              : "движений денег пока не было"
           }
           to="/admin/payments"
         />
@@ -500,17 +495,13 @@ function AdminDashboard() {
             Заявки партнёров на одобрение, ошибки API и платежей
           </p>
           {attention.length === 0 ? (
-            <div className="mt-4 flex items-center gap-3 rounded-2xl bg-success/8 p-4">
-              <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-success/15 text-success">
-                <CheckCircle2 className="size-5" />
-              </span>
-              <div>
-                <p className="text-sm font-semibold">Всё спокойно</p>
-                <p className="text-xs text-muted-foreground">
-                  Нет заявок на одобрение, ошибок API и неудачных платежей.
-                </p>
-              </div>
-            </div>
+            /* Пусто — значит делать нечего: одна строка вместо панели на
+               полкарточки. Место в обзоре должно занимать то, что требует
+               решения, а не сообщение о его отсутствии. */
+            <p className="mt-3 inline-flex items-center gap-2 text-sm text-success">
+              <CheckCircle2 className="size-4" />
+              Разобрано — открытых задач нет
+            </p>
           ) : (
             <ul className="mt-4 space-y-2">
               {attention.slice(0, 8).map((item, i) => (
@@ -529,29 +520,11 @@ function AdminDashboard() {
               ))}
             </ul>
           )}
-          <p className="mt-5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            Быстрые переходы
-          </p>
-          <div className="mt-2 flex flex-wrap gap-2">
-            <Button size="sm" variant="outline" asChild>
-              <Link to="/admin/operators">
-                <Building2 className="size-3.5" />
-                Партнёры
-              </Link>
-            </Button>
-            <Button size="sm" variant="outline" asChild>
-              <Link to="/admin/promotions">
-                <Megaphone className="size-3.5" />
-                Продвижение
-              </Link>
-            </Button>
-            <Button size="sm" variant="outline" asChild>
-              <Link to="/admin/api-monitoring">
-                <RefreshCw className="size-3.5" />
-                Мониторинг API
-              </Link>
-            </Button>
-          </div>
+          {attention.length > 8 ? (
+            <p className="mt-3 text-xs text-muted-foreground">
+              и ещё {attention.length - 8} — разбирайте по разделам слева
+            </p>
+          ) : null}
         </div>
 
         <div className="surface-card p-6">
@@ -569,22 +542,33 @@ function AdminDashboard() {
               Весь журнал →
             </Link>
           </div>
-          {state.auditLogs.length === 0 ? (
-            <p className="mt-4 text-sm text-muted-foreground">Записей пока нет</p>
+          {recentActions.length === 0 ? (
+            <p className="mt-4 text-sm text-muted-foreground">
+              Значимых действий пока не было — входы и переносы данных лежат в журнале.
+            </p>
           ) : (
-            <ul className="mt-4 max-h-96 divide-y divide-border overflow-y-auto text-sm">
-              {state.auditLogs.slice(0, 10).map((log) => (
-                <li key={log.id} className="flex items-start justify-between gap-3 py-2.5">
-                  <div className="min-w-0">
-                    <p className="font-medium">{auditActionLabel[log.action] ?? log.action}</p>
-                    {auditDetail(log) ? (
-                      <p className="mt-0.5 truncate text-xs text-muted-foreground">
-                        {auditDetail(log)}
-                      </p>
-                    ) : null}
-                  </div>
-                  <span className="shrink-0 text-xs text-muted-foreground">
-                    {formatRelativeRu(log.createdAt)}
+            <ul className="mt-4 space-y-1">
+              {recentActions.map(({ log, view }) => (
+                <li key={log.id} className="flex items-start gap-3 py-1.5">
+                  <span
+                    className={cn(
+                      "mt-0.5 grid size-8 shrink-0 place-items-center rounded-lg",
+                      auditToneClass[view.tone],
+                    )}
+                  >
+                    <view.icon className="size-4" />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-medium">
+                      {view.title}
+                      {view.target ? (
+                        <span className="font-normal text-muted-foreground"> · {view.target}</span>
+                      ) : null}
+                    </span>
+                    <span className="block truncate text-xs text-muted-foreground">
+                      {view.extra ? `${view.extra} · ` : ""}
+                      {view.actor} · {formatRelativeRu(log.createdAt)}
+                    </span>
                   </span>
                 </li>
               ))}

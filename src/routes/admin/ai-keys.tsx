@@ -32,7 +32,7 @@ export const Route = createFileRoute("/admin/ai-keys")({
 });
 
 const PROVIDERS: Array<{ value: AiSettingsView["provider"]; label: string; model: string }> = [
-  { value: "lovable", label: "Lovable AI (без ключа)", model: "google/gemini-3-flash" },
+  { value: "lovable", label: "Встроенный AI (без ключа)", model: "google/gemini-3-flash" },
   { value: "openai", label: "OpenAI (ChatGPT)", model: "gpt-4o-mini" },
   { value: "anthropic", label: "Anthropic Claude", model: "claude-sonnet-4-5" },
   { value: "google", label: "Google Gemini", model: "gemini-2.5-flash" },
@@ -299,7 +299,7 @@ function AdminAiKeysPage() {
                   }
                 />
                 <p className="text-xs text-muted-foreground">
-                  Ключ хранится в закрытой таблице и никогда не отдаётся в браузер. Для Lovable AI
+                  Ключ хранится в закрытой таблице и никогда не отдаётся в браузер. Встроенному AI
                   ключ не нужен.
                 </p>
               </div>

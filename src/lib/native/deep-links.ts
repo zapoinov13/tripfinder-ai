@@ -9,7 +9,13 @@ function normalizeDeepLink(raw: string): string | null {
       const path = url.pathname || url.host;
       return path.startsWith("/") ? path : `/${path}`;
     }
-    const allowedHosts = ["tripfinder-ai.vercel.app", "tripfinder-ai.lovable.app", "localhost"];
+    // Боевой домен идёт первым: ссылки из писем и пушей приходят именно с него,
+    // и без него приложение молча игнорировало бы переход.
+    const allowedHosts = [
+      "tripfinder-ai-swart.vercel.app",
+      "tripfinder-ai.vercel.app",
+      "localhost",
+    ];
     if (!allowedHosts.some((h) => url.hostname === h || url.hostname.endsWith(`.${h}`))) {
       return null;
     }

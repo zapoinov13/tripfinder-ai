@@ -36,13 +36,13 @@ function createSupabaseFetch(supabaseKey: string): typeof fetch {
 function createSupabaseAdminClient() {
   const resolved = resolveSupabaseConfig();
   const SUPABASE_URL = process.env["SUPABASE_URL"] ?? resolved.url;
-  // Lovable Secrets forbid the SUPABASE_ prefix: use TOURGO_SERVICE_ROLE_KEY there.
+  // The visual editor's secrets forbid the SUPABASE_ prefix: use TOURGO_SERVICE_ROLE_KEY there.
   const SUPABASE_SERVICE_ROLE_KEY =
     process.env["SUPABASE_SERVICE_ROLE_KEY"] ?? process.env["TOURGO_SERVICE_ROLE_KEY"];
 
   if (!SUPABASE_SERVICE_ROLE_KEY) {
     const message =
-      "Missing service role key. Set TOURGO_SERVICE_ROLE_KEY (Lovable Secrets) or SUPABASE_SERVICE_ROLE_KEY (Vercel).";
+      "Missing service role key. Set TOURGO_SERVICE_ROLE_KEY (editor secrets) or SUPABASE_SERVICE_ROLE_KEY (Vercel).";
     console.error(`[Supabase] ${message}`);
     throw new Error(message);
   }

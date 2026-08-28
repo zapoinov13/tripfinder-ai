@@ -115,7 +115,7 @@ const adminNavBase: DashItem[] = [
   { label: "Пользователи", to: "/admin/users", icon: Users },
   { label: "Партнёры", to: "/admin/operators", icon: Building },
   { label: "Заявки и брони", to: "/admin/bookings", icon: Ticket },
-  { label: "Платежи", to: "/admin/payments", icon: Receipt },
+  { label: "Деньги", to: "/admin/payments", icon: Receipt },
   { label: "Продвижение", to: "/admin/promotions", icon: Megaphone },
   { label: "API", to: "/admin/api-monitoring", icon: Cable },
   { label: "Push", to: "/admin/push", icon: Bell },

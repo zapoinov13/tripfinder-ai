@@ -10,7 +10,7 @@ export const isSupabaseConfigured = Boolean(resolved.url && resolved.publishable
 
 if (import.meta.env.DEV && resolved.source === "tourgo-fallback") {
   console.warn(
-    `[supabase] Using TourGo fallback (${TOURGO_SUPABASE_PROJECT_ID}). Set VITE_SUPABASE_* to this project in Lovable/Vercel.`,
+    `[supabase] Using TourGo fallback (${TOURGO_SUPABASE_PROJECT_ID}). Set VITE_SUPABASE_* to this project in the deploy environment.`,
   );
 }
 

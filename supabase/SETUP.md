@@ -9,8 +9,8 @@
 1. Открой SQL Editor по ссылке выше.
 2. По очереди выполни **все 16 файлов** из таблицы ниже: открыл файл → скопировал целиком → вставил → **Run**.
 3. Auth: Dashboard → Authentication → Providers → Email включи. Confirm email для демо можно выключить.
-4. В Lovable и Vercel проверь env (см. ниже).
-5. В Lovable: Security → ignore/resolve critical finding → **Publish**.
+4. В визуальном редакторе и Vercel проверь env (см. ниже).
+5. В редакторе: Security → ignore/resolve critical finding → **Publish**.
 
 Ошибка `already exists` при Run нормальна: иди к следующему файлу.
 
@@ -108,23 +108,23 @@ npm run review:users
 | `relation "public.trip_requests" does not exist`     | Шаг 11 не выполнился              | Сначала почини **11**, потом **12**                                              |
 | `duplicate key … users_email_partial_key`            | пользователь уже есть в Auth      | Перезапусти **14** `seed.sql`. подхватит существующего пользователя              |
 
-## Env в Lovable
+## Env в визуальном редакторе
 
 **Secrets. не сюда.** Cloud → Secrets принимает только backend-ключи (`OPENAI_API_KEY`, `STRIPE_SECRET_KEY`).  
-Имена `VITE_*` и `SUPABASE_*` Lovable **запрещает** в Secrets. отсюда ваша ошибка.
+Имена `VITE_*` и `SUPABASE_*` редактор **запрещает** в Secrets. отсюда ваша ошибка.
 
 ### Способ 1. подключить ваш Supabase (рекомендуется)
 
-1. Lovable → проект **Voyage Finder** → **Cloud** (или **More → Cloud**)
+1. Редактор → проект **Voyage Finder** → **Cloud** (или **More → Cloud**)
 2. **Already have a Supabase project? Connect it here**
 3. Выберите организацию Supabase → проект **`mgyufoyornzbwvgdfojb`**
 4. **Connect** → **Publish**
 
-Lovable сам пропишет `VITE_SUPABASE_*` и server env. SQL вы уже залили в этот проект. повторно не нужно.
+Редактор сам пропишет `VITE_SUPABASE_*` и server env. SQL вы уже залили в этот проект. повторно не нужно.
 
 ### Способ 2. файл `.env` в редакторе кода
 
-Если connector не используете: в Lovable открой **Code** → файл **`.env`** (не Secrets!) и вставь:
+Если connector не используете: в редакторе открой **Code** → файл **`.env`** (не Secrets!) и вставь:
 
 ```
 VITE_SUPABASE_URL=https://mgyufoyornzbwvgdfojb.supabase.co
@@ -147,7 +147,7 @@ Project Settings → **Environment Variables**. там можно добавит
 | Где                 | Variable                    | Environments                                      |
 | ------------------- | --------------------------- | ------------------------------------------------- |
 | **Vercel**          | `SUPABASE_SERVICE_ROLE_KEY` | Production, Preview, Development                  |
-| **Lovable Secrets** | `TOURGO_SERVICE_ROLE_KEY`   | (Lovable запрещает имена с префиксом `SUPABASE_`) |
+| **Secrets редактора** | `TOURGO_SERVICE_ROLE_KEY`   | (редактор запрещает имена с префиксом `SUPABASE_`) |
 
 Значение одно и то же: service_role из [Settings → API](https://supabase.com/dashboard/project/mgyufoyornzbwvgdfojb/settings/api).
 

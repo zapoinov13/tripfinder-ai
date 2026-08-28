@@ -1,10 +1,10 @@
-/** Единственный production-проект TourGo. Lovable Cloud иногда подставляет свой пустой проект. */
+/** Единственный production-проект TourGo. Визуальный редактор иногда подставляет свой пустой. */
 export const TOURGO_SUPABASE_PROJECT_ID = "mgyufoyornzbwvgdfojb";
 export const TOURGO_SUPABASE_URL = "https://mgyufoyornzbwvgdfojb.supabase.co";
 export const TOURGO_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_cykIutJS18rku4zxUBMkLw_LqXt9hag";
 
-/** Встроенная пустая БД Lovable: не использовать для каталога TourGo. */
-const LOVABLE_BUILTIN_PROJECT_ID = "hpernnwfdlpfaaphofmg";
+/** Пустая БД из визуального редактора: не использовать для каталога TourGo. */
+const EDITOR_BUILTIN_PROJECT_ID = "hpernnwfdlpfaaphofmg";
 
 export type ResolvedSupabaseConfig = {
   url: string;
@@ -33,7 +33,7 @@ function isTourGoProject(projectId: string | undefined, url: string | undefined)
   return projectIdFromUrl(url) === TOURGO_SUPABASE_PROJECT_ID;
 }
 
-/** Предпочитаем env, но всегда возвращаем TourGo, если Lovable подставил другой проект. */
+/** Предпочитаем env, но всегда возвращаем TourGo, если редактор подставил другой проект. */
 export function resolveSupabaseConfig(): ResolvedSupabaseConfig {
   const envUrl = readEnv("VITE_SUPABASE_URL") ?? readEnv("SUPABASE_URL");
   const envKey = readEnv("VITE_SUPABASE_PUBLISHABLE_KEY") ?? readEnv("SUPABASE_PUBLISHABLE_KEY");
@@ -46,7 +46,7 @@ export function resolveSupabaseConfig(): ResolvedSupabaseConfig {
     envUrl &&
     envKey &&
     isTourGoProject(envProjectId, envUrl) &&
-    envProjectId !== LOVABLE_BUILTIN_PROJECT_ID
+    envProjectId !== EDITOR_BUILTIN_PROJECT_ID
   ) {
     return {
       url: envUrl,

@@ -1,5 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Activity, Eye, MousePointerClick, Search } from "lucide-react";
+import {
+  Activity,
+  ArrowDownRight,
+  ArrowUpRight,
+  Clock,
+  MessageSquare,
+  Search,
+  SearchX,
+  Users,
+  type LucideIcon,
+} from "lucide-react";
 import { useMemo, useState } from "react";
 import {
   Area,
@@ -12,131 +22,126 @@ import {
   YAxis,
 } from "recharts";
 
-import {
-  EmptyState,
-  KpiLinkCard,
-  TabPills,
-  eventLabel,
-  formatRelativeRu,
-  userName,
-} from "@/components/admin";
+import { EmptyState, TabPills } from "@/components/admin";
 import { DashShell } from "@/components/dash/dash-shell";
 import { useAdminNav } from "@/components/dash/nav-items";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { formatNumber } from "@/data/demo";
 import { useRequireAuth } from "@/lib/platform/auth";
 import { usePlatformStore } from "@/lib/platform/hooks";
+import {
+  buildMarketingStats,
+  delta,
+  type Metric,
+  type Period,
+} from "@/lib/platform/marketing-stats";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/admin/analytics")({
   head: () => ({ meta: [{ title: "Аналитика · Админ" }] }),
   component: AdminAnalyticsPage,
 });
 
-const DAY_MS = 86400000;
+/**
+ * Маркетинговая аналитика: сколько людей, куда они уходят и чего им не хватило.
+ *
+ * Прежняя версия показывала «Топ событий» и ленту — по ней нельзя было принять
+ * ни одного решения. Здесь каждый блок отвечает на рабочий вопрос: растём ли мы
+ * (цифры со сравнением к прошлому периоду), где теряем (воронка в процентах),
+ * куда звать партнёров (спрос и поиски без результата), когда писать людям
+ * (часы активности) и какие компании реально работают на трафике.
+ */
 
-/** Просмотровые события — интерес; остальное считаем действиями. */
-const VIEW_EVENTS = new Set([
-  "SEARCH_COMPLETED",
-  "AI_SEARCH_STARTED",
-  "TOUR_VIEWED",
-  "COMPANY_PAGE_VIEW",
-  "PREMIUM_VIEWED",
-]);
+function Delta({ metric, invert = false }: { metric: Metric; invert?: boolean }) {
+  const value = delta(metric);
+  if (value === null) {
+    // Рост с нуля процентом не описывается — говорим словами.
+    if (metric.prev === 0 && metric.value > 0) {
+      return <span className="text-xs font-semibold text-success">первые за период</span>;
+    }
+    return <span className="text-xs text-muted-foreground">нет сравнения</span>;
+  }
+  if (value === 0)
+    return <span className="text-xs text-muted-foreground">как в прошлый период</span>;
+  const good = invert ? value < 0 : value > 0;
+  const Icon = value > 0 ? ArrowUpRight : ArrowDownRight;
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-0.5 text-xs font-semibold",
+        good ? "text-success" : "text-destructive",
+      )}
+    >
+      <Icon className="size-3" />
+      {Math.abs(value)}% к прошлому периоду
+    </span>
+  );
+}
 
-const dayLabel = (d: Date) =>
-  d.toLocaleDateString("ru-RU", { day: "numeric", month: "short" }).replace(".", "");
+function MetricCard({
+  icon: Icon,
+  label,
+  metric,
+  format = (v: number) => formatNumber(v),
+  hint,
+}: {
+  icon: LucideIcon;
+  label: string;
+  metric: Metric;
+  format?: (v: number) => string;
+  hint?: string;
+}) {
+  return (
+    <div className="surface-card p-5">
+      <div className="flex items-start justify-between gap-2">
+        <span className="grid size-9 place-items-center rounded-xl bg-secondary text-foreground">
+          <Icon className="size-4" />
+        </span>
+      </div>
+      <p className="mt-3 text-sm text-muted-foreground">{label}</p>
+      <p className="mt-1 font-display text-3xl font-semibold tabular-nums">
+        {format(metric.value)}
+      </p>
+      <div className="mt-1.5">
+        <Delta metric={metric} />
+      </div>
+      {hint ? <p className="mt-1 text-xs text-muted-foreground">{hint}</p> : null}
+    </div>
+  );
+}
 
 function AdminAnalyticsPage() {
   const { allowed } = useRequireAuth(["PLATFORM_ADMIN", "PLATFORM_MANAGER"]);
   const nav = useAdminNav();
   const state = usePlatformStore();
-  const [period, setPeriod] = useState<"7" | "30" | "all">("30");
+  const [period, setPeriod] = useState<Period>("30");
 
-  const events = useMemo(() => {
-    if (period === "all") return state.analyticsEvents;
-    const since = Date.now() - Number(period) * DAY_MS;
-    return state.analyticsEvents.filter((e) => new Date(e.createdAt).getTime() >= since);
-  }, [state.analyticsEvents, period]);
-
-  const kpis = useMemo(() => {
-    let searches = 0;
-    let views = 0;
-    let clicks = 0;
-    let checkins = 0;
-    for (const e of events) {
-      if (e.type === "SEARCH_COMPLETED" || e.type === "AI_SEARCH_STARTED") searches += 1;
-      if (e.type === "TOUR_VIEWED" || e.type === "COMPANY_PAGE_VIEW") views += 1;
-      if (e.type === "COMPANY_CONTACT_CLICK") clicks += 1;
-      if (e.type === "COMPANY_CHECKIN") checkins += 1;
-    }
-    return { searches, views, clicks, checkins };
-  }, [events]);
-
-  const trend = useMemo(() => {
-    const days = period === "all" ? 30 : Number(period);
-    const buckets: { day: string; views: number; actions: number }[] = [];
-    const index = new Map<string, number>();
-    for (let i = days - 1; i >= 0; i -= 1) {
-      const d = new Date(Date.now() - i * DAY_MS);
-      const key = d.toISOString().slice(0, 10);
-      index.set(key, buckets.length);
-      buckets.push({ day: dayLabel(d), views: 0, actions: 0 });
-    }
-    for (const e of state.analyticsEvents) {
-      const key = e.createdAt.slice(0, 10);
-      const at = index.get(key);
-      if (at === undefined) continue;
-      if (VIEW_EVENTS.has(e.type)) buckets[at]!.views += 1;
-      else buckets[at]!.actions += 1;
-    }
-    return buckets;
-  }, [state.analyticsEvents, period]);
-
-  const funnel = useMemo(() => {
-    const chosen = state.tripRequests.filter((r) => r.status === "CHOSEN").length;
-    return [
-      {
-        label: "Поиски",
-        value: kpis.searches,
-        hint: "обычный и AI-поиск",
-      },
-      {
-        label: "Просмотры",
-        value: kpis.views,
-        hint: "туры и страницы компаний",
-      },
-      {
-        label: "Заявки",
-        value: state.tripRequests.length,
-        hint: "оставили заявку",
-      },
-      {
-        label: "Выбрали компанию",
-        value: chosen,
-        hint: "сделка состоялась",
-      },
-    ];
-  }, [kpis, state.tripRequests]);
+  const stats = useMemo(() => buildMarketingStats(state, period), [state, period]);
 
   if (!allowed) return null;
 
-  const counts = events.reduce<Record<string, number>>((acc, e) => {
-    acc[e.type] = (acc[e.type] ?? 0) + 1;
-    return acc;
-  }, {});
-  const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
-  const max = sorted[0]?.[1] ?? 1;
-  const trendHasData = trend.some((p) => p.views || p.actions);
+  const hasData = stats.searches.value > 0 || stats.audience.value > 0 || stats.guests > 0;
+  const peakHour = stats.hours.indexOf(Math.max(...stats.hours));
+  const hoursMax = Math.max(...stats.hours, 1);
+  const periodName = period === "all" ? "всё время" : `${period} дней`;
 
   return (
     <DashShell
       brand="TourGo Админ"
       items={nav}
       title="Аналитика"
-      subtitle="Что делают люди на платформе: поиски, просмотры, клики и визиты."
+      subtitle="Сколько людей приходит, где они теряются и чего не нашли."
     >
       <TabPills
         value={period}
-        onChange={(v) => setPeriod(v as typeof period)}
+        onChange={(v) => setPeriod(v as Period)}
         items={[
           { value: "7", label: "7 дней" },
           { value: "30", label: "30 дней" },
@@ -144,54 +149,122 @@ function AdminAnalyticsPage() {
         ]}
       />
 
-      <div className="mt-4 grid grid-cols-2 gap-3 xl:grid-cols-4">
-        <KpiLinkCard label="Поиски" value={formatNumber(kpis.searches)} hint="обычный и AI-поиск" />
-        <KpiLinkCard
-          label="Просмотры"
-          value={formatNumber(kpis.views)}
-          hint="туры и страницы компаний"
-        />
-        <KpiLinkCard
-          label="Клики по контактам"
-          value={formatNumber(kpis.clicks)}
-          hint="маршрут, WhatsApp, звонки"
-        />
-        <KpiLinkCard
-          label="Визиты из приложения"
-          value={formatNumber(kpis.checkins)}
-          hint="чекины у партнёров"
-        />
-      </div>
-
-      <section className="surface-card mt-6 overflow-hidden">
-        <div className="border-b border-border bg-secondary/20 px-5 py-4">
-          <h2 className="font-display text-lg font-semibold">Активность по дням</h2>
-          <p className="mt-0.5 text-sm text-muted-foreground">
-            Просмотры (интерес) и действия (клики, заявки, визиты, сообщения).
-          </p>
+      {!hasData ? (
+        <div className="mt-4">
+          <EmptyState
+            title="За период ничего не происходило"
+            description="Цифры появятся сами, как только люди начнут искать и открывать предложения. Первым заполнится поиск."
+          />
         </div>
-        <div className="p-5">
-          {trendHasData ? (
-            <div className="h-72">
+      ) : (
+        <>
+          <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <MetricCard
+              icon={Users}
+              label="Людей на платформе"
+              metric={stats.audience}
+              hint={
+                stats.guests > 0
+                  ? `и ещё ${formatNumber(stats.guests)} действий от гостей без аккаунта`
+                  : "все действия — из аккаунтов"
+              }
+            />
+            <MetricCard
+              icon={Search}
+              label="Поисков"
+              metric={stats.searches}
+              hint={`новых аккаунтов за ${periodName}: ${formatNumber(stats.newUsers.value)}`}
+            />
+            <MetricCard
+              icon={MessageSquare}
+              label="Обращений в компании"
+              metric={stats.requests}
+              hint={`дошло до сделки: ${formatNumber(stats.deals.value)}`}
+            />
+            <MetricCard
+              icon={Activity}
+              label="Поиск → обращение"
+              metric={stats.conversion}
+              format={(v) => `${v}%`}
+              hint="главная метрика площадки"
+            />
+          </div>
+
+          <section className="surface-card mt-6 overflow-hidden">
+            <div className="border-b border-border bg-secondary/20 px-5 py-4">
+              <h2 className="font-display text-lg font-semibold">Путь до заявки</h2>
+              <p className="mt-0.5 text-sm text-muted-foreground">
+                Где именно теряются люди. Процент — сколько дошло с прошлого шага.
+              </p>
+            </div>
+            <ul className="divide-y divide-border">
+              {stats.funnel.map((step) => (
+                <li key={step.label} className="px-5 py-4">
+                  <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+                    <p className="font-medium">
+                      {step.label}
+                      <span className="ml-2 text-xs font-normal text-muted-foreground">
+                        {step.hint}
+                      </span>
+                    </p>
+                    <p className="font-display text-lg font-semibold tabular-nums">
+                      {formatNumber(step.value)}
+                      {step.ofPrev !== null ? (
+                        <span
+                          className={cn(
+                            "ml-2 text-sm font-semibold",
+                            step.ofPrev >= 50
+                              ? "text-success"
+                              : step.ofPrev >= 20
+                                ? "text-premium"
+                                : "text-destructive",
+                          )}
+                        >
+                          {step.ofPrev}%
+                        </span>
+                      ) : null}
+                    </p>
+                  </div>
+                  <div className="mt-2 h-2 overflow-hidden rounded-full bg-secondary">
+                    <div
+                      className="h-full rounded-full bg-primary transition-all"
+                      style={{
+                        width: `${step.ofTop === null ? 100 : Math.max(2, step.ofTop)}%`,
+                      }}
+                    />
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </section>
+
+          <section className="surface-card mt-6 overflow-hidden">
+            <div className="border-b border-border bg-secondary/20 px-5 py-4">
+              <h2 className="font-display text-lg font-semibold">Спрос по дням</h2>
+              <p className="mt-0.5 text-sm text-muted-foreground">
+                Поиски и обращения рядом: видно, растёт ли интерес и превращается ли он в заявки.
+              </p>
+            </div>
+            <div className="h-72 p-5">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={trend} margin={{ left: -8, right: 8, top: 8 }}>
+                <AreaChart data={stats.trend} margin={{ left: -8, right: 8, top: 8 }}>
                   <defs>
-                    <linearGradient id="pa-views" x1="0" y1="0" x2="0" y2="1">
+                    <linearGradient id="ma-searches" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="0%" stopColor="var(--muted-foreground)" stopOpacity={0.18} />
                       <stop offset="100%" stopColor="var(--muted-foreground)" stopOpacity={0} />
                     </linearGradient>
-                    <linearGradient id="pa-actions" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="var(--primary)" stopOpacity={0.3} />
+                    <linearGradient id="ma-requests" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="var(--primary)" stopOpacity={0.32} />
                       <stop offset="100%" stopColor="var(--primary)" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-                  <XAxis dataKey="day" tickLine={false} axisLine={false} fontSize={12} />
+                  <XAxis dataKey="label" tickLine={false} axisLine={false} fontSize={12} />
                   <YAxis allowDecimals={false} tickLine={false} axisLine={false} fontSize={12} />
                   <Tooltip
                     formatter={(value, name) => [
                       formatNumber(Number(value)),
-                      name === "views" ? "Просмотры" : "Действия",
+                      name === "searches" ? "Поиски" : "Обращения",
                     ]}
                     contentStyle={{
                       borderRadius: 12,
@@ -199,129 +272,205 @@ function AdminAnalyticsPage() {
                       fontSize: 12,
                     }}
                   />
-                  <Legend formatter={(value) => (value === "views" ? "Просмотры" : "Действия")} />
+                  <Legend formatter={(value) => (value === "searches" ? "Поиски" : "Обращения")} />
                   <Area
                     type="monotone"
-                    dataKey="views"
+                    dataKey="searches"
                     stroke="var(--muted-foreground)"
                     strokeWidth={1.5}
-                    fill="url(#pa-views)"
+                    fill="url(#ma-searches)"
                   />
                   <Area
                     type="monotone"
-                    dataKey="actions"
+                    dataKey="requests"
                     stroke="var(--primary)"
                     strokeWidth={2.5}
-                    fill="url(#pa-actions)"
+                    fill="url(#ma-requests)"
                   />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
-          ) : (
-            <div className="flex flex-col items-center py-14 text-center">
-              <Activity className="size-10 text-muted-foreground" />
-              <p className="mt-3 font-medium">За период событий пока нет</p>
-              <p className="mt-1 max-w-md text-sm text-muted-foreground">
-                График заполнится сам, когда туристы начнут искать и открывать предложения.
+          </section>
+
+          <div className="mt-6 grid items-start gap-6 xl:grid-cols-2">
+            <section className="surface-card p-6">
+              <h2 className="font-display text-lg font-semibold">Что ищут</h2>
+              <p className="mt-0.5 text-sm text-muted-foreground">
+                Направления и категории по числу поисков. Красным — доля поисков без результата.
               </p>
-            </div>
-          )}
-        </div>
-      </section>
+              {stats.demand.length === 0 ? (
+                <p className="mt-4 text-sm text-muted-foreground">Поисков за период не было.</p>
+              ) : (
+                <ul className="mt-4 space-y-3">
+                  {stats.demand.map((row) => {
+                    const max = stats.demand[0]?.count ?? 1;
+                    const emptyShare = row.count > 0 ? (row.empty / row.count) * 100 : 0;
+                    return (
+                      <li key={row.label}>
+                        <div className="mb-1 flex items-baseline justify-between gap-3 text-sm">
+                          <span className="truncate font-medium">{row.label}</span>
+                          <span className="shrink-0 tabular-nums text-muted-foreground">
+                            {formatNumber(row.count)}
+                            {row.empty > 0 ? (
+                              <span className="text-destructive"> · {row.empty} пусто</span>
+                            ) : null}
+                          </span>
+                        </div>
+                        <div className="flex h-2 overflow-hidden rounded-full bg-secondary">
+                          <div
+                            className="h-full bg-primary"
+                            style={{ width: `${Math.max(4, (row.count / max) * 100)}%` }}
+                          >
+                            <div
+                              className="h-full bg-destructive/70"
+                              style={{ width: `${emptyShare}%` }}
+                            />
+                          </div>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </section>
 
-      <section className="surface-card mt-6 p-6">
-        <h2 className="font-display text-lg font-semibold">Воронка туриста</h2>
-        <p className="mt-1 text-sm text-muted-foreground">
-          От поиска до выбранной компании{period === "all" ? "" : ` · за ${period} дней`} (заявки —
-          за всё время).
-        </p>
-        <div className="mt-5 grid gap-2 lg:grid-cols-4">
-          {funnel.map((step, i) => {
-            const prev = funnel[i - 1]?.value ?? step.value;
-            const drop = i > 0 && prev > 0 ? Math.round((1 - step.value / prev) * 100) : 0;
-            return (
-              <div
-                key={step.label}
-                className="rounded-2xl border border-border bg-secondary/30 p-4"
-              >
-                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                  {step.label}
+            <section className="surface-card p-6">
+              <h2 className="flex items-center gap-2 font-display text-lg font-semibold">
+                <SearchX className="size-4 text-destructive" />
+                Искали — не нашли
+              </h2>
+              <p className="mt-0.5 text-sm text-muted-foreground">
+                Готовый спрос без предложения: сюда стоит звать партнёров в первую очередь.
+              </p>
+              {stats.unmet.length === 0 ? (
+                <p className="mt-4 text-sm text-success">
+                  Все поиски за период что-то находили — дыр в предложении нет.
                 </p>
-                <p className="mt-2 font-display text-2xl font-semibold tabular-nums">
-                  {formatNumber(step.value)}
-                </p>
-                <p className="mt-1 text-[11px] text-muted-foreground">{step.hint}</p>
-                {i > 0 && drop > 0 && prev > 0 ? (
-                  <p className="mt-2 text-[11px] font-medium text-premium">−{drop}% от шага выше</p>
-                ) : null}
-              </div>
-            );
-          })}
-        </div>
-      </section>
+              ) : (
+                <ul className="mt-4 space-y-2">
+                  {stats.unmet.map((row) => (
+                    <li
+                      key={row.label}
+                      className="flex items-center justify-between gap-3 rounded-xl border border-destructive/20 bg-destructive/[0.04] px-3 py-2.5 text-sm"
+                    >
+                      <span className="min-w-0 truncate font-medium">{row.label}</span>
+                      <span className="shrink-0 tabular-nums text-muted-foreground">
+                        {formatNumber(row.count)} раз
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
 
-      {sorted.length === 0 ? (
-        <div className="mt-6">
-          <EmptyState
-            title="Событий пока нет"
-            description="Появятся по мере использования сайта и приложения"
-          />
-        </div>
-      ) : (
-        <div className="mt-6 grid items-start gap-6 xl:grid-cols-2">
-          <section className="surface-card p-6">
-            <h2 className="font-display text-lg font-semibold">Топ событий</h2>
-            <div className="mt-4 space-y-3">
-              {sorted.slice(0, 10).map(([type, count]) => (
-                <div key={type}>
-                  <div className="mb-1 flex justify-between text-sm">
-                    <span>{eventLabel[type] ?? type}</span>
-                    <span className="font-medium tabular-nums">{formatNumber(count)}</span>
+              {stats.queries.length > 0 ? (
+                <>
+                  <h3 className="mt-6 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    Частые запросы словами
+                  </h3>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {stats.queries.map((q) => (
+                      <span
+                        key={q.label}
+                        className="rounded-full bg-secondary px-3 py-1 text-xs font-medium"
+                      >
+                        {q.label}
+                        <span className="ml-1 text-muted-foreground">{q.count}</span>
+                      </span>
+                    ))}
                   </div>
-                  <div className="h-2 overflow-hidden rounded-full bg-secondary">
-                    <div
-                      className="h-full rounded-full bg-primary"
-                      style={{ width: `${Math.max(6, (count / max) * 100)}%` }}
-                    />
-                  </div>
+                </>
+              ) : null}
+            </section>
+          </div>
+
+          <section className="surface-card mt-6 p-6">
+            <h2 className="flex items-center gap-2 font-display text-lg font-semibold">
+              <Clock className="size-4 text-muted-foreground" />
+              Когда люди на платформе
+            </h2>
+            <p className="mt-0.5 text-sm text-muted-foreground">
+              Пик — {String(peakHour).padStart(2, "0")}:00. В этот час лучше всего заходят push и
+              рассылки.
+            </p>
+            <div className="mt-5 flex h-28 items-end gap-1">
+              {stats.hours.map((count, hour) => (
+                <div key={hour} className="flex flex-1 flex-col items-center gap-1">
+                  <div
+                    className={cn(
+                      "w-full rounded-t transition-all",
+                      hour === peakHour ? "bg-primary" : "bg-primary/25",
+                    )}
+                    style={{ height: `${Math.max(2, (count / hoursMax) * 88)}px` }}
+                    title={`${hour}:00 — ${count}`}
+                  />
+                  {hour % 6 === 0 ? (
+                    <span className="text-[10px] tabular-nums text-muted-foreground">{hour}</span>
+                  ) : (
+                    <span className="text-[10px]">&nbsp;</span>
+                  )}
                 </div>
               ))}
             </div>
           </section>
 
-          <section className="surface-card p-6">
-            <h2 className="font-display text-lg font-semibold">Живая лента</h2>
-            <ul className="mt-4 max-h-96 divide-y divide-border overflow-y-auto text-sm">
-              {events.slice(0, 40).map((e) => (
-                <li key={e.id} className="flex items-center justify-between gap-3 py-2">
-                  <span className="inline-flex min-w-0 items-center gap-2">
-                    {e.type === "COMPANY_CONTACT_CLICK" ? (
-                      <MousePointerClick className="size-3.5 shrink-0 text-primary" />
-                    ) : VIEW_EVENTS.has(e.type) ? (
-                      e.type.startsWith("SEARCH") || e.type.startsWith("AI") ? (
-                        <Search className="size-3.5 shrink-0 text-muted-foreground" />
-                      ) : (
-                        <Eye className="size-3.5 shrink-0 text-muted-foreground" />
-                      )
-                    ) : (
-                      <Activity className="size-3.5 shrink-0 text-success" />
-                    )}
-                    <span className="truncate">
-                      {eventLabel[e.type] ?? e.type}
-                      <span className="text-muted-foreground">
-                        {" · "}
-                        {e.userId ? userName(e.userId) : "аноним"}
-                      </span>
-                    </span>
-                  </span>
-                  <span className="shrink-0 text-xs text-muted-foreground">
-                    {formatRelativeRu(e.createdAt)}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </section>
-        </div>
+          {stats.companies.length > 0 ? (
+            <section className="surface-card mt-6 overflow-hidden">
+              <div className="border-b border-border bg-secondary/20 px-5 py-4">
+                <h2 className="font-display text-lg font-semibold">Компании на трафике</h2>
+                <p className="mt-0.5 text-sm text-muted-foreground">
+                  Кому платформа привела людей и кто сумел их превратить в заявки.
+                </p>
+              </div>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Компания</TableHead>
+                      <TableHead className="text-right">Просмотры</TableHead>
+                      <TableHead className="text-right">Клики</TableHead>
+                      <TableHead className="text-right">Заявки</TableHead>
+                      <TableHead className="text-right">Конверсия</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {stats.companies.map((c) => (
+                      <TableRow key={c.id}>
+                        <TableCell className="font-medium">{c.name}</TableCell>
+                        <TableCell className="text-right tabular-nums">
+                          {formatNumber(c.views)}
+                        </TableCell>
+                        <TableCell className="text-right tabular-nums">
+                          {formatNumber(c.clicks)}
+                        </TableCell>
+                        <TableCell className="text-right tabular-nums">
+                          {formatNumber(c.requests)}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {c.views > 0 ? (
+                            <span
+                              className={cn(
+                                "font-semibold tabular-nums",
+                                c.cr >= 20
+                                  ? "text-success"
+                                  : c.cr > 0
+                                    ? "text-foreground"
+                                    : "text-muted-foreground",
+                              )}
+                            >
+                              {c.cr}%
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground">—</span>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </section>
+          ) : null}
+        </>
       )}
     </DashShell>
   );

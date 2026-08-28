@@ -52,10 +52,11 @@ import {
   cancelPromotion,
   expireStalePromotions,
   isCompanyPromotion,
+  promotionCatalogMeta,
 } from "@/lib/platform/promotions";
 import { setState } from "@/lib/platform/store";
 import type { PromotionType } from "@/lib/platform/types";
-import { recordsWord, requestValue } from "@/lib/platform/business-stats";
+import { pluralRu, recordsWord, requestValue } from "@/lib/platform/business-stats";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/admin/promotions")({
@@ -64,6 +65,15 @@ export const Route = createFileRoute("/admin/promotions")({
 });
 
 const DAY_MS = 86400000;
+
+/** Что пакет реально делает с выдачей — иначе цену не с чем соотнести. */
+const promoPackMeta: Record<PromotionType, { effect: string }> = {
+  BOOST: { effect: "Поднимает компанию и её объявления выше в поиске и витринах" },
+  FEATURED: { effect: "Первые места в выдаче и рамка «Выбор TourGo» на карточке" },
+  SPONSORED: { effect: "Подпись «Рекомендуем» — заметнее всего в списке" },
+  PREMIUM_PLACEMENT: { effect: "Приоритет в фильтрах и подборках по категориям" },
+  HOME_FEATURE: { effect: "Место в блоках на главной — самый дорогой трафик" },
+};
 
 const grantPacks: { type: PromotionType; label: string }[] = [
   { type: "BOOST", label: "Выше в витрине / поиске («Хит»)" },
@@ -86,6 +96,10 @@ function AdminPromotionsPage() {
   const [grantCharge, setGrantCharge] = useState(false);
 
   const draft = edited ?? state.config.promotionPrices;
+  const changedCount = (Object.keys(draft) as PromotionType[]).filter(
+    (k) => draft[k] !== state.config.promotionPrices[k],
+  ).length;
+  const pricesChanged = changedCount > 0;
   const now = Date.now();
 
   const rows = useMemo(() => {
@@ -448,33 +462,104 @@ function AdminPromotionsPage() {
         )}
       </section>
 
-      <section className="surface-card mt-6 max-w-xl space-y-3 p-6">
-        <h2 className="font-display text-lg font-semibold">Цены пакетов (за 7 дней)</h2>
-        <p className="text-sm text-muted-foreground">
-          Эти цены видят компании в своих кабинетах при покупке продвижения.
-        </p>
-        {(Object.keys(draft) as PromotionType[]).map((key) => (
-          <div key={key} className="flex items-center gap-3">
-            <span className="w-52 text-sm">{promoTypeLabel[key]}</span>
-            <Input
-              value={draft[key]}
-              onChange={(e) => setEdited({ ...draft, [key]: Number(e.target.value) || 0 })}
-            />
-          </div>
-        ))}
-        <Button
-          onClick={() => {
-            setState((s) => ({ ...s, config: { ...s.config, promotionPrices: draft } }));
-            appendAudit({
-              actorId: user.id,
-              action: "promotion_prices_update",
-              entityType: "config",
-            });
-            toast.success("Цены сохранены");
-          }}
-        >
-          Сохранить цены
-        </Button>
+      <section className="surface-card mt-6 overflow-hidden">
+        <div className="border-b border-border bg-secondary/20 px-5 py-4">
+          <h2 className="font-display text-lg font-semibold">Пакеты продвижения</h2>
+          <p className="mt-0.5 text-sm text-muted-foreground">
+            Цена за 7 дней — ровно её партнёр видит в кабинете. Другие сроки платформа считает
+            пропорционально и округляет до тысячи.
+          </p>
+        </div>
+
+        <div className="grid gap-4 p-5 md:grid-cols-2 xl:grid-cols-3">
+          {(Object.keys(promoPackMeta) as PromotionType[]).map((key) => {
+            const price = draft[key] ?? 0;
+            const changed = price !== state.config.promotionPrices[key];
+            const meta = promoPackMeta[key];
+            const sold = state.promotions.filter((p) => p.type === key).length;
+            return (
+              <div
+                key={key}
+                className={cn(
+                  "rounded-2xl border p-4 transition-colors",
+                  changed ? "border-primary bg-primary-soft/40" : "border-border bg-card",
+                )}
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <p className="font-display text-base font-semibold">{promoTypeLabel[key]}</p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">{meta.effect}</p>
+                  </div>
+                  {/* Плашка ровно та, что увидит турист на карточке. */}
+                  <span className="shrink-0 rounded-full bg-premium/15 px-2 py-0.5 text-[11px] font-semibold text-premium">
+                    {promotionCatalogMeta[key].badge}
+                  </span>
+                </div>
+
+                <div className="mt-3">
+                  <Label htmlFor={`price-${key}`} className="text-xs text-muted-foreground">
+                    Цена за 7 дней
+                  </Label>
+                  <div className="relative mt-1">
+                    <Input
+                      id={`price-${key}`}
+                      inputMode="numeric"
+                      className="pr-8 font-display text-lg font-semibold tabular-nums"
+                      value={price}
+                      onChange={(e) =>
+                        setEdited({
+                          ...draft,
+                          [key]: Math.max(0, Number(e.target.value.replace(/\D/g, "")) || 0),
+                        })
+                      }
+                    />
+                    <span className="pointer-events-none absolute inset-y-0 right-3 grid place-items-center text-sm text-muted-foreground">
+                      ₸
+                    </span>
+                  </div>
+                </div>
+
+                <p className="mt-2 text-xs text-muted-foreground">
+                  {price > 0 ? `${formatPrice(Math.round(price / 7))} в день` : "бесплатно"} ·{" "}
+                  {sold > 0 ? `${formatNumber(sold)} ${pluralRu(sold, "запуск", "запуска", "запусков")}` : "ещё не покупали"}
+                </p>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="flex flex-wrap items-center gap-3 border-t border-border px-5 py-4">
+          <Button
+            disabled={!pricesChanged}
+            onClick={() => {
+              setState((s) => ({ ...s, config: { ...s.config, promotionPrices: draft } }));
+              appendAudit({
+                actorId: user.id,
+                action: "promotion_prices_update",
+                entityType: "config",
+                meta: { prices: draft },
+              });
+              setEdited(null);
+              toast.success("Новые цены увидят все партнёры");
+            }}
+          >
+            Сохранить цены
+          </Button>
+          {pricesChanged ? (
+            <>
+              <Button variant="ghost" onClick={() => setEdited(null)}>
+                Отменить
+              </Button>
+              <p className="text-xs text-muted-foreground">
+                Изменено пакетов: {changedCount}. Активные кампании останутся по старой цене.
+              </p>
+            </>
+          ) : (
+            <p className="text-xs text-muted-foreground">
+              Цены совпадают с тем, что видят партнёры
+            </p>
+          )}
+        </div>
       </section>
 
       <Dialog open={Boolean(topUpOrg)} onOpenChange={(open) => !open && setTopUpOrgId(null)}>
