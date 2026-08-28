@@ -152,7 +152,7 @@ function Index() {
                 Как устроен TourGo
               </h2>
               <p className="mt-1.5 max-w-xl text-base leading-snug text-primary-foreground/70">
-                Три шага, чтобы купить ту же поездку дешевле
+                Три шага, чтобы купить поездку дешевле
               </p>
             </div>
           </div>
