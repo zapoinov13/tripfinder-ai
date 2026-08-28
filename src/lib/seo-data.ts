@@ -1,5 +1,5 @@
 import { resolveSupabaseConfig } from "@/lib/supabase/config";
-import type { PlatformTour } from "@/lib/platform/types";
+import type { Organization, PlatformTour } from "@/lib/platform/types";
 
 /**
  * Данные для мета-тегов на сервере.
@@ -33,25 +33,59 @@ async function selectOne<T>(table: string, id: string, columns: string): Promise
   }
 }
 
-export type PublicCompany = {
-  id: string;
-  name: string;
-  city: string;
-  country: string;
-  about: string | null;
-  logo_url: string | null;
-  cover_url: string | null;
-  website: string | null;
-  services: string[] | null;
-  languages: string[] | null;
-};
-
-export function fetchPublicCompany(id: string) {
-  return selectOne<PublicCompany>(
+/**
+ * Компания из публичного представления в виде, готовом к отрисовке.
+ *
+ * Возвращаем именно Organization, а не отдельный тип: страница компании должна
+ * показать карточку сразу, ещё до того как в браузер приедет весь каталог.
+ * Полей меньше, чем в базе (телефон и расписание закрыты для анонимных), —
+ * недостающее заполняем пустыми значениями, а не выдумываем.
+ */
+export async function fetchPublicCompany(id: string): Promise<Organization | null> {
+  const row = await selectOne<Record<string, unknown>>(
     "organizations_public",
     id,
-    "id,name,city,country,about,logo_url,cover_url,website,services,languages",
+    "id,name,city,country,about,logo_url,cover_url,photos,videos,website,services,languages,countries,client_countries,instagram,telegram,created_at,plan_code",
   );
+  if (!row) return null;
+  const str = (key: string, fallback = "") =>
+    typeof row[key] === "string" ? (row[key] as string) : fallback;
+  const list = (key: string) =>
+    Array.isArray(row[key])
+      ? (row[key] as unknown[]).filter((v): v is string => typeof v === "string")
+      : [];
+
+  return {
+    id: str("id"),
+    name: str("name"),
+    legalName: "",
+    registrationNumber: "",
+    country: str("country"),
+    city: str("city"),
+    address: "",
+    // Контакты закрыты для анонимных: их подставит каталог после загрузки.
+    phone: "",
+    email: "",
+    website: str("website"),
+    contactPerson: "",
+    status: "APPROVED",
+    planCode: (str("plan_code", "START") as Organization["planCode"]) ?? "START",
+    additionalTourLimit: 0,
+    advertisingBalance: 0,
+    promotionBalance: 0,
+    createdAt: str("created_at"),
+    services: list("services"),
+    countries: list("countries"),
+    clientCountries: list("client_countries"),
+    languages: list("languages"),
+    about: str("about"),
+    logoUrl: str("logo_url"),
+    coverUrl: str("cover_url"),
+    photos: list("photos"),
+    videos: list("videos"),
+    instagram: str("instagram"),
+    telegram: str("telegram"),
+  };
 }
 
 /**

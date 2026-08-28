@@ -73,40 +73,18 @@ export const Route = createFileRoute("/company/$companyId")({
    * карточки уходили в выдачу с одним заголовком «Туристическая компания».
    * Здесь страница на сервере забирает свою строку из публичного представления.
    */
+  /**
+   * Каталог живёт в браузере: на сервере его нет, а в браузере он приезжает
+   * из Supabase уже после первого кадра. Из-за этого ссылка на компанию
+   * открывалась как «Компания не найдена» — и это же уходило в выдачу.
+   * Загрузчик достаёт карточку сам, а страница показывает её сразу.
+   */
   loader: async ({ params }) => {
     const local = getState().organizations.find((o) => o.id === params.companyId);
-    if (local) {
-      return {
-        seo: {
-          id: local.id,
-          name: local.name,
-          city: local.city,
-          country: local.country,
-          about: local.about ?? null,
-          image: local.logoUrl ?? local.coverUrl ?? null,
-          website: local.website ?? null,
-          services: local.services ?? null,
-        },
-      };
-    }
-    const remote = await fetchPublicCompany(params.companyId);
-    return {
-      seo: remote
-        ? {
-            id: remote.id,
-            name: remote.name,
-            city: remote.city,
-            country: remote.country,
-            about: remote.about,
-            image: remote.logo_url ?? remote.cover_url,
-            website: remote.website,
-            services: remote.services,
-          }
-        : null,
-    };
+    return { company: local ?? (await fetchPublicCompany(params.companyId)) };
   },
   head: ({ loaderData, params }) => {
-    const company = loaderData?.seo;
+    const company = loaderData?.company;
     const path = `/company/${params.companyId}`;
     if (!company) {
       return {
@@ -120,7 +98,9 @@ export const Route = createFileRoute("/company/$companyId")({
         company.about?.trim() ||
         `${company.name}${where ? ` в городе ${company.city}` : ""}: ${servicesLine(company.services)}. Цены, часы работы, отзывы и запись напрямую.`,
       path,
-      ...(company.image ? { image: company.image } : {}),
+      ...(company.logoUrl || company.coverUrl
+        ? { image: company.logoUrl || company.coverUrl! }
+        : {}),
     });
     return {
       ...head,
@@ -132,7 +112,9 @@ export const Route = createFileRoute("/company/$companyId")({
             "@id": absoluteUrl(path),
             name: company.name,
             url: absoluteUrl(path),
-            ...(company.image ? { image: company.image } : {}),
+            ...(company.logoUrl || company.coverUrl
+              ? { image: company.logoUrl || company.coverUrl }
+              : {}),
             ...(company.about ? { description: clampDescription(company.about, 300) } : {}),
             ...(company.website ? { sameAs: [company.website] } : {}),
             address: {
@@ -160,7 +142,10 @@ function CompanyPage() {
   const { companyId } = Route.useParams();
   const state = usePlatformStore();
   const { user } = useAuth();
-  const company = state.organizations.find((o) => o.id === companyId);
+  // Каталог в браузере приезжает не мгновенно: до этого показываем карточку из
+  // загрузчика, иначе человек по ссылке видит «компания не найдена».
+  const fromLoader = Route.useLoaderData().company;
+  const company = state.organizations.find((o) => o.id === companyId) ?? fromLoader ?? undefined;
   const userId = user?.id;
 
   // Просмотр страницы: один раз за визит, свои сотрудники не считаются.
