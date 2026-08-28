@@ -4,6 +4,8 @@ import {
   Gift,
   Globe2,
   History,
+  Inbox,
+  MessageSquare,
   LogOut,
   Mail,
   Sparkles,
@@ -30,6 +32,8 @@ import { Label } from "@/components/ui/label";
 import { SUPPORT_EMAIL, SUPPORT_MAILTO } from "@/lib/contact";
 import { tProfile, useAppLocale, type AppLocale } from "@/lib/locale";
 import { useAuth } from "@/lib/platform/auth";
+import { usePlatformStore } from "@/lib/platform/hooks";
+import { unreadServiceMessages } from "@/lib/platform/service-requests";
 import { useBonusPoints } from "@/lib/tourist-bonuses";
 import { cn } from "@/lib/utils";
 
@@ -63,6 +67,23 @@ function TouristCabinet() {
   const [giftOpen, setGiftOpen] = useState(false);
   const [bonusOpen, setBonusOpen] = useState(false);
   const [promoCode, setPromoCode] = useState("");
+
+  // Числа на строках меню: сколько заявок в работе и сколько ответов не прочитано.
+  const state = usePlatformStore();
+  const myServiceRequests = state.serviceRequests.filter((r) => r.userId === user?.id);
+  const openRequests =
+    myServiceRequests.filter((r) => r.status === "NEW" || r.status === "CONFIRMED").length +
+    state.tripRequests.filter(
+      (r) => r.userId === user?.id && r.status !== "CHOSEN" && r.status !== "CLOSED",
+    ).length;
+  const unreadMessages =
+    myServiceRequests.reduce((sum, r) => sum + unreadServiceMessages(r.id, "CLIENT"), 0) +
+    state.requestMessages.filter(
+      (m) =>
+        m.authorSide === "COMPANY" &&
+        !m.readByTourist &&
+        state.tripRequests.some((r) => r.id === m.requestId && r.userId === user?.id),
+    ).length;
 
   useEffect(() => {
     document.documentElement.lang = locale === "kk" ? "kk" : "ru";
@@ -103,22 +124,26 @@ function TouristCabinet() {
 
           <NextStepCard userId={user.id} />
 
-          <button
-            type="button"
-            onClick={() => setBonusOpen(true)}
-            className="surface-card mb-4 flex w-full items-center justify-between gap-3 p-5 text-left transition-colors hover:border-primary/40"
-          >
-            <div>
-              <p className="text-sm text-muted-foreground">{t.bonusBalance}</p>
-              <p className="mt-1 font-display text-3xl font-semibold tabular-nums">
-                {points.toLocaleString(locale === "kk" ? "kk-KZ" : "ru-RU")}
-              </p>
-              <p className="mt-1 text-xs text-muted-foreground">{t.points}</p>
-            </div>
-            <span className="grid size-12 place-items-center rounded-2xl bg-primary-soft text-primary">
-              <Sparkles className="size-5" />
-            </span>
-          </button>
+          {/* Нулевой баланс крупной плашкой — пустая трата экрана: строка
+              «Доступные бонусы» в меню ниже никуда не делась. */}
+          {points > 0 ? (
+            <button
+              type="button"
+              onClick={() => setBonusOpen(true)}
+              className="surface-card mb-4 flex w-full items-center justify-between gap-3 p-5 text-left transition-colors hover:border-primary/40"
+            >
+              <div>
+                <p className="text-sm text-muted-foreground">{t.bonusBalance}</p>
+                <p className="mt-1 font-display text-3xl font-semibold tabular-nums">
+                  {points.toLocaleString(locale === "kk" ? "kk-KZ" : "ru-RU")}
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">{t.points}</p>
+              </div>
+              <span className="grid size-12 place-items-center rounded-2xl bg-primary-soft text-primary">
+                <Sparkles className="size-5" />
+              </span>
+            </button>
+          ) : null}
 
           <div className="surface-card overflow-hidden divide-y divide-border">
             <MenuRow
@@ -132,6 +157,22 @@ function TouristCabinet() {
               title={t.promo}
               hint={t.promoHint}
               onClick={() => setPromoOpen(true)}
+            />
+            {/* Заявки и переписка раньше открывались только из плашки «Что сейчас»
+                и из бокового меню — у нового туриста их не было видно вовсе. */}
+            <MenuLink
+              icon={Inbox}
+              title={t.myRequests}
+              hint={t.myRequestsHint}
+              to="/profile/requests"
+              badge={openRequests}
+            />
+            <MenuLink
+              icon={MessageSquare}
+              title={t.myMessages}
+              hint={t.myMessagesHint}
+              to="/profile/messages"
+              badge={unreadMessages}
             />
             <MenuLink icon={History} title={t.history} hint={t.historyHint} to="/profile/trips" />
             <MenuRow
@@ -312,11 +353,14 @@ function MenuLink({
   title,
   hint,
   to,
+  badge = 0,
 }: {
   icon: ComponentType<{ className?: string }>;
   title: string;
   hint: string;
-  to: "/profile/trips" | "/profile/settings";
+  to: "/profile/trips" | "/profile/settings" | "/profile/requests" | "/profile/messages";
+  /** Сколько ждёт ответа: ноль не показываем. */
+  badge?: number;
 }) {
   return (
     <Link
@@ -330,6 +374,11 @@ function MenuLink({
         <span className="block text-sm font-semibold">{title}</span>
         <span className="mt-0.5 block text-xs text-muted-foreground">{hint}</span>
       </span>
+      {badge > 0 ? (
+        <span className="grid min-w-5 shrink-0 place-items-center rounded-full bg-primary px-1.5 text-xs font-semibold text-primary-foreground">
+          {badge > 9 ? "9+" : badge}
+        </span>
+      ) : null}
       <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
     </Link>
   );
