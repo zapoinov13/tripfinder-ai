@@ -3,7 +3,9 @@ import { ArrowRight, Sparkles, Wand2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 import { TourCard } from "@/components/tours/tour-card";
+import { tours as demoTours } from "@/data/demo";
 import { buildAiChips, parseTravelQuery, parsedQueryToSearch } from "@/lib/ai-search";
+import { filterTours, validateSearchParams } from "@/lib/search";
 import { usePlatformSelector } from "@/lib/platform/hooks";
 import { searchService } from "@/lib/platform/search-service";
 import { cn } from "@/lib/utils";
@@ -57,7 +59,11 @@ export function AiSearchWidget() {
   const results = useMemo(() => {
     if (!parsed) return [];
     const params = parsedQueryToSearch(parsed);
-    return searchService.search(params as Record<string, unknown>).slice(0, 3);
+    const live = searchService.search(params as Record<string, unknown>);
+    if (live.length) return live.slice(0, 3);
+    // Живой каталог пуст (внешняя база без туров) — показываем mock-подбор
+    // по тем же правилам из демо-данных, чтобы виджет всегда отвечал.
+    return filterTours(validateSearchParams(params), demoTours).slice(0, 3);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [parsed, catalogKey]);
 
