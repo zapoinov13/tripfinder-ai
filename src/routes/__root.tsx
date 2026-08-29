@@ -20,6 +20,7 @@ import { hydrateVerticalListingsFromSupabase } from "@/lib/platform/vertical-lis
 import { hydrateCatalogFromSupabase } from "@/lib/supabase/hydrate";
 import { isSupabaseConfigured } from "@/lib/supabase/client";
 import { DEFAULT_OG_IMAGE, jsonLd, seo, SITE_NAME, SITE_URL } from "@/lib/seo";
+import { buildLabel } from "@/lib/build-info";
 
 function NotFoundComponent() {
   return (
@@ -91,6 +92,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
       { name: "apple-mobile-web-app-title", content: "TourGo" },
       { name: "twitter:card", content: "summary_large_image" },
+      // Штамп сборки: по нему видно, свежая ли версия открыта в браузере.
+      { name: "tourgo:build", content: buildLabel() },
       { property: "og:site_name", content: SITE_NAME },
       { property: "og:locale", content: "ru_RU" },
       { property: "og:image:width", content: "1200" },

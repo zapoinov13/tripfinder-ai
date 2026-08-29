@@ -18,6 +18,20 @@ const capacitorSsrExternals = [
   "leaflet",
 ];
 
+/**
+ * Штамп сборки в бандл.
+ *
+ * Vercel кладёт хэш коммита в VERCEL_GIT_COMMIT_SHA, но без префикса VITE_ он
+ * до браузера не доедет — перекладываем сами. Локально переменной нет, и
+ * приложение честно показывает «локальная сборка».
+ */
+const buildEnv = {
+  "import.meta.env.VITE_BUILD_COMMIT": JSON.stringify(
+    process.env["VERCEL_GIT_COMMIT_SHA"] ?? process.env["BUILD_COMMIT"] ?? "",
+  ),
+  "import.meta.env.VITE_BUILD_TIME": JSON.stringify(new Date().toISOString()),
+};
+
 export default defineConfig({
   tanstackStart: {
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
@@ -25,6 +39,7 @@ export default defineConfig({
     server: { entry: "server" },
   },
   vite: {
+    define: buildEnv,
     // Capacitor plugins touch `document` at module load: keep them out of the SSR bundle.
     ssr: {
       external: capacitorSsrExternals,

@@ -26,7 +26,8 @@
     "cap:build": "vite build --config vite.capacitor.config.ts",
     "seo:audit": "node scripts/seo-audit.mjs",
     "mobile:clip": "node scripts/mobile-clip-check.mjs",
-    "mobile:fold": "node scripts/mobile-fold-check.mjs"
+    "mobile:fold": "node scripts/mobile-fold-check.mjs",
+    "mobile:overflow": "node scripts/mobile-overflow-check.mjs"
   },
   "dependencies": {
     "@capacitor-community/apple-sign-in": "^7.1.0",

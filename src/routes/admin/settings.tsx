@@ -22,6 +22,7 @@ import { resetPlatformStore, setState } from "@/lib/platform/store";
 import type { PlatformConfig } from "@/lib/platform/types";
 import { cn } from "@/lib/utils";
 import { privatePage } from "@/lib/seo";
+import { buildLabel } from "@/lib/build-info";
 
 export const Route = createFileRoute("/admin/settings")({
   head: () => privatePage("Настройки · Админ"),
@@ -425,6 +426,12 @@ function AdminSettingsPage() {
             <div className="flex justify-between gap-4">
               <dt className="text-muted-foreground">Версия хранилища</dt>
               <dd className="font-mono text-xs">{STORE_KEY}</dd>
+            </div>
+            {/* Отвечает на «я не вижу обновлений»: сверьте хэш с последним
+                коммитом — если совпал, значит открыт свежий деплой. */}
+            <div className="flex justify-between gap-4">
+              <dt className="text-muted-foreground">Сборка на сайте</dt>
+              <dd className="font-mono text-xs">{buildLabel()}</dd>
             </div>
             <div className="flex justify-between gap-4">
               <dt className="text-muted-foreground">В каталоге</dt>
