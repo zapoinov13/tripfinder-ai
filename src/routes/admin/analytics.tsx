@@ -23,6 +23,7 @@ import {
 } from "recharts";
 
 import { EmptyState, TabPills } from "@/components/admin";
+import { TrafficPanel } from "@/components/admin/traffic-panel";
 import { DashShell } from "@/components/dash/dash-shell";
 import { useAdminNav } from "@/components/dash/nav-items";
 import {
@@ -149,6 +150,26 @@ function AdminAnalyticsPage() {
           { value: "all", label: "Всё время", count: state.analyticsEvents.length },
         ]}
       />
+
+      {/*
+        Посещаемость идёт первой: это самое начало пути. Без неё «поиск →
+        заявка» считается от неизвестного числа — видно, что конверсия упала,
+        и непонятно, стало ли хуже на сайте или просто кончился трафик.
+      */}
+      <section className="mt-6">
+        <h2 className="font-display text-lg font-semibold">Трафик сайта</h2>
+        <p className="mt-0.5 text-sm text-muted-foreground">
+          Свой счётчик: данные остаются у платформы и не режутся блокировщиками рекламы.
+        </p>
+        <TrafficPanel days={period === "7" ? 7 : period === "30" ? 30 : 365} />
+      </section>
+
+      <div className="mt-8 border-t border-border pt-6">
+        <h2 className="font-display text-lg font-semibold">Что происходит внутри платформы</h2>
+        <p className="mt-0.5 text-sm text-muted-foreground">
+          Из пришедших людей — сколько искали, обратились и доехали.
+        </p>
+      </div>
 
       {!hasData ? (
         <div className="mt-4">

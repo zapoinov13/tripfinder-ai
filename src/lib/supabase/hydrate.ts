@@ -1,6 +1,7 @@
 import { getHotel } from "@/data/demo";
 import type { TourTag } from "@/data/demo";
 import { getSupabase } from "@/lib/supabase/client";
+import { PAGE_VIEW } from "@/lib/analytics/visits";
 import { setState } from "@/lib/platform/store";
 import type {
   BookingSchedule,
@@ -259,6 +260,7 @@ async function loadUserData(userId: string): Promise<UserDataResult> {
       ? await sb
           .from("analytics_events")
           .select("*")
+          .neq("type", PAGE_VIEW)
           .order("created_at", { ascending: false })
           .limit(1000)
       : null;
@@ -272,9 +274,16 @@ async function loadUserData(userId: string): Promise<UserDataResult> {
         // Раздел «Продвижение»: админ видит кампании всех компаний.
         sb.from("promotions").select("*").order("started_at", { ascending: false }).limit(300),
         // Раздел «Аналитика»: события всей платформы.
+        //
+        // Просмотры страниц сюда не берём. Их на порядок больше остальных
+        // событий, и в окне из тысячи строк они вытеснили бы поиски, заявки и
+        // сделки — воронка осталась бы без данных ровно тогда, когда на сайт
+        // пошли люди. Посещаемость считает база (`public.traffic_stats`), а
+        // не браузер админа.
         sb
           .from("analytics_events")
           .select("*")
+          .neq("type", PAGE_VIEW)
           .order("created_at", { ascending: false })
           .limit(1000),
       ])
@@ -550,10 +559,7 @@ async function loadUserData(userId: string): Promise<UserDataResult> {
             contactPhone: str(r["contact_phone"]),
             contactEmail: str(r["contact_email"]),
             proof: str(r["proof"]),
-            status: str(
-              r["status"],
-              "NEW",
-            ) as PlatformState["companyClaims"][number]["status"],
+            status: str(r["status"], "NEW") as PlatformState["companyClaims"][number]["status"],
             declineReason: str(r["decline_reason"]),
             createdAt: str(r["created_at"]),
             updatedAt: str(r["updated_at"], str(r["created_at"])),

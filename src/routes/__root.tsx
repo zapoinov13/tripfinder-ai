@@ -4,6 +4,7 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useRouterState,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
@@ -19,6 +20,7 @@ import { TourStateProvider } from "@/lib/tour-state";
 import { hydrateVerticalListingsFromSupabase } from "@/lib/platform/vertical-listings";
 import { hydrateCatalogFromSupabase } from "@/lib/supabase/hydrate";
 import { isSupabaseConfigured } from "@/lib/supabase/client";
+import { trackPageView } from "@/lib/analytics/visits";
 import { DEFAULT_OG_IMAGE, jsonLd, seo, SITE_NAME, SITE_URL } from "@/lib/seo";
 import { buildLabel } from "@/lib/build-info";
 
@@ -189,6 +191,15 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  // Свой счётчик посещаемости: считаем переходы внутри приложения тоже, иначе
+  // из всей сессии виден только первый адрес — у одностраничного сайта
+  // остальные переходы браузер серверу не показывает.
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const searchStr = useRouterState({ select: (s) => s.location.searchStr });
+
+  useEffect(() => {
+    trackPageView(pathname, searchStr);
+  }, [pathname, searchStr]);
 
   useEffect(() => {
     if (isSupabaseConfigured) {

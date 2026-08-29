@@ -65,6 +65,11 @@ with checks(part, kind, name, present) as (
   select 'Чат и статусы', 'триггер', 'service_requests_guard',
          exists (select 1 from pg_trigger where tgname = 'service_requests_guard' and not tgisinternal)
 
+  -- Отдельно: свой счётчик посещаемости
+  union all
+  select 'Счётчик посещаемости', 'функция', 'public.traffic_stats',
+         to_regprocedure('public.traffic_stats(int)') is not null
+
   -- Отдельно: вебхук, который шлёт пуш на телефон
   union all
   -- Триггер может быть двух видов: из формы дашборда (supabase_functions.

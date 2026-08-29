@@ -28,7 +28,8 @@
     "mobile:clip": "node scripts/mobile-clip-check.mjs",
     "mobile:fold": "node scripts/mobile-fold-check.mjs",
     "mobile:overflow": "node scripts/mobile-overflow-check.mjs",
-    "sweep:roles": "node scripts/role-sweep.mjs"
+    "sweep:roles": "node scripts/role-sweep.mjs",
+    "visits:check": "node scripts/visits-check.mjs"
   },
   "dependencies": {
     "@capacitor-community/apple-sign-in": "^7.1.0",
