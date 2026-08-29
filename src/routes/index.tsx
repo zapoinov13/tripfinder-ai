@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 
 import heroImage from "@/assets/hero.jpg";
 import { AiIntentBar } from "@/components/site/ai-intent-bar";
+import { AiSearchWidget } from "@/components/site/ai-search-widget";
 import { DestinationRail, HotToursRail } from "@/components/site/home-rails";
 import { SiteLayout } from "@/components/site/site-layout";
 import { SafeImage } from "@/components/media/safe-image";
@@ -137,6 +138,8 @@ function Index() {
           </Link>
         </section>
       </div>
+
+      <AiSearchWidget />
 
       <DestinationRail tours={liveTours} />
 
