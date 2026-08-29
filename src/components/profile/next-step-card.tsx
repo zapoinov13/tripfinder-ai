@@ -41,7 +41,10 @@ export function NextStepCard({ userId }: { userId: string }) {
         <p className="mt-1 text-sm text-muted-foreground">
           Поиск и заявка бесплатные. Платите напрямую компании, которую выберете.
         </p>
-        <div className="mt-4 flex flex-col gap-2">
+        {/* Три равнозначных начала: на телефоне столбиком, на большом экране
+            в ряд. Столбиком на мониторе они выстраиваются в узкую колонку, и
+            рядом остаётся пустое место — будто страницу забыли доверстать. */}
+        <div className="mt-4 grid gap-2 md:grid-cols-3 md:items-stretch">
           <StartRow
             icon={Compass}
             title="Найти тур"
@@ -140,7 +143,7 @@ function StartRow({
   return (
     <Link
       to={to}
-      className="flex items-start gap-3 rounded-2xl border border-border p-4 transition-colors hover:border-primary/40 hover:bg-primary/[0.02]"
+      className="flex items-start gap-3 rounded-2xl border border-border p-4 transition-colors hover:border-primary/40 hover:bg-primary/[0.02] md:flex-col md:gap-2"
     >
       <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary-soft text-primary">
         <Icon className="size-4" />
