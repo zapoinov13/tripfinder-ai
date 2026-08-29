@@ -90,6 +90,7 @@ export async function hydrateCatalogFromSupabase() {
               instagram: str(o["instagram"], prev?.instagram ?? ""),
               telegram: str(o["telegram"], prev?.telegram ?? ""),
               listedByPlatform: o["listed_by_platform"] === true,
+              category: str(o["category"], prev?.category ?? ""),
               // Поле появляется после миграции автоодобрения. Пока его нет —
               // знака проверки просто не будет, и это честно.
               documentsVerifiedAt: str(o["documents_verified_at"], prev?.documentsVerifiedAt ?? ""),

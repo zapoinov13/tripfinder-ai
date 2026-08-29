@@ -174,6 +174,9 @@ async function callRegisterCompanyRpc(
     p_email: company.email || fallbackEmail,
     p_website: company.website,
     p_contact_person: company.contactPerson,
+    // Категория едет тем же вызовом: компания без неё попадает в кабинет,
+    // который не знает, что ей показывать.
+    ...(company.category ? { p_category: company.category } : {}),
   });
   return { org: data, error: error?.message ?? null };
 }

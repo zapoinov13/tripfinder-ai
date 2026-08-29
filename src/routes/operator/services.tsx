@@ -29,11 +29,30 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { privatePage } from "@/lib/seo";
 
-const tabs: { id: VerticalId; vitrine: "/sport" | "/stays" | "/cars"; service: string }[] = [
-  { id: "stay", vitrine: "/stays", service: "Отели" },
-  { id: "car", vitrine: "/cars", service: "Аренда авто" },
-  { id: "sport", vitrine: "/sport", service: "Спорт" },
+const tabs: {
+  id: VerticalId;
+  vitrine: "/sport" | "/stays" | "/cars";
+  service: string;
+  category: string;
+}[] = [
+  { id: "stay", vitrine: "/stays", service: "Отели", category: "stays" },
+  { id: "car", vitrine: "/cars", service: "Аренда авто", category: "cars" },
+  { id: "sport", vitrine: "/sport", service: "Спорт", category: "sport" },
 ];
+
+/**
+ * Разделы своей категории, а не все подряд.
+ *
+ * Спортзалу нечего делать во вкладках «Отели» и «Аренда авто»: он их не
+ * сдаёт, а видеть чужие поля — значит каждый раз проверять, туда ли попал.
+ * Пока категория не проставлена (старые компании, миграция не применена),
+ * показываем всё: спрятать разделы у того, кто ими уже пользуется, хуже, чем
+ * показать лишнее.
+ */
+function tabsForCategory(category: string | undefined) {
+  const own = tabs.filter((tab) => tab.category === category);
+  return own.length ? own : tabs;
+}
 
 export const Route = createFileRoute("/operator/services")({
   validateSearch: (search: Record<string, unknown>): { tab?: VerticalId } => ({
@@ -79,7 +98,9 @@ function OperatorServicesPage() {
 
   if (!allowed || !organization) return null;
 
-  const current = tabs.find((t) => t.id === tab)!;
+  const visibleTabs = tabsForCategory(organization.category);
+  // Адрес мог прийти с чужой вкладкой (ссылка, закладка) — возвращаем на свою.
+  const current = visibleTabs.find((t) => t.id === tab) ?? visibleTabs[0]!;
 
   return (
     <DashShell
@@ -96,7 +117,7 @@ function OperatorServicesPage() {
       }
     >
       <div className="mb-6 flex flex-wrap gap-2">
-        {tabs.map((item) => (
+        {visibleTabs.map((item) => (
           <button
             key={item.id}
             type="button"

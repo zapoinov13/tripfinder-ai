@@ -212,6 +212,8 @@ function CompanySignupPage() {
       email: company.email || person.email,
       website: company.website,
       contactPerson,
+      // Категория выбрана первым шагом — она и определяет кабинет.
+      ...(categories[0] ? { category: categories[0] } : {}),
     };
     // Раньше здесь не было ни try, ни finally: любая неожиданность внутри — и
     // кнопка навсегда оставалась в состоянии «Создаём…». Именно так и вышло:
