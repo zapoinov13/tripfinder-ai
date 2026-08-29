@@ -59,6 +59,26 @@ function clientBuckets(): Bucket[] {
   return buckets;
 }
 
+/**
+ * Работает ли консультант прямо сейчас.
+ *
+ * Страница должна знать это до первого сообщения: показывать поле для чата,
+ * который ответит «ключ не задан», — значит обманывать. Наружу отдаём только
+ * «да/нет», без причины: провайдер и ключ — не дело посетителя.
+ */
+export const aiChatStatus = createServerFn({ method: "GET" }).handler(
+  async (): Promise<{ available: boolean }> => {
+    try {
+      const { readSettings } = await import("@/lib/ai-settings.server");
+      const { endpointFor } = await import("@/lib/ai-provider.server");
+      const settings = await readSettings();
+      return { available: settings.enabled && Boolean(endpointFor(settings).key) };
+    } catch {
+      return { available: false };
+    }
+  },
+);
+
 /** Public: the AI concierge chat is available to guests too. */
 export const aiChat = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => chatSchema.parse(input))
@@ -111,8 +131,19 @@ export const aiChat = createServerFn({ method: "POST" })
       console.error("[ai] rate limit unavailable", err);
     }
 
+    // Промпт собирается из трёх частей: настройка админа, живая сводка
+    // каталога и правила разговора. Без сводки модель советует направления,
+    // которых никто не продаёт, — человек идёт по совету, ничего не находит
+    // и уходит. Это хуже, чем отсутствие консультанта.
+    const { readCatalogSummary, describeCatalog, CONSULTANT_RULES } =
+      await import("@/lib/ai-catalog.server");
+    const summary = await readCatalogSummary();
+    const system = [settings.systemPrompt, describeCatalog(summary), CONSULTANT_RULES]
+      .filter(Boolean)
+      .join("\n\n");
+
     const res = await callChatCompletion(settings, [
-      { role: "system", content: settings.systemPrompt },
+      { role: "system", content: system },
       ...data.messages,
     ]);
     return res.ok ? { ok: true, text: res.text } : { ok: false, error: res.error };

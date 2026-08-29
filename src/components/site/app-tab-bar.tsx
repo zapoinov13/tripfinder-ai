@@ -78,6 +78,14 @@ export function AppTabBar() {
 /** Запас под фиксированный бар: контент не должен прятаться под ним. */
 export const tabBarPaddingClass = "pb-[calc(5.75rem+env(safe-area-inset-bottom))] md:pb-0";
 
+/**
+ * Для элементов, к которым браузер прокручивает сам, — поля ввода в первую
+ * очередь. Отступа снизу у страницы мало: браузер подводит поле к нижнему
+ * краю экрана, ровно под бар, и печатать становится некуда.
+ */
+export const tabBarScrollMarginClass =
+  "scroll-mb-[calc(5.75rem+env(safe-area-inset-bottom))] md:scroll-mb-0";
+
 /** @deprecated Используйте AppTabBar */
 export const MobileNav = AppTabBar;
 
