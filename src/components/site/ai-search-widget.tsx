@@ -3,9 +3,8 @@ import { ArrowRight, Sparkles, Wand2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 import { TourCard } from "@/components/tours/tour-card";
-import { tours as demoTours } from "@/data/demo";
+import { Button } from "@/components/ui/button";
 import { buildAiChips, parseTravelQuery, parsedQueryToSearch } from "@/lib/ai-search";
-import { filterTours, validateSearchParams } from "@/lib/search";
 import { usePlatformSelector } from "@/lib/platform/hooks";
 import { searchService } from "@/lib/platform/search-service";
 import { cn } from "@/lib/utils";
@@ -59,11 +58,10 @@ export function AiSearchWidget() {
   const results = useMemo(() => {
     if (!parsed) return [];
     const params = parsedQueryToSearch(parsed);
-    const live = searchService.search(params as Record<string, unknown>);
-    if (live.length) return live.slice(0, 3);
-    // Живой каталог пуст (внешняя база без туров) — показываем mock-подбор
-    // по тем же правилам из демо-данных, чтобы виджет всегда отвечал.
-    return filterTours(validateSearchParams(params), demoTours).slice(0, 3);
+    // Показываем только то, что компании действительно продают. Подставлять
+    // сюда демо-каталог нельзя: человек откроет карточку тура, которого нет,
+    // напишет по нему компании и не получит ответа — это хуже пустого ответа.
+    return searchService.search(params as Record<string, unknown>).slice(0, 3);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [parsed, catalogKey]);
 
@@ -83,7 +81,7 @@ export function AiSearchWidget() {
   }, [parsed]);
 
   return (
-    <section className="container-page mt-10 md:mt-14" aria-label="AI-подбор туров">
+    <section className="container-page mt-4 md:mt-10" aria-label="AI-подбор туров">
       <div className="surface-card overflow-hidden">
         <div className="flex items-center gap-3 border-b border-border bg-secondary/40 px-4 py-3.5 md:px-6">
           <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-ai text-primary-foreground">
@@ -192,10 +190,31 @@ export function AiSearchWidget() {
                     ))}
                   </div>
                 ) : (
-                  <p className="mt-3 rounded-2xl bg-secondary/60 px-4 py-3 text-sm text-muted-foreground">
-                    По такому описанию пока ничего не нашлось — попробуйте изменить бюджет или
-                    направление.
-                  </p>
+                  /* Пустой ответ — не тупик: заявка работает и тогда, когда
+                     готового предложения в каталоге ещё нет. Турфирмы
+                     соберут вариант под запрос и пришлют цену сами. */
+                  <div className="mt-3 rounded-2xl bg-secondary/60 p-4">
+                    <p className="text-sm font-medium">
+                      Готового такого тура сейчас нет в каталоге
+                    </p>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      Отправьте описание турфирмам — они соберут вариант под ваш запрос и пришлют
+                      цену. Обычно отвечают в течение дня.
+                    </p>
+                    <Button className="mt-3 h-11 w-full sm:w-auto" asChild>
+                      <Link
+                        to="/request"
+                        search={
+                          {
+                            ...(parsed.destination ? { destination: parsed.destination } : {}),
+                            wish: trimmed,
+                          } as never
+                        }
+                      >
+                        Отправить запрос турфирмам
+                      </Link>
+                    </Button>
+                  </div>
                 )}
               </div>
             </>

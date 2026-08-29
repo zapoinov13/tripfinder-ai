@@ -3,7 +3,6 @@ import { Building2, Clock, Flame, ShieldCheck, Sparkles, Wallet } from "lucide-r
 import type { ReactNode } from "react";
 
 import heroImage from "@/assets/hero.jpg";
-import { AiIntentBar } from "@/components/site/ai-intent-bar";
 import { AiSearchWidget } from "@/components/site/ai-search-widget";
 import { DestinationRail, HotToursRail } from "@/components/site/home-rails";
 import { SiteLayout } from "@/components/site/site-layout";
@@ -81,26 +80,23 @@ function Index() {
               <p className="mt-1.5 max-w-md text-[13px] leading-snug text-primary-foreground/85 md:mt-5 md:text-xl md:leading-relaxed">
                 Туры, жильё, авто и помощь от компаний
               </p>
-              <div className="mt-6 hidden max-w-2xl md:block">
-                <AiIntentBar tone="onDark" />
-              </div>
             </div>
           </div>
         </section>
 
-        <section className="flex flex-col px-4 md:container-page md:px-8">
-          <Link
-            to="/ai-search"
-            search={{} as never}
-            className="mt-3 flex h-12 shrink-0 items-center gap-3 rounded-2xl bg-card px-3 shadow-[0_8px_24px_rgba(15,23,42,0.12)] ring-1 ring-black/5 md:hidden"
-          >
-            <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-primary text-primary-foreground">
-              <Sparkles className="size-4" aria-hidden />
-            </span>
-            <span className="text-[15px] font-semibold leading-none">Опишите поездку</span>
-          </Link>
+        {/* Сначала спрашиваем человека своими словами, и только потом
+            предлагаем выбирать раздел: так короче путь у того, кто уже знает,
+            чего хочет, и не мешает тому, кто пришёл смотреть. */}
+        <AiSearchWidget />
 
-          <div className="mt-3 grid grid-cols-2 gap-2 md:mt-10 md:grid-cols-3 md:gap-4">
+        <section className="flex flex-col px-4 md:container-page md:px-8">
+          <h2 className="mt-7 font-display text-lg font-semibold md:mt-12 md:text-2xl">
+            Или выберите, что вас интересует
+          </h2>
+          <p className="mt-1 text-sm text-foreground/60 md:text-base">
+            Шесть разделов: в каждом — компании, цены и связь напрямую.
+          </p>
+          <div className="mt-3 grid grid-cols-2 gap-2 md:mt-6 md:grid-cols-3 md:gap-4">
             {travelScenarios.map((item) => (
               <Link
                 key={item.id}
@@ -138,8 +134,6 @@ function Index() {
           </Link>
         </section>
       </div>
-
-      <AiSearchWidget />
 
       <DestinationRail tours={liveTours} />
 
