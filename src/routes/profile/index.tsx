@@ -115,145 +115,126 @@ function TouristCabinet() {
             </p>
           </header>
 
-          {/* На телефоне всё идёт одной лентой, на большом экране — в две
-              колонки. Один узкий столбец посреди широкого монитора выглядит как
-              открытая на компьютере мобильная страница: половина экрана пустая,
-              а листать всё равно приходится. */}
-          <div className="lg:grid lg:grid-cols-2 lg:items-start lg:gap-6">
-            <div>
-              <NextStepCard userId={user.id} />
+          <NextStepCard userId={user.id} />
 
-              {/* Нулевой баланс крупной плашкой — пустая трата экрана: строка
+          {/* Нулевой баланс крупной плашкой — пустая трата экрана: строка
               «Доступные бонусы» в меню ниже никуда не делась. */}
-              {points > 0 ? (
-                <button
-                  type="button"
-                  onClick={() => setBonusOpen(true)}
-                  className="surface-card mb-4 flex w-full items-center justify-between gap-3 p-5 text-left transition-colors hover:border-primary/40"
-                >
-                  <div>
-                    <p className="text-sm text-muted-foreground">{t.bonusBalance}</p>
-                    <p className="mt-1 font-display text-3xl font-semibold tabular-nums">
-                      {points.toLocaleString(locale === "kk" ? "kk-KZ" : "ru-RU")}
-                    </p>
-                    <p className="mt-1 text-xs text-muted-foreground">{t.points}</p>
-                  </div>
-                  <span className="grid size-12 place-items-center rounded-2xl bg-primary-soft text-primary">
-                    <Sparkles className="size-5" />
-                  </span>
-                </button>
-              ) : null}
-            </div>
+          {points > 0 ? (
+            <button
+              type="button"
+              onClick={() => setBonusOpen(true)}
+              className="surface-card mb-4 flex w-full items-center justify-between gap-3 p-5 text-left transition-colors hover:border-primary/40"
+            >
+              <div>
+                <p className="text-sm text-muted-foreground">{t.bonusBalance}</p>
+                <p className="mt-1 font-display text-3xl font-semibold tabular-nums">
+                  {points.toLocaleString(locale === "kk" ? "kk-KZ" : "ru-RU")}
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">{t.points}</p>
+              </div>
+              <span className="grid size-12 place-items-center rounded-2xl bg-primary-soft text-primary">
+                <Sparkles className="size-5" />
+              </span>
+            </button>
+          ) : null}
+        </div>
 
-            <div className="mt-4 lg:mt-0">
-              <div className="surface-card overflow-hidden divide-y divide-border">
-                <MenuRow
-                  icon={Sparkles}
-                  title={t.bonuses}
-                  hint={t.bonusesHint}
-                  onClick={() => setBonusOpen(true)}
-                />
-                <MenuRow
-                  icon={TicketPercent}
-                  title={t.promo}
-                  hint={t.promoHint}
-                  onClick={() => setPromoOpen(true)}
-                />
-                {/* Заявки и переписка раньше открывались только из плашки «Что сейчас»
+        <div className="mt-4 lg:mt-0">
+          <div className="surface-card overflow-hidden divide-y divide-border">
+            <MenuRow
+              icon={Sparkles}
+              title={t.bonuses}
+              hint={t.bonusesHint}
+              onClick={() => setBonusOpen(true)}
+            />
+            <MenuRow
+              icon={TicketPercent}
+              title={t.promo}
+              hint={t.promoHint}
+              onClick={() => setPromoOpen(true)}
+            />
+            {/* Заявки и переписка раньше открывались только из плашки «Что сейчас»
                 и из бокового меню — у нового туриста их не было видно вовсе. */}
-                <MenuLink
-                  icon={Inbox}
-                  title={t.myRequests}
-                  hint={t.myRequestsHint}
-                  to="/profile/requests"
-                  badge={openRequests}
-                />
-                <MenuLink
-                  icon={MessageSquare}
-                  title={t.myMessages}
-                  hint={t.myMessagesHint}
-                  to="/profile/messages"
-                  badge={unreadMessages}
-                />
-                <MenuLink
-                  icon={History}
-                  title={t.history}
-                  hint={t.historyHint}
-                  to="/profile/trips"
-                />
-                <MenuRow
-                  icon={Gift}
-                  title={t.gift}
-                  hint={t.giftHint}
-                  onClick={() => setGiftOpen(true)}
-                />
-                <MenuLink
-                  icon={UserRound}
-                  title={t.data}
-                  hint={t.dataHint}
-                  to="/profile/settings"
-                />
-                <a
-                  href={SUPPORT_MAILTO}
-                  className="flex w-full items-center gap-3 px-4 py-3.5 text-left transition-colors hover:bg-secondary/60 active:bg-secondary"
+            <MenuLink
+              icon={Inbox}
+              title={t.myRequests}
+              hint={t.myRequestsHint}
+              to="/profile/requests"
+              badge={openRequests}
+            />
+            <MenuLink
+              icon={MessageSquare}
+              title={t.myMessages}
+              hint={t.myMessagesHint}
+              to="/profile/messages"
+              badge={unreadMessages}
+            />
+            <MenuLink icon={History} title={t.history} hint={t.historyHint} to="/profile/trips" />
+            <MenuRow
+              icon={Gift}
+              title={t.gift}
+              hint={t.giftHint}
+              onClick={() => setGiftOpen(true)}
+            />
+            <MenuLink icon={UserRound} title={t.data} hint={t.dataHint} to="/profile/settings" />
+            <a
+              href={SUPPORT_MAILTO}
+              className="flex w-full items-center gap-3 bg-card px-4 py-3.5 text-left transition-colors hover:bg-secondary/60 active:bg-secondary"
+            >
+              <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-secondary text-foreground">
+                <Mail className="size-4" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm font-semibold">{t.contact}</span>
+                <span className="mt-0.5 block text-xs text-muted-foreground">
+                  {t.contactHint} · {SUPPORT_EMAIL}
+                </span>
+              </span>
+              <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
+            </a>
+          </div>
+
+          <div className="surface-card mt-4 p-4">
+            <div className="mb-3 flex items-center gap-2 text-sm font-semibold">
+              <Globe2 className="size-4 text-primary" />
+              {t.language}
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              {(
+                [
+                  { code: "ru" as AppLocale, label: "Русский" },
+                  { code: "kk" as AppLocale, label: "Қазақша" },
+                ] as const
+              ).map((item) => (
+                <button
+                  key={item.code}
+                  type="button"
+                  onClick={() => setLocale(item.code)}
+                  className={cn(
+                    "rounded-xl border px-3 py-2.5 text-sm font-medium transition-colors",
+                    locale === item.code
+                      ? "border-primary bg-primary-soft text-primary"
+                      : "border-border bg-background text-muted-foreground hover:border-primary/40 hover:text-foreground",
+                  )}
                 >
-                  <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-secondary text-foreground">
-                    <Mail className="size-4" />
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block text-sm font-semibold">{t.contact}</span>
-                    <span className="mt-0.5 block text-xs text-muted-foreground">
-                      {t.contactHint} · {SUPPORT_EMAIL}
-                    </span>
-                  </span>
-                  <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
-                </a>
-              </div>
-
-              <div className="surface-card mt-4 p-4">
-                <div className="mb-3 flex items-center gap-2 text-sm font-semibold">
-                  <Globe2 className="size-4 text-primary" />
-                  {t.language}
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  {(
-                    [
-                      { code: "ru" as AppLocale, label: "Русский" },
-                      { code: "kk" as AppLocale, label: "Қазақша" },
-                    ] as const
-                  ).map((item) => (
-                    <button
-                      key={item.code}
-                      type="button"
-                      onClick={() => setLocale(item.code)}
-                      className={cn(
-                        "rounded-xl border px-3 py-2.5 text-sm font-medium transition-colors",
-                        locale === item.code
-                          ? "border-primary bg-primary-soft text-primary"
-                          : "border-border bg-background text-muted-foreground hover:border-primary/40 hover:text-foreground",
-                      )}
-                    >
-                      {item.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <Button
-                variant="outline"
-                className="mt-4 w-full"
-                onClick={() => {
-                  // logout() сам показывает тост о выходе.
-                  void logout();
-                  if (locale === "kk") toast.message("Сіз шықтыңыз");
-                }}
-              >
-                <LogOut className="size-4" />
-                {t.logout}
-              </Button>
+                  {item.label}
+                </button>
+              ))}
             </div>
           </div>
 
+          <Button
+            variant="outline"
+            className="mt-4 w-full"
+            onClick={() => {
+              // logout() сам показывает тост о выходе.
+              void logout();
+              if (locale === "kk") toast.message("Сіз шықтыңыз");
+            }}
+          >
+            <LogOut className="size-4" />
+            {t.logout}
+          </Button>
           <p className="mt-6 text-center text-xs text-muted-foreground">
             {locale === "kk"
               ? "Әкімші мен турфирма кабинеттері бөлек"
@@ -347,7 +328,7 @@ function MenuRow({
     <button
       type="button"
       onClick={onClick}
-      className="flex w-full items-center gap-3 px-4 py-3.5 text-left transition-colors hover:bg-secondary/60 active:bg-secondary"
+      className="flex w-full items-center gap-3 bg-card px-4 py-3.5 text-left transition-colors hover:bg-secondary/60 active:bg-secondary"
     >
       <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-secondary text-foreground">
         <Icon className="size-4" />
@@ -378,7 +359,7 @@ function MenuLink({
   return (
     <Link
       to={to}
-      className="flex w-full items-center gap-3 px-4 py-3.5 text-left transition-colors hover:bg-secondary/60 active:bg-secondary"
+      className="flex w-full items-center gap-3 bg-card px-4 py-3.5 text-left transition-colors hover:bg-secondary/60 active:bg-secondary"
     >
       <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-secondary text-foreground">
         <Icon className="size-4" />
