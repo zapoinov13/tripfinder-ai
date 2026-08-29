@@ -27,7 +27,11 @@ import { formatNumber, formatPrice, getHotel } from "@/data/demo";
 import { useAutoApiSync } from "@/lib/platform/api-sync";
 import { useAuth, useRequireAuth } from "@/lib/platform/auth";
 import { companyGaps } from "@/lib/platform/company-completeness";
-import { categoriesOfServices, isListingBusiness } from "@/lib/platform/company-categories";
+import {
+  categoriesOfServices,
+  isListingBusiness,
+  listingVerticalLabel,
+} from "@/lib/platform/company-categories";
 import { usePlatformStore } from "@/lib/platform/hooks";
 import { getCompanyRating } from "@/lib/platform/messages";
 import {
@@ -155,6 +159,8 @@ function setupSteps(
         .map((g) => g.label.toLowerCase())
         .join(", ")}${pageGaps.length > 3 ? ` и ещё ${pageGaps.length - 3}` : ""}.`
     : "Фото и описание: это первое, что видит клиент, когда открывает вас.";
+  // Называем витрину партнёра, а не весь список платформы.
+  const listingLabel = listingVerticalLabel(org.category);
   const sellsListings =
     businessOnly ||
     ["sport", "stays", "cars"].some((id) =>
@@ -177,7 +183,9 @@ function setupSteps(
             id: "listing",
             done: sportCount > 0,
             title: "Опубликовать первую услугу",
-            text: "Жильё, авто или спорт: ссылка из Instagram или сайта — и карточка попадёт в витрину.",
+            text: listingLabel
+              ? `${listingLabel}: ссылка из Instagram или сайта — и карточка попадёт в витрину.`
+              : "Ссылка из Instagram или сайта — и карточка попадёт в витрину.",
             to: "/operator/services",
             cta: "Добавить",
             essential: true,
@@ -1054,7 +1062,9 @@ function OperatorDashboard() {
               <Luggage className="mx-auto size-8 text-muted-foreground/70" />
               <p className="mt-3 font-medium">Объявлений пока нет</p>
               <p className="mt-1 text-sm text-muted-foreground">
-                Добавьте первую карточку — жильё, авто или спорт — и она появится в витрине.
+                {listingVerticalLabel(organization.category)
+                  ? `Добавьте первую карточку «${listingVerticalLabel(organization.category)}» — и она появится в витрине.`
+                  : "Добавьте первую карточку — и она появится в витрине."}
               </p>
               <Button size="sm" className="mt-4" asChild>
                 <Link to="/operator/services">Добавить объявление</Link>
