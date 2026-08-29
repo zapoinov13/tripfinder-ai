@@ -9,13 +9,15 @@ import { usePlatformSelector } from "@/lib/platform/hooks";
 import { searchService } from "@/lib/platform/search-service";
 import { cn } from "@/lib/utils";
 
-const EXAMPLES = [
-  "Дубай на неделю для двоих",
-  "Турция, всё включено, до 1 млн",
-  "Египет с детьми, первая линия",
-  "Горящие туры на 5 дней",
-  "Мальдивы премиум на двоих",
-];
+/**
+ * Примеры короткие намеренно: на телефоне они должны уместиться в одну
+ * строку целиком. Лента с прокруткой резала слово у края экрана, а перенос
+ * по строкам занимал пол-экрана — оба варианта хуже трёх коротких подсказок.
+ */
+const EXAMPLES = ["Дубай на неделю", "С детьми"];
+
+/** На широком экране места хватает на более развёрнутые примеры. */
+const EXAMPLES_WIDE = ["Горящие туры", "Турция, всё включено", "Мальдивы на двоих"];
 
 /**
  * Интерактивный AI-поиск на демо-логике: текст разбирается локальным парсером
@@ -81,17 +83,20 @@ export function AiSearchWidget() {
   }, [parsed]);
 
   return (
-    <section className="container-page mt-4 md:mt-10" aria-label="AI-подбор туров">
+    <section
+      // z-10: карточка лежит поверх обложки, иначе картинка срезает ей шапку.
+      className="container-page relative z-10 -mt-4 md:mt-10"
+      aria-label="AI-подбор туров"
+    >
       <div className="surface-card overflow-hidden">
-        <div className="flex items-center gap-3 border-b border-border bg-secondary/40 px-4 py-3.5 md:px-6">
+        <div className="flex items-center gap-3 border-b border-border bg-secondary/40 px-4 py-3 md:px-6 md:py-3.5">
           <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-ai text-primary-foreground">
             <Sparkles className="size-4" />
           </span>
+          {/* Подпись не обрезаем: половина фразы хуже, чем её отсутствие. */}
           <div className="min-w-0">
-            <h2 className="font-display text-base font-semibold md:text-lg">AI-подбор туров</h2>
-            <p className="truncate text-xs text-muted-foreground md:text-sm">
-              Опишите поездку — покажем подходящие варианты
-            </p>
+            <h2 className="font-display text-base font-semibold md:text-lg">AI-подбор поездки</h2>
+            <p className="text-xs text-muted-foreground md:text-sm">Опишите словами — найдём</p>
           </div>
         </div>
 
@@ -104,16 +109,16 @@ export function AiSearchWidget() {
             <input
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
-              placeholder="Например: Дубай на неделю для двоих, всё включено"
+              placeholder="Куда и когда хотите поехать?"
               aria-label="Опишите поездку"
-              className="h-12 min-w-0 flex-1 bg-transparent text-[15px] outline-none placeholder:truncate placeholder:text-muted-foreground"
+              className="h-12 min-w-0 flex-1 bg-transparent text-[15px] outline-none placeholder:text-muted-foreground"
             />
           </form>
 
           {/* Подсказки: примеры до ввода, уточнения — после. */}
           {!active ? (
-            <div className="mt-3 flex gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-              {EXAMPLES.map((example) => (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {[...EXAMPLES, ...EXAMPLES_WIDE].map((example, i) => (
                 <button
                   key={example}
                   type="button"
@@ -121,7 +126,10 @@ export function AiSearchWidget() {
                     setDraft(example);
                     setQuery(example);
                   }}
-                  className="shrink-0 rounded-full border border-border bg-card px-3.5 py-2 text-[13px] hover:border-primary/40"
+                  className={cn(
+                    "rounded-full border border-border bg-card px-3 py-1.5 text-[13px] hover:border-primary/40",
+                    i >= EXAMPLES.length && "hidden md:inline-flex",
+                  )}
                 >
                   {example}
                 </button>

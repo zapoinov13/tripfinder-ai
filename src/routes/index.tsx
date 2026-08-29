@@ -66,18 +66,18 @@ function Index() {
             <img
               src={heroImage}
               alt="Пляж и курорт: подбор туров на TourGo"
-              className="h-[10.5rem] w-full object-cover object-[center_32%] animate-soft-zoom sm:h-[13rem] md:h-[32rem]"
+              className="h-[8.25rem] w-full object-cover object-[center_32%] animate-soft-zoom sm:h-[13rem] md:h-[32rem]"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/45 to-ink/10" />
-            <div className="absolute inset-x-0 bottom-0 px-4 pb-5 pt-10 text-primary-foreground md:p-10">
+            <div className="absolute inset-x-0 bottom-0 px-4 pb-4 pt-8 text-primary-foreground md:p-10">
               <p className="hidden font-display text-3xl font-semibold tracking-tight md:mb-5 md:block">
                 TourGo
               </p>
-              <h1 className="font-display text-[1.55rem] font-semibold leading-[1.12] tracking-tight sm:text-5xl md:text-6xl">
+              <h1 className="font-display text-[1.4rem] font-semibold leading-[1.1] tracking-tight sm:text-5xl md:text-6xl">
                 Сравните цены
                 <br />и купите выгоднее
               </h1>
-              <p className="mt-1.5 max-w-md text-[13px] leading-snug text-primary-foreground/85 md:mt-5 md:text-xl md:leading-relaxed">
+              <p className="mt-1 max-w-md text-[12.5px] leading-snug text-primary-foreground/85 md:mt-5 md:text-xl md:leading-relaxed">
                 Туры, жильё, авто и помощь от компаний
               </p>
             </div>
@@ -90,13 +90,13 @@ function Index() {
         <AiSearchWidget />
 
         <section className="flex flex-col px-4 md:container-page md:px-8">
-          <h2 className="mt-7 font-display text-lg font-semibold md:mt-12 md:text-2xl">
-            Или выберите, что вас интересует
+          <h2 className="mt-5 font-display text-[17px] font-semibold md:mt-12 md:text-2xl">
+            Или выберите раздел
           </h2>
-          <p className="mt-1 text-sm text-foreground/60 md:text-base">
-            Шесть разделов: в каждом — компании, цены и связь напрямую.
+          <p className="mt-1 hidden text-base text-foreground/60 md:block">
+            В каждом — компании, цены и связь напрямую.
           </p>
-          <div className="mt-3 grid grid-cols-2 gap-2 md:mt-6 md:grid-cols-3 md:gap-4">
+          <div className="mt-2.5 grid grid-cols-2 gap-2 md:mt-6 md:grid-cols-3 md:gap-4">
             {travelScenarios.map((item) => (
               <Link
                 key={item.id}
