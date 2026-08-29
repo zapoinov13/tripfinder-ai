@@ -51,7 +51,10 @@ export async function readSettings(): Promise<ReadSettingsResult> {
     const base = err instanceof Error ? err.message : String(err);
     // Без адреса проекта такую ошибку не отличить от «неверный ключ», а это
     // совсем другая починка.
-    const reason = `${base} (проект ${target.projectId}, ключ ${target.hasKey ? "задан" : "не задан"})`;
+    const seen = target.env.length ? target.env.join(", ") : "ни одной из ожидаемых";
+    const reason =
+      `${base} (проект ${target.projectId}, ключ ${target.hasKey ? "задан" : "не задан"}; ` +
+      `сервер видит переменные: ${seen})`;
     console.warn("[ai-settings] настройки не прочитаны", reason);
     return {
       provider: "lovable",
