@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { TourCard } from "@/components/tours/tour-card";
 import { buildAiChips, parseTravelQuery, parsedQueryToSearch } from "@/lib/ai-search";
-import { usePlatformStore } from "@/lib/platform/hooks";
+import { usePlatformSelector } from "@/lib/platform/hooks";
 import { searchService } from "@/lib/platform/search-service";
 import { cn } from "@/lib/utils";
 
@@ -23,7 +23,7 @@ const EXAMPLES = [
  */
 export function AiSearchWidget() {
   // Подписка на каталог, чтобы после hydrate результаты пересчитались.
-  const catalogKey = usePlatformStore((s) => s.tours.length);
+  const catalogKey = usePlatformSelector((s) => s.tours.length);
   const [query, setQuery] = useState("");
   const [draft, setDraft] = useState("");
 
