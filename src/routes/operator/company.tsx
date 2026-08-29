@@ -31,6 +31,7 @@ import { useOperatorNav } from "@/components/dash/nav-items";
 import {
   VerificationDocumentsPanel,
   canSubmitVerification,
+  hasRequiredDocument,
 } from "@/components/operator/verification-documents";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -45,11 +46,11 @@ import {
   clientCountryOptions,
   companyCountryOptions,
   serviceGroupsForCategory,
-  hasRequiredVerificationDocuments,
   languageOptions,
   submitForVerification,
   updateCompanyProfile,
 } from "@/lib/platform/company";
+import type { CompanyDocument } from "@/lib/platform/company-documents";
 import { usePlatformStore } from "@/lib/platform/hooks";
 import { DEMO_PASSWORD } from "@/lib/platform/seed";
 import { nowIso, setState, uid } from "@/lib/platform/store";
@@ -85,6 +86,8 @@ function OperatorCompanyPage() {
   const [draft, setDraft] = useState<Organization | null>(null);
   const [managerEmail, setManagerEmail] = useState("");
   const [activeSection, setActiveSection] = useState<SectionId>("face");
+  // Состав документов приходит из панели: она их и грузит с сервера.
+  const [documents, setDocuments] = useState<CompanyDocument[]>([]);
   const sectionRefs = useRef<Partial<Record<SectionId, HTMLElement | null>>>({});
   const form = draft ?? organization;
 
@@ -114,7 +117,6 @@ function OperatorCompanyPage() {
 
   const members = state.members.filter((m) => m.organizationId === organization.id);
   const readOnly = user.role === "OPERATOR_MANAGER";
-  const verificationFiles = form.verificationFiles ?? [];
   const photos = form.photos ?? [];
   const videos = form.videos ?? [];
 
@@ -159,9 +161,6 @@ function OperatorCompanyPage() {
       ...(form.countries !== undefined ? { countries: form.countries } : {}),
       ...(form.clientCountries !== undefined ? { clientCountries: form.clientCountries } : {}),
       ...(form.languages !== undefined ? { languages: form.languages } : {}),
-      ...(form.verificationFiles !== undefined
-        ? { verificationFiles: form.verificationFiles }
-        : {}),
       ...(form.workingHours !== undefined ? { workingHours: form.workingHours } : {}),
       ...(form.promoText !== undefined ? { promoText: form.promoText } : {}),
       ...(form.promoUntil !== undefined ? { promoUntil: form.promoUntil } : {}),
@@ -550,15 +549,15 @@ function OperatorCompanyPage() {
             description="Знак «Проверенная компания» повышает доверие и конверсию."
           >
             <VerificationDocumentsPanel
+              organizationId={organization.id}
               services={form.services ?? []}
               companyName={form.name}
               companySummary={[form.city, form.country, (form.services ?? []).join(", ")]
                 .filter(Boolean)
                 .join(" · ")}
-              files={verificationFiles}
               readOnly={readOnly}
               showPreview={false}
-              onChange={(next) => setForm({ ...form, verificationFiles: next })}
+              onDocumentsChange={setDocuments}
             />
             <div className="flex flex-wrap items-center gap-3 pt-2">
               <Button
@@ -566,15 +565,15 @@ function OperatorCompanyPage() {
                 disabled={
                   readOnly ||
                   verified ||
-                  !canSubmitVerification(verificationFiles) ||
-                  verificationFiles.length === 0
+                  !canSubmitVerification(documents) ||
+                  documents.length === 0
                 }
                 onClick={() => {
-                  if (!hasRequiredVerificationDocuments(verificationFiles)) {
+                  if (!hasRequiredDocument(documents)) {
                     toast.error("Загрузите свидетельство о регистрации.");
                     return;
                   }
-                  submitForVerification(organization.id, verificationFiles);
+                  submitForVerification(organization.id, documents);
                   toast.success("Документы отправлены на проверку. Обычно до 2 рабочих дней.");
                 }}
               >

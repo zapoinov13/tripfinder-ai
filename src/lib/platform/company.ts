@@ -1,17 +1,15 @@
 import { appendAudit } from "./catalog";
 import { getState, nowIso, setState } from "./store";
-import type { CompanyVerificationFile, Organization } from "./types";
+import type { Organization } from "./types";
 import { verificationDocumentLabel } from "./verification-documents";
 
 export {
-  hasRequiredVerificationDocuments,
-  readVerificationFile,
-  removeVerificationFile,
-  upsertVerificationFile,
+  verificationDocumentLabel,
   verificationDocumentTypes,
   verificationDocumentTypesFor,
 } from "./verification-documents";
 export type { VerificationDocumentId } from "./types";
+import type { VerificationDocumentId } from "./types";
 
 export { companyCategories, categoriesOfServices } from "./company-categories";
 import { companyCategories as categoriesCatalog } from "./company-categories";
@@ -70,18 +68,26 @@ export function findOrgByEmail(email: string) {
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0];
 }
 
-/** Компания отправила документы: платформа увидит её в очереди на проверку. */
-export function submitForVerification(orgId: string, files: CompanyVerificationFile[]) {
+/**
+ * Компания отправила документы: платформа увидит их в очереди на проверку.
+ *
+ * Сами файлы уже лежат на сервере — здесь только отметка «отправлено» и
+ * названия для кабинета. Статус компании при этом не трогаем: кабинет
+ * открывается сразу, а знак «Проверена» даёт отдельная отметка
+ * documents_verified_at, которую ставит человек.
+ */
+export function submitForVerification(
+  orgId: string,
+  documents: { docType: VerificationDocumentId }[],
+) {
   updateCompanyProfile(orgId, {
-    verificationFiles: files,
-    documents: files.map((file) => verificationDocumentLabel(file.type)),
+    documents: documents.map((doc) => verificationDocumentLabel(doc.docType)),
     verificationSubmittedAt: nowIso(),
-    status: "PENDING_APPROVAL",
   });
   appendAudit({
     action: "company_verification_submitted",
     entityType: "organization",
     entityId: orgId,
-    meta: { documents: files.length },
+    meta: { documents: documents.length },
   });
 }

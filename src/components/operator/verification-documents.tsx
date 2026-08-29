@@ -1,55 +1,128 @@
-import { BadgeCheck, FileText, ShieldCheck, Trash2, Upload } from "lucide-react";
-import { useRef } from "react";
+import { BadgeCheck, FileText, Loader2, ShieldCheck, Trash2, Upload } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  hasRequiredVerificationDocuments,
-  readVerificationFile,
-  removeVerificationFile,
-  upsertVerificationFile,
-  verificationDocumentTypes,
-  verificationDocumentTypesFor,
-} from "@/lib/platform/company";
-import type { CompanyVerificationFile, VerificationDocumentId } from "@/lib/platform/types";
+  CompanyDocumentsError,
+  listCompanyDocuments,
+  removeCompanyDocument,
+  signedDocumentUrl,
+  uploadCompanyDocument,
+  type CompanyDocument,
+} from "@/lib/platform/company-documents";
+import { verificationDocumentTypesFor } from "@/lib/platform/company";
+import type { VerificationDocumentId } from "@/lib/platform/types";
 import { cn } from "@/lib/utils";
 
 type VerificationDocumentsPanelProps = {
+  /** Компания, чьи документы показываем. Файлы лежат в её папке в бакете. */
+  organizationId: string;
   companyName: string;
   companySummary?: string;
-  files: CompanyVerificationFile[];
-  onChange: (files: CompanyVerificationFile[]) => void;
   readOnly?: boolean;
   showPreview?: boolean;
   /** Услуги компании: от них зависит список документов. */
   services?: string[];
+  /** Родителю нужен состав документов, чтобы включить кнопку отправки. */
+  onDocumentsChange?: (documents: CompanyDocument[]) => void;
+};
+
+const statusTone: Record<CompanyDocument["reviewStatus"], string> = {
+  PENDING: "border-border bg-background",
+  APPROVED: "border-success/40 bg-success/5",
+  REJECTED: "border-destructive/40 bg-destructive/5",
 };
 
 export function VerificationDocumentsPanel({
+  organizationId,
   companyName,
   companySummary,
-  files,
-  onChange,
   readOnly = false,
   showPreview = true,
   services = [],
+  onDocumentsChange,
 }: VerificationDocumentsPanelProps) {
   const documentTypes = verificationDocumentTypesFor(services);
   const inputRefs = useRef<Partial<Record<VerificationDocumentId, HTMLInputElement | null>>>({});
+  const [documents, setDocuments] = useState<CompanyDocument[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState<VerificationDocumentId | null>(null);
+  // Ошибку показываем на месте, а не тостом: тост исчезнет, а причина нужна.
+  const [failure, setFailure] = useState("");
+
+  const report = useRef(onDocumentsChange);
+  report.current = onDocumentsChange;
+  const publish = useCallback((next: CompanyDocument[]) => {
+    setDocuments(next);
+    report.current?.(next);
+  }, []);
+
+  useEffect(() => {
+    let alive = true;
+    setLoading(true);
+    listCompanyDocuments(organizationId)
+      .then((rows) => {
+        if (!alive) return;
+        setFailure("");
+        publish(rows);
+      })
+      .catch((error: unknown) => {
+        if (!alive) return;
+        setFailure(error instanceof Error ? error.message : "Не удалось загрузить документы");
+      })
+      .finally(() => {
+        if (alive) setLoading(false);
+      });
+    return () => {
+      alive = false;
+    };
+  }, [organizationId, publish]);
 
   const upload = async (type: VerificationDocumentId, fileList: FileList | null) => {
     const file = fileList?.[0];
     if (!file) return;
+    setBusy(type);
     try {
-      const next = await readVerificationFile(type, file);
-      onChange(upsertVerificationFile(files, next));
-      toast.success(
-        `${verificationDocumentTypes.find((item) => item.id === type)?.label} загружен`,
-      );
+      const saved = await uploadCompanyDocument(organizationId, type, file);
+      publish([saved, ...documents.filter((doc) => doc.docType !== type)]);
+      setFailure("");
+      toast.success(`${labelOf(documentTypes, type)} загружен`);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Не удалось загрузить файл");
+      const message = error instanceof Error ? error.message : "Не удалось загрузить файл";
+      if (error instanceof CompanyDocumentsError && error.needsMigration) setFailure(message);
+      toast.error(message);
+    } finally {
+      setBusy(null);
     }
+  };
+
+  const drop = async (document: CompanyDocument) => {
+    setBusy(document.docType);
+    try {
+      await removeCompanyDocument(document);
+      publish(documents.filter((doc) => doc.id !== document.id));
+      toast.success("Документ удалён");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Не удалось удалить документ");
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const open = (document: CompanyDocument) => {
+    const tab = window.open("", "_blank", "noopener,noreferrer");
+    signedDocumentUrl(document.storagePath)
+      .then((url) => {
+        if (!url) throw new Error("Ссылка на файл не получена");
+        if (tab) tab.location.href = url;
+        else window.location.href = url;
+      })
+      .catch((error: unknown) => {
+        tab?.close();
+        toast.error(error instanceof Error ? error.message : "Не удалось открыть файл");
+      });
   };
 
   return (
@@ -72,6 +145,12 @@ export function VerificationDocumentsPanel({
         </div>
       ) : null}
 
+      {failure ? (
+        <p className="rounded-2xl border border-destructive/40 bg-destructive/5 p-4 text-sm text-destructive">
+          {failure}
+        </p>
+      ) : null}
+
       <div>
         <div className="flex flex-wrap items-center gap-2">
           <h3 className="text-sm font-semibold">Документы для проверки</h3>
@@ -86,13 +165,14 @@ export function VerificationDocumentsPanel({
 
         <div className="mt-3 space-y-2">
           {documentTypes.map((doc) => {
-            const uploaded = files.find((file) => file.type === doc.id);
+            const uploaded = documents.find((file) => file.docType === doc.id);
+            const working = busy === doc.id;
             return (
               <div
                 key={doc.id}
                 className={cn(
                   "rounded-xl border px-4 py-3 transition-colors",
-                  uploaded ? "border-success/40 bg-success/5" : "border-border bg-background",
+                  uploaded ? statusTone[uploaded.reviewStatus] : "border-border bg-background",
                 )}
               >
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -115,9 +195,26 @@ export function VerificationDocumentsPanel({
                       {doc.description}
                     </p>
                     {uploaded ? (
-                      <p className="mt-2 truncate text-xs font-medium text-foreground">
-                        {uploaded.fileName}
-                      </p>
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => open(uploaded)}
+                          className="mt-2 block max-w-full truncate text-xs font-medium text-primary hover:underline"
+                        >
+                          {uploaded.fileName}
+                        </button>
+                        <p className="mt-1 text-xs">
+                          {uploaded.reviewStatus === "APPROVED" ? (
+                            <span className="font-medium text-success">Принят проверяющим</span>
+                          ) : uploaded.reviewStatus === "REJECTED" ? (
+                            <span className="font-medium text-destructive">
+                              Отклонён{uploaded.reviewNote ? `: ${uploaded.reviewNote}` : ""}
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground">Ждёт проверки</span>
+                          )}
+                        </p>
+                      </>
                     ) : null}
                   </div>
 
@@ -139,9 +236,14 @@ export function VerificationDocumentsPanel({
                         type="button"
                         size="sm"
                         variant={uploaded ? "outline" : "default"}
+                        disabled={working || loading}
                         onClick={() => inputRefs.current[doc.id]?.click()}
                       >
-                        <Upload className="size-4" />
+                        {working ? (
+                          <Loader2 className="size-4 animate-spin" />
+                        ) : (
+                          <Upload className="size-4" />
+                        )}
                         {uploaded ? "Заменить" : "Загрузить"}
                       </Button>
                       {uploaded ? (
@@ -150,7 +252,8 @@ export function VerificationDocumentsPanel({
                           size="sm"
                           variant="ghost"
                           className="text-muted-foreground"
-                          onClick={() => onChange(removeVerificationFile(files, doc.id))}
+                          disabled={working}
+                          onClick={() => void drop(uploaded)}
                         >
                           <Trash2 className="size-4" />
                         </Button>
@@ -176,20 +279,17 @@ export function VerificationDocumentsPanel({
   );
 }
 
-export function verificationSubmitLabel(files: CompanyVerificationFile[]) {
-  return files.length > 0 ? "Отправить на проверку" : "Создать и открыть кабинет";
+function labelOf(
+  types: ReturnType<typeof verificationDocumentTypesFor>,
+  id: VerificationDocumentId,
+) {
+  return types.find((item) => item.id === id)?.label ?? "Документ";
 }
 
-export function canSubmitVerification(files: CompanyVerificationFile[]) {
-  return files.length === 0 || hasRequiredVerificationDocuments(files);
+export function canSubmitVerification(documents: CompanyDocument[]) {
+  return documents.length === 0 || hasRequiredDocument(documents);
 }
 
-export function verificationSubmitHint(files: CompanyVerificationFile[]) {
-  if (files.length === 0) {
-    return "Документы можно добавить позже в кабинете компании.";
-  }
-  if (!hasRequiredVerificationDocuments(files)) {
-    return "Для отправки на проверку нужно загрузить свидетельство о регистрации.";
-  }
-  return `К проверке: ${files.length} ${files.length === 1 ? "документ" : "документа"}.`;
+export function hasRequiredDocument(documents: CompanyDocument[]) {
+  return documents.some((doc) => doc.docType === "registration");
 }

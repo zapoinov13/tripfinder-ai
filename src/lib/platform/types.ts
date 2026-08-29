@@ -121,21 +121,11 @@ export type Organization = {
   documentsVerifiedAt?: string;
   /** Названия загруженных документов для проверки компании. */
   documents?: string[];
-  /** Загруженные файлы для проверки (хранятся локально / в профиле). */
-  verificationFiles?: CompanyVerificationFile[];
   verificationSubmittedAt?: string;
 };
 
 export type VerificationDocumentId =
   "registration" | "tourism_license" | "liability_insurance" | "commercial_license";
-
-export type CompanyVerificationFile = {
-  type: VerificationDocumentId;
-  fileName: string;
-  mimeType: string;
-  uploadedAt: string;
-  dataUrl: string;
-};
 
 export type OrganizationMember = {
   id: string;

@@ -70,6 +70,24 @@ with checks(part, kind, name, present) as (
   select 'Счётчик посещаемости', 'функция', 'public.traffic_stats',
          to_regprocedure('public.traffic_stats(int)') is not null
 
+  -- Отдельно: документы компаний на проверку
+  union all
+  select 'Документы компаний', 'бакет', 'company-docs',
+         exists (select 1 from storage.buckets where id = 'company-docs' and public = false)
+  union all
+  select 'Документы компаний', 'таблица', 'public.company_documents',
+         to_regclass('public.company_documents') is not null
+  union all
+  select 'Документы компаний', 'функция', 'public.admin_company_documents',
+         to_regprocedure('public.admin_company_documents()') is not null
+  union all
+  select 'Документы компаний', 'функция', 'public.review_company_document',
+         to_regprocedure('public.review_company_document(uuid, text, text)') is not null
+  union all
+  select 'Документы компаний', 'триггер', 'company_documents_guard_review',
+         exists (select 1 from pg_trigger
+                  where tgname = 'company_documents_guard_review' and not tgisinternal)
+
   -- Отдельно: вебхук, который шлёт пуш на телефон
   union all
   -- Триггер может быть двух видов: из формы дашборда (supabase_functions.

@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
 
 import { getSupabase } from "@/lib/supabase/client";
 import { useMemo, useState } from "react";
@@ -40,13 +40,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { formatNumber, formatPrice } from "@/data/demo";
 import { cn } from "@/lib/utils";
 import { appendAudit, pushNotification } from "@/lib/platform/catalog";
@@ -60,7 +53,6 @@ import { partnerActivity, recordsWord } from "@/lib/platform/business-stats";
 import { pendingCompanyClaims } from "@/lib/platform/company-claims";
 import { usePlatformStore } from "@/lib/platform/hooks";
 import { setState } from "@/lib/platform/store";
-import { verificationDocumentLabel } from "@/lib/platform/verification-documents";
 import type { OperatorPlanCode, Organization, OrganizationStatus } from "@/lib/platform/types";
 import { privatePage } from "@/lib/seo";
 
@@ -85,7 +77,6 @@ function AdminOperatorsPage() {
   const [tab, setTab] = useState("all");
   const [category, setCategory] = useState("all");
   const [life, setLife] = useState("all");
-  const [docsOrg, setDocsOrg] = useState<Organization | null>(null);
   const counts = useMemo(() => {
     const all = state.organizations.length;
     const pending = state.organizations.filter((o) => o.status === "PENDING_APPROVAL").length;
@@ -505,17 +496,15 @@ function AdminOperatorsPage() {
                           />
                         </TableCell>
                         <TableCell>
-                          {(o.verificationFiles?.length ?? 0) > 0 ? (
-                            <Button size="sm" variant="outline" onClick={() => setDocsOrg(o)}>
-                              {o.verificationFiles!.length} док. — смотреть
-                            </Button>
-                          ) : (o.documents?.length ?? 0) > 0 ? (
-                            <span className="text-xs text-muted-foreground">
-                              {o.documents!.join(", ")}
-                            </span>
-                          ) : (
-                            <span className="text-xs text-muted-foreground">не загружены</span>
-                          )}
+                          {/* Сами файлы живут в разделе «Документы»: там их
+                              видно, там же по ним принимают решение. */}
+                          <Button size="sm" variant="outline" asChild>
+                            <Link to="/admin/documents" search={{ org: o.id }}>
+                              {o.documents?.length
+                                ? `${o.documents.length} док. — смотреть`
+                                : "Проверка документов"}
+                            </Link>
+                          </Button>
                         </TableCell>
                         <TableCell>
                           <Select
@@ -657,44 +646,6 @@ function AdminOperatorsPage() {
           )}
         </>
       )}
-
-      <Dialog open={Boolean(docsOrg)} onOpenChange={(open) => !open && setDocsOrg(null)}>
-        <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Документы · {docsOrg?.name}</DialogTitle>
-            <DialogDescription>
-              {docsOrg?.verificationSubmittedAt
-                ? `Отправлены на проверку ${fmtDate(docsOrg.verificationSubmittedAt)}`
-                : "Загружены, но на проверку ещё не отправлены"}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            {(docsOrg?.verificationFiles ?? []).map((f) => (
-              <div key={`${f.type}-${f.fileName}`} className="rounded-2xl border border-border p-4">
-                <p className="font-medium">{verificationDocumentLabel(f.type)}</p>
-                <p className="mt-0.5 text-xs text-muted-foreground">
-                  {f.fileName} · {fmtDate(f.uploadedAt)}
-                </p>
-                {f.mimeType.startsWith("image/") ? (
-                  <img
-                    src={f.dataUrl}
-                    alt={verificationDocumentLabel(f.type)}
-                    className="mt-3 max-h-96 w-full rounded-xl border border-border object-contain"
-                  />
-                ) : (
-                  <a
-                    href={f.dataUrl}
-                    download={f.fileName}
-                    className="mt-3 inline-block text-sm font-medium text-primary hover:underline"
-                  >
-                    Скачать файл
-                  </a>
-                )}
-              </div>
-            ))}
-          </div>
-        </DialogContent>
-      </Dialog>
     </DashShell>
   );
 }
