@@ -11,10 +11,30 @@ export async function assertPlatformAdmin(supabase: SupabaseClient, userId: stri
   if (role !== "PLATFORM_ADMIN") throw new Error("Forbidden");
 }
 
-export async function readSettings(): Promise<AiSettings & { updatedAt: string | null }> {
+export type ReadSettingsResult = AiSettings & {
+  updatedAt: string | null;
+  /**
+   * Удалось ли вообще прочитать настройки.
+   *
+   * Раньше при любом сбое возвращались значения по умолчанию с enabled=false —
+   * и «на сервере нет служебного ключа» становилось неотличимо от «владелец
+   * выключил чат». Владелец добавлял ключ, щёлкал тумблером и снова читал
+   * «AI-чат отключён администратором», не понимая, за что.
+   */
+  readable: boolean;
+  /** Почему не удалось. Наружу посетителю не показываем, админу — показываем. */
+  unavailableReason?: string;
+};
+
+export async function readSettings(): Promise<ReadSettingsResult> {
   try {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data } = await supabaseAdmin.from("ai_settings").select("*").eq("id", 1).maybeSingle();
+    const { data, error } = await supabaseAdmin
+      .from("ai_settings")
+      .select("*")
+      .eq("id", 1)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
     return {
       provider: ((data?.provider as AiProvider) ?? "lovable") as AiProvider,
       model: data?.model || "openai/gpt-5.6-sol",
@@ -23,9 +43,11 @@ export async function readSettings(): Promise<AiSettings & { updatedAt: string |
       enabled: data?.enabled ?? false,
       systemPrompt: data?.system_prompt || DEFAULT_SYSTEM_PROMPT,
       updatedAt: data?.updated_at ?? null,
+      readable: true,
     };
   } catch (err) {
-    console.warn("[ai-settings] using defaults", err);
+    const reason = err instanceof Error ? err.message : String(err);
+    console.warn("[ai-settings] настройки не прочитаны", reason);
     return {
       provider: "lovable",
       model: "openai/gpt-5.6-sol",
@@ -34,6 +56,8 @@ export async function readSettings(): Promise<AiSettings & { updatedAt: string |
       enabled: false,
       systemPrompt: DEFAULT_SYSTEM_PROMPT,
       updatedAt: null,
+      readable: false,
+      unavailableReason: reason,
     };
   }
 }
