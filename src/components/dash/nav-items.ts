@@ -5,6 +5,7 @@ import {
   Cable,
   CreditCard,
   Dumbbell,
+  FileCheck,
   Gauge,
   HandCoins,
   Heart,
@@ -23,8 +24,15 @@ import {
   Users,
 } from "lucide-react";
 
+import { useEffect, useSyncExternalStore } from "react";
+
 import { useOptionalAuth } from "@/lib/platform/auth";
 import { isListingBusiness } from "@/lib/platform/company-categories";
+import {
+  pendingDocumentsCount,
+  refreshPendingDocuments,
+  subscribePendingDocuments,
+} from "@/lib/platform/company-documents";
 import { usePlatformStore } from "@/lib/platform/hooks";
 
 import type { DashItem } from "./dash-shell";
@@ -114,6 +122,7 @@ const adminNavBase: DashItem[] = [
   { label: "Обзор платформы", to: "/admin", icon: Gauge },
   { label: "Пользователи", to: "/admin/users", icon: Users },
   { label: "Партнёры", to: "/admin/operators", icon: Building },
+  { label: "Документы", to: "/admin/documents", icon: FileCheck },
   { label: "Заявки и брони", to: "/admin/bookings", icon: Ticket },
   { label: "Деньги", to: "/admin/payments", icon: Receipt },
   { label: "Продвижение", to: "/admin/promotions", icon: Megaphone },
@@ -137,6 +146,7 @@ export function useAdminNav(): DashItem[] {
   const apiErrors = state.apiConnections.filter((c) => c.status === "error").length;
   // Заявки «это наша компания» ждут ручного решения — иначе владелец не дождётся.
   const openClaims = state.companyClaims.filter((c) => c.status === "NEW").length;
+  const pendingDocs = usePendingDocuments();
 
   const items =
     auth?.user?.role === "PLATFORM_MANAGER"
@@ -147,8 +157,17 @@ export function useAdminNav(): DashItem[] {
     if (item.to === "/admin/operators" && pendingOps + openClaims > 0)
       return { ...item, badge: pendingOps + openClaims };
     if (item.to === "/admin/api-monitoring" && apiErrors > 0) return { ...item, badge: apiErrors };
+    if (item.to === "/admin/documents" && pendingDocs > 0) return { ...item, badge: pendingDocs };
     return item;
   });
+}
+
+/** Сколько документов ждёт проверки. Число живёт на сервере, не в сторе. */
+function usePendingDocuments() {
+  useEffect(() => {
+    void refreshPendingDocuments();
+  }, []);
+  return useSyncExternalStore(subscribePendingDocuments, pendingDocumentsCount, () => 0);
 }
 
 export const profileNav: DashItem[] = [

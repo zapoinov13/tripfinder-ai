@@ -138,9 +138,7 @@ function setupSteps(
   // Документы нужны, пока знак не выдан. На статус ориентироваться нельзя:
   // с автоодобрением он у всех APPROVED, и шаг пропал бы навсегда.
   const needsDocs =
-    !org.documentsVerifiedAt &&
-    !org.verificationSubmittedAt &&
-    !(org.verificationFiles?.length || org.documents?.length);
+    !org.documentsVerifiedAt && !org.verificationSubmittedAt && !org.documents?.length;
   // Готовность страницы считаем общими правилами, а не своими: иначе кабинет,
   // список «чего не хватает» и разбор AI отвечают на один вопрос по-разному.
   const gaps = companyGaps({ company: org, listingsCount: activeTours + sportCount });

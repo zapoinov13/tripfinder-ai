@@ -40,6 +40,7 @@ import { Route as AdminAnalyticsRouteImport } from './routes/admin/analytics'
 import { Route as AdminApiMonitoringRouteImport } from './routes/admin/api-monitoring'
 import { Route as AdminAuditLogsRouteImport } from './routes/admin/audit-logs'
 import { Route as AdminBookingsRouteImport } from './routes/admin/bookings'
+import { Route as AdminDocumentsRouteImport } from './routes/admin/documents'
 import { Route as AdminOperatorsRouteImport } from './routes/admin/operators'
 import { Route as AdminPaymentsRouteImport } from './routes/admin/payments'
 import { Route as AdminPromotionsRouteImport } from './routes/admin/promotions'
@@ -226,6 +227,11 @@ const AdminAuditLogsRoute = AdminAuditLogsRouteImport.update({
 const AdminBookingsRoute = AdminBookingsRouteImport.update({
   id: '/admin/bookings',
   path: '/admin/bookings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminDocumentsRoute = AdminDocumentsRouteImport.update({
+  id: '/admin/documents',
+  path: '/admin/documents',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminOperatorsRoute = AdminOperatorsRouteImport.update({
@@ -421,6 +427,7 @@ export interface FileRoutesByFullPath {
   '/admin/api-monitoring': typeof AdminApiMonitoringRoute
   '/admin/audit-logs': typeof AdminAuditLogsRoute
   '/admin/bookings': typeof AdminBookingsRoute
+  '/admin/documents': typeof AdminDocumentsRoute
   '/admin/operators': typeof AdminOperatorsRoute
   '/admin/payments': typeof AdminPaymentsRoute
   '/admin/promotions': typeof AdminPromotionsRoute
@@ -485,6 +492,7 @@ export interface FileRoutesByTo {
   '/admin/api-monitoring': typeof AdminApiMonitoringRoute
   '/admin/audit-logs': typeof AdminAuditLogsRoute
   '/admin/bookings': typeof AdminBookingsRoute
+  '/admin/documents': typeof AdminDocumentsRoute
   '/admin/operators': typeof AdminOperatorsRoute
   '/admin/payments': typeof AdminPaymentsRoute
   '/admin/promotions': typeof AdminPromotionsRoute
@@ -551,6 +559,7 @@ export interface FileRoutesById {
   '/admin/api-monitoring': typeof AdminApiMonitoringRoute
   '/admin/audit-logs': typeof AdminAuditLogsRoute
   '/admin/bookings': typeof AdminBookingsRoute
+  '/admin/documents': typeof AdminDocumentsRoute
   '/admin/operators': typeof AdminOperatorsRoute
   '/admin/payments': typeof AdminPaymentsRoute
   '/admin/promotions': typeof AdminPromotionsRoute
@@ -618,6 +627,7 @@ export interface FileRouteTypes {
     | '/admin/api-monitoring'
     | '/admin/audit-logs'
     | '/admin/bookings'
+    | '/admin/documents'
     | '/admin/operators'
     | '/admin/payments'
     | '/admin/promotions'
@@ -682,6 +692,7 @@ export interface FileRouteTypes {
     | '/admin/api-monitoring'
     | '/admin/audit-logs'
     | '/admin/bookings'
+    | '/admin/documents'
     | '/admin/operators'
     | '/admin/payments'
     | '/admin/promotions'
@@ -747,6 +758,7 @@ export interface FileRouteTypes {
     | '/admin/api-monitoring'
     | '/admin/audit-logs'
     | '/admin/bookings'
+    | '/admin/documents'
     | '/admin/operators'
     | '/admin/payments'
     | '/admin/promotions'
@@ -813,6 +825,7 @@ export interface RootRouteChildren {
   AdminApiMonitoringRoute: typeof AdminApiMonitoringRoute
   AdminAuditLogsRoute: typeof AdminAuditLogsRoute
   AdminBookingsRoute: typeof AdminBookingsRoute
+  AdminDocumentsRoute: typeof AdminDocumentsRoute
   AdminOperatorsRoute: typeof AdminOperatorsRoute
   AdminPaymentsRoute: typeof AdminPaymentsRoute
   AdminPromotionsRoute: typeof AdminPromotionsRoute
@@ -1058,6 +1071,13 @@ declare module '@tanstack/react-router' {
       path: '/admin/bookings'
       fullPath: '/admin/bookings'
       preLoaderRoute: typeof AdminBookingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/documents': {
+      id: '/admin/documents'
+      path: '/admin/documents'
+      fullPath: '/admin/documents'
+      preLoaderRoute: typeof AdminDocumentsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/operators': {
@@ -1342,6 +1362,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminApiMonitoringRoute: AdminApiMonitoringRoute,
   AdminAuditLogsRoute: AdminAuditLogsRoute,
   AdminBookingsRoute: AdminBookingsRoute,
+  AdminDocumentsRoute: AdminDocumentsRoute,
   AdminOperatorsRoute: AdminOperatorsRoute,
   AdminPaymentsRoute: AdminPaymentsRoute,
   AdminPromotionsRoute: AdminPromotionsRoute,
