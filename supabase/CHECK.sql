@@ -67,10 +67,13 @@ with checks(part, kind, name, present) as (
 
   -- Отдельно: вебхук, который шлёт пуш на телефон
   union all
-  select 'Пуш на телефон', 'вебхук на notifications', 'любой http_request',
+  -- Триггер может быть двух видов: из формы дашборда (supabase_functions.
+  -- http_request) или наш на pg_net — засчитываем оба.
+  select 'Пуш на телефон', 'триггер на notifications', 'вызов send-push',
          exists (select 1 from pg_trigger t join pg_proc p on p.oid = t.tgfoid
                   where t.tgrelid = to_regclass('public.notifications')
-                    and p.proname = 'http_request' and not t.tgisinternal)
+                    and p.proname in ('http_request', 'push_notification_to_device')
+                    and not t.tgisinternal)
 )
 select
   part                                    as "Часть",
