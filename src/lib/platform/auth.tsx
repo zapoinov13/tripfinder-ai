@@ -615,9 +615,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return {
           ok: false,
           error:
-            error === "already_in_organization"
-              ? "У этого аккаунта уже есть компания"
-              : (error ?? "Не удалось создать организацию"),
+            error === "platform_admin_cannot_own_company"
+              ? "Этим аккаунтом нельзя завести компанию: он администратор платформы. Зарегистрируйте компанию на отдельную почту — иначе вы потеряете доступ к админке."
+              : error === "already_in_organization"
+                ? "У этого аккаунта уже есть компания"
+                : (error ?? "Не удалось создать организацию"),
         };
       }
       setState((s) => ({
@@ -690,9 +692,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const { org, error: orgErr } = await callRegisterCompanyRpc(sb, input.company, email);
         if (orgErr || !org) {
           const message =
-            orgErr === "already_in_organization"
-              ? "У этого аккаунта уже есть компания"
-              : humanAuthError(orgErr, "Не удалось создать компанию. Попробуйте ещё раз.");
+            orgErr === "platform_admin_cannot_own_company"
+              ? "Этим аккаунтом нельзя завести компанию: он администратор платформы. Зарегистрируйте компанию на отдельную почту — иначе вы потеряете доступ к админке."
+              : orgErr === "already_in_organization"
+                ? "У этого аккаунта уже есть компания"
+                : humanAuthError(orgErr, "Не удалось создать компанию. Попробуйте ещё раз.");
           return { ok: false, error: message };
         }
         setState((s) => ({
