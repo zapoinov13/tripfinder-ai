@@ -25,6 +25,7 @@ import {
   type VerticalListing,
 } from "@/lib/platform/vertical-listings";
 import { cn } from "@/lib/utils";
+import { matchesQuery } from "@/lib/search-text";
 import { vitrineSeo } from "@/lib/seo-vitrine";
 
 type Search = {
@@ -167,9 +168,10 @@ function CarsPage() {
     if (params.city && item.city !== params.city) return false;
     if (params.klass && item.klass !== params.klass) return false;
     if (needle) {
-      return `${item.name} ${item.city} ${item.klass} ${item.companyName ?? ""}`
-        .toLowerCase()
-        .includes(needle);
+      return matchesQuery(
+        `${item.name} ${item.city} ${item.klass} ${item.companyName ?? ""}`,
+        needle,
+      );
     }
     return true;
   });

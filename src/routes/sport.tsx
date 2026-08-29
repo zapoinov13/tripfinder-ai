@@ -21,6 +21,7 @@ import { companyPromoBadge, promotedCompanyIds } from "@/lib/platform/promotions
 import { listPublishedSports, subscribeSportListings } from "@/lib/platform/sport-listings";
 import { fetchPublishedVertical, listPublishedVertical } from "@/lib/platform/vertical-listings";
 import { cn } from "@/lib/utils";
+import { matchesQuery } from "@/lib/search-text";
 import { vitrineSeo } from "@/lib/seo-vitrine";
 
 type Search = { destination?: string; city?: string; kind?: string; q?: string };
@@ -132,10 +133,10 @@ function SportPage() {
     if (params.city && item.city !== params.city && item.area !== params.city) return false;
     if (!params.kind && needle) {
       return (
-        `${item.name} ${item.city} ${item.kind} ${item.area} ${item.companyName ?? ""}`
-          .toLowerCase()
-          .includes(needle) ||
-        sportKinds.some((kind) => needle.includes(kind.id) && item.kind === kind.id)
+        matchesQuery(
+          `${item.name} ${item.city} ${item.kind} ${item.area} ${item.companyName ?? ""}`,
+          needle,
+        ) || sportKinds.some((kind) => needle.includes(kind.id) && item.kind === kind.id)
       );
     }
     return true;

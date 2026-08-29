@@ -26,6 +26,7 @@ import {
   type VerticalListing,
 } from "@/lib/platform/vertical-listings";
 import { cn } from "@/lib/utils";
+import { matchesQuery } from "@/lib/search-text";
 import { vitrineSeo } from "@/lib/seo-vitrine";
 
 type Search = {
@@ -164,9 +165,7 @@ function StaysPage() {
     const needle = (params.city || city || "").trim().toLowerCase();
     if (!needle) return true;
     return (
-      `${item.city} ${item.area} ${item.name} ${item.companyName ?? ""}`
-        .toLowerCase()
-        .includes(needle) ||
+      matchesQuery(`${item.city} ${item.area} ${item.name} ${item.companyName ?? ""}`, needle) ||
       popularStayCities.some(
         (place) =>
           place.city.toLowerCase() === item.city.toLowerCase() &&

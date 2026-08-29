@@ -1,5 +1,10 @@
 import { destinations, getOperator, tours, type OfferCategory, type Tour } from "@/data/demo";
 import { getHotel } from "@/lib/platform/catalog";
+import {
+  matchesQuery,
+  normalizeSearchText,
+  relevanceScore,
+} from "@/lib/search-text";
 
 /** Старые id из AI/seed → актуальные id каталога. */
 const LEGACY_DESTINATION_IDS: Record<string, string> = {
@@ -9,21 +14,6 @@ const LEGACY_DESTINATION_IDS: Record<string, string> = {
 
 export function resolveDestinationId(id: string) {
   return LEGACY_DESTINATION_IDS[id] ?? id;
-}
-
-export function normalizeSearchText(value: string) {
-  return value
-    .toLowerCase()
-    .replace(/ё/g, "е")
-    .replace(/[^\p{L}\p{N}\s-]/gu, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function tokenizeQuery(query: string) {
-  return normalizeSearchText(query)
-    .split(/\s+/)
-    .filter((token) => token.length >= 2);
 }
 
 export function buildTourSearchHaystack(tour: Tour, hotel = getHotel(tour.hotelId)) {
@@ -54,31 +44,12 @@ export function buildTourSearchHaystack(tour: Tour, hotel = getHotel(tour.hotelI
 }
 
 export function matchesTextQuery(haystack: string, query: string) {
-  const q = normalizeSearchText(query);
-  if (!q) return true;
-  const hay = haystack || normalizeSearchText(haystack);
-  if (hay.includes(q)) return true;
-  const tokens = tokenizeQuery(q);
-  if (!tokens.length) return true;
-  return tokens.every((token) => hay.includes(token));
+  return matchesQuery(haystack, query);
 }
 
 /** 0–100: насколько тур подходит текстовому запросу. */
 export function textRelevanceScore(haystack: string, query: string) {
-  const q = normalizeSearchText(query);
-  if (!q) return 0;
-  const hay = haystack || normalizeSearchText(haystack);
-  if (hay.startsWith(q)) return 100;
-  if (hay.includes(q)) return 85;
-  const tokens = tokenizeQuery(q);
-  if (!tokens.length) return 0;
-  let matched = 0;
-  for (const token of tokens) {
-    if (hay.includes(token)) matched += 1;
-  }
-  if (matched === tokens.length) return 55 + Math.min(30, matched * 8);
-  if (matched > 0) return matched * 12;
-  return 0;
+  return relevanceScore(haystack, query);
 }
 
 function matchesCityFilter(
