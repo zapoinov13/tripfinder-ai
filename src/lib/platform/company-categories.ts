@@ -167,6 +167,21 @@ export function isListingBusiness(category: string | undefined, services?: strin
   return isBusinessOnlyServices(services);
 }
 
+/**
+ * Как называется витрина этой категории.
+ *
+ * Спортзал не сдаёт жильё, и перечислять ему «жильё, авто или спорт» —
+ * значит каждый раз заставлять вычитывать, к нему ли это относится.
+ * Категория неизвестна (старая компания) — возвращаем ничего, и текст
+ * остаётся общим: это честнее, чем назвать наугад.
+ */
+export function listingVerticalLabel(category: string | undefined): string | undefined {
+  if (category === "stays") return "Жильё";
+  if (category === "cars") return "Авто";
+  if (category === "sport") return "Спорт";
+  return undefined;
+}
+
 export function isBusinessOnlyServices(services: string[] | undefined): boolean {
   const cats = categoriesOfServices(services ?? []);
   return (

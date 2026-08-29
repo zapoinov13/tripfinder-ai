@@ -32,12 +32,11 @@ import { privatePage } from "@/lib/seo";
 const tabs: {
   id: VerticalId;
   vitrine: "/sport" | "/stays" | "/cars";
-  service: string;
   category: string;
 }[] = [
-  { id: "stay", vitrine: "/stays", service: "Отели", category: "stays" },
-  { id: "car", vitrine: "/cars", service: "Аренда авто", category: "cars" },
-  { id: "sport", vitrine: "/sport", service: "Спорт", category: "sport" },
+  { id: "stay", vitrine: "/stays", category: "stays" },
+  { id: "car", vitrine: "/cars", category: "cars" },
+  { id: "sport", vitrine: "/sport", category: "sport" },
 ];
 
 /**
@@ -86,9 +85,12 @@ function OperatorServicesPage() {
   void state.serviceRequests.length;
   const [adding, setAdding] = useState(false);
   const [, bump] = useState(0);
+  const visibleTabs = tabsForCategory(organization?.category);
+  // Адрес или прежний выбор мог указывать на чужую вкладку — возвращаем на свою.
+  const current = visibleTabs.find((t) => t.id === tab) ?? visibleTabs[0]!;
   const items = useSyncExternalStore(
     subscribeVerticalListings,
-    () => (organization ? listOrgVertical(organization.id, tab) : EMPTY_ITEMS),
+    () => (organization ? listOrgVertical(organization.id, current.id) : EMPTY_ITEMS),
     () => EMPTY_ITEMS,
   );
 
@@ -98,17 +100,13 @@ function OperatorServicesPage() {
 
   if (!allowed || !organization) return null;
 
-  const visibleTabs = tabsForCategory(organization.category);
-  // Адрес мог прийти с чужой вкладкой (ссылка, закладка) — возвращаем на свою.
-  const current = visibleTabs.find((t) => t.id === tab) ?? visibleTabs[0]!;
-
   return (
     <DashShell
       tabs="partner"
       brand={organization.name}
       items={nav}
       title="Объявления"
-      subtitle="Жильё, авто и спорт: карточки из Instagram или сайта попадают в витрины TourGo"
+      subtitle={`${visibleTabs.map((item) => verticalLabel(item.id)).join(", ")}: карточки из Instagram или сайта попадают ${visibleTabs.length > 1 ? "в витрины" : "в витрину"} TourGo`}
       actions={
         <Button onClick={() => setAdding(true)}>
           <Plus className="size-4" />
@@ -116,7 +114,7 @@ function OperatorServicesPage() {
         </Button>
       }
     >
-      <div className="mb-6 flex flex-wrap gap-2">
+      <div className={cn("mb-6 flex-wrap gap-2", visibleTabs.length > 1 ? "flex" : "hidden")}>
         {visibleTabs.map((item) => (
           <button
             key={item.id}
@@ -124,7 +122,7 @@ function OperatorServicesPage() {
             onClick={() => setTab(item.id)}
             className={cn(
               "rounded-full px-4 py-2 text-sm font-semibold",
-              tab === item.id ? "bg-ink text-primary-foreground" : "bg-secondary",
+              current.id === item.id ? "bg-ink text-primary-foreground" : "bg-secondary",
             )}
           >
             {verticalLabel(item.id)}
@@ -134,15 +132,16 @@ function OperatorServicesPage() {
 
       <div className="mb-6 rounded-2xl border border-border bg-card p-5">
         <h2 className="font-display text-lg font-semibold">
-          Как добавить «{verticalLabel(tab)}» за 2 минуты
+          Как добавить «{verticalLabel(current.id)}» за 2 минуты
         </h2>
         <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm leading-relaxed text-foreground/70">
-          <li>Зарегистрируйте компанию и отметьте услугу «{current.service}».</li>
           <li>
-            Вставьте ссылку на сайт: сервер прочитает HTML. Для Instagram добавьте bio или пост.
+            Нажмите «Добавить из ссылки» и вставьте адрес сайта: сервер прочитает страницу сам.
           </li>
+          <li>Для Instagram подойдёт ссылка на профиль или на конкретный пост.</li>
           <li>
-            Проверьте карточку и опубликуйте. Клиенты увидят её в разделе «{verticalLabel(tab)}».
+            Проверьте карточку и опубликуйте. Клиенты увидят её в разделе «
+            {verticalLabel(current.id)}».
           </li>
         </ol>
       </div>
@@ -251,7 +250,7 @@ function OperatorServicesPage() {
         onOpenChange={setAdding}
         organizationId={organization.id}
         companyName={organization.name}
-        vertical={tab}
+        vertical={current.id}
         onPublished={() => bump((n) => n + 1)}
       />
     </DashShell>
