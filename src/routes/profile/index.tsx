@@ -102,17 +102,22 @@ function TouristCabinet() {
     <SiteLayout>
       <div className="container-page py-6 md:py-10">
         <div className="mx-auto max-w-lg lg:max-w-5xl">
-          <header className="mb-6">
-            <p className="text-xs font-semibold tracking-[0.16em] text-primary uppercase">
-              {t.cabinet}
-            </p>
-            <h1 className="mt-1 font-display text-2xl font-semibold tracking-tight md:text-3xl">
-              {user.name}
-            </h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {user.email}
-              {user.city ? ` · ${user.city}` : ""}
-            </p>
+          <header className="mb-6 flex items-center gap-4">
+            <span className="grid size-14 shrink-0 place-items-center rounded-full bg-primary-soft font-display text-xl font-semibold text-primary md:size-16 md:text-2xl">
+              {(user.name.trim()[0] ?? "•").toUpperCase()}
+            </span>
+            <div className="min-w-0">
+              <p className="text-xs font-semibold tracking-[0.16em] text-primary uppercase">
+                {t.cabinet}
+              </p>
+              <h1 className="mt-0.5 truncate font-display text-2xl font-semibold tracking-tight md:text-3xl">
+                {user.name}
+              </h1>
+              <p className="mt-0.5 truncate text-sm text-muted-foreground">
+                {user.email}
+                {user.city ? ` · ${user.city}` : ""}
+              </p>
+            </div>
           </header>
 
           <NextStepCard userId={user.id} />
@@ -137,10 +142,13 @@ function TouristCabinet() {
               </span>
             </button>
           ) : null}
-        </div>
 
-        <div className="mt-4 lg:mt-0">
-          <div className="surface-card overflow-hidden divide-y divide-border">
+          {/* На телефоне — привычный список одной лентой. На широком экране он
+              же складывается плиткой в две колонки: строка на всю ширину
+              монитора с иконкой слева и стрелкой у дальнего края читается
+              тяжело. Разделители — зазор в пиксель по фону рамки, чтобы линии
+              не двоились на стыке колонок. */}
+          <div className="surface-card overflow-hidden divide-y divide-border lg:grid lg:grid-cols-2 lg:gap-px lg:divide-y-0 lg:bg-border">
             <MenuRow
               icon={Sparkles}
               title={t.bonuses}
@@ -194,47 +202,49 @@ function TouristCabinet() {
             </a>
           </div>
 
-          <div className="surface-card mt-4 p-4">
-            <div className="mb-3 flex items-center gap-2 text-sm font-semibold">
-              <Globe2 className="size-4 text-primary" />
-              {t.language}
+          <div className="mt-4 gap-4 lg:grid lg:grid-cols-[1fr_auto] lg:items-stretch">
+            <div className="surface-card p-4">
+              <div className="mb-3 flex items-center gap-2 text-sm font-semibold">
+                <Globe2 className="size-4 text-primary" />
+                {t.language}
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                {(
+                  [
+                    { code: "ru" as AppLocale, label: "Русский" },
+                    { code: "kk" as AppLocale, label: "Қазақша" },
+                  ] as const
+                ).map((item) => (
+                  <button
+                    key={item.code}
+                    type="button"
+                    onClick={() => setLocale(item.code)}
+                    className={cn(
+                      "rounded-xl border px-3 py-2.5 text-sm font-medium transition-colors",
+                      locale === item.code
+                        ? "border-primary bg-primary-soft text-primary"
+                        : "border-border bg-background text-muted-foreground hover:border-primary/40 hover:text-foreground",
+                    )}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
             </div>
-            <div className="grid grid-cols-2 gap-2">
-              {(
-                [
-                  { code: "ru" as AppLocale, label: "Русский" },
-                  { code: "kk" as AppLocale, label: "Қазақша" },
-                ] as const
-              ).map((item) => (
-                <button
-                  key={item.code}
-                  type="button"
-                  onClick={() => setLocale(item.code)}
-                  className={cn(
-                    "rounded-xl border px-3 py-2.5 text-sm font-medium transition-colors",
-                    locale === item.code
-                      ? "border-primary bg-primary-soft text-primary"
-                      : "border-border bg-background text-muted-foreground hover:border-primary/40 hover:text-foreground",
-                  )}
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
-          </div>
 
-          <Button
-            variant="outline"
-            className="mt-4 w-full"
-            onClick={() => {
-              // logout() сам показывает тост о выходе.
-              void logout();
-              if (locale === "kk") toast.message("Сіз шықтыңыз");
-            }}
-          >
-            <LogOut className="size-4" />
-            {t.logout}
-          </Button>
+            <Button
+              variant="outline"
+              className="mt-4 w-full lg:mt-0 lg:h-full lg:w-44"
+              onClick={() => {
+                // logout() сам показывает тост о выходе.
+                void logout();
+                if (locale === "kk") toast.message("Сіз шықтыңыз");
+              }}
+            >
+              <LogOut className="size-4" />
+              {t.logout}
+            </Button>
+          </div>
           <p className="mt-6 text-center text-xs text-muted-foreground">
             {locale === "kk"
               ? "Әкімші мен турфирма кабинеттері бөлек"
