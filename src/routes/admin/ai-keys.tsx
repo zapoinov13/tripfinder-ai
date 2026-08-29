@@ -61,6 +61,8 @@ function AdminAiKeysPage() {
   const [form, setForm] = useState<AiSettingsView | null>(null);
   const [apiKey, setApiKey] = useState("");
   const [busy, setBusy] = useState<"load" | "save" | "test" | null>("load");
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
   const [testResult, setTestResult] = useState<{ ok: boolean; text: string; at: string } | null>(
     null,
   );
@@ -83,18 +85,23 @@ function AdminAiKeysPage() {
   useEffect(() => {
     if (!allowed) return;
     let alive = true;
+    setLoadError(null);
     load({})
       .then((data) => {
         if (alive) setForm(data);
       })
-      .catch(() => toast.error("Не удалось загрузить настройки AI"))
+      .catch((error: unknown) => {
+        // Показываем причину на самой странице: тост исчезает, а страница
+        // иначе навсегда остаётся на «Загружаем настройки…».
+        if (alive) setLoadError(error instanceof Error ? error.message : "Сервер не ответил");
+      })
       .finally(() => {
         if (alive) setBusy(null);
       });
     return () => {
       alive = false;
     };
-  }, [allowed, load]);
+  }, [allowed, load, reloadKey]);
 
   if (!allowed) return null;
 
@@ -154,7 +161,25 @@ function AdminAiKeysPage() {
       title="AI и ключи API"
       subtitle="AI-консьерж платформы: провайдер, ключ, промпт и что спрашивают туристы."
     >
-      {!form ? (
+      {!form && loadError ? (
+        <div className="surface-card border-destructive/30 bg-destructive/[0.04] p-6">
+          <p className="font-display text-base font-semibold">Настройки AI не загрузились</p>
+          <p className="mt-1 max-w-xl text-sm text-muted-foreground">
+            Ключ и промпт лежат в закрытой таблице и читаются серверной функцией. Сейчас она не
+            ответила: {loadError}. Обычно это временная недоступность базы.
+          </p>
+          <Button
+            className="mt-4"
+            variant="outline"
+            onClick={() => {
+              setBusy(null);
+              setReloadKey((n) => n + 1);
+            }}
+          >
+            Попробовать снова
+          </Button>
+        </div>
+      ) : !form ? (
         <div className="surface-card flex items-center gap-3 p-6 text-sm text-muted-foreground">
           <Loader2 className="size-4 animate-spin" /> Загружаем настройки…
         </div>
