@@ -12,7 +12,10 @@ function record(path, type, message) {
 }
 
 async function main() {
-  const browser = await chromium.launch({ headless: true });
+  const browser = await chromium.launch({
+    headless: true,
+    executablePath: "/opt/pw-browsers/chromium",
+  });
 
   // Desktop footer + CTA buttons
   const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });

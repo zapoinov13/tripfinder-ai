@@ -54,7 +54,10 @@ async function normalizeScreenshot(sharp, file, width, height, bg = "#0f172a") {
 
 async function main() {
   console.log("Capturing screenshots from", baseUrl);
-  const browser = await chromium.launch({ headless: true });
+  const browser = await chromium.launch({
+    headless: true,
+    executablePath: "/opt/pw-browsers/chromium",
+  });
 
   const ios67 = path.join(root, "store/screenshots/ios/6.7-inch");
   const ios65 = path.join(root, "store/screenshots/ios/6.5-inch");

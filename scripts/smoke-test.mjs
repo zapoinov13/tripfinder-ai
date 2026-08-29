@@ -169,7 +169,10 @@ async function testSearchSubmit(page) {
 
 async function main() {
   console.log("Smoke testing", BASE);
-  const browser = await chromium.launch({ headless: true });
+  const browser = await chromium.launch({
+    headless: true,
+    executablePath: "/opt/pw-browsers/chromium",
+  });
   const context = await browser.newContext({
     locale: "ru-RU",
     viewport: { width: 1280, height: 800 },
