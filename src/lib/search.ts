@@ -1,10 +1,6 @@
 import { destinations, getOperator, tours, type OfferCategory, type Tour } from "@/data/demo";
 import { getHotel } from "@/lib/platform/catalog";
-import {
-  matchesQuery,
-  normalizeSearchText,
-  relevanceScore,
-} from "@/lib/search-text";
+import { matchesQuery, normalizeSearchText, relevanceScore } from "@/lib/search-text";
 
 /** Старые id из AI/seed → актуальные id каталога. */
 const LEGACY_DESTINATION_IDS: Record<string, string> = {

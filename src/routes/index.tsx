@@ -58,9 +58,11 @@ function Index() {
 
   return (
     <SiteLayout>
-      {/* На телефоне блок больше не растянут на весь экран: пустота под плитками
-          отодвигала направления за сгиб, и до первой цены было два экрана. */}
-      <div className="flex flex-col">
+      {/* Первый экран телефона — ровно это: обложка, подбор и разделы.
+          Витрина направлений начинается уже за сгибом, поэтому блок занимает
+          высоту экрана за вычетом шапки и таб-бара, а плитки растягиваются на
+          оставшееся место, вместо того чтобы оставлять пустоту. */}
+      <div className="flex min-h-[calc(100svh-8.1rem)] flex-col md:min-h-0">
         <section className="md:container-page md:py-14">
           <div className="relative overflow-hidden md:rounded-[2.5rem]">
             <img
@@ -91,7 +93,7 @@ function Index() {
             чего хочет, и не мешает тому, кто пришёл смотреть. */}
         <AiSearchWidget />
 
-        <section className="flex flex-col px-4 md:container-page md:px-8">
+        <section className="flex flex-1 flex-col px-4 pb-4 md:container-page md:px-8 md:pb-0">
           <h2 className="mt-5 font-display text-[17px] font-semibold md:mt-12 md:text-2xl">
             Или выберите раздел
           </h2>
@@ -104,7 +106,7 @@ function Index() {
                 key={item.id}
                 to={item.to}
                 search={{} as never}
-                className="flex h-16 items-center gap-3 rounded-2xl bg-card px-3 ring-1 ring-black/[0.06] md:surface-card md:h-auto md:min-h-[11.5rem] md:flex-col md:items-start md:justify-between md:gap-5 md:p-6 md:ring-0 md:transition-transform md:hover:-translate-y-1"
+                className="flex h-16 items-center gap-2.5 rounded-2xl bg-card px-2.5 ring-1 ring-black/[0.06] md:gap-3 md:px-6 md:surface-card md:h-auto md:min-h-[11.5rem] md:flex-col md:items-start md:justify-between md:gap-5 md:p-6 md:ring-0 md:transition-transform md:hover:-translate-y-1"
               >
                 <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-ink text-primary-foreground md:size-12 md:rounded-2xl">
                   <item.icon className="size-5 md:size-[1.35rem]" strokeWidth={1.75} aria-hidden />
@@ -124,6 +126,10 @@ function Index() {
               </Link>
             ))}
           </div>
+
+          {/* Остаток экрана — свободным местом внизу: так витрина направлений
+              всегда начинается со второго экрана, а плитки сохраняют размер. */}
+          <div className="flex-1 md:hidden" />
 
           <Link
             to={b2bNav.to}

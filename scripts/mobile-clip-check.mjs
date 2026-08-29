@@ -10,7 +10,9 @@ import { chromium } from "/home/user/tripfinder-ai/node_modules/playwright/index
 const BASE = process.argv[2] ?? "http://127.0.0.1:8779";
 const PAGES=["/","/search","/excursions","/stays","/cars","/sport","/assistance","/destinations","/destination/uae","/request","/premium","/about","/for-companies","/support"];
 const b=await chromium.launch({executablePath:"/opt/pw-browsers/chromium"});
-const ctx=await b.newContext({viewport:{width:390,height:844}});
+// 360 точек — самый узкий распространённый телефон: если текст помещается
+// здесь, он поместится и на всех остальных.
+const ctx=await b.newContext({viewport:{width:360,height:740}});
 await ctx.route(/^https?:\/\/(?!127\.0\.0\.1)/,(r)=>r.abort());
 const p=await ctx.newPage();
 let total=0;

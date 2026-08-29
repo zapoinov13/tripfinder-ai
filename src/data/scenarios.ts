@@ -29,7 +29,7 @@ export const travelScenarios: TravelScenario[] = [
     title: "Экскурсии",
     navTitle: "Экскурсии",
     hint: "Сафари, яхты, билеты и парки на месте",
-    shortHint: "Сафари, билеты",
+    shortHint: "Сафари и шоу",
     icon: Ticket,
   },
   {
@@ -45,7 +45,7 @@ export const travelScenarios: TravelScenario[] = [
     id: "cars",
     to: "/cars",
     title: "Аренда авто",
-    shortTitle: "Аренда авто",
+    shortTitle: "Авто",
     navTitle: "Авто",
     hint: "Машины без водителя на нужные даты",
     shortHint: "Без водителя",
