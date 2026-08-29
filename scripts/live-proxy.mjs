@@ -11,12 +11,40 @@
  * Проверяется при этом настоящий боевой сервер — свой сборки мы не поднимаем.
  *
  *     node scripts/live-proxy.mjs https://tripfinder-ai-swart.vercel.app 8790
+ *
+ * С флагом `--with-headers` зеркало накладывает на живые ответы заголовки из
+ * `vercel.json` — то есть показывает сайт таким, каким он станет после
+ * деплоя. Это нужно, чтобы проверить CSP до боя, а не после: политика,
+ * которой никогда не было, вполне может отрезать что-то живое.
+ *
+ *     node scripts/live-proxy.mjs https://<домен> 8790 --with-headers
  */
+import { readFileSync } from "node:fs";
 import http from "node:http";
 import process from "node:process";
 
-const TARGET = (process.argv[2] ?? "https://tripfinder-ai-swart.vercel.app").replace(/\/+$/, "");
-const PORT = Number(process.argv[3] ?? 8790);
+const args = process.argv.slice(2).filter((a) => !a.startsWith("--"));
+const WITH_HEADERS = process.argv.includes("--with-headers");
+const TARGET = (args[0] ?? "https://tripfinder-ai-swart.vercel.app").replace(/\/+$/, "");
+const PORT = Number(args[1] ?? 8790);
+
+/**
+ * Заголовки из `vercel.json` для пути.
+ *
+ * Разбираем только то, что реально используем: `source` вида `/(.*)` и
+ * конкретные адреса. Полный синтаксис маршрутов Vercel тут не нужен.
+ */
+function vercelHeadersFor(path) {
+  if (!WITH_HEADERS) return {};
+  const config = JSON.parse(readFileSync(new URL("../vercel.json", import.meta.url), "utf8"));
+  const out = {};
+  for (const rule of config.headers ?? []) {
+    const matches = rule.source === "/(.*)" || rule.source === path;
+    if (!matches) continue;
+    for (const { key, value } of rule.headers) out[key.toLowerCase()] = value;
+  }
+  return out;
+}
 
 /** Заголовки, которые нельзя пересылать дальше: они описывают наш же канал. */
 const HOP = new Set([
@@ -76,6 +104,10 @@ const server = http.createServer(async (req, res) => {
       out[k] = value;
     });
 
+    // Заголовки Vercel накладываем поверх ответа: на бою их добавляет край,
+    // а не приложение, и порядок тут такой же.
+    Object.assign(out, vercelHeadersFor(new URL(req.url, "http://x").pathname));
+
     res.writeHead(upstream.status, out);
     const buf = Buffer.from(await upstream.arrayBuffer());
     res.end(req.method === "HEAD" ? undefined : buf);
@@ -86,5 +118,8 @@ const server = http.createServer(async (req, res) => {
 });
 
 server.listen(PORT, "127.0.0.1", () => {
-  console.log(`зеркало ${TARGET} → http://127.0.0.1:${PORT}`);
+  console.log(
+    `зеркало ${TARGET} → http://127.0.0.1:${PORT}` +
+      (WITH_HEADERS ? " (с заголовками из vercel.json)" : ""),
+  );
 });
