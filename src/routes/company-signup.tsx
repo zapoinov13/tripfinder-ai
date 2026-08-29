@@ -400,68 +400,16 @@ function CompanySignupPage() {
                   placeholder="Dubai Travel"
                 />
                 <Field
-                  id="company-country"
-                  label="Страна офиса"
-                  value={company.country}
-                  onChange={(v) => setCompany({ ...company, country: v })}
-                />
-                <Field
                   id="company-city"
                   label="Город"
                   value={company.city}
                   onChange={(v) => setCompany({ ...company, city: v })}
+                  placeholder="Дубай"
                 />
-                <Field
-                  id="company-legal"
-                  label="Юридическое название"
-                  value={company.legalName}
-                  onChange={(v) => setCompany({ ...company, legalName: v })}
-                />
-                <Field
-                  id="company-reg"
-                  label="БИН или регистрационный номер"
-                  value={company.registrationNumber}
-                  onChange={(v) => setCompany({ ...company, registrationNumber: v })}
-                />
-                <div className="space-y-2">
-                  <Label htmlFor="company-phone">Телефон компании</Label>
-                  <PhoneInput
-                    id="company-phone"
-                    value={company.phone}
-                    onChange={(phone) => setCompany({ ...company, phone })}
-                  />
-                </div>
-                <Field
-                  id="company-email"
-                  label="Почта компании"
-                  type="email"
-                  value={company.email}
-                  onChange={(v) => setCompany({ ...company, email: v })}
-                />
-                <Field
-                  id="company-address"
-                  label="Адрес офиса"
-                  value={company.address}
-                  onChange={(v) => setCompany({ ...company, address: v })}
-                  placeholder="Улица, дом, офис"
-                />
-                <Field
-                  id="company-site"
-                  label="Сайт"
-                  value={company.website}
-                  onChange={(v) => setCompany({ ...company, website: v })}
-                  placeholder="https://"
-                />
-                <div className="space-y-2 sm:col-span-2">
-                  <Label htmlFor="company-about">О компании</Label>
-                  <Textarea
-                    id="company-about"
-                    rows={3}
-                    value={company.about}
-                    onChange={(e) => setCompany({ ...company, about: e.target.value })}
-                    placeholder="Работаем в Дубае с 2018 года. Семейные поездки, экскурсии, трансферы."
-                  />
-                </div>
+                <p className="text-sm text-muted-foreground sm:col-span-2">
+                  Реквизиты, контакты, описание, фото и услуги — в кабинете сразу после регистрации.
+                  Там видно, как карточка выглядит для туриста, и есть список, чего ещё не хватает.
+                </p>
               </div>
             ) : null}
 

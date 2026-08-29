@@ -26,6 +26,7 @@ import {
 import { formatNumber, formatPrice, getHotel } from "@/data/demo";
 import { useAutoApiSync } from "@/lib/platform/api-sync";
 import { useAuth, useRequireAuth } from "@/lib/platform/auth";
+import { companyGaps } from "@/lib/platform/company-completeness";
 import { categoriesOfServices, isBusinessOnlyServices } from "@/lib/platform/company-categories";
 import { usePlatformStore } from "@/lib/platform/hooks";
 import { getCompanyRating } from "@/lib/platform/messages";
@@ -134,11 +135,28 @@ function setupSteps(
   sportCount: number,
   businessOnly: boolean,
 ): SetupStep[] {
+  // Документы нужны, пока знак не выдан. На статус ориентироваться нельзя:
+  // с автоодобрением он у всех APPROVED, и шаг пропал бы навсегда.
   const needsDocs =
-    org.status === "PENDING_APPROVAL" &&
+    !org.documentsVerifiedAt &&
     !org.verificationSubmittedAt &&
     !(org.verificationFiles?.length || org.documents?.length);
-  const profileReady = Boolean(org.about?.trim()) && (org.photos?.length ?? 0) > 0;
+  // Готовность страницы считаем общими правилами, а не своими: иначе кабинет,
+  // список «чего не хватает» и разбор AI отвечают на один вопрос по-разному.
+  const gaps = companyGaps({ company: org, listingsCount: activeTours + sportCount });
+  // Из списка «чего не хватает» убираем то, для чего в онбординге есть свой шаг:
+  // иначе партнёр читает про услуги дважды и не понимает, это одно и то же или
+  // два разных дела.
+  const pageGaps = gaps.filter((g) => g.id !== "listings");
+  const profileReady = pageGaps.filter((g) => g.required).length === 0;
+  // Называем недостающее поимённо. «Заполните страницу компании» — совет,
+  // после которого всё равно надо идти и разбираться, что именно не заполнено.
+  const pageText = pageGaps.length
+    ? `Не хватает: ${pageGaps
+        .slice(0, 3)
+        .map((g) => g.label.toLowerCase())
+        .join(", ")}${pageGaps.length > 3 ? ` и ещё ${pageGaps.length - 3}` : ""}.`
+    : "Фото и описание: это первое, что видит клиент, когда открывает вас.";
   const sellsListings =
     businessOnly ||
     ["sport", "stays", "cars"].some((id) =>
@@ -150,7 +168,7 @@ function setupSteps(
       id: "profile",
       done: profileReady,
       title: "Заполнить страницу компании",
-      text: "Фото и описание: это первое, что видит клиент, когда открывает вас.",
+      text: pageText,
       to: "/operator/company",
       cta: "Заполнить",
       essential: true,
@@ -381,8 +399,10 @@ function OperatorDashboard() {
       !answered.has(r.id),
   ).length;
 
-  const verified = organization.status === "APPROVED";
-  const pendingVerification = organization.status === "PENDING_APPROVAL";
+  // Компании открываются автоматически, поэтому знак «Проверена» больше не
+  // следует из статуса: он про документы, которые смотрит человек.
+  const verified = Boolean(organization.documentsVerifiedAt);
+  const pendingVerification = !verified;
   const salesPoints = buildSalesPoints(bookings);
   const sportCount = listOrgVertical(organization.id).filter(
     (s) => s.status === "published",
