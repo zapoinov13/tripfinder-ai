@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import {
   CheckCircle2,
@@ -41,6 +41,18 @@ import { useRequireAuth } from "@/lib/platform/auth";
 import { usePlatformStore } from "@/lib/platform/hooks";
 import { cn } from "@/lib/utils";
 import { privatePage } from "@/lib/seo";
+
+/**
+ * Отказ по входу или сбой базы.
+ *
+ * Разница не косметическая: при истёкшей сессии «Попробовать снова» будет
+ * давать ту же ошибку сколько угодно раз, а человек тем временем ищет поломку
+ * в базе. Так уже случилось: владельца выкинуло из аккаунта, а страница
+ * уверяла, что это «временная недоступность базы».
+ */
+function isAuthError(message: string): boolean {
+  return /Unauthorized|authorization header|token/i.test(message);
+}
 
 export const Route = createFileRoute("/admin/ai-keys")({
   head: () => privatePage("AI и ключи API · Админ TourGo"),
@@ -271,21 +283,39 @@ function AdminAiKeysPage() {
     >
       {!form && loadError ? (
         <div className="surface-card border-destructive/30 bg-destructive/[0.04] p-6">
-          <p className="font-display text-base font-semibold">Настройки AI не загрузились</p>
-          <p className="mt-1 max-w-xl text-sm text-muted-foreground">
-            Ключ и промпт лежат в закрытой таблице и читаются серверной функцией. Сейчас она не
-            ответила: {loadError}. Обычно это временная недоступность базы.
+          <p className="font-display text-base font-semibold">
+            {isAuthError(loadError) ? "Сессия не подтвердилась" : "Настройки AI не загрузились"}
           </p>
-          <Button
-            className="mt-4"
-            variant="outline"
-            onClick={() => {
-              setBusy(null);
-              setReloadKey((n) => n + 1);
-            }}
-          >
-            Попробовать снова
-          </Button>
+          <p className="mt-1 max-w-xl text-sm text-muted-foreground">
+            {isAuthError(loadError) ? (
+              <>
+                Ключ и промпт читает серверная функция, а она не увидела вашего входа: {loadError}.
+                Обычно это просто истёкшая сессия — выйдите и войдите заново. База тут ни при чём,
+                «попробовать снова» не поможет.
+              </>
+            ) : (
+              <>
+                Ключ и промпт лежат в закрытой таблице и читаются серверной функцией. Сейчас она не
+                ответила: {loadError}. Обычно это временная недоступность базы.
+              </>
+            )}
+          </p>
+          {isAuthError(loadError) ? (
+            <Button className="mt-4" asChild>
+              <Link to="/login">Войти заново</Link>
+            </Button>
+          ) : (
+            <Button
+              className="mt-4"
+              variant="outline"
+              onClick={() => {
+                setBusy(null);
+                setReloadKey((n) => n + 1);
+              }}
+            >
+              Попробовать снова
+            </Button>
+          )}
         </div>
       ) : !form ? (
         <div className="surface-card flex items-center gap-3 p-6 text-sm text-muted-foreground">
