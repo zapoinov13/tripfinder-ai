@@ -126,6 +126,22 @@ await p.waitForTimeout(400);
 body = await p.locator("body").innerText();
 ok(/Адрес endpoint/.test(body) === false, "у обычного провайдера адреса endpoint нет");
 
+// Проверка соединения: отчёт, а не одна строка «ок».
+await p.locator("button", { hasText: "Проверить соединение" }).click();
+await p.waitForTimeout(4000);
+body = await p.locator("body").innerText();
+ok(/Модель ответила/.test(body), "проверка говорит, что модель ответила");
+ok(/Консультант видит/.test(body), "проверка показывает, что консультант видит на платформе");
+ok(
+  /предложений 5/.test(body),
+  `сосчитаны предложения (${(body.match(/предложений \d+/) || [])[0]})`,
+);
+ok(
+  /направлений 2/.test(body),
+  `сосчитаны направления (${(body.match(/направлений \d+/) || [])[0]})`,
+);
+ok(/компаний 2/.test(body), `сосчитаны компании (${(body.match(/компаний \d+/) || [])[0]})`);
+
 await b.close();
 console.log(fail.length === 0 ? "\nВСЁ ЗЕЛЁНОЕ" : `\nПРОВАЛЕНО: ${fail.length}`);
 process.exit(fail.length === 0 ? 0 : 1);

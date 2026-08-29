@@ -57,8 +57,13 @@ function topValues(values: Array<string | null | undefined>, limit: number): str
     .map(([value]) => value);
 }
 
-export async function readCatalogSummary(): Promise<CatalogSummary> {
-  if (cache && Date.now() - cache.at < CACHE_MS) return cache.value;
+/**
+ * @param fresh Пропустить кэш. Нужно проверке из админки: админ заводит
+ * компанию и тут же жмёт «Проверить» — показать ему пятиминутной давности
+ * ответ значит соврать.
+ */
+export async function readCatalogSummary(fresh = false): Promise<CatalogSummary> {
+  if (!fresh && cache && Date.now() - cache.at < CACHE_MS) return cache.value;
 
   try {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");

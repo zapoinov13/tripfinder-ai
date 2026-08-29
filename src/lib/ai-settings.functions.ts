@@ -96,17 +96,47 @@ export const listAiModels = createServerFn({ method: "POST" })
     },
   );
 
+/** Что консультант видит и умеет прямо сейчас. */
+export type AiCheck = {
+  /** Ответила ли модель. */
+  model: { ok: true; text: string } | { ok: false; error: string };
+  /** Что консультант знает о платформе: с этим он и пойдёт отвечать людям. */
+  catalog: { verticals: number; offers: number; destinations: number; companies: number };
+  /** Включён ли чат для посетителей. */
+  enabled: boolean;
+};
+
+/**
+ * Проверка всей цепочки, а не только ключа.
+ *
+ * Пинг модели отвечал «ок» и когда сводка каталога приходила пустой — то
+ * есть когда консультант формально работал, но отвечал «вообще», выдумывая
+ * направления. Ровно такая поломка однажды и была: молчаливая, зелёная на
+ * вид. Поэтому проверка теперь заодно показывает, что именно консультант
+ * видит: разделы, предложения, направления, компании.
+ */
 export const testAiSettings = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
+  .handler(async ({ context }): Promise<AiCheck> => {
     const { assertPlatformAdmin, readSettings } = await import("@/lib/ai-settings.server");
     await assertPlatformAdmin(context.supabase, context.userId);
     const { callChatCompletion } = await import("@/lib/ai-provider.server");
+    const { readCatalogSummary } = await import("@/lib/ai-catalog.server");
+
     const settings = await readSettings();
-    const res = await callChatCompletion(settings, [
-      { role: "user", content: "Ответь одним словом: ок" },
+    const [res, summary] = await Promise.all([
+      callChatCompletion(settings, [{ role: "user", content: "Ответь одним словом: ок" }]),
+      readCatalogSummary(true),
     ]);
-    return res.ok
-      ? { ok: true as const, text: res.text }
-      : { ok: false as const, error: res.error };
+
+    return {
+      model: res.ok ? { ok: true, text: res.text } : { ok: false, error: res.error },
+      catalog: {
+        verticals: summary.verticals.length,
+        offers: summary.verticals.reduce((sum, v) => sum + v.count, 0),
+        destinations: summary.destinations.length,
+        companies: summary.companies,
+      },
+      enabled: settings.enabled,
+    };
   });

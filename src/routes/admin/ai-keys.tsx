@@ -36,7 +36,7 @@ import {
   saveAiSettings,
   testAiSettings,
 } from "@/lib/ai-settings.functions";
-import type { AiSettingsView } from "@/lib/ai-settings.functions";
+import type { AiCheck, AiSettingsView } from "@/lib/ai-settings.functions";
 import { useRequireAuth } from "@/lib/platform/auth";
 import { usePlatformStore } from "@/lib/platform/hooks";
 import { cn } from "@/lib/utils";
@@ -62,6 +62,38 @@ const PROVIDERS: Array<{ value: AiSettingsView["provider"]; label: string }> = [
 ];
 
 const DAY_MS = 86400000;
+
+/**
+ * Итог проверки: что ответила модель и что консультант видит на платформе.
+ *
+ * Одной строки «✓ проверка прошла» мало. Модель может отвечать прекрасно и
+ * при этом не знать ни одного вашего предложения — тогда она отвечает
+ * «вообще» и советует то, чего у вас нет. Это и есть главное, что здесь
+ * нужно увидеть.
+ */
+function CheckReport({ check }: { check: AiCheck & { at: string } }) {
+  const empty = check.catalog.offers === 0 && check.catalog.companies === 0;
+  return (
+    <div className="mt-2 space-y-1 text-xs">
+      <p className={check.model.ok ? "text-success" : "text-destructive"}>
+        {check.model.ok
+          ? `✓ Модель ответила: ${check.model.text.slice(0, 80)}`
+          : `✗ ${check.model.error}`}
+      </p>
+      <p className={empty ? "text-destructive" : "text-muted-foreground"}>
+        {empty
+          ? "✗ Консультант не видит ни одного предложения — он будет отвечать общими словами. Заведите компании и туры."
+          : `✓ Консультант видит: разделов ${check.catalog.verticals}, предложений ${check.catalog.offers}, направлений ${check.catalog.destinations}, компаний ${check.catalog.companies}`}
+      </p>
+      {!check.enabled ? (
+        <p className="text-destructive">
+          ✗ Чат выключен — посетители его не видят. Включите переключатель справа.
+        </p>
+      ) : null}
+      <p className="text-muted-foreground">проверено {formatRelativeRu(check.at)}</p>
+    </div>
+  );
+}
 
 /**
  * Один шаг настройки. Номер и подпись сверху, поля под ними: так видно, что
@@ -108,9 +140,7 @@ function AdminAiKeysPage() {
   const [busy, setBusy] = useState<"load" | "save" | "test" | null>("load");
   const [loadError, setLoadError] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
-  const [testResult, setTestResult] = useState<{ ok: boolean; text: string; at: string } | null>(
-    null,
-  );
+  const [check, setCheck] = useState<(AiCheck & { at: string }) | null>(null);
   const [models, setModels] = useState<string[] | null>(null);
   const [modelsError, setModelsError] = useState<string | null>(null);
   const [modelsBusy, setModelsBusy] = useState(false);
@@ -193,15 +223,11 @@ function AdminAiKeysPage() {
     setBusy("test");
     try {
       const res = await test({});
-      setTestResult({
-        ok: res.ok,
-        text: res.ok ? res.text.slice(0, 160) : res.error,
-        at: new Date().toISOString(),
-      });
-      if (res.ok) toast.success("Соединение работает");
-      else toast.error(res.error);
+      setCheck({ ...res, at: new Date().toISOString() });
+      if (res.model.ok) toast.success("Модель ответила");
+      else toast.error(res.model.error);
     } catch {
-      setTestResult({ ok: false, text: "Проверка не удалась", at: new Date().toISOString() });
+      setCheck(null);
       toast.error("Проверка не удалась");
     } finally {
       setBusy(null);
@@ -305,17 +331,7 @@ function AdminAiKeysPage() {
                     работает без модели: он разбирает запрос сам.
                   </p>
                 ) : null}
-                {testResult ? (
-                  <p
-                    className={cn(
-                      "mt-1 text-xs",
-                      testResult.ok ? "text-success" : "text-destructive",
-                    )}
-                  >
-                    {testResult.ok ? "✓ Проверка прошла: " : "✗ "}
-                    {testResult.text} · {formatRelativeRu(testResult.at)}
-                  </p>
-                ) : null}
+                {check ? <CheckReport check={check} /> : null}
               </div>
             </div>
             <div className="flex items-center gap-3">
