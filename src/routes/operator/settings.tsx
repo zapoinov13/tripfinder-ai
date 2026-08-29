@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth, useRequireAuth } from "@/lib/platform/auth";
-import { isBusinessOnlyServices } from "@/lib/platform/company-categories";
+import { isListingBusiness } from "@/lib/platform/company-categories";
 import { Switch } from "@/components/ui/switch";
 import type { NotifyPrefs } from "@/lib/platform/types";
 import { usePlatformStore } from "@/lib/platform/hooks";
@@ -40,16 +40,18 @@ function OperatorSettingsPage() {
   const nav = useOperatorNav(organization?.id);
   const [nameEdit, setNameEdit] = useState<string | null>(null);
   const [cityEdit, setCityEdit] = useState<string | null>(null);
+  const [phoneEdit, setPhoneEdit] = useState<string | null>(null);
   const [password, setPassword] = useState("");
   const [password2, setPassword2] = useState("");
   if (!allowed || !user || !organization) return null;
 
   const name = nameEdit ?? user.name;
   const city = cityEdit ?? user.city;
+  const phone = phoneEdit ?? user.phone ?? "";
   const role = user.role === "OPERATOR_MANAGER" ? "OPERATOR_MANAGER" : "OPERATOR_ADMIN";
   const access = roleCopy[role];
   const plan = state.config.operatorPlans.find((p) => p.code === organization.planCode);
-  const businessOnly = isBusinessOnlyServices(organization.services);
+  const businessOnly = isListingBusiness(organization.category, organization.services);
   // Пустое поле = получать всё: так ведёт себя аккаунт, который ничего не настраивал.
   const prefs: NotifyPrefs = {
     requests: user.notifyPrefs?.requests !== false,
@@ -65,16 +67,25 @@ function OperatorSettingsPage() {
     toast.success(value ? "Уведомления включены" : "Уведомления отключены");
   };
   const isOwner = user.role === "OPERATOR_ADMIN";
-  const verified = organization.status === "APPROVED";
+  // Компании открываются автоматически, поэтому статус больше не означает
+  // проверку. Знак — только по документам, которые посмотрел человек.
+  const verified = Boolean(organization.documentsVerifiedAt);
 
   const saveProfile = () => {
     setState((s) => ({
       ...s,
       users: s.users.map((u) =>
-        u.id === user.id ? { ...u, name: name.trim() || u.name, city: city.trim() || u.city } : u,
+        u.id === user.id
+          ? {
+              ...u,
+              name: name.trim() || u.name,
+              city: city.trim() || u.city,
+              phone: phone.trim(),
+            }
+          : u,
       ),
     }));
-    toast.success("Имя и город сохранены");
+    toast.success("Данные сохранены");
   };
 
   const savePassword = async () => {
@@ -132,6 +143,19 @@ function OperatorSettingsPage() {
           <div className="space-y-2">
             <Label htmlFor="op-city">Город</Label>
             <Input id="op-city" value={city} onChange={(e) => setCityEdit(e.target.value)} />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="op-phone">Телефон</Label>
+            <Input
+              id="op-phone"
+              type="tel"
+              value={phone}
+              onChange={(e) => setPhoneEdit(e.target.value)}
+              placeholder="+7 777 777 77 77"
+            />
+            <p className="text-xs text-muted-foreground">
+              Ваш личный номер. Телефон компании, который видит турист, — в разделе «Компания».
+            </p>
           </div>
           <Button onClick={saveProfile}>Сохранить</Button>
         </section>

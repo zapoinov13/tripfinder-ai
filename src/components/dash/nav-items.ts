@@ -24,7 +24,7 @@ import {
 } from "lucide-react";
 
 import { useOptionalAuth } from "@/lib/platform/auth";
-import { isBusinessOnlyServices } from "@/lib/platform/company-categories";
+import { isListingBusiness } from "@/lib/platform/company-categories";
 import { usePlatformStore } from "@/lib/platform/hooks";
 
 import type { DashItem } from "./dash-shell";
@@ -61,7 +61,7 @@ export function useOperatorNav(orgId?: string): DashItem[] {
   if (!orgId) return operatorNavBase;
 
   const org = state.organizations.find((o) => o.id === orgId);
-  if (org && isBusinessOnlyServices(org.services)) {
+  if (org && isListingBusiness(org.category, org.services)) {
     // «Заявки» у бизнеса — записи клиентов, а не туровые заявки туристов.
     const newRequests = state.serviceRequests.filter(
       (r) => r.organizationId === orgId && r.status === "NEW",

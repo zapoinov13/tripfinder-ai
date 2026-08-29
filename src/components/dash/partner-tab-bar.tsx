@@ -3,7 +3,7 @@ import { CalendarClock, Inbox, LayoutGrid, Luggage, MoreHorizontal } from "lucid
 
 import { TabBarShell, type TabItem } from "@/components/site/tab-bar-shell";
 import { useAuth } from "@/lib/platform/auth";
-import { isBusinessOnlyServices } from "@/lib/platform/company-categories";
+import { isListingBusiness } from "@/lib/platform/company-categories";
 import { usePlatformStore } from "@/lib/platform/hooks";
 
 /**
@@ -21,7 +21,7 @@ export function PartnerTabBar({ onMore }: { onMore: () => void }) {
 
   const orgId = user?.organizationId;
   const org = state.organizations.find((o) => o.id === orgId);
-  const isBusiness = isBusinessOnlyServices(org?.services);
+  const isBusiness = isListingBusiness(org?.category, org?.services);
 
   // Записи, которые ждут ответа, и непрочитанные сообщения клиентов.
   const newRequests = orgId

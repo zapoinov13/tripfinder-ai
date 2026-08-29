@@ -18,9 +18,27 @@ import { companyCategories as categoriesCatalog } from "./company-categories";
 
 /** Группы услуг для кабинета компании: по категориям деятельности. */
 export const companyServiceGroups = categoriesCatalog.map((category) => ({
+  id: category.id,
   label: category.label,
   options: category.services,
 }));
+
+/**
+ * Услуги только своей категории.
+ *
+ * Спортзалу нечего делать в списках «Пакетные туры», «Сафари» и «Квартиры
+ * посуточно»: он их не продаёт, а видеть чужие поля — значит каждый раз
+ * проверять, туда ли попал. Хуже того, случайно отмеченная чужая услуга меняет
+ * и то, какие заявки ему приходят.
+ *
+ * Пока категория не проставлена (компании, заведённые до её появления),
+ * показываем всё: отнять разделы у того, кто ими уже пользуется, хуже, чем
+ * показать лишнее.
+ */
+export function serviceGroupsForCategory(category: string | undefined) {
+  const own = companyServiceGroups.filter((group) => group.id === category);
+  return own.length ? own : companyServiceGroups;
+}
 
 export const companyServiceOptions = companyServiceGroups.flatMap((g) => g.options);
 

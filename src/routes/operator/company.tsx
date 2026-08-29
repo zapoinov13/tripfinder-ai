@@ -44,7 +44,7 @@ import { requestsForDate } from "@/lib/platform/service-requests";
 import {
   clientCountryOptions,
   companyCountryOptions,
-  companyServiceGroups,
+  serviceGroupsForCategory,
   hasRequiredVerificationDocuments,
   languageOptions,
   submitForVerification,
@@ -486,7 +486,7 @@ function OperatorCompanyPage() {
             title="Чем занимаетесь"
             description="Помогает туристу понять, подходите ли вы под его запрос."
           >
-            {companyServiceGroups.map((group) => (
+            {serviceGroupsForCategory(organization.category).map((group) => (
               <ChipGroup
                 key={group.label}
                 label={`Услуги · ${group.label}`}

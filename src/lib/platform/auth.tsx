@@ -147,6 +147,8 @@ type OrgRpcRow = {
   advertising_balance: number;
   promotion_balance: number;
   created_at: string;
+  category: string | null;
+  services: string[] | null;
 };
 
 /** Организация + профиль + членство одной серверной функцией (см. миграцию). */
@@ -200,6 +202,13 @@ function orgRowToLocal(org: OrgRpcRow): Organization {
     advertisingBalance: Number(org.advertising_balance),
     promotionBalance: Number(org.promotion_balance),
     createdAt: org.created_at,
+    // Категорию нельзя терять при переносе строки из базы: кабинет решает по
+    // ней, какие разделы показывать. Без неё человек, зарегистрировавшийся как
+    // спортзал, попадал в кабинет турфирмы — с турами, бронями и заявками,
+    // которых у него не бывает. Полная гидрация приносила её позже, но первый
+    // и самый важный экран человек видел уже неправильным.
+    ...(org.category ? { category: org.category } : {}),
+    ...(org.services ? { services: org.services } : {}),
   };
 }
 

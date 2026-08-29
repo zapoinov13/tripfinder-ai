@@ -581,6 +581,7 @@ async function loadUserData(userId: string): Promise<UserDataResult> {
             password: "",
             name: str(r["name"]),
             city: str(r["city"], "Алматы"),
+            phone: str(r["phone"]),
             role: str(r["role"], "TOURIST") as PlatformState["users"][number]["role"],
             status: str(r["status"], "active") as PlatformState["users"][number]["status"],
             ...(r["organization_id"] ? { organizationId: str(r["organization_id"]) } : {}),

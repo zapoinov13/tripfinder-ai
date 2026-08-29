@@ -7,7 +7,7 @@ import { useOperatorNav } from "@/components/dash/nav-items";
 import { ThreadView } from "@/components/messages/thread-view";
 import { Badge } from "@/components/ui/badge";
 import { useAuth, useRequireAuth } from "@/lib/platform/auth";
-import { isBusinessOnlyServices } from "@/lib/platform/company-categories";
+import { isListingBusiness } from "@/lib/platform/company-categories";
 import { usePlatformStore } from "@/lib/platform/hooks";
 import { getCompanyThreads } from "@/lib/platform/messages";
 import { cn } from "@/lib/utils";
@@ -34,7 +34,7 @@ function OperatorMessagesPage() {
   const [openKey, setOpenKey] = useState<string | null>(null);
 
   if (!allowed || !organization || !user) return null;
-  if (isBusinessOnlyServices(organization.services)) {
+  if (isListingBusiness(organization.category, organization.services)) {
     return <Navigate to="/operator/services" />;
   }
 
