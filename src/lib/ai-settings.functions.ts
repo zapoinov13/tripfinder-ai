@@ -25,6 +25,16 @@ export type AiSettingsView = {
   enabled: boolean;
   systemPrompt: string;
   updatedAt: string | null;
+  /**
+   * Прочитались ли настройки из базы.
+   *
+   * false значит, что серверу не хватает служебного ключа (или база не
+   * ответила) — и тогда всё остальное на этой странице показывает значения по
+   * умолчанию, а не то, что сохранено. Показать «выключено» в этом случае —
+   * соврать: тумблер тут ни при чём.
+   */
+  readable: boolean;
+  unavailableReason?: string;
 };
 
 export const getAiSettings = createServerFn({ method: "GET" })
@@ -50,6 +60,8 @@ export const getAiSettings = createServerFn({ method: "GET" })
       enabled: row.enabled,
       systemPrompt: row.systemPrompt,
       updatedAt: row.updatedAt,
+      readable: row.readable,
+      ...(row.unavailableReason ? { unavailableReason: row.unavailableReason } : {}),
     };
   });
 

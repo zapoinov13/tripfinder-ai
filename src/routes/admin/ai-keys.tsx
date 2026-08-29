@@ -323,6 +323,27 @@ function AdminAiKeysPage() {
         </div>
       ) : (
         <>
+          {/* Настройки не прочитались — всё ниже показывает значения по
+              умолчанию, а не сохранённое. Молчать об этом нельзя: владелец
+              решит, что тумблер выключен им, и будет щёлкать его впустую. */}
+          {!form.readable ? (
+            <div className="mb-5 rounded-3xl border border-destructive/30 bg-destructive/[0.05] p-5">
+              <p className="font-display text-base font-semibold">Настройки читаются не из базы</p>
+              <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+                Серверу не хватает служебного ключа Supabase, поэтому показаны значения по
+                умолчанию, а не сохранённые. Тумблер и ключ ниже щёлкать бесполезно — сохранение
+                упрётся в то же самое.
+                {form.unavailableReason ? ` Ответ сервера: ${form.unavailableReason}.` : ""}
+              </p>
+              <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+                На боевом сайте переменная называется <code>SUPABASE_SERVICE_ROLE_KEY</code> и
+                задаётся в Vercel. В превью визуального редактора —{" "}
+                <code>TOURGO_SERVICE_ROLE_KEY</code> в его секретах: префикс <code>SUPABASE_</code>{" "}
+                там запрещён.
+              </p>
+            </div>
+          ) : null}
+
           {/* Статус AI одним взглядом. */}
           <div
             className={cn(

@@ -72,7 +72,9 @@ export const aiChatStatus = createServerFn({ method: "GET" }).handler(
       const { readSettings } = await import("@/lib/ai-settings.server");
       const { endpointFor } = await import("@/lib/ai-provider.server");
       const settings = await readSettings();
-      return { available: settings.enabled && Boolean(endpointFor(settings).key) };
+      return {
+        available: settings.readable && settings.enabled && Boolean(endpointFor(settings).key),
+      };
     } catch {
       return { available: false };
     }
@@ -86,6 +88,15 @@ export const aiChat = createServerFn({ method: "POST" })
     const { readSettings } = await import("@/lib/ai-settings.server");
     const { callChatCompletion } = await import("@/lib/ai-provider.server");
     const settings = await readSettings();
+    // Три разных «нет», и валить их в одно — значит отправлять владельца чинить
+    // не то. Именно так и вышло: он добавлял ключ, а площадка отвечала, что
+    // чат выключен администратором.
+    if (!settings.readable) {
+      return {
+        ok: false,
+        error: "AI не настроен на сервере: платформа не смогла прочитать настройки",
+      };
+    }
     if (!settings.enabled) {
       return { ok: false, error: "AI-чат отключён администратором" };
     }
