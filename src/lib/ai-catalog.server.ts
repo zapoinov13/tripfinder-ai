@@ -66,7 +66,8 @@ export async function readCatalogSummary(fresh = false): Promise<CatalogSummary>
   if (!fresh && cache && Date.now() - cache.at < CACHE_MS) return cache.value;
 
   try {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { getSupabaseAdmin } = await import("@/lib/supabase/admin.server");
+    const supabaseAdmin = getSupabaseAdmin();
     // `vertical_listings` и часть колонок вью появились после генерации типов
     // Database, поэтому к ним ходим через нетипизированный доступ — как это
     // уже сделано в platform/vertical-listings.ts.

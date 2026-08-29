@@ -28,8 +28,8 @@ export type ReadSettingsResult = AiSettings & {
 
 export async function readSettings(): Promise<ReadSettingsResult> {
   try {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data, error } = await supabaseAdmin
+    const { getSupabaseAdmin } = await import("@/lib/supabase/admin.server");
+    const { data, error } = await getSupabaseAdmin()
       .from("ai_settings")
       .select("*")
       .eq("id", 1)
@@ -46,7 +46,12 @@ export async function readSettings(): Promise<ReadSettingsResult> {
       readable: true,
     };
   } catch (err) {
-    const reason = err instanceof Error ? err.message : String(err);
+    const { adminTarget } = await import("@/lib/supabase/admin.server");
+    const target = adminTarget();
+    const base = err instanceof Error ? err.message : String(err);
+    // Без адреса проекта такую ошибку не отличить от «неверный ключ», а это
+    // совсем другая починка.
+    const reason = `${base} (проект ${target.projectId}, ключ ${target.hasKey ? "задан" : "не задан"})`;
     console.warn("[ai-settings] настройки не прочитаны", reason);
     return {
       provider: "lovable",
@@ -70,7 +75,8 @@ export async function writeSettings(input: {
   enabled: boolean;
   systemPrompt: string;
 }): Promise<void> {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { getSupabaseAdmin } = await import("@/lib/supabase/admin.server");
+  const supabaseAdmin = getSupabaseAdmin();
   const current = await readSettings();
   // Empty key = keep the stored one (the UI only ever shows a mask).
   const apiKey = input.apiKey ? input.apiKey : current.apiKey;

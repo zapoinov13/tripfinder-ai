@@ -106,7 +106,8 @@ export const aiChat = createServerFn({ method: "POST" })
     const chars = data.messages.reduce((sum, m) => sum + m.content.length, 0);
     const buckets = clientBuckets();
     try {
-      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const { getSupabaseAdmin } = await import("@/lib/supabase/admin.server");
+      const supabaseAdmin = getSupabaseAdmin();
       const rpc = supabaseAdmin.rpc as unknown as (
         name: string,
         args: {
