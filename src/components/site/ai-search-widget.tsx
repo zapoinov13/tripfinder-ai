@@ -10,16 +10,6 @@ import { searchService } from "@/lib/platform/search-service";
 import { cn } from "@/lib/utils";
 
 /**
- * Примеры короткие намеренно: на телефоне они должны уместиться в одну
- * строку целиком. Лента с прокруткой резала слово у края экрана, а перенос
- * по строкам занимал пол-экрана — оба варианта хуже трёх коротких подсказок.
- */
-const EXAMPLES = ["Дубай на неделю", "С детьми"];
-
-/** На широком экране места хватает на более развёрнутые примеры. */
-const EXAMPLES_WIDE = ["Горящие туры", "Турция, всё включено", "Мальдивы на двоих"];
-
-/**
  * Интерактивный AI-поиск на демо-логике: текст разбирается локальным парсером
  * (parseTravelQuery), подсказки подстраиваются под то, чего в запросе не хватает,
  * а туры подбираются тем же SearchService, что и на странице /search.
@@ -109,33 +99,11 @@ export function AiSearchWidget() {
             <input
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
-              placeholder="Куда и когда хотите поехать?"
+              placeholder="Например: Дубай на неделю"
               aria-label="Опишите поездку"
               className="h-12 min-w-0 flex-1 bg-transparent text-[15px] outline-none placeholder:text-muted-foreground"
             />
           </form>
-
-          {/* Подсказки: примеры до ввода, уточнения — после. */}
-          {!active ? (
-            <div className="mt-3 flex flex-wrap gap-2">
-              {[...EXAMPLES, ...EXAMPLES_WIDE].map((example, i) => (
-                <button
-                  key={example}
-                  type="button"
-                  onClick={() => {
-                    setDraft(example);
-                    setQuery(example);
-                  }}
-                  className={cn(
-                    "rounded-full border border-border bg-card px-3 py-1.5 text-[13px] hover:border-primary/40",
-                    i >= EXAMPLES.length && "hidden md:inline-flex",
-                  )}
-                >
-                  {example}
-                </button>
-              ))}
-            </div>
-          ) : null}
 
           {parsed ? (
             <>
