@@ -74,8 +74,9 @@ export function AiSearchWidget() {
 
   return (
     <section
-      // z-10: карточка лежит поверх обложки, иначе картинка срезает ей шапку.
-      className="container-page relative z-10 -mt-4 md:mt-10"
+      // Карточка стоит под обложкой, а не на ней: наезжая, она забирала
+      // внимание у заголовка и обрезала его подпись снизу.
+      className="container-page relative z-10 mt-3 md:mt-10"
       aria-label="AI-подбор туров"
     >
       <div className="surface-card overflow-hidden">

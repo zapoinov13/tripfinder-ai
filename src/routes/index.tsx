@@ -71,9 +71,7 @@ function Index() {
               className="h-[8.25rem] w-full object-cover object-[center_32%] animate-soft-zoom sm:h-[13rem] md:h-[32rem]"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/45 to-ink/10" />
-            {/* Нижние 16px обложки перекрывает карточка подбора: поднимаем
-                текст, чтобы подпись не липла к её краю. */}
-            <div className="absolute inset-x-0 bottom-0 px-4 pb-7 pt-8 text-primary-foreground md:p-10">
+            <div className="absolute inset-x-0 bottom-0 px-4 pb-5 pt-8 text-primary-foreground md:p-10">
               <p className="hidden font-display text-3xl font-semibold tracking-tight md:mb-5 md:block">
                 TourGo
               </p>
