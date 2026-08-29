@@ -65,6 +65,10 @@ export const Route = createFileRoute("/company-signup")({
  */
 const steps = [
   {
+    title: "Чем занимаетесь",
+    hint: "От этого зависит весь кабинет: спортзалу не нужны туры, прокату авто — сафари.",
+  },
+  {
     title: "Ваши данные",
     hint: "Это контакт, с которым турист свяжется, если выберет вас.",
   },
@@ -175,7 +179,10 @@ function CompanySignupPage() {
   }, [isAuthenticated]);
 
   const canContinue = () => {
-    if (step === 0) {
+    // Категория — первый вопрос, а не поздняя галочка. Компания без неё
+    // попадает в кабинет, который не знает, что ей показывать.
+    if (step === 0) return categories.length > 0;
+    if (step === 1) {
       return Boolean(
         person.firstName.trim() &&
         parsePhoneDigits(person.phone).length >= 11 &&
@@ -187,7 +194,7 @@ function CompanySignupPage() {
         person.password.trim().length >= 8,
       );
     }
-    if (step === 1) return Boolean(company.name.trim() && company.city.trim());
+    if (step === 2) return Boolean(company.name.trim() && company.city.trim());
     return true;
   };
 
@@ -364,6 +371,42 @@ function CompanySignupPage() {
             </div>
 
             {step === 0 ? (
+              <div className="grid gap-3 sm:grid-cols-2">
+                {companyCategories.map((category) => {
+                  const on = categories.includes(category.id);
+                  return (
+                    <button
+                      key={category.id}
+                      type="button"
+                      onClick={() => {
+                        // Одна категория за раз: кабинет и витрина строятся
+                        // вокруг неё, а «и туры, и прокат» превращают карточку
+                        // в свалку, где турист не понимает, куда попал.
+                        setCategories(on ? [] : [category.id]);
+                        setServices([]);
+                      }}
+                      className={cn(
+                        "rounded-2xl border p-4 text-left transition-colors",
+                        on
+                          ? "border-primary bg-primary-soft"
+                          : "border-border hover:border-primary/40",
+                      )}
+                    >
+                      <span className="block text-sm font-semibold">{category.label}</span>
+                      <span className="mt-0.5 block text-xs text-muted-foreground">
+                        {category.hint}
+                      </span>
+                    </button>
+                  );
+                })}
+                <p className="text-xs text-muted-foreground sm:col-span-2">
+                  Категорию можно будет поменять в кабинете. Турфирма — это «Туры»: она такой же
+                  бизнес, как прокат или зал, просто с другими услугами.
+                </p>
+              </div>
+            ) : null}
+
+            {step === 1 ? (
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field
                   id="first-name"
@@ -407,7 +450,7 @@ function CompanySignupPage() {
               </div>
             ) : null}
 
-            {step === 1 ? (
+            {step === 2 ? (
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field
                   id="company-name"

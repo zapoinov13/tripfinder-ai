@@ -8,7 +8,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/lib/platform/auth";
-import { DEMO_PASSWORD } from "@/lib/platform/seed";
 import { getState } from "@/lib/platform/store";
 import { migrateAnonymousToUser } from "@/lib/platform/user-data";
 import { privatePage } from "@/lib/seo";
@@ -31,9 +30,13 @@ function RegistrationPage() {
   const [error, setError] = useState("");
   const [tourist, setTourist] = useState({
     name: "",
-    city: "Алматы",
+    city: "",
     email: "",
-    password: DEMO_PASSWORD,
+    // Пустой, а не запасной пароль из кода. Предзаполненное поле большинство
+    // оставляет как есть — а этот пароль уезжает в браузер вместе с бандлом,
+    // то есть известен всем. Получался аккаунт, в который войдёт любой, кто
+    // знает почту.
+    password: "",
   });
 
   return (
@@ -56,6 +59,10 @@ function RegistrationPage() {
                 className="grid gap-4 sm:grid-cols-2"
                 onSubmit={async (e) => {
                   e.preventDefault();
+                  if (tourist.password.trim().length < 8) {
+                    setError("Придумайте пароль не короче 8 символов");
+                    return;
+                  }
                   const res = await registerTourist(tourist);
                   if (!res.ok) {
                     setError(res.error ?? "Ошибка");
@@ -77,7 +84,7 @@ function RegistrationPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="tourist-city">Город</Label>
+                  <Label htmlFor="tourist-city">Город (необязательно)</Label>
                   <Input
                     id="tourist-city"
                     placeholder="Алматы"
@@ -100,9 +107,13 @@ function RegistrationPage() {
                   <Input
                     id="tourist-password"
                     type="password"
+                    autoComplete="new-password"
                     value={tourist.password}
                     onChange={(e) => setTourist({ ...tourist, password: e.target.value })}
                   />
+                  <p className="text-xs text-muted-foreground">
+                    Минимум 8 символов — с ним вы будете входить.
+                  </p>
                 </div>
                 {error ? <p className="sm:col-span-2 text-sm text-destructive">{error}</p> : null}
                 <Button className="mt-2 sm:col-span-2" type="submit">
