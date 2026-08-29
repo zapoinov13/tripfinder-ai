@@ -36,7 +36,16 @@ async function selectOne<T>(
       headers: { apikey: publishableKey, authorization: `Bearer ${publishableKey}` },
       signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     });
-    if (!response.ok) return undefined;
+    if (!response.ok) {
+      // Молчаливое «не вышло» однажды уже стоило дорого: страница компании
+      // просила у представления колонку, которой там нет, ответ приходил 400,
+      // и SSR-поиск компании был мёртв — а снаружи выглядело как «база не
+      // ответила». Пусть такое видно в логах сервера.
+      console.warn(
+        `[seo-data] ${table}: ${response.status} ${response.statusText} — запрос к представлению не прошёл`,
+      );
+      return undefined;
+    }
     const rows = (await response.json()) as T[];
     return rows[0] ?? null;
   } catch {
@@ -56,7 +65,7 @@ export async function fetchPublicCompany(id: string): Promise<Organization | nul
   const row = await selectOne<Record<string, unknown>>(
     "organizations_public",
     id,
-    "id,name,city,country,about,logo_url,cover_url,photos,videos,website,services,languages,countries,client_countries,instagram,telegram,created_at,plan_code",
+    "id,name,city,country,about,logo_url,cover_url,photos,videos,website,services,languages,countries,client_countries,instagram,telegram,created_at",
   );
   if (!row) return row === null ? null : undefined;
   const str = (key: string, fallback = "") =>
@@ -80,7 +89,10 @@ export async function fetchPublicCompany(id: string): Promise<Organization | nul
     website: str("website"),
     contactPerson: "",
     status: "APPROVED",
-    planCode: (str("plan_code", "START") as Organization["planCode"]) ?? "START",
+    // Тариф компании — не публичные данные, в представлении его нет.
+    // Запрашивать его здесь значило ломать весь запрос ради поля, которое на
+    // публичной странице всё равно не показывается.
+    planCode: "START",
     additionalTourLimit: 0,
     advertisingBalance: 0,
     promotionBalance: 0,
