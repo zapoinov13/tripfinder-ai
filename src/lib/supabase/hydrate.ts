@@ -90,6 +90,9 @@ export async function hydrateCatalogFromSupabase() {
               instagram: str(o["instagram"], prev?.instagram ?? ""),
               telegram: str(o["telegram"], prev?.telegram ?? ""),
               listedByPlatform: o["listed_by_platform"] === true,
+              // Поле появляется после миграции автоодобрения. Пока его нет —
+              // знака проверки просто не будет, и это честно.
+              documentsVerifiedAt: str(o["documents_verified_at"], prev?.documentsVerifiedAt ?? ""),
             };
           }),
         };

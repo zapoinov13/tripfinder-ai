@@ -1,4 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
+
+import { getSupabase } from "@/lib/supabase/client";
 import { useMemo, useState } from "react";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
@@ -153,6 +155,65 @@ function AdminOperatorsPage() {
       meta: { status },
     });
     toast.success(orgStatusLabel[status]);
+  };
+
+  /**
+   * Знак «Проверена» — вручную и только после документов.
+   *
+   * Идёт отдельным вызовом, а не общим сохранением организации: пока миграция
+   * автоодобрения не применена, колонки нет, и общий набор полей с ней уронил
+   * бы редактирование компании целиком. Отдельный вызов в этом случае просто
+   * не находится, и мы честно говорим об этом.
+   */
+  const setDocumentsVerified = async (orgId: string, verified: boolean) => {
+    const sb = getSupabase();
+    if (!sb) {
+      toast.error("Supabase не настроен");
+      return;
+    }
+    const rpc = sb.rpc as unknown as (
+      fn: string,
+      args: Record<string, unknown>,
+    ) => Promise<{ error: { message: string } | null }>;
+    const { error } = await rpc("set_company_documents_verified", {
+      p_org: orgId,
+      p_verified: verified,
+    });
+    if (error) {
+      toast.error(
+        /not find|does not exist|PGRST202/i.test(error.message)
+          ? "Сначала примените supabase/AUTO-APPROVE.sql в SQL Editor"
+          : error.message,
+      );
+      return;
+    }
+    setState((s) => ({
+      ...s,
+      organizations: s.organizations.map((o) =>
+        o.id === orgId
+          ? { ...o, documentsVerifiedAt: verified ? new Date().toISOString() : "" }
+          : o,
+      ),
+    }));
+    const orgUsers = state.users.filter((u) => u.organizationId === orgId);
+    orgUsers.forEach((u) =>
+      pushNotification(
+        u.id,
+        "operator_approval",
+        verified ? "Документы проверены" : "Знак проверки снят",
+        verified
+          ? "На вашей карточке появился знак «Проверена»."
+          : "Знак «Проверена» снят: проверьте документы в разделе «Компания».",
+      ),
+    );
+    appendAudit({
+      actorId: user.id,
+      action: "company_documents_verified",
+      entityType: "organization",
+      entityId: orgId,
+      meta: { verified },
+    });
+    toast.success(verified ? "Документы проверены" : "Знак проверки снят");
   };
 
   return (
@@ -522,6 +583,13 @@ function AdminOperatorsPage() {
                               Одобрить
                             </Button>
                           ) : null}
+                          <Button
+                            size="sm"
+                            variant={o.documentsVerifiedAt ? "outline" : "secondary"}
+                            onClick={() => void setDocumentsVerified(o.id, !o.documentsVerifiedAt)}
+                          >
+                            {o.documentsVerifiedAt ? "Снять знак проверки" : "Документы проверены"}
+                          </Button>
                           {o.status !== "REJECTED" ? (
                             <ConfirmAction
                               triggerLabel="Отклонить"

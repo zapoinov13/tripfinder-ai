@@ -89,7 +89,8 @@ function OperatorCompanyPage() {
   // Хуки обязаны выполняться до любого раннего return: организация приезжает
   // асинхронно, и хук после return менял их количество между рендерами.
   const photoCount = (form?.photos ?? []).length;
-  const verified = organization?.status === "APPROVED";
+  // «Проверка пройдена» — про документы, а не про то, что кабинет открыт.
+  const verified = Boolean(organization?.documentsVerifiedAt);
   const checks = useMemo(
     () => [
       { ok: Boolean(form?.logoUrl), label: "Логотип", section: "face" as const },
