@@ -101,3 +101,15 @@ $$;
 
 revoke all on function public.register_company(text, text, text, text, text, text, text, text, text, text, text[]) from public, anon;
 grant execute on function public.register_company(text, text, text, text, text, text, text, text, text, text, text[]) to authenticated, service_role;
+
+
+-- ---------------------------------------------------------------------------
+-- Самопроверка: выполняется тем же Run и показывает, встала ли защита.
+-- ---------------------------------------------------------------------------
+select 'Админ платформы не может завести компанию' as "часть",
+       case when (
+         select pg_get_functiondef(p.oid) from pg_proc p
+         join pg_namespace n on n.oid = p.pronamespace
+         where n.nspname = 'public' and p.proname = 'register_company'
+         limit 1
+       ) like '%platform_admin_cannot_own_company%' then 'есть' else 'НЕТ' end as "итог";

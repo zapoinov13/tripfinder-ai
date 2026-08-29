@@ -205,3 +205,42 @@ $$;
 
 revoke all on function public.set_company_documents_verified(uuid, boolean) from public, anon;
 grant execute on function public.set_company_documents_verified(uuid, boolean) to authenticated, service_role;
+
+
+-- ---------------------------------------------------------------------------
+-- Самопроверка. Выполняется тем же Run и показывает таблицу: что встало.
+-- Ничего не меняет, можно запускать отдельно сколько угодно раз.
+-- ---------------------------------------------------------------------------
+select 'Колонка documents_verified_at' as "часть",
+       case when exists (
+         select 1 from information_schema.columns
+         where table_schema = 'public' and table_name = 'organizations'
+           and column_name = 'documents_verified_at'
+       ) then 'есть' else 'НЕТ' end as "итог"
+union all
+select 'Витрина отдаёт знак проверки',
+       case when exists (
+         select 1 from information_schema.columns
+         where table_schema = 'public' and table_name = 'organizations_public'
+           and column_name = 'documents_verified_at'
+       ) then 'есть' else 'НЕТ' end
+union all
+select 'Функция set_company_documents_verified',
+       case when to_regprocedure('public.set_company_documents_verified(uuid, boolean)') is not null
+            then 'есть' else 'НЕТ' end
+union all
+select 'Регистрация открывает компанию сразу (APPROVED)',
+       case when (
+         select pg_get_functiondef(p.oid) from pg_proc p
+         join pg_namespace n on n.oid = p.pronamespace
+         where n.nspname = 'public' and p.proname = 'register_company'
+         limit 1
+       ) like '%''APPROVED'', ''START''%' then 'есть' else 'НЕТ' end
+union all
+select 'Защита: админ платформы не заводит компанию (PARTNER-GUARD)',
+       case when (
+         select pg_get_functiondef(p.oid) from pg_proc p
+         join pg_namespace n on n.oid = p.pronamespace
+         where n.nspname = 'public' and p.proname = 'register_company'
+         limit 1
+       ) like '%platform_admin_cannot_own_company%' then 'есть' else 'НЕТ' end;
