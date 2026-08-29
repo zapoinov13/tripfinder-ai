@@ -1,4 +1,6 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
+
+import { reviewCompanyCard, type CompanyReview } from "@/lib/company-review.functions";
 import {
   BadgeCheck,
   Briefcase,
@@ -257,6 +259,8 @@ function OperatorCompanyPage() {
           </div>
         </div>
       </div>
+
+      <CardReview />
 
       <div className="mt-5 overflow-x-auto pb-1">
         <TabPills
@@ -1306,6 +1310,106 @@ function ChipGroup({
           );
         })}
       </div>
+    </div>
+  );
+}
+
+/**
+ * Разбор карточки: чего не хватает и что советует модель.
+ *
+ * Два слоя намеренно разделены и подписаны по-разному. Пункты «не заполнено» —
+ * это правила, они считаются кодом и всегда верны. Замечания модели — суждение,
+ * и подавать их как истину нечестно: она может придраться к живому описанию или
+ * пропустить кривое.
+ *
+ * Кнопка не блокирует ничего: карточка уже видна туристам, разбор лишь
+ * подсказывает, чем её починить.
+ */
+function CardReview() {
+  const [state, setState] = useState<
+    { status: "idle" } | { status: "busy" } | { status: "done"; review: CompanyReview }
+  >({ status: "idle" });
+
+  const run = async () => {
+    setState({ status: "busy" });
+    try {
+      const review = await reviewCompanyCard();
+      setState({ status: "done", review });
+    } catch {
+      setState({ status: "idle" });
+      toast.error("Не удалось разобрать карточку. Попробуйте ещё раз.");
+    }
+  };
+
+  const review = state.status === "done" ? state.review : null;
+
+  return (
+    <div className="surface-card mt-4 p-5">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h3 className="font-display text-base font-semibold">Проверка карточки</h3>
+          <p className="mt-0.5 text-sm text-muted-foreground">
+            Посмотрим, чего не хватает и что стоит переписать.
+          </p>
+        </div>
+        <Button onClick={() => void run()} disabled={state.status === "busy"}>
+          {state.status === "busy" ? "Смотрю…" : "Проверить"}
+        </Button>
+      </div>
+
+      {review ? (
+        <div className="mt-4 space-y-4">
+          {review.gaps.length ? (
+            <div>
+              <p className="text-sm font-medium">Не заполнено</p>
+              <ul className="mt-2 space-y-1.5">
+                {review.gaps.map((gap) => (
+                  <li key={gap.id} className="text-sm">
+                    <span
+                      className={cn(
+                        "font-medium",
+                        gap.required ? "text-destructive" : "text-foreground",
+                      )}
+                    >
+                      {gap.label}
+                      {gap.required ? " · обязательно" : ""}
+                    </span>
+                    <span className="text-muted-foreground"> — {gap.hint}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : (
+            <p className="text-sm text-success">Всё обязательное заполнено.</p>
+          )}
+
+          {review.ai === null ? (
+            <p className="text-sm text-muted-foreground">
+              Разбор текста не выполнялся: у платформы не задан ключ AI.
+            </p>
+          ) : review.ai.ok ? (
+            review.ai.notes.length ? (
+              <div>
+                <p className="text-sm font-medium">Замечания AI</p>
+                <ul className="mt-2 space-y-1.5">
+                  {review.ai.notes.map((note) => (
+                    <li key={note} className="text-sm text-muted-foreground">
+                      {note}
+                    </li>
+                  ))}
+                </ul>
+                <p className="mt-2 text-xs text-muted-foreground">
+                  Это подсказки, а не правила: решаете вы.
+                </p>
+              </div>
+            ) : (
+              <p className="text-sm text-success">К тексту карточки замечаний нет.</p>
+            )
+          ) : (
+            <p className="text-sm text-destructive">Разбор не удался: {review.ai.error}</p>
+          )}
+        </div>
+      ) : null}
     </div>
   );
 }
