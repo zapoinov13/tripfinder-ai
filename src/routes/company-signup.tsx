@@ -83,6 +83,8 @@ function CompanySignupPage() {
   const [pendingEmail, setPendingEmail] = useState("");
   const [step, setStep] = useState(0);
   const [saving, setSaving] = useState(false);
+  // Ошибку держим на экране: тост исчезает, а разбираться человеку ещё надо.
+  const [failure, setFailure] = useState("");
 
   const [person, setPerson] = useState({
     firstName: "",
@@ -204,16 +206,31 @@ function CompanySignupPage() {
       website: company.website,
       contactPerson,
     };
-    const res = isAuthenticated
-      ? await registerCompanyForCurrentUser(companyInput)
-      : await registerOperator({
-          name: contactPerson || company.name,
-          email: person.email,
-          ...(person.password ? { password: person.password } : {}),
-          company: companyInput,
-        });
-    setSaving(false);
+    // Раньше здесь не было ни try, ни finally: любая неожиданность внутри — и
+    // кнопка навсегда оставалась в состоянии «Создаём…». Именно так и вышло:
+    // аккаунт завёлся, компания нет, а человек смотрел на застывшую кнопку и не
+    // знал ни что случилось, ни что делать дальше. Молчаливое зависание хуже
+    // любой ошибки: с ошибкой понятно хотя бы куда идти.
+    let res: Awaited<ReturnType<typeof registerCompanyForCurrentUser>>;
+    try {
+      res = isAuthenticated
+        ? await registerCompanyForCurrentUser(companyInput)
+        : await registerOperator({
+            name: contactPerson || company.name,
+            email: person.email,
+            ...(person.password ? { password: person.password } : {}),
+            company: companyInput,
+          });
+    } catch (error) {
+      res = {
+        ok: false,
+        error: error instanceof Error ? error.message : "Не удалось создать компанию",
+      };
+    } finally {
+      setSaving(false);
+    }
     if (!res.ok) {
+      if (res.error !== "CONFIRM_EMAIL") setFailure(res.error ?? "Не удалось создать компанию");
       if (res.error === "CONFIRM_EMAIL") {
         // Компания достроится сама после подтверждения почты и входа.
         try {
@@ -438,7 +455,18 @@ function CompanySignupPage() {
                 </Button>
               ) : (
                 <div className="space-y-2 text-right">
-                  <Button onClick={() => void submit()} disabled={saving}>
+                  {failure ? (
+                    <p className="rounded-xl bg-destructive/10 px-4 py-2.5 text-left text-sm text-destructive">
+                      {failure}
+                    </p>
+                  ) : null}
+                  <Button
+                    onClick={() => {
+                      setFailure("");
+                      void submit();
+                    }}
+                    disabled={saving}
+                  >
                     <Check className="size-4" />
                     {saving ? "Создаём…" : "Создать компанию"}
                   </Button>
