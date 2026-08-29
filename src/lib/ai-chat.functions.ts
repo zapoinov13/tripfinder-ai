@@ -108,7 +108,8 @@ export const aiChat = createServerFn({ method: "POST" })
     try {
       const { getSupabaseAdmin } = await import("@/lib/supabase/admin.server");
       const supabaseAdmin = getSupabaseAdmin();
-      const rpc = supabaseAdmin.rpc as unknown as (
+      // bind: без него метод теряет объект и падает на this.rest.
+      const rpc = supabaseAdmin.rpc.bind(supabaseAdmin) as unknown as (
         name: string,
         args: {
           p_bucket: string;

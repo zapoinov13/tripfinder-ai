@@ -171,7 +171,8 @@ function AdminOperatorsPage() {
       toast.error("Supabase не настроен");
       return;
     }
-    const rpc = sb.rpc as unknown as (
+    // bind: без него метод теряет объект и падает на this.rest.
+    const rpc = sb.rpc.bind(sb) as unknown as (
       fn: string,
       args: Record<string, unknown>,
     ) => Promise<{ error: { message: string } | null }>;

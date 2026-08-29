@@ -43,15 +43,35 @@ function RegistrationPage() {
     <SiteLayout hideTabBar>
       <div className="container-page py-10">
         <div className="mx-auto max-w-3xl">
-          <h1 className="font-display text-3xl font-semibold md:text-4xl">Регистрация</h1>
+          <h1 className="font-display text-3xl font-semibold md:text-4xl">Кто вы?</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Туристу — аккаунт за минуту. Компании — отдельная короткая анкета с категорией и
-            услугами.
+            От ответа зависит всё дальнейшее: у туриста и у бизнеса разные кабинеты и разные
+            вопросы. Поменять потом можно, но проще выбрать сразу.
           </p>
+
+          {/* Вкладки для этого не годились: их легко проскочить, не заметив, и
+              человек заполнял чужую форму. Это первый и главный вопрос —
+              значит он и должен выглядеть вопросом. */}
           <Tabs defaultValue="tourist" className="mt-8">
-            <TabsList>
-              <TabsTrigger value="tourist">Турист</TabsTrigger>
-              <TabsTrigger value="company">Компания</TabsTrigger>
+            <TabsList className="grid h-auto w-full grid-cols-1 gap-3 bg-transparent p-0 sm:grid-cols-2">
+              <TabsTrigger
+                value="tourist"
+                className="h-auto flex-col items-start gap-1 rounded-2xl border border-border p-5 text-left data-[state=active]:border-primary data-[state=active]:bg-primary-soft data-[state=active]:shadow-none"
+              >
+                <span className="font-display text-base font-semibold">Я турист</span>
+                <span className="text-xs font-normal text-muted-foreground">
+                  Искать поездки, оставлять заявки компаниям, копить бонусы.
+                </span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="company"
+                className="h-auto flex-col items-start gap-1 rounded-2xl border border-border p-5 text-left data-[state=active]:border-primary data-[state=active]:bg-primary-soft data-[state=active]:shadow-none"
+              >
+                <span className="font-display text-base font-semibold">У меня бизнес</span>
+                <span className="text-xs font-normal text-muted-foreground">
+                  Турфирма, экскурсии, жильё, прокат авто, спорт: своя страница и заявки клиентов.
+                </span>
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="tourist" className="surface-card mt-6 p-6 md:p-8">
@@ -147,12 +167,13 @@ function RegistrationPage() {
                 Подключение компании — в отдельной анкете
               </h2>
               <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted-foreground">
-                Шесть коротких шагов: контакт, компания, категория (туры, экскурсии, жильё, аренда
-                авто, спорт, трансферы или помощь), услуги, страны и языки. Кабинет откроется сразу
-                — знак «Проверенная компания» появится после документов.
+                Три коротких шага: чем занимаетесь (туры, экскурсии, жильё, аренда авто, спорт,
+                трансферы или помощь), ваш контакт, название и город. Остальное — в кабинете, где
+                видно, как карточка выглядит для туриста. Кабинет откроется сразу; знак «Проверена»
+                появится после того, как мы посмотрим документы.
               </p>
               <ol className="mt-4 grid gap-2 text-sm text-foreground/80">
-                <li>1. Заполняете анкету — кабинет открывается сразу.</li>
+                <li>1. Выбираете категорию — от неё зависит весь кабинет.</li>
                 <li>2. Публикуете страницу компании и объявления.</li>
                 <li>3. Принимаете заявки и записи клиентов.</li>
               </ol>
