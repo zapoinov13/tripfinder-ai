@@ -212,7 +212,9 @@ function CompanyPage() {
   const listedByPlatform = company.listedByPlatform === true;
   // Знак проверки — только тем, кто прошёл модерацию как партнёр. Карточка,
   // которую завела сама платформа, «проверенной» называться не может.
-  const verified = company.status === "APPROVED" && !listedByPlatform;
+  // Знак доверия — только по проверенным документам. Статус его больше не
+  // даёт: компании открываются сразу, и по статусу «проверена» была бы каждая.
+  const verified = Boolean(company.documentsVerifiedAt) && !listedByPlatform;
   const wa = company.whatsapp?.replace(/\D/g, "") || company.phone?.replace(/\D/g, "") || "";
   const mapsUrl = company.address
     ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
