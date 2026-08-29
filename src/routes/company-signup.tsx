@@ -181,7 +181,12 @@ function CompanySignupPage() {
       return Boolean(
         person.firstName.trim() &&
         parsePhoneDigits(person.phone).length >= 11 &&
-        person.email.trim(),
+        person.email.trim() &&
+        // Пароль обязателен. Раньше его можно было пропустить, и тогда
+        // аккаунту доставался запасной пароль из кода — а код уезжает в
+        // браузер. То есть в кабинет такой компании входил любой, кто знает
+        // её почту.
+        person.password.trim().length >= 8,
       );
     }
     if (step === 1) return Boolean(company.name.trim() && company.city.trim());
@@ -387,7 +392,7 @@ function CompanySignupPage() {
                     type="password"
                     value={person.password}
                     onChange={(v) => setPerson({ ...person, password: v })}
-                    hint="Минимум 8 символов. Если оставить пустым, кабинет всё равно откроется."
+                    hint="Минимум 8 символов. С ним вы будете входить в кабинет компании."
                   />
                 </div>
               </div>
