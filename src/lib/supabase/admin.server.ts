@@ -54,10 +54,37 @@ function createSupabaseFetch(supabaseKey: string): typeof fetch {
 
 let client: SupabaseClient | null = null;
 
+/**
+ * Какие переменные окружения сервер вообще видит.
+ *
+ * Отдаём только имена и «есть/нет», без значений: служебный ключ в сообщении об
+ * ошибке — это тот же служебный ключ, только на экране.
+ *
+ * Нужно вот зачем. Хостинг может честно показывать переменную в своей панели, а
+ * до кода она не доезжать — не тот сборочный пресет, не та область видимости,
+ * не пересобрано после добавления. Снаружи это неотличимо от «переменную не
+ * добавили», и владелец добавляет её снова и снова. Список видимых имён
+ * отвечает на этот вопрос за секунду.
+ */
+function visibleEnv(): string[] {
+  const names = [
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "TOURGO_SERVICE_ROLE_KEY",
+    "SUPABASE_URL",
+    "LOVABLE_API_KEY",
+    "VERCEL",
+    "VERCEL_ENV",
+  ];
+  const env = (globalThis as { process?: { env?: Record<string, string | undefined> } }).process
+    ?.env;
+  if (!env) return [];
+  return names.filter((name) => Boolean(env[name]));
+}
+
 /** Куда смотрит служебный клиент — для честного сообщения об ошибке. */
-export function adminTarget(): { projectId: string; hasKey: boolean } {
+export function adminTarget(): { projectId: string; hasKey: boolean; env: string[] } {
   const { key, projectId } = resolveAdminConfig();
-  return { projectId, hasKey: Boolean(key) };
+  return { projectId, hasKey: Boolean(key), env: visibleEnv() };
 }
 
 export function getSupabaseAdmin(): SupabaseClient {
