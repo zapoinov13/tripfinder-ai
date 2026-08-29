@@ -181,3 +181,15 @@ OWNER_EMAIL=<ваш email> OWNER_PASSWORD=<пароль> npm run ensure:admin
 ## Security
 
 Не коммитить DB password и service_role.
+
+## Проверка: что из миграций уже применено
+
+Не помните, залили ли последние части? Откройте
+[SQL Editor](https://supabase.com/dashboard/project/mgyufoyornzbwvgdfojb/sql/new),
+вставьте целиком `supabase/CHECK.sql` и нажмите Run. Ничего не меняет, только
+читает. В ответе таблица: «есть» — часть на месте, «НЕТ» — эту часть надо
+применить заново из `supabase/APPLY-PENDING.sql` (части независимы, можно
+запускать по одной).
+
+Отдельной строкой проверяется вебхук пуша — его создают не миграцией, а
+формой в дашборде или файлом `supabase/PUSH-WEBHOOK.sql`.

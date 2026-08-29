@@ -28,7 +28,12 @@ const capacitorSsrExternals = [
 ];
 
 /** Продовый origin, на который SPA-бандл шлёт server-function RPC. */
-const SERVER_ORIGIN = process.env.CAPACITOR_SERVER_ORIGIN ?? "https://tripfinder-ai.vercel.app";
+// Боевой адрес деплоя: сюда мобильное приложение ходит за серверными
+// функциями (AI-подбор, Premium). Прежний адрес без «-swart» не существует —
+// в приложении эти вызовы уходили в никуда. При переезде на свой домен
+// достаточно задать CAPACITOR_SERVER_ORIGIN в окружении сборки.
+const SERVER_ORIGIN =
+  process.env.CAPACITOR_SERVER_ORIGIN ?? "https://tripfinder-ai-swart.vercel.app";
 
 export default defineConfig({
   // Nitro (deploy-таргет Cloudflare/Vercel) в мобильном бандле не нужен.
