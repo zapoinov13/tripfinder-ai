@@ -155,7 +155,11 @@ async function callRegisterCompanyRpc(
   company: CompanyInput,
   fallbackEmail: string,
 ): Promise<{ org: OrgRpcRow | null; error: string | null }> {
-  const rpc = sb.rpc as unknown as (
+  // bind обязателен: supabase-js внутри rpc обращается к this.rest, а метод,
+  // положенный в переменную, теряет объект — и падает с «Cannot read
+  // properties of undefined (reading 'rest')». Именно из-за этого компания не
+  // создавалась ни разу: аккаунт заводился, а следующий шаг умирал молча.
+  const rpc = sb.rpc.bind(sb) as unknown as (
     fn: "register_company",
     args: Record<string, string>,
   ) => PromiseLike<{ data: OrgRpcRow | null; error: { message: string } | null }>;

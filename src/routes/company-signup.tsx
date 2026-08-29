@@ -382,8 +382,12 @@ function CompanySignupPage() {
                         // Одна категория за раз: кабинет и витрина строятся
                         // вокруг неё, а «и туры, и прокат» превращают карточку
                         // в свалку, где турист не понимает, куда попал.
-                        setCategories(on ? [] : [category.id]);
+                        setCategories([category.id]);
                         setServices([]);
+                        // Выбор один — значит выбор и есть ответ. Просить после
+                        // него нажать «Далее» — лишний шаг: человек уже сказал
+                        // всё, что от него хотели на этом экране.
+                        setStep((s) => s + 1);
                       }}
                       className={cn(
                         "rounded-2xl border p-4 text-left transition-colors",
@@ -482,7 +486,7 @@ function CompanySignupPage() {
                 <ArrowLeft className="size-4" />
                 Назад
               </Button>
-              {step < steps.length - 1 ? (
+              {step === 0 ? null : step < steps.length - 1 ? (
                 <Button
                   onClick={() => {
                     if (!canContinue()) {
