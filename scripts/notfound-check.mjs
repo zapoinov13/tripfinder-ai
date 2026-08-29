@@ -28,6 +28,25 @@ const MISSING = [
   "/takoy-stranicy-net",
 ];
 
+/**
+ * Запрос с повтором.
+ *
+ * Проверка ходит по сети, а сеть иногда рвётся: один разрыв не должен
+ * читаться как «сайт сломан». Три попытки с паузой — и только потом ошибка.
+ */
+async function get(url, init) {
+  let last;
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
+    try {
+      return await fetch(url, init);
+    } catch (error) {
+      last = error;
+      if (attempt < 3) await new Promise((r) => setTimeout(r, attempt * 1500));
+    }
+  }
+  throw last;
+}
+
 let bad = 0;
 const check = (ok, msg) => {
   if (!ok) bad += 1;
@@ -36,7 +55,7 @@ const check = (ok, msg) => {
 
 console.log(`Ненайденные адреса ${BASE}\n`);
 for (const path of MISSING) {
-  const res = await fetch(BASE + path, { redirect: "manual" });
+  const res = await get(BASE + path, { redirect: "manual" });
   check(res.status === 404, `${path} — ${res.status}${res.status === 404 ? "" : " вместо 404"}`);
 }
 
@@ -47,7 +66,7 @@ console.log("");
 // публичный, представление открыто анонимному посетителю.
 const SUPABASE_URL = "https://mgyufoyornzbwvgdfojb.supabase.co";
 const SUPABASE_KEY = "sb_publishable_cykIutJS18rku4zxUBMkLw_LqXt9hag";
-const rows = await fetch(`${SUPABASE_URL}/rest/v1/organizations_public?select=id,name&limit=1`, {
+const rows = await get(`${SUPABASE_URL}/rest/v1/organizations_public?select=id,name&limit=1`, {
   headers: { apikey: SUPABASE_KEY, authorization: `Bearer ${SUPABASE_KEY}` },
 })
   .then((r) => (r.ok ? r.json() : []))
@@ -57,7 +76,7 @@ if (rows.length === 0) {
   console.log("--   живых компаний в базе нет, страницу существующей проверять не на чем");
 } else {
   const { id, name } = rows[0];
-  const res = await fetch(`${BASE}/company/${id}`);
+  const res = await get(`${BASE}/company/${id}`);
   const html = await res.text();
   check(res.status === 200, `/company/${id} — ${res.status}`);
   check(!/Компания не найдена/.test(html), `/company/${id} — открылась собой, а не «не найдена»`);

@@ -24,6 +24,25 @@ const EXPECT = [
   ["strict-transport-security", (v) => /max-age=(\d+)/.test(v) && Number(RegExp.$1) >= 31536000],
 ];
 
+/**
+ * Запрос с повтором.
+ *
+ * Проверка ходит по сети, а сеть иногда рвётся: один разрыв не должен
+ * читаться как «сайт сломан». Три попытки с паузой — и только потом ошибка.
+ */
+async function get(url, init) {
+  let last;
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
+    try {
+      return await fetch(url, init);
+    } catch (error) {
+      last = error;
+      if (attempt < 3) await new Promise((r) => setTimeout(r, attempt * 1500));
+    }
+  }
+  throw last;
+}
+
 let bad = 0;
 const check = (ok, msg) => {
   if (!ok) bad += 1;
@@ -32,7 +51,7 @@ const check = (ok, msg) => {
 
 console.log(`Заголовки ${BASE}\n`);
 for (const path of PATHS) {
-  const res = await fetch(BASE + path, { redirect: "manual" });
+  const res = await get(BASE + path, { redirect: "manual" });
   for (const [name, valid] of EXPECT) {
     const value = res.headers.get(name);
     check(Boolean(value) && valid(value), `${path} — ${name}${value ? "" : " (отсутствует)"}`);
