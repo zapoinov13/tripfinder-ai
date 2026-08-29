@@ -292,9 +292,15 @@ function AdminDashboard() {
             <p className="mt-1 text-muted-foreground">
               Причина: {load.reason}. Показаны данные локального хранилища — они могут быть
               неполными.
-              {load.reason.toLowerCase().includes("admin_overview_stats")
-                ? " Примените миграцию supabase/migrations/20260826090000_admin_overview_stats.sql в SQL Editor."
-                : ""}
+              {/* «Отказано в правах» и «функции нет» — разные беды, и совет по ним
+                  противоположный. Раньше по обеим предлагалось применить миграцию;
+                  когда функция на месте, а отвалился вход, это уводило искать
+                  поломку в базе вместо того, чтобы просто войти заново. */}
+              {/permission denied|доступ|unauthorized/i.test(load.reason)
+                ? " Функция в базе есть, но вызвать её некому: похоже, истёк вход. Выйдите и войдите заново."
+                : /does not exist|not found|PGRST202/i.test(load.reason)
+                  ? " Примените миграцию supabase/migrations/20260826090000_admin_overview_stats.sql в SQL Editor."
+                  : ""}
             </p>
           </div>
         </div>
