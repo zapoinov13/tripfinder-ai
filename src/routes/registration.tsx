@@ -43,33 +43,35 @@ function RegistrationPage() {
     <SiteLayout hideTabBar>
       <div className="container-page py-10">
         <div className="mx-auto max-w-3xl">
-          <h1 className="font-display text-3xl font-semibold md:text-4xl">Кто вы?</h1>
+          <h1 className="font-display text-3xl font-semibold md:text-4xl">Регистрация</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            От ответа зависит всё дальнейшее: у туриста и у бизнеса разные кабинеты и разные
-            вопросы. Поменять потом можно, но проще выбрать сразу.
+            Кабинеты туриста и бизнеса устроены по-разному, поэтому сначала выберите свой. Поменять
+            можно и позже.
           </p>
 
-          {/* Вкладки для этого не годились: их легко проскочить, не заметив, и
-              человек заполнял чужую форму. Это первый и главный вопрос —
-              значит он и должен выглядеть вопросом. */}
+          {/* Выбор роли сделан карточками, а не вкладками: вкладки легко
+              проскочить, не заметив, и человек заполнял чужую форму.
+              whitespace-normal обязателен: стандартная кнопка вкладки запрещает
+              перенос строк, и описание выезжало за край карточки. */}
           <Tabs defaultValue="tourist" className="mt-8">
-            <TabsList className="grid h-auto w-full grid-cols-1 gap-3 bg-transparent p-0 sm:grid-cols-2">
+            <TabsList className="grid h-auto w-full grid-cols-1 items-stretch gap-3 bg-transparent p-0 sm:grid-cols-2">
               <TabsTrigger
                 value="tourist"
-                className="h-auto flex-col items-start gap-1 rounded-2xl border border-border p-5 text-left data-[state=active]:border-primary data-[state=active]:bg-primary-soft data-[state=active]:shadow-none"
+                className="h-full flex-col items-start justify-start gap-1.5 rounded-2xl border border-border bg-card p-5 text-left whitespace-normal data-[state=active]:border-primary data-[state=active]:bg-primary-soft data-[state=active]:shadow-none"
               >
-                <span className="font-display text-base font-semibold">Я турист</span>
-                <span className="text-xs font-normal text-muted-foreground">
-                  Искать поездки, оставлять заявки компаниям, копить бонусы.
+                <span className="font-display text-base font-semibold">Турист</span>
+                <span className="text-xs leading-relaxed font-normal text-muted-foreground">
+                  Ищу и бронирую поездки, оставляю заявки, коплю бонусы.
                 </span>
               </TabsTrigger>
               <TabsTrigger
                 value="company"
-                className="h-auto flex-col items-start gap-1 rounded-2xl border border-border p-5 text-left data-[state=active]:border-primary data-[state=active]:bg-primary-soft data-[state=active]:shadow-none"
+                className="h-full flex-col items-start justify-start gap-1.5 rounded-2xl border border-border bg-card p-5 text-left whitespace-normal data-[state=active]:border-primary data-[state=active]:bg-primary-soft data-[state=active]:shadow-none"
               >
-                <span className="font-display text-base font-semibold">У меня бизнес</span>
-                <span className="text-xs font-normal text-muted-foreground">
-                  Турфирма, экскурсии, жильё, прокат авто, спорт: своя страница и заявки клиентов.
+                <span className="font-display text-base font-semibold">Стать партнёром</span>
+                <span className="text-xs leading-relaxed font-normal text-muted-foreground">
+                  Подключить турфирму, экскурсии, жильё, прокат авто или спорт — своя страница и
+                  заявки клиентов.
                 </span>
               </TabsTrigger>
             </TabsList>
@@ -164,7 +166,7 @@ function RegistrationPage() {
                 <Building2 className="size-6" />
               </span>
               <h2 className="mt-4 font-display text-xl font-semibold">
-                Подключение компании — в отдельной анкете
+                Подключение партнёра — короткая анкета
               </h2>
               <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted-foreground">
                 Три коротких шага: чем занимаетесь (туры, экскурсии, жильё, аренда авто, спорт,
