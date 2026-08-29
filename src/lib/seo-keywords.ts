@@ -14,6 +14,8 @@
  * формулировка меняется.
  */
 
+import { matchesQuery } from "@/lib/search-text";
+
 /** Разделы витрин: по ним же строятся адреса. */
 export type Vertical = "tours" | "excursions" | "stays" | "cars" | "sport" | "assistance";
 
@@ -241,3 +243,36 @@ export function vitrineDescription(
   const base = VERTICAL_SEO[vertical].description(city);
   return minPriceLabel ? `${base} Цены от ${minPriceLabel}.` : base;
 }
+
+/**
+ * Какой раздел человек имел в виду.
+ *
+ * Поиск на главной ищет туры, а пишут в него что угодно: «падел», «квартира
+ * посуточно», «прокат авто». Раньше такой запрос давал ноль и тупик. Теперь по
+ * тем же ключевым словам, что и заголовки, определяем раздел и предлагаем
+ * открыть его — это работает даже при пустом каталоге туров.
+ */
+export function guessVertical(query: string): Vertical | null {
+  const text = query.trim().toLowerCase();
+  if (text.length < 3) return null;
+
+  let best: { vertical: Vertical; score: number } | null = null;
+  for (const [vertical, meta] of Object.entries(VERTICAL_SEO) as [Vertical, VerticalSeo][]) {
+    let score = 0;
+    for (const keyword of meta.keywords) {
+      if (matchesQuery(text, keyword)) score += keyword.includes(" ") ? 2 : 1;
+    }
+    if (score > 0 && (!best || score > best.score)) best = { vertical, score };
+  }
+  return best ? best.vertical : null;
+}
+
+/** Адрес раздела: одна таблица на весь сайт, чтобы ссылки не расходились. */
+export const VERTICAL_PATH: Record<Vertical, string> = {
+  tours: "/search",
+  excursions: "/excursions",
+  stays: "/stays",
+  cars: "/cars",
+  sport: "/sport",
+  assistance: "/assistance",
+};

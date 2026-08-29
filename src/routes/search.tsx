@@ -1,5 +1,6 @@
-import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
+import { Link, createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import {
+  ArrowRight,
   Check,
   LayoutGrid,
   MapPin,
@@ -49,6 +50,7 @@ import {
 } from "@/lib/search";
 import { cn } from "@/lib/utils";
 import { seo } from "@/lib/seo";
+import { VERTICAL_PATH, VERTICAL_SEO, guessVertical } from "@/lib/seo-keywords";
 
 export const Route = createFileRoute("/search")({
   validateSearch: validateSearchParams,
@@ -529,6 +531,12 @@ function SearchPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [params.q, params.city, listingsVersion],
   );
+  /** Раздел, которому запрос подходит больше, чем турам. */
+  const otherVertical = useMemo(() => {
+    const guess = guessVertical(params.q ?? "");
+    return guess && guess !== "tours" ? guess : null;
+  }, [params.q]);
+
   const cheapest = useMemo(
     () =>
       results.reduce<number | null>(
@@ -844,6 +852,28 @@ function SearchPage() {
               </div>
             ) : null}
 
+            {/* «падел», «квартира посуточно», «прокат авто» — это не туры, а
+                другой раздел. Раньше такой запрос упирался в ноль. */}
+            {otherVertical ? (
+              <Link
+                to={VERTICAL_PATH[otherVertical]}
+                search={{ ...(params.q ? { q: params.q } : {}) } as never}
+                className="surface-card mt-5 flex items-center gap-3 p-4 transition-colors hover:border-primary/40"
+              >
+                <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary-soft text-primary">
+                  <ArrowRight className="size-5" />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block text-sm font-semibold">
+                    Похоже, вы ищете раздел «{VERTICAL_SEO[otherVertical].noun}»
+                  </span>
+                  <span className="block text-sm text-muted-foreground">
+                    Здесь ищутся туры. Открыть подходящий раздел с этим же запросом →
+                  </span>
+                </span>
+              </Link>
+            ) : null}
+
             <BusinessResults hits={businessHits} />
 
             {loading ? (
@@ -869,7 +899,29 @@ function SearchPage() {
                     ? "Зато нашлись компании по вашему запросу — они выше. Или снимите пару фильтров."
                     : "Снимите пару фильтров или выберите другую страну. Варианты появятся сразу."}
                 </p>
-                <div className="mt-5 flex flex-wrap justify-center gap-2">
+                {/* Готового тура нет — это не тупик: заявка работает и тогда,
+                    когда в каталоге ещё нечего показать. Компании соберут
+                    вариант под условия и пришлют цену сами. */}
+                <Button className="mt-5 h-12 w-full sm:w-auto" asChild>
+                  <Link
+                    to="/request"
+                    search={
+                      {
+                        ...(params.destination ? { destination: params.destination } : {}),
+                        ...(params.from ? { from: params.from } : {}),
+                        ...(params.city ? { city: params.city } : {}),
+                        ...(params.q ? { wish: params.q } : {}),
+                      } as never
+                    }
+                  >
+                    Отправить запрос турфирмам
+                  </Link>
+                </Button>
+                <p className="mt-2 text-xs text-muted-foreground">
+                  Опишете поездку один раз — предложения пришлют несколько компаний.
+                </p>
+
+                <div className="mt-6 flex flex-wrap justify-center gap-2">
                   {destinations.slice(0, 4).map((dest) => (
                     <Button
                       key={dest.id}
@@ -881,7 +933,7 @@ function SearchPage() {
                     </Button>
                   ))}
                 </div>
-                <Button className="mt-4" onClick={reset} variant="outline">
+                <Button className="mt-4" onClick={reset} variant="ghost" size="sm">
                   Сбросить фильтры
                 </Button>
               </div>

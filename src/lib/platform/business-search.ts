@@ -3,6 +3,7 @@ import type { Organization } from "./types";
 import { listPublishedVertical } from "./vertical-listings";
 import type { VerticalListing } from "./vertical-listings";
 import { categoriesOfServices } from "./company-categories";
+import { matchesQuery } from "@/lib/search-text";
 
 export type BusinessHit = {
   company: Organization;
@@ -55,10 +56,14 @@ export function searchBusinesses(query: string, city?: string): BusinessHit[] {
       add(company, listing);
       continue;
     }
-    const haystack = norm(
-      `${listing.name} ${listing.kind} ${listing.city} ${listing.area} ${listing.companyName}`,
-    );
-    if (haystack.includes(needle)) add(company, listing);
+    if (
+      matchesQuery(
+        `${listing.name} ${listing.kind} ${listing.city} ${listing.area} ${listing.companyName}`,
+        needle,
+      )
+    ) {
+      add(company, listing);
+    }
   }
 
   // Компания могла совпасть названием или услугой, даже без подходящих карточек.
@@ -69,8 +74,9 @@ export function searchBusinesses(query: string, city?: string): BusinessHit[] {
     const isBusiness = cats.has("sport") || cats.has("stays") || cats.has("cars");
     if (!isBusiness) continue;
     if (!needle) continue;
-    const haystack = norm(`${company.name} ${services.join(" ")} ${company.city}`);
-    if (haystack.includes(needle)) add(company);
+    if (matchesQuery(`${company.name} ${services.join(" ")} ${company.city}`, needle)) {
+      add(company);
+    }
   }
 
   return [...hits.values()]
