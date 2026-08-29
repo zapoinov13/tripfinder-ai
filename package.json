@@ -34,7 +34,8 @@
     "consultant:check": "node scripts/consultant-check.mjs",
     "aikeys:check": "node scripts/ai-keys-check.mjs",
     "headers:check": "node scripts/headers-check.mjs",
-    "notfound:check": "node scripts/notfound-check.mjs"
+    "notfound:check": "node scripts/notfound-check.mjs",
+    "router:check": "node scripts/router-check.mjs"
   },
   "dependencies": {
     "@capacitor-community/apple-sign-in": "^7.1.0",

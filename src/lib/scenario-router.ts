@@ -1,6 +1,26 @@
 import { destinations, resortsByDestination } from "@/data/demo";
 import { carClasses, sportKinds } from "@/data/scenario-catalog";
 import { travelScenarios, type TravelScenarioId } from "@/data/scenarios";
+import { normalizeSearchText, wordKey } from "@/lib/search-text";
+
+/**
+ * Запрос и признаки — в одном виде: латиница без окончаний.
+ *
+ * Раньше здесь сравнивались сырые подстроки, и разбор понимал только кириллицу
+ * в точной форме. «Otel v dubae» не попадал ни в раздел, ни в направление —
+ * фраза уходила в общий поиск как есть, хотя рядом, в поиске по каталогу, та же
+ * машинерия ключей давно работает. Приводим обе стороны к её ключам: «отель»,
+ * «otel» и «экскурсии» с любым окончанием сходятся сами.
+ */
+function keyOf(text: string): string {
+  return normalizeSearchText(text).split(" ").filter(Boolean).map(wordKey).join(" ");
+}
+
+/** Проверка «встречается ли хоть один признак» по ключам, а не по буквам. */
+function matcher(query: string): (...tokens: string[]) => boolean {
+  const hay = keyOf(query);
+  return (...tokens) => tokens.some((token) => hay.includes(keyOf(token)));
+}
 
 export type ScenarioRoute = {
   to: (typeof travelScenarios)[number]["to"];
@@ -28,19 +48,19 @@ const placeAliases: Array<{ destination: string; city?: string; tokens: string[]
 ];
 
 export function placeFromQuery(query: string): { destination?: string; city?: string } {
-  const n = query.toLowerCase();
+  const has = matcher(query);
   for (const alias of placeAliases) {
-    if (alias.tokens.some((token) => n.includes(token))) {
+    if (has(...alias.tokens)) {
       return { destination: alias.destination, ...(alias.city ? { city: alias.city } : {}) };
     }
   }
   for (const dest of destinations) {
     for (const resort of resortsByDestination[dest.id] ?? []) {
-      if (n.includes(resort.name.toLowerCase())) {
+      if (has(resort.name)) {
         return { destination: dest.id, city: resort.name };
       }
     }
-    if (n.includes(dest.country.toLowerCase()) || n.includes(dest.city.toLowerCase())) {
+    if (has(dest.country, dest.city)) {
       return { destination: dest.id, city: dest.city };
     }
   }
@@ -48,56 +68,27 @@ export function placeFromQuery(query: string): { destination?: string; city?: st
 }
 
 function pickKind(query: string, items: ReadonlyArray<{ id: string; label: string }>) {
-  const n = query.toLowerCase();
-  return items.find((item) => n.includes(item.id) || n.includes(item.label.toLowerCase()))?.id;
+  const has = matcher(query);
+  return items.find((item) => has(item.id, item.label))?.id;
 }
 
 function detectScenario(query: string): TravelScenarioId {
-  const n = query.toLowerCase();
-  const withDriver = n.includes("водител") && !n.includes("без водителя");
-  if (withDriver || n.includes("гид") || n.includes("фотограф") || n.includes("помощь"))
-    return "help";
-  if (
-    n.includes("аренд") ||
-    n.includes("прокат") ||
-    n.includes("машин") ||
-    n.includes("авто") ||
-    n.includes("suv") ||
-    n.includes("кабриолет") ||
-    n.includes("rent a car")
-  ) {
+  const has = matcher(query);
+  const withDriver = has("водител") && !has("без водителя");
+  if (withDriver || has("гид", "фотограф", "помощь")) return "help";
+  if (has("аренд", "прокат", "машин", "авто", "suv", "кабриолет", "rent a car")) {
     return "cars";
   }
   if (
-    sportKinds.some((item) => n.includes(item.id) || n.includes(item.label.toLowerCase())) ||
-    n.includes("спорт") ||
-    n.includes("фитнес") ||
-    n.includes("тренаж") ||
-    n.includes("зал")
+    sportKinds.some((item) => has(item.id, item.label)) ||
+    has("спорт", "фитнес", "тренаж", "зал")
   ) {
     return "sport";
   }
-  if (
-    n.includes("экскур") ||
-    n.includes("сафари") ||
-    n.includes("яхт") ||
-    n.includes("билет") ||
-    n.includes("аквапарк") ||
-    n.includes("обзорн") ||
-    n.includes("burj") ||
-    n.includes("бурдж")
-  ) {
+  if (has("экскур", "сафари", "яхт", "билет", "аквапарк", "обзорн", "burj", "бурдж")) {
     return "excursions";
   }
-  if (
-    n.includes("жиль") ||
-    n.includes("отель") ||
-    n.includes("квартир") ||
-    n.includes("апартамент") ||
-    n.includes("вилл") ||
-    n.includes("hotel") ||
-    n.includes("apartment")
-  ) {
+  if (has("жиль", "отель", "квартир", "апартамент", "вилл", "hotel", "apartment")) {
     return "stays";
   }
   return "tours";
@@ -121,12 +112,12 @@ export function routeTravelIntent(query: string): ScenarioRoute {
     if (kind) search["kind"] = kind;
   }
   if (item.id === "stays") {
-    const q = query.toLowerCase();
-    if (q.includes("апартамент") || q.includes("apartment")) search["kind"] = "apartment";
-    else if (q.includes("квартир")) search["kind"] = "flat";
-    else if (q.includes("вилл") || q.includes("villa")) search["kind"] = "villa";
-    else if (q.includes("дом") || q.includes("house")) search["kind"] = "house";
-    else if (q.includes("отел") || q.includes("hotel")) search["kind"] = "hotel";
+    const has = matcher(query);
+    if (has("апартамент", "apartment")) search["kind"] = "apartment";
+    else if (has("квартир")) search["kind"] = "flat";
+    else if (has("вилл", "villa")) search["kind"] = "villa";
+    else if (has("дом", "house")) search["kind"] = "house";
+    else if (has("отел", "hotel")) search["kind"] = "hotel";
   }
   if (item.id === "cars") {
     const klass = pickKind(
