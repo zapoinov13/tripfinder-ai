@@ -1,7 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { KeyRound, Loader2, RotateCcw, Search, Sparkles } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import {
+  CheckCircle2,
+  ExternalLink,
+  KeyRound,
+  Loader2,
+  RotateCcw,
+  Search,
+  Sparkles,
+} from "lucide-react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 
 import { KpiLinkCard, formatRelativeRu, userName } from "@/components/admin";
@@ -20,7 +28,14 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { formatNumber } from "@/data/demo";
-import { getAiSettings, saveAiSettings, testAiSettings } from "@/lib/ai-settings.functions";
+import { DEFAULT_SYSTEM_PROMPT } from "@/lib/ai-prompt";
+import { PROVIDER_KEY_SOURCE, PROVIDER_LABEL, detectProviderFromKey } from "@/lib/ai-provider-keys";
+import {
+  getAiSettings,
+  listAiModels,
+  saveAiSettings,
+  testAiSettings,
+} from "@/lib/ai-settings.functions";
 import type { AiSettingsView } from "@/lib/ai-settings.functions";
 import { useRequireAuth } from "@/lib/platform/auth";
 import { usePlatformStore } from "@/lib/platform/hooks";
@@ -32,22 +47,52 @@ export const Route = createFileRoute("/admin/ai-keys")({
   component: AdminAiKeysPage,
 });
 
-const PROVIDERS: Array<{ value: AiSettingsView["provider"]; label: string; model: string }> = [
-  { value: "lovable", label: "Встроенный AI (без ключа)", model: "google/gemini-3-flash" },
-  { value: "openai", label: "OpenAI (ChatGPT)", model: "gpt-4o-mini" },
-  { value: "anthropic", label: "Anthropic Claude", model: "claude-opus-5" },
-  { value: "google", label: "Google Gemini", model: "gemini-2.5-flash" },
-  { value: "openrouter", label: "OpenRouter", model: "openai/gpt-4o-mini" },
-  { value: "custom", label: "Свой OpenAI-совместимый endpoint", model: "" },
+/**
+ * Список провайдеров нужен только для ручного выбора: обычно провайдера
+ * называет сам ключ. Моделей здесь нет намеренно — захардкоженный
+ * идентификатор устаревает молча, а провайдер знает свой список точно.
+ */
+const PROVIDERS: Array<{ value: AiSettingsView["provider"]; label: string }> = [
+  { value: "openai", label: "OpenAI (ChatGPT)" },
+  { value: "anthropic", label: "Anthropic Claude" },
+  { value: "google", label: "Google Gemini" },
+  { value: "openrouter", label: "OpenRouter" },
+  { value: "lovable", label: "Встроенный AI (без ключа)" },
+  { value: "custom", label: "Свой OpenAI-совместимый endpoint" },
 ];
 
-/** Должен совпадать с DEFAULT_SYSTEM_PROMPT в src/lib/ai-provider.server.ts. */
-const DEFAULT_PROMPT =
-  "Ты TourGo AI, travel-консьерж маркетплейса туров. Отвечай кратко, дружелюбно, по-русски. " +
-  "Помогай подобрать тур: уточняй город вылета, направление, даты, количество туристов, бюджет и питание. " +
-  "Если данных достаточно, предложи параметры поиска и следующий шаг.";
-
 const DAY_MS = 86400000;
+
+/**
+ * Один шаг настройки. Номер и подпись сверху, поля под ними: так видно, что
+ * шагов всего три и в каком порядке они идут.
+ */
+function Step({
+  number,
+  title,
+  hint,
+  children,
+}: {
+  number: number;
+  title: string;
+  hint: string;
+  children: ReactNode;
+}) {
+  return (
+    <section className="p-6">
+      <div className="flex items-start gap-3">
+        <span className="grid size-7 shrink-0 place-items-center rounded-full bg-secondary text-sm font-semibold tabular-nums">
+          {number}
+        </span>
+        <div className="min-w-0">
+          <h3 className="font-display text-base font-semibold">{title}</h3>
+          <p className="mt-0.5 text-sm text-muted-foreground">{hint}</p>
+        </div>
+      </div>
+      <div className="mt-4 flex flex-col gap-3 sm:pl-10">{children}</div>
+    </section>
+  );
+}
 
 function AdminAiKeysPage() {
   const { allowed } = useRequireAuth(["PLATFORM_ADMIN"]);
@@ -66,6 +111,10 @@ function AdminAiKeysPage() {
   const [testResult, setTestResult] = useState<{ ok: boolean; text: string; at: string } | null>(
     null,
   );
+  const [models, setModels] = useState<string[] | null>(null);
+  const [modelsError, setModelsError] = useState<string | null>(null);
+  const [modelsBusy, setModelsBusy] = useState(false);
+  const askModels = useServerFn(listAiModels);
 
   const usage = useMemo(() => {
     const weekAgo = Date.now() - 7 * DAY_MS;
@@ -102,6 +151,13 @@ function AdminAiKeysPage() {
       alive = false;
     };
   }, [allowed, load, reloadKey]);
+
+  // Ключ уже сохранён — список моделей нужен сразу, без лишнего нажатия.
+  useEffect(() => {
+    if (!form?.hasKey || models || modelsBusy || modelsError) return;
+    void loadModels(form.provider, "");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form?.hasKey, form?.provider]);
 
   if (!allowed) return null;
 
@@ -152,7 +208,33 @@ function AdminAiKeysPage() {
     }
   };
 
+  /**
+   * Список моделей спрашиваем у провайдера. Ключ из формы отправляем вместе с
+   * запросом: иначе выбрать модель можно было бы только после сохранения —
+   * то есть сохранить вслепую, а потом исправлять.
+   */
+  const loadModels = async (provider: AiSettingsView["provider"], key: string) => {
+    setModelsBusy(true);
+    setModelsError(null);
+    try {
+      const res = await askModels({ data: { provider, apiKey: key } });
+      if (res.ok) {
+        setModels(res.models);
+      } else {
+        setModels(null);
+        setModelsError(res.error);
+      }
+    } catch {
+      setModels(null);
+      setModelsError("Сервер не ответил");
+    } finally {
+      setModelsBusy(false);
+    }
+  };
+
   const providerLabel = PROVIDERS.find((p) => p.value === form?.provider)?.label ?? form?.provider;
+  const detectedProvider = detectProviderFromKey(apiKey);
+  const keySource = form ? PROVIDER_KEY_SOURCE[form.provider] : undefined;
 
   return (
     <DashShell
@@ -274,105 +356,201 @@ function AdminAiKeysPage() {
           </div>
 
           <div className="mt-6 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
-            <div className="surface-card space-y-5 p-6">
-              <h2 className="font-display text-lg font-semibold">Настройки провайдера</h2>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label>Провайдер</Label>
-                  <Select
-                    value={form.provider}
-                    onValueChange={(value) => {
-                      const preset = PROVIDERS.find((p) => p.value === value);
-                      patch({
-                        provider: value as AiSettingsView["provider"],
-                        model: preset?.model || form.model,
-                      });
-                    }}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {PROVIDERS.map((p) => (
-                        <SelectItem key={p.value} value={p.value}>
-                          {p.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="ai-model">Модель</Label>
-                  <Input
-                    id="ai-model"
-                    value={form.model}
-                    onChange={(e) => patch({ model: e.target.value })}
-                    placeholder="gpt-4o-mini"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="ai-base">Base URL (необязательно)</Label>
-                <Input
-                  id="ai-base"
-                  value={form.baseUrl}
-                  onChange={(e) => patch({ baseUrl: e.target.value })}
-                  placeholder="https://api.openai.com/v1"
-                />
-                <p className="text-xs text-muted-foreground">
-                  Оставьте пустым: используется стандартный адрес провайдера.
+            <div className="surface-card divide-y divide-border overflow-hidden p-0">
+              <div className="bg-secondary/30 px-6 py-4">
+                <h2 className="font-display text-lg font-semibold">Подключение модели</h2>
+                <p className="mt-0.5 text-sm text-muted-foreground">
+                  Три шага. После сохранения нажмите «Проверить соединение» наверху.
                 </p>
               </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="ai-key">API-ключ</Label>
+              {/*
+                Шаги, а не свалка полей. Раньше на одном экране лежали рядом
+                провайдер, модель, Base URL и ключ — четыре поля, из которых
+                три зависят от четвёртого, и ни одно не подсказывало, с чего
+                начать. Порядок здесь тот же, что в жизни: сначала ключ,
+                потом модель, потом характер.
+              */}
+              <Step
+                number={1}
+                title="Ключ провайдера"
+                hint="Ключ хранится в закрытой таблице и никогда не отдаётся в браузер."
+              >
                 <Input
                   id="ai-key"
                   type="password"
                   autoComplete="off"
                   value={apiKey}
-                  onChange={(e) => setApiKey(e.target.value)}
-                  placeholder={
-                    form.hasKey ? `Сохранён: ${form.keyMask}, введите новый для замены` : "sk-…"
-                  }
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setApiKey(value);
+                    // Провайдера называет сам ключ — спрашивать не о чем.
+                    const detected = detectProviderFromKey(value);
+                    if (detected && detected !== form.provider) {
+                      patch({ provider: detected, model: "" });
+                      setModels(null);
+                      setModelsError(null);
+                    }
+                  }}
+                  onBlur={() => {
+                    if (apiKey.trim()) void loadModels(form.provider, apiKey.trim());
+                  }}
+                  placeholder={form.hasKey ? `Сохранён: ${form.keyMask}` : "sk-…"}
                 />
-                <p className="text-xs text-muted-foreground">
-                  Ключ хранится в закрытой таблице и никогда не отдаётся в браузер. Встроенному AI
-                  ключ не нужен.
-                </p>
-              </div>
 
-              <div className="space-y-2">
-                <div className="flex items-center justify-between gap-3">
-                  <Label htmlFor="ai-prompt">Системный промпт</Label>
+                {detectedProvider ? (
+                  <p className="flex items-center gap-1.5 text-sm text-success">
+                    <CheckCircle2 className="size-4 shrink-0" />
+                    Это ключ {PROVIDER_LABEL[detectedProvider]}
+                  </p>
+                ) : apiKey.trim() ? (
+                  <p className="text-sm text-muted-foreground">
+                    Провайдер по такому ключу не узнаётся — выберите его ниже вручную.
+                  </p>
+                ) : form.hasKey ? (
+                  <p className="text-sm text-muted-foreground">
+                    Сейчас работает {providerLabel}. Чтобы сменить — вставьте новый ключ.
+                  </p>
+                ) : null}
+
+                {keySource ? (
+                  <a
+                    href={keySource.url}
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+                  >
+                    Где взять ключ: {keySource.label}
+                    <ExternalLink className="size-3.5" />
+                  </a>
+                ) : null}
+
+                <details className="group">
+                  <summary className="cursor-pointer list-none text-sm text-muted-foreground underline-offset-2 hover:underline">
+                    Выбрать провайдера вручную
+                  </summary>
+                  <div className="mt-3 space-y-3">
+                    <Select
+                      value={form.provider}
+                      onValueChange={(value) => {
+                        patch({ provider: value as AiSettingsView["provider"], model: "" });
+                        setModels(null);
+                        setModelsError(null);
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {PROVIDERS.map((provider) => (
+                          <SelectItem key={provider.value} value={provider.value}>
+                            {provider.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+
+                    {/*
+                      Адрес endpoint нужен ровно одному варианту — своему
+                      серверу. Для остальных провайдеров адрес известен, и
+                      поле только путало: пустое оно у всех, а выглядело как
+                      незаполненная настройка.
+                    */}
+                    {form.provider === "custom" ? (
+                      <div className="space-y-2">
+                        <Label htmlFor="ai-base">Адрес endpoint</Label>
+                        <Input
+                          id="ai-base"
+                          value={form.baseUrl}
+                          onChange={(e) => patch({ baseUrl: e.target.value })}
+                          placeholder="https://ваш-сервер/v1"
+                        />
+                      </div>
+                    ) : null}
+                  </div>
+                </details>
+              </Step>
+
+              <Step
+                number={2}
+                title="Модель"
+                hint="Список приходит от провайдера — в нём то, что доступно именно вашему ключу."
+              >
+                {models && models.length > 0 ? (
+                  <Select value={form.model} onValueChange={(model) => patch({ model })}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Выберите модель" />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-72">
+                      {models.map((model) => (
+                        <SelectItem key={model} value={model}>
+                          {model}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <Input
+                    id="ai-model"
+                    value={form.model}
+                    onChange={(e) => patch({ model: e.target.value })}
+                    placeholder="Нажмите «Показать доступные»"
+                  />
+                )}
+
+                <div className="flex flex-wrap items-center gap-3">
                   <Button
                     type="button"
-                    variant="ghost"
+                    variant="outline"
                     size="sm"
-                    className="h-7 gap-1 px-2 text-xs"
-                    onClick={() => patch({ systemPrompt: DEFAULT_PROMPT })}
+                    disabled={modelsBusy || (!apiKey.trim() && !form.hasKey)}
+                    onClick={() => void loadModels(form.provider, apiKey.trim())}
                   >
-                    <RotateCcw className="size-3" />
-                    Стандартный
+                    {modelsBusy ? <Loader2 className="size-3.5 animate-spin" /> : null}
+                    {models ? "Обновить список" : "Показать доступные"}
                   </Button>
+                  {models ? (
+                    <span className="text-sm text-muted-foreground">
+                      доступно моделей: {models.length}
+                    </span>
+                  ) : null}
                 </div>
+
+                {modelsError ? (
+                  <p className="text-sm text-destructive">
+                    {modelsError}. Модель можно вписать вручную — поле выше.
+                  </p>
+                ) : null}
+              </Step>
+
+              <Step
+                number={3}
+                title="Характер консультанта"
+                hint="Меняется без деплоя. Что есть в каталоге и чего нельзя выдумывать, сервер добавляет сам — здесь только манера разговора."
+              >
                 <Textarea
                   id="ai-prompt"
-                  rows={6}
+                  rows={9}
                   value={form.systemPrompt}
                   onChange={(e) => patch({ systemPrompt: e.target.value })}
                 />
-                <p className="text-xs text-muted-foreground">
-                  Характер консьержа: что уточнять у туриста и как отвечать. Меняется без деплоя.
-                </p>
-              </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 gap-1 self-start px-2 text-xs"
+                  onClick={() => patch({ systemPrompt: DEFAULT_SYSTEM_PROMPT })}
+                >
+                  <RotateCcw className="size-3" />
+                  Вернуть стандартный
+                </Button>
+              </Step>
 
-              <Button onClick={submit} disabled={busy !== null}>
-                {busy === "save" ? <Loader2 className="size-4 animate-spin" /> : null}
-                Сохранить
-              </Button>
+              <div className="p-6">
+                <Button onClick={submit} disabled={busy !== null}>
+                  {busy === "save" ? <Loader2 className="size-4 animate-spin" /> : null}
+                  Сохранить
+                </Button>
+              </div>
             </div>
 
             <div className="space-y-6">
@@ -407,9 +585,12 @@ function AdminAiKeysPage() {
                 </span>
                 <h2 className="font-display text-base font-semibold">Как это работает</h2>
                 <ul className="space-y-2 text-muted-foreground">
-                  <li>• AI отвечает в чате на главной и на странице «AI-поиск»</li>
+                  <li>• Консультант живёт на странице «AI-поиск» — в мобильном меню это «Поиск»</li>
+                  <li>• В промпт сервер сам кладёт выжимку каталога: модель не выдумывает туры</li>
                   <li>• Все запросы идут через сервер — ключ не попадает в браузер</li>
-                  <li>• Пока AI выключен, чат отвечает подсказкой вместо модели</li>
+                  <li>• Подбор на главной работает без модели и от ключа не зависит</li>
+                  <li>• Пока AI выключен, страница «AI-поиск» разбирает фразу сама</li>
+                  <li>• Лимит: 20 запросов в час с адреса для гостя, 60 для вошедшего</li>
                   <li>
                     • Обновлено:{" "}
                     {form.updatedAt ? new Date(form.updatedAt).toLocaleString("ru-RU") : "нет"}

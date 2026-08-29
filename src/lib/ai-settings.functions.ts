@@ -63,6 +63,39 @@ export const saveAiSettings = createServerFn({ method: "POST" })
     return { ok: true as const };
   });
 
+/**
+ * Список моделей провайдера — до сохранения ключа.
+ *
+ * Ключ приходит прямо в запросе: иначе выбрать модель можно было бы только
+ * после сохранения, то есть вслепую сохранить неизвестно что, а потом
+ * исправлять. Наружу ключ не возвращается и нигде не логируется.
+ */
+export const listAiModels = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z
+      .object({ provider: providerSchema, apiKey: z.string().trim().max(400).default("") })
+      .parse(input),
+  )
+  .handler(
+    async ({
+      data,
+      context,
+    }): Promise<{ ok: true; models: string[] } | { ok: false; error: string }> => {
+      const { assertPlatformAdmin, readSettings } = await import("@/lib/ai-settings.server");
+      await assertPlatformAdmin(context.supabase, context.userId);
+      const { listModels } = await import("@/lib/ai-provider.server");
+      const stored = await readSettings();
+      // Ключ из формы главнее сохранённого: админ как раз его и проверяет.
+      return listModels({
+        ...stored,
+        provider: data.provider,
+        baseUrl: data.provider === stored.provider ? stored.baseUrl : "",
+        ...(data.apiKey ? { apiKey: data.apiKey } : {}),
+      });
+    },
+  );
+
 export const testAiSettings = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
