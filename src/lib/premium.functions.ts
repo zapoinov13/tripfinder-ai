@@ -21,7 +21,8 @@ export const activatePremiumSubscription = createServerFn({ method: "POST" })
     if (isProduction || process.env["PREMIUM_MOCK_CHECKOUT"] !== "true") {
       throw new Error("Оплата Premium ещё не подключена. Активация возможна только после оплаты.");
     }
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { getSupabaseAdmin } = await import("@/lib/supabase/admin.server");
+    const supabaseAdmin = getSupabaseAdmin();
     const admin = supabaseAdmin;
     const userId = context.userId;
     const now = new Date();

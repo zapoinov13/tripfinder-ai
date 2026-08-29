@@ -62,7 +62,8 @@ export const purchasePromotion = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: unknown) => schema.parse(input))
   .handler(async ({ data, context }): Promise<PurchasePromotionServerResult> => {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { getSupabaseAdmin } = await import("@/lib/supabase/admin.server");
+    const supabaseAdmin = getSupabaseAdmin();
     const admin = supabaseAdmin;
 
     // Кампанию покупает только сотрудник этой компании (или админ платформы).
