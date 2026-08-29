@@ -15,6 +15,7 @@ import { destinations } from "@/data/demo";
 import { useAuth } from "@/lib/platform/auth";
 import { collectOffersFromCatalog, createTripRequest } from "@/lib/platform/requests";
 import type { TripRequestKind } from "@/lib/platform/types";
+import { seo } from "@/lib/seo";
 
 type Search = {
   kind?: TripRequestKind;
@@ -32,17 +33,13 @@ export const Route = createFileRoute("/request/")({
     ...(typeof search["city"] === "string" ? { city: search["city"] } : {}),
     ...(typeof search["wish"] === "string" ? { wish: search["wish"] } : {}),
   }),
-  head: () => ({
-    meta: [
-      { name: "robots", content: "noindex, nofollow" },
-      { title: "Заявка турфирмам: получите несколько цен на одну поездку · TourGo" },
-      {
-        name: "description",
-        content:
-          "Опишите поездку один раз. Проверенные турфирмы пришлют свои варианты с ценой. Сравните и выберите.",
-      },
-    ],
-  }),
+  head: () =>
+    seo({
+      title: "Заявка на подбор тура: турфирмы пришлют цены",
+      description:
+        "Опишите поездку — куда, когда, на сколько человек и какой бюджет. Несколько турфирм пришлют предложения с ценой, вы выберете и заплатите напрямую.",
+      path: "/request",
+    }),
   component: RequestPage,
 });
 

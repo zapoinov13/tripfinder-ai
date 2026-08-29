@@ -23,7 +23,8 @@
     "smoke": "node scripts/smoke-test.mjs",
     "smoke:extended": "node scripts/smoke-test-extended.mjs",
     "smoke:all": "npm run smoke && npm run smoke:extended",
-    "cap:build": "vite build --config vite.capacitor.config.ts"
+    "cap:build": "vite build --config vite.capacitor.config.ts",
+    "seo:audit": "node scripts/seo-audit.mjs"
   },
   "dependencies": {
     "@capacitor-community/apple-sign-in": "^7.1.0",

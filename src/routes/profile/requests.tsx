@@ -26,11 +26,10 @@ import {
 import { TouristAccountGate } from "@/components/site/tourist-account-gate";
 import { ConfirmAction } from "@/components/admin";
 import { toast } from "sonner";
+import { privatePage } from "@/lib/seo";
 
 export const Route = createFileRoute("/profile/requests")({
-  head: () => ({
-    meta: [{ name: "robots", content: "noindex, nofollow" }, { title: "Мои заявки · TourGo" }],
-  }),
+  head: () => privatePage("Мои заявки"),
   component: MyRequestsPage,
 });
 

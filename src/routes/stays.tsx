@@ -26,7 +26,7 @@ import {
   type VerticalListing,
 } from "@/lib/platform/vertical-listings";
 import { cn } from "@/lib/utils";
-import { seo } from "@/lib/seo";
+import { vitrineSeo } from "@/lib/seo-vitrine";
 
 type Search = {
   destination?: string;
@@ -56,6 +56,10 @@ type StayCard = {
   about?: string;
 };
 
+/** «padel» в адресе — «Падел» в заголовке страницы. */
+const kindLabelOf = (id: string | undefined) =>
+  id ? stayKinds.find((k) => k.id === id)?.label : undefined;
+
 export const Route = createFileRoute("/stays")({
   validateSearch: (search: Record<string, unknown>): Search => ({
     ...(typeof search["destination"] === "string" ? { destination: search["destination"] } : {}),
@@ -70,16 +74,27 @@ export const Route = createFileRoute("/stays")({
    * страница раздела уходила в индекс с текстом «пока ничего нет». Загрузчик
    * берёт опубликованные объявления сам; в браузере, где каталог уже загружен,
    * запрос не делается.
+   *
+   * Он же считает мета-теги: заголовок должен знать город, категорию и число
+   * предложений, а это известно только вместе с данными.
    */
-  loader: async () => ({
-    listings: listPublishedVertical("stay").length ? [] : await fetchPublishedVertical("stay"),
+  loaderDeps: ({ search }: { search: Search }) => ({
+    city: search.city ?? "",
+    kind: search.kind ?? "",
+    destination: search.destination ?? "",
   }),
-  head: () =>
-    seo({
-      title: "Жильё: апартаменты, виллы, отели",
-      description:
-        "Апартаменты, виллы и отели от компаний напрямую. Сравните цены и условия и напишите владельцу без посредников.",
+  loader: async ({ deps }) => {
+    const stored = listPublishedVertical("stay");
+    const listings = stored.length ? stored : await fetchPublishedVertical("stay");
+    return { listings, fromStore: stored.length > 0, deps };
+  },
+  head: ({ loaderData }) =>
+    vitrineSeo({
+      vertical: "stays",
       path: "/stays",
+      listings: loaderData?.listings ?? [],
+      filters: loaderData?.deps ?? {},
+      kindLabel: kindLabelOf(loaderData?.deps.kind),
     }),
   component: StaysPage,
 });

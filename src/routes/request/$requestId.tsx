@@ -28,11 +28,10 @@ import {
 import { chooseOffer, peopleLabel } from "@/lib/platform/requests";
 import type { RequestOffer, TripRequest } from "@/lib/platform/types";
 import { cn } from "@/lib/utils";
+import { privatePage } from "@/lib/seo";
 
 export const Route = createFileRoute("/request/$requestId")({
-  head: () => ({
-    meta: [{ name: "robots", content: "noindex, nofollow" }, { title: "Ваша заявка · TourGo" }],
-  }),
+  head: () => privatePage("Ваша заявка"),
   component: RequestStatusPage,
 });
 

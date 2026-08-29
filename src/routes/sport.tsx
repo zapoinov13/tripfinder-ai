@@ -21,7 +21,7 @@ import { companyPromoBadge, promotedCompanyIds } from "@/lib/platform/promotions
 import { listPublishedSports, subscribeSportListings } from "@/lib/platform/sport-listings";
 import { fetchPublishedVertical, listPublishedVertical } from "@/lib/platform/vertical-listings";
 import { cn } from "@/lib/utils";
-import { seo } from "@/lib/seo";
+import { vitrineSeo } from "@/lib/seo-vitrine";
 
 type Search = { destination?: string; city?: string; kind?: string; q?: string };
 
@@ -39,6 +39,10 @@ type SportCard = {
   organizationId?: string;
 };
 
+/** «padel» в адресе — «Падел» в заголовке страницы. */
+const kindLabelOf = (id: string | undefined) =>
+  id ? sportKinds.find((k) => k.id === id)?.label : undefined;
+
 export const Route = createFileRoute("/sport")({
   validateSearch: (search: Record<string, unknown>): Search => ({
     ...(typeof search["destination"] === "string" ? { destination: search["destination"] } : {}),
@@ -51,16 +55,27 @@ export const Route = createFileRoute("/sport")({
    * страница раздела уходила в индекс с текстом «пока ничего нет». Загрузчик
    * берёт опубликованные объявления сам; в браузере, где каталог уже загружен,
    * запрос не делается.
+   *
+   * Он же считает мета-теги: заголовок должен знать город, категорию и число
+   * предложений, а это известно только вместе с данными.
    */
-  loader: async () => ({
-    listings: listPublishedVertical("sport").length ? [] : await fetchPublishedVertical("sport"),
+  loaderDeps: ({ search }: { search: Search }) => ({
+    city: search.city ?? "",
+    kind: search.kind ?? "",
+    destination: search.destination ?? "",
   }),
-  head: () =>
-    seo({
-      title: "Спорт и активный отдых",
-      description:
-        "Падел, теннис, дайвинг, фитнес и другие занятия от местных клубов. Свободные слоты, цены и запись онлайн.",
+  loader: async ({ deps }) => {
+    const stored = listPublishedVertical("sport");
+    const listings = stored.length ? stored : await fetchPublishedVertical("sport");
+    return { listings, fromStore: stored.length > 0, deps };
+  },
+  head: ({ loaderData }) =>
+    vitrineSeo({
+      vertical: "sport",
       path: "/sport",
+      listings: loaderData?.listings ?? [],
+      filters: loaderData?.deps ?? {},
+      kindLabel: kindLabelOf(loaderData?.deps.kind),
     }),
   component: SportPage,
 });

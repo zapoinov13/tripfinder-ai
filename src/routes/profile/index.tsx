@@ -36,18 +36,10 @@ import { usePlatformStore } from "@/lib/platform/hooks";
 import { unreadServiceMessages } from "@/lib/platform/service-requests";
 import { useBonusPoints } from "@/lib/tourist-bonuses";
 import { cn } from "@/lib/utils";
+import { privatePage } from "@/lib/seo";
 
 export const Route = createFileRoute("/profile/")({
-  head: () => ({
-    meta: [
-      { name: "robots", content: "noindex, nofollow" },
-      { title: "Личный кабинет · TourGo" },
-      {
-        name: "description",
-        content: "Бонусы, промокоды, история поездок, данные туриста и поддержка.",
-      },
-    ],
-  }),
+  head: () => privatePage("Личный кабинет"),
   component: ProfilePage,
 });
 

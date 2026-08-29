@@ -27,6 +27,7 @@ const STATIC_PAGES: Entry[] = [
   { path: "/cars", changefreq: "daily", priority: "0.8" },
   { path: "/sport", changefreq: "daily", priority: "0.8" },
   { path: "/assistance", changefreq: "weekly", priority: "0.7" },
+  { path: "/request", changefreq: "weekly", priority: "0.7" },
   { path: "/ai-search", changefreq: "weekly", priority: "0.6" },
   { path: "/premium", changefreq: "monthly", priority: "0.6" },
   { path: "/for-companies", changefreq: "monthly", priority: "0.7" },
@@ -142,7 +143,9 @@ export function buildRobots(origin: string): string {
     "Disallow: /admin",
     "Disallow: /operator",
     "Disallow: /profile",
-    "Disallow: /request",
+    // Форма заявки — обычная посадочная страница; закрываем только статус
+    // конкретной заявки, он приватный.
+    "Disallow: /request/",
     "Disallow: /notifications",
     "Disallow: /favorites",
     "Disallow: /compare",

@@ -53,7 +53,7 @@ import {
 } from "@/data/excursions";
 import { placeFromQuery } from "@/lib/scenario-router";
 import { cn } from "@/lib/utils";
-import { seo } from "@/lib/seo";
+import { vitrineSeo } from "@/lib/seo-vitrine";
 
 type Search = { destination?: string; city?: string; q?: string };
 
@@ -65,12 +65,26 @@ export const Route = createFileRoute("/excursions")({
     ...(typeof search["city"] === "string" && search["city"] ? { city: search["city"] } : {}),
     ...(typeof search["q"] === "string" && search["q"] ? { q: search["q"] } : {}),
   }),
-  head: () =>
-    seo({
-      title: "Экскурсии и развлечения",
-      description:
-        "Сафари, яхты, обзорные туры, парки и трансферы от местных компаний. Цены и отзывы в одном списке.",
+  /**
+   * Город в адресе — город в заголовке: «Экскурсии в Дубае на русском языке»
+   * это отдельный запрос, а не тот же самый, что «экскурсии».
+   */
+  loaderDeps: ({ search }: { search: Search }) => ({
+    city: search.city ?? "",
+    destination: search.destination ?? "",
+  }),
+  loader: ({ deps }) => ({ deps }),
+  head: ({ loaderData }) =>
+    vitrineSeo({
+      vertical: "excursions",
       path: "/excursions",
+      listings: excursions.map((e) => ({
+        city: e.city,
+        destinationId: e.destinationId,
+        kind: e.category,
+        price: e.price,
+      })),
+      filters: loaderData?.deps ?? {},
     }),
   component: ExcursionsPage,
 });

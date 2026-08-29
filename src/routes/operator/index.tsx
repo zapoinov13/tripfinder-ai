@@ -57,14 +57,10 @@ import { recordsWord } from "@/lib/platform/business-stats";
 import { listOrgVertical } from "@/lib/platform/vertical-listings";
 import type { Booking, Organization } from "@/lib/platform/types";
 import { cn } from "@/lib/utils";
+import { privatePage } from "@/lib/seo";
 
 export const Route = createFileRoute("/operator/")({
-  head: () => ({
-    meta: [
-      { name: "robots", content: "noindex, nofollow" },
-      { title: "Кабинет компании · TourGo" },
-    ],
-  }),
+  head: () => privatePage("Кабинет компании"),
   component: OperatorDashboard,
 });
 

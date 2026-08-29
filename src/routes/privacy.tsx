@@ -9,7 +9,8 @@ export const Route = createFileRoute("/privacy")({
   head: () =>
     seo({
       title: "Политика конфиденциальности",
-      description: "Какие данные собирает TourGo, зачем они нужны и как ими управлять.",
+      description:
+        "Какие данные собирает TourGo, зачем они нужны, кому передаются и как их удалить. Политика обработки персональных данных сервиса.",
       path: "/privacy",
       type: "article",
     }),

@@ -9,18 +9,10 @@ import { formatPrice, getHotel, getTour } from "@/data/demo";
 import { useAuth } from "@/lib/platform/auth";
 import { usePlatformStore } from "@/lib/platform/hooks";
 import { useTourState } from "@/lib/tour-state";
+import { privatePage } from "@/lib/seo";
 
 export const Route = createFileRoute("/profile/trips")({
-  head: () => ({
-    meta: [
-      { name: "robots", content: "noindex, nofollow" },
-      { title: "Поездки · TourGo" },
-      {
-        name: "description",
-        content: "Ваши бронирования и статусы поездок. Избранное доступно и без входа.",
-      },
-    ],
-  }),
+  head: () => privatePage("Поездки"),
   component: TripsPage,
 });
 

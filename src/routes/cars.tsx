@@ -25,7 +25,7 @@ import {
   type VerticalListing,
 } from "@/lib/platform/vertical-listings";
 import { cn } from "@/lib/utils";
-import { seo } from "@/lib/seo";
+import { vitrineSeo } from "@/lib/seo-vitrine";
 
 type Search = {
   destination?: string;
@@ -54,6 +54,10 @@ type CarCard = {
   about?: string;
 };
 
+/** «padel» в адресе — «Падел» в заголовке страницы. */
+const kindLabelOf = (id: string | undefined) =>
+  id ? carClasses.find((k) => k.id === id)?.label : undefined;
+
 export const Route = createFileRoute("/cars")({
   validateSearch: (search: Record<string, unknown>): Search => ({
     ...(typeof search["destination"] === "string" ? { destination: search["destination"] } : {}),
@@ -69,16 +73,27 @@ export const Route = createFileRoute("/cars")({
    * страница раздела уходила в индекс с текстом «пока ничего нет». Загрузчик
    * берёт опубликованные объявления сам; в браузере, где каталог уже загружен,
    * запрос не делается.
+   *
+   * Он же считает мета-теги: заголовок должен знать город, категорию и число
+   * предложений, а это известно только вместе с данными.
    */
-  loader: async () => ({
-    listings: listPublishedVertical("car").length ? [] : await fetchPublishedVertical("car"),
+  loaderDeps: ({ search }: { search: Search }) => ({
+    city: search.city ?? "",
+    kind: search.klass ?? "",
+    destination: search.destination ?? "",
   }),
-  head: () =>
-    seo({
-      title: "Аренда авто без водителя",
-      description:
-        "Машины без водителя от проверенных компаний: цены, класс авто и условия рядом. Сравните и оставьте заявку за минуту.",
+  loader: async ({ deps }) => {
+    const stored = listPublishedVertical("car");
+    const listings = stored.length ? stored : await fetchPublishedVertical("car");
+    return { listings, fromStore: stored.length > 0, deps };
+  },
+  head: ({ loaderData }) =>
+    vitrineSeo({
+      vertical: "cars",
       path: "/cars",
+      listings: loaderData?.listings ?? [],
+      filters: loaderData?.deps ?? {},
+      kindLabel: kindLabelOf(loaderData?.deps.kind),
     }),
   component: CarsPage,
 });

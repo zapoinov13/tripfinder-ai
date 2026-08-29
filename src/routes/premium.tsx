@@ -13,9 +13,9 @@ import { seo } from "@/lib/seo";
 export const Route = createFileRoute("/premium")({
   head: () =>
     seo({
-      title: "TourGo Premium: закрытые цены",
+      title: "Premium: закрытые цены на туры и горящие предложения",
       description:
-        "Подписка с доступом к закрытым ценам и предложениям, которых нет в открытом поиске.",
+        "Подписка TourGo: закрытые цены турфирм, горящие туры раньше остальных и предложения, которых нет в открытом поиске.",
       path: "/premium",
     }),
   component: PremiumPage,
