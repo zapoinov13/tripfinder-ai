@@ -145,6 +145,28 @@ export function categoriesOfServices(services: string[]): Set<CompanyCategoryId>
  * «Бизнес без туров»: спорт, жильё или авто без туров и экскурсий.
  * Такой кабинет живёт объявлениями и страницей компании, а не турами.
  */
+/**
+ * Категории, которые живут объявлениями и записью, а не турами.
+ *
+ * Для них в кабинете нет смысла в разделах «Туры», «Предложения» и «Брони»:
+ * турист не бронирует у них путёвку, он записывается на время.
+ */
+const LISTING_CATEGORIES = new Set<string>(["sport", "stays", "cars"]);
+
+/**
+ * «Бизнес без туров» по категории компании.
+ *
+ * Раньше это решалось угадыванием по списку услуг, и на пустом списке — а он
+ * пуст у каждой новой компании — угадывание давало «турфирма». Спортзал
+ * получал кабинет турфирмы с турами и бронями. Категория отвечает на этот
+ * вопрос прямо; список услуг остаётся запасным путём для компаний, заведённых
+ * до появления категории.
+ */
+export function isListingBusiness(category: string | undefined, services?: string[]): boolean {
+  if (category) return LISTING_CATEGORIES.has(category);
+  return isBusinessOnlyServices(services);
+}
+
 export function isBusinessOnlyServices(services: string[] | undefined): boolean {
   const cats = categoriesOfServices(services ?? []);
   return (

@@ -44,6 +44,8 @@ export type PlatformUser = {
   role: Role;
   status: UserStatus;
   organizationId?: string;
+  /** Личный телефон. У компании свой, в Organization.phone. */
+  phone?: string;
   /** Какие уведомления получать: пустое поле = все. */
   notifyPrefs?: NotifyPrefs;
   createdAt: string;

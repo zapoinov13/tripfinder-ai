@@ -10,7 +10,7 @@ import { formatNumber, formatPrice, guestsLabel, nightsLabel, tourCover } from "
 import { canCreateTour } from "@/lib/platform-contracts";
 import { useAuth, useRequireAuth } from "@/lib/platform/auth";
 import { getHotel } from "@/lib/platform/catalog";
-import { isBusinessOnlyServices } from "@/lib/platform/company-categories";
+import { isListingBusiness } from "@/lib/platform/company-categories";
 import { usePlatformStore } from "@/lib/platform/hooks";
 import { nowIso, setState } from "@/lib/platform/store";
 import { cn } from "@/lib/utils";
@@ -65,7 +65,7 @@ function OperatorToursPage() {
 
   if (!allowed || !organization) return null;
   // «Бизнес без туров» (зал, прокат, жильё) работает с объявлениями, не с турами.
-  if (organization && isBusinessOnlyServices(organization.services)) {
+  if (organization && isListingBusiness(organization.category, organization.services)) {
     return <Navigate to="/operator/services" />;
   }
 

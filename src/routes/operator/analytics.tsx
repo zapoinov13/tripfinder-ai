@@ -33,7 +33,7 @@ import { Button } from "@/components/ui/button";
 import { formatNumber, formatPrice, nightsLabel, tourCover } from "@/data/demo";
 import { useAuth, useRequireAuth } from "@/lib/platform/auth";
 import { businessMoney, listingPerformance, recordsWord } from "@/lib/platform/business-stats";
-import { isBusinessOnlyServices } from "@/lib/platform/company-categories";
+import { isListingBusiness } from "@/lib/platform/company-categories";
 import {
   computeOperatorAnalytics,
   deltaLabel,
@@ -162,7 +162,7 @@ function OperatorAnalyticsPage() {
 
   if (!allowed || !organization || !data) return null;
 
-  const businessOnly = isBusinessOnlyServices(organization.services);
+  const businessOnly = isListingBusiness(organization.category, organization.services);
 
   const sortedTours = [...data.topTours].sort((a, b) => {
     if (tourSort === "bookings") return b.bookings - a.bookings;

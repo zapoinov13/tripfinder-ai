@@ -9,7 +9,7 @@ import { formatNumber, formatPrice } from "@/data/demo";
 import { mockPaymentProvider } from "@/lib/platform/adapters";
 import { useAuth, useRequireAuth } from "@/lib/platform/auth";
 import { businessMoney, recordsWord } from "@/lib/platform/business-stats";
-import { isBusinessOnlyServices } from "@/lib/platform/company-categories";
+import { isListingBusiness } from "@/lib/platform/company-categories";
 import { appendAudit, pushNotification } from "@/lib/platform/catalog";
 import { usePlatformStore } from "@/lib/platform/hooks";
 import { nowIso, setState, uid } from "@/lib/platform/store";
@@ -87,7 +87,7 @@ function OperatorBillingPage() {
   }
 
   // «Бизнес без туров»: без лимитов туров и туровых формулировок.
-  const businessOnly = isBusinessOnlyServices(organization.services);
+  const businessOnly = isListingBusiness(organization.category, organization.services);
   // Что тариф принёс за 30 дней: записи, доход и просмотры против его цены.
   const last30 = businessMoney(organization.id, 30);
   const monthViews = state.analyticsEvents.filter(

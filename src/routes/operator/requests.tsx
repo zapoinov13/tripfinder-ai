@@ -24,7 +24,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { formatPrice, getHotel, hotels, type Hotel } from "@/data/demo";
 import { useAuth, useRequireAuth } from "@/lib/platform/auth";
 import { isoDate } from "@/lib/platform/booking-slots";
-import { isBusinessOnlyServices } from "@/lib/platform/company-categories";
+import { isListingBusiness } from "@/lib/platform/company-categories";
 import { ServiceChatDialog } from "@/components/company/service-chat-dialog";
 import { ServiceRescheduleDialog } from "@/components/company/service-reschedule-dialog";
 import {
@@ -414,7 +414,7 @@ function OperatorRequestsPage() {
   if (!allowed || !organization) return null;
 
   // «Бизнес без туров»: заявки клиентов на запись, а не туровые заявки туристов.
-  if (isBusinessOnlyServices(organization.services)) {
+  if (isListingBusiness(organization.category, organization.services)) {
     return <BusinessRequestsPage />;
   }
 

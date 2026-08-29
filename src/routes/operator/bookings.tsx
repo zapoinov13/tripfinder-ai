@@ -7,7 +7,7 @@ import { useOperatorNav } from "@/components/dash/nav-items";
 import { Button } from "@/components/ui/button";
 import { formatPrice, getHotel, getTour } from "@/data/demo";
 import { useAuth, useRequireAuth } from "@/lib/platform/auth";
-import { isBusinessOnlyServices } from "@/lib/platform/company-categories";
+import { isListingBusiness } from "@/lib/platform/company-categories";
 import { setBookingStatus } from "@/lib/platform/booking";
 import { usePlatformStore } from "@/lib/platform/hooks";
 import { privatePage } from "@/lib/seo";
@@ -35,7 +35,7 @@ function OperatorBookingsPage() {
   const nav = useOperatorNav(organization?.id);
   const state = usePlatformStore();
   if (!allowed || !organization || !user) return null;
-  if (isBusinessOnlyServices(organization.services)) {
+  if (isListingBusiness(organization.category, organization.services)) {
     return <Navigate to="/operator/services" />;
   }
 

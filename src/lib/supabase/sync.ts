@@ -621,18 +621,26 @@ function collectOps(prev: PlatformState, next: PlatformState): Op[] {
   for (const u of users.updated) {
     if (!isUuid(u.id)) continue;
     ops.push(async () => {
-      const { error } = await sb
+      const base = {
+        role: u.role,
+        status: u.status,
+        name: u.name,
+        city: u.city,
+        organization_id: isUuid(u.organizationId) ? u.organizationId : null,
+        notify_prefs: u.notifyPrefs ?? {},
+        updated_at: new Date().toISOString(),
+      };
+      // Телефон появился позже остальных полей. Пока миграция не применена,
+      // колонки нет — и один лишний ключ в наборе уронил бы сохранение имени и
+      // города заодно. Поэтому при жалобе «нет такой колонки» повторяем без
+      // него: человек хотя бы не теряет остальные правки.
+      let { error } = await sb
         .from("profiles")
-        .update({
-          role: u.role,
-          status: u.status,
-          name: u.name,
-          city: u.city,
-          organization_id: isUuid(u.organizationId) ? u.organizationId : null,
-          notify_prefs: u.notifyPrefs ?? {},
-          updated_at: new Date().toISOString(),
-        })
+        .update({ ...base, phone: u.phone ?? "" })
         .eq("id", u.id);
+      if (error && /phone/i.test(error.message) && /column|not exist|schema/i.test(error.message)) {
+        ({ error } = await sb.from("profiles").update(base).eq("id", u.id));
+      }
       report("profiles.update", error);
     });
   }

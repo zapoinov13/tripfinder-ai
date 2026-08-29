@@ -27,7 +27,7 @@ import { formatNumber, formatPrice, getHotel } from "@/data/demo";
 import { useAutoApiSync } from "@/lib/platform/api-sync";
 import { useAuth, useRequireAuth } from "@/lib/platform/auth";
 import { companyGaps } from "@/lib/platform/company-completeness";
-import { categoriesOfServices, isBusinessOnlyServices } from "@/lib/platform/company-categories";
+import { categoriesOfServices, isListingBusiness } from "@/lib/platform/company-categories";
 import { usePlatformStore } from "@/lib/platform/hooks";
 import { getCompanyRating } from "@/lib/platform/messages";
 import {
@@ -408,7 +408,7 @@ function OperatorDashboard() {
     (s) => s.status === "published",
   ).length;
   // «Бизнес без туров» (спортзал, прокат, жильё): вместо туров — объявления.
-  const businessOnly = isBusinessOnlyServices(organization.services);
+  const businessOnly = isListingBusiness(organization.category, organization.services);
   const steps = setupSteps(organization, openRequests, active.length, sportCount, businessOnly);
 
   // Живая статистика страницы компании (просмотры, контакты, визиты).
