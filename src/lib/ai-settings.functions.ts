@@ -20,6 +20,8 @@ export type AiSettingsView = {
   baseUrl: string;
   keyMask: string;
   hasKey: boolean;
+  /** Откуда берётся ключ: "env" — переменная окружения сервера, "db" — сохранён в настройках. */
+  keySource: "env" | "db" | "none";
   enabled: boolean;
   systemPrompt: string;
   updatedAt: string | null;
@@ -30,14 +32,21 @@ export const getAiSettings = createServerFn({ method: "GET" })
   .handler(async ({ context }): Promise<AiSettingsView> => {
     const { assertPlatformAdmin, readSettings } = await import("@/lib/ai-settings.server");
     await assertPlatformAdmin(context.supabase, context.userId);
-    const { maskKey } = await import("@/lib/ai-provider.server");
+    const { maskKey, endpointFor } = await import("@/lib/ai-provider.server");
     const row = await readSettings();
+    // У встроенного провайдера ключ живёт в переменной окружения сервера, а не
+    // в настройках. Раньше страница смотрела только в настройки и писала «не
+    // задан» даже когда AI работал — и наоборот, молчала, когда переменной на
+    // сервере нет. Спрашиваем тот же ключ, которым пойдёт настоящий запрос.
+    const effectiveKey = endpointFor(row).key;
+    const fromEnv = Boolean(effectiveKey) && !row.apiKey;
     return {
       provider: row.provider,
       model: row.model,
       baseUrl: row.baseUrl,
-      keyMask: maskKey(row.apiKey),
-      hasKey: Boolean(row.apiKey),
+      keyMask: fromEnv ? "переменная окружения LOVABLE_API_KEY" : maskKey(row.apiKey),
+      hasKey: Boolean(effectiveKey),
+      keySource: effectiveKey ? (fromEnv ? "env" : "db") : "none",
       enabled: row.enabled,
       systemPrompt: row.systemPrompt,
       updatedAt: row.updatedAt,
