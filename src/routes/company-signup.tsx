@@ -51,6 +51,18 @@ export const Route = createFileRoute("/company-signup")({
   component: CompanySignupPage,
 });
 
+/**
+ * Регистрация спрашивает минимум.
+ *
+ * Шагов было шесть: контакты, компания, категория, услуги, страны, языки. Всё
+ * это есть и в кабинете, где заполнять удобнее — там видно, как карточка
+ * выглядит, и можно вернуться. А на входе длинная анкета работает против
+ * площадки: человек пришёл завести компанию, а его просят заполнить профиль до
+ * того, как он вообще что-то увидел.
+ *
+ * Осталось то, без чего аккаунт и компанию не создать: кто вы и как называется
+ * компания. Остальное — в кабинете, и там же список, чего не хватает.
+ */
 const steps = [
   {
     title: "Ваши данные",
@@ -58,23 +70,7 @@ const steps = [
   },
   {
     title: "Компания",
-    hint: "Так страница будет выглядеть в каталоге и в заявках.",
-  },
-  {
-    title: "Категория",
-    hint: "Чем занимается компания? Можно выбрать несколько направлений.",
-  },
-  {
-    title: "Услуги",
-    hint: "Покажем заявки, которые вам подходят.",
-  },
-  {
-    title: "Страны",
-    hint: "Где работаете и откуда принимаете туристов.",
-  },
-  {
-    title: "Языки",
-    hint: "Туристы видят, на каком языке с ними поговорят. Документы на проверку загрузите потом в кабинете.",
+    hint: "Название и город. Всё остальное заполните в кабинете — там видно, как получается.",
   },
 ];
 
@@ -111,9 +107,9 @@ function CompanySignupPage() {
   const vitrineLabel = companyCategories.find((c) => c.id === fromVitrine)?.label.toLowerCase();
   const [categories, setCategories] = useState<string[]>(fromVitrine ? [fromVitrine] : []);
   const [services, setServices] = useState<string[]>([]);
-  const [countries, setCountries] = useState<string[]>(["ОАЭ"]);
-  const [clientCountries, setClientCountries] = useState<string[]>(["Казахстан"]);
-  const [languages, setLanguages] = useState<string[]>(["Русский"]);
+  const [countries, setCountries] = useState<string[]>([]);
+  const [clientCountries, setClientCountries] = useState<string[]>([]);
+  const [languages, setLanguages] = useState<string[]>([]);
 
   const toggle = (list: string[], set: (v: string[]) => void, value: string) =>
     set(list.includes(value) ? list.filter((v) => v !== value) : [...list, value]);
@@ -190,10 +186,6 @@ function CompanySignupPage() {
       );
     }
     if (step === 1) return Boolean(company.name.trim() && company.city.trim());
-    if (step === 2) return categories.length > 0;
-    if (step === 3) return services.length > 0;
-    if (step === 4) return countries.length > 0 && clientCountries.length > 0;
-    if (step === 5) return languages.length > 0;
     return true;
   };
 
@@ -471,93 +463,6 @@ function CompanySignupPage() {
                   />
                 </div>
               </div>
-            ) : null}
-
-            {step === 2 ? (
-              <div className="grid gap-3 sm:grid-cols-2">
-                {companyCategories.map((category) => {
-                  const on = categories.includes(category.id);
-                  return (
-                    <button
-                      key={category.id}
-                      type="button"
-                      onClick={() => {
-                        toggle(categories, setCategories, category.id);
-                        // Услуги снятой категории убираем, чтобы не уехали в заявку.
-                        if (on) {
-                          setServices(services.filter((v) => !category.services.includes(v)));
-                        }
-                      }}
-                      className={cn(
-                        "rounded-2xl border p-4 text-left transition-colors",
-                        on
-                          ? "border-primary bg-primary-soft/60"
-                          : "border-border bg-card hover:border-primary/40",
-                      )}
-                    >
-                      <span className="flex items-center justify-between gap-2">
-                        <span className="font-display text-base font-semibold">
-                          {category.label}
-                        </span>
-                        <span
-                          className={cn(
-                            "grid size-5 shrink-0 place-items-center rounded-full border",
-                            on
-                              ? "border-primary bg-primary text-primary-foreground"
-                              : "border-border bg-card",
-                          )}
-                        >
-                          {on ? <Check className="size-3" /> : null}
-                        </span>
-                      </span>
-                      <span className="mt-1 block text-sm text-muted-foreground">
-                        {category.hint}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            ) : null}
-
-            {step === 3 ? (
-              <div className="space-y-8">
-                {companyCategories
-                  .filter((category) => categories.includes(category.id))
-                  .map((category) => (
-                    <CheckGroup
-                      key={category.id}
-                      title={category.label}
-                      options={category.services}
-                      selected={services}
-                      onToggle={(v) => toggle(services, setServices, v)}
-                    />
-                  ))}
-              </div>
-            ) : null}
-
-            {step === 4 ? (
-              <div className="space-y-8">
-                <CheckGroup
-                  title="Где работаете"
-                  options={companyCountryOptions}
-                  selected={countries}
-                  onToggle={(v) => toggle(countries, setCountries, v)}
-                />
-                <CheckGroup
-                  title="Откуда принимаете туристов"
-                  options={clientCountryOptions}
-                  selected={clientCountries}
-                  onToggle={(v) => toggle(clientCountries, setClientCountries, v)}
-                />
-              </div>
-            ) : null}
-
-            {step === 5 ? (
-              <CheckGroup
-                options={languageOptions}
-                selected={languages}
-                onToggle={(v) => toggle(languages, setLanguages, v)}
-              />
             ) : null}
 
             <div className="flex items-center justify-between gap-3 border-t border-border pt-5">
