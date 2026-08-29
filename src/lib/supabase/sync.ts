@@ -40,8 +40,41 @@ function isPlatformAdmin(state: PlatformState): boolean {
   return role === "PLATFORM_ADMIN" || role === "PLATFORM_MANAGER";
 }
 
+/**
+ * Отказ, который означает «входа больше нет».
+ *
+ * RLS отклоняет запись анонима теми же словами, что и запись чужого: для нас
+ * важно, что писать под этим входом больше нельзя.
+ */
+function looksLikeSessionGone(message: string): boolean {
+  return /JWT|token|Unauthorized|row-level security/i.test(message);
+}
+
 function report(table: string, error: { message: string } | null) {
-  if (error) console.warn(`[sync] ${table}: ${error.message}`);
+  if (!error) return;
+  console.warn(`[sync] ${table}: ${error.message}`);
+  // Сессия могла умереть между обновлениями стора: событие входа ещё не
+  // пришло, а токен уже мёртв. Тогда каждая правка стора уходит в базу и
+  // возвращается ошибкой — консоль заливает 401, хотя поломки нет, просто
+  // человека разлогинило. Один раз переспрашиваем сессию и, если её больше
+  // нет, перестаём писать до следующего входа.
+  if (looksLikeSessionGone(error.message)) void forgetSessionIfGone();
+}
+
+let recheckingSession = false;
+
+async function forgetSessionIfGone(): Promise<void> {
+  if (recheckingSession || !authedUserId) return;
+  recheckingSession = true;
+  try {
+    const sb = getSupabase();
+    const { data } = (await sb?.auth.getSession()) ?? { data: { session: null } };
+    if (!data.session) authedUserId = null;
+  } catch {
+    // Не достучались до Supabase — это уже не про истёкший вход.
+  } finally {
+    recheckingSession = false;
+  }
 }
 
 /** RPC вне сгенерированных типов Database (админ-функции из миграций). */
