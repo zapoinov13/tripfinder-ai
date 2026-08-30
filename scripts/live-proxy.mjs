@@ -18,6 +18,16 @@
  * которой никогда не было, вполне может отрезать что-то живое.
  *
  *     node scripts/live-proxy.mjs https://<домен> 8790 --with-headers
+ *
+ * С флагом `--via-supabase=<порт>` зеркало подменяет в ответах адрес Supabase
+ * на второе зеркало, поднятое этим же скриптом. Без подмены боевая страница в
+ * контейнере остаётся без данных: браузер полез бы в supabase.co напрямую, а
+ * туда он не ходит. Это единственное отличие от боя — одно имя хоста, — и
+ * ради него становится видно то, ради чего проверка и затевается: хватает ли
+ * прав, приезжают ли строки, что показывает страница с настоящими данными.
+ *
+ *     node scripts/live-proxy.mjs https://<проект>.supabase.co 5433
+ *     node scripts/live-proxy.mjs https://<домен> 8790 --via-supabase=5433
  */
 import { readFileSync } from "node:fs";
 import http from "node:http";
@@ -25,6 +35,7 @@ import process from "node:process";
 
 const args = process.argv.slice(2).filter((a) => !a.startsWith("--"));
 const WITH_HEADERS = process.argv.includes("--with-headers");
+const VIA_SUPABASE = process.argv.find((a) => a.startsWith("--via-supabase="))?.split("=")[1];
 const TARGET = (args[0] ?? "https://tripfinder-ai-swart.vercel.app").replace(/\/+$/, "");
 const PORT = Number(args[1] ?? 8790);
 
@@ -98,7 +109,17 @@ const server = http.createServer(async (req, res) => {
       // HSTS и CSP с upgrade-insecure-requests сломали бы http-зеркало.
       if (k === "strict-transport-security") return;
       if (k === "content-security-policy" || k === "content-security-policy-report-only") {
-        out[k] = value.replace(/upgrade-insecure-requests;?/gi, "");
+        let policy = value.replace(/upgrade-insecure-requests;?/gi, "");
+        // Политика перечисляет боевой адрес Supabase поимённо — и правильно
+        // делает. Раз мы подменили адрес на зеркало, его же и разрешаем:
+        // иначе браузер отрежет все запросы к базе, и проверять будет нечего.
+        if (VIA_SUPABASE) {
+          policy = policy.replace(
+            /connect-src ([^;]*)/i,
+            (_, list) => `connect-src ${list} http://127.0.0.1:${VIA_SUPABASE}`,
+          );
+        }
+        out[k] = policy;
         return;
       }
       out[k] = value;
@@ -108,8 +129,19 @@ const server = http.createServer(async (req, res) => {
     // а не приложение, и порядок тут такой же.
     Object.assign(out, vercelHeadersFor(new URL(req.url, "http://x").pathname));
 
+    let buf = Buffer.from(await upstream.arrayBuffer());
+
+    // Адрес Supabase зашит в бандл при сборке — на лету меняем его на зеркало.
+    const type = String(out["content-type"] ?? "");
+    if (VIA_SUPABASE && /javascript|html|json/i.test(type)) {
+      const swapped = buf
+        .toString("utf8")
+        .replace(/https:\/\/[a-z0-9]+\.supabase\.co/gi, `http://127.0.0.1:${VIA_SUPABASE}`);
+      buf = Buffer.from(swapped, "utf8");
+      out["content-length"] = String(buf.length);
+    }
+
     res.writeHead(upstream.status, out);
-    const buf = Buffer.from(await upstream.arrayBuffer());
     res.end(req.method === "HEAD" ? undefined : buf);
   } catch (error) {
     res.writeHead(502, { "content-type": "text/plain; charset=utf-8" });
