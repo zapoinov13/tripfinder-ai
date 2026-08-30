@@ -22,6 +22,7 @@ import type {
   TripRequest,
 } from "@/lib/platform/types";
 import { getSupabase } from "./client";
+import { writeWithOptional } from "@/lib/supabase/optional-columns";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const isUuid = (value: string | undefined | null): value is string =>
@@ -630,17 +631,14 @@ function collectOps(prev: PlatformState, next: PlatformState): Op[] {
         notify_prefs: u.notifyPrefs ?? {},
         updated_at: new Date().toISOString(),
       };
-      // Телефон появился позже остальных полей. Пока миграция не применена,
-      // колонки нет — и один лишний ключ в наборе уронил бы сохранение имени и
-      // города заодно. Поэтому при жалобе «нет такой колонки» повторяем без
-      // него: человек хотя бы не теряет остальные правки.
-      let { error } = await sb
-        .from("profiles")
-        .update({ ...base, phone: u.phone ?? "" })
-        .eq("id", u.id);
-      if (error && /phone/i.test(error.message) && /column|not exist|schema/i.test(error.message)) {
-        ({ error } = await sb.from("profiles").update(base).eq("id", u.id));
-      }
+      // Телефон и день рождения появились позже остальных полей. Пока
+      // миграция не применена, колонки нет — и один лишний ключ в наборе
+      // уронил бы сохранение имени и города заодно.
+      const { error } = await writeWithOptional(
+        base,
+        { phone: u.phone ?? "", birthday: u.birthday || null },
+        async (payload) => await sb.from("profiles").update(payload).eq("id", u.id),
+      );
       report("profiles.update", error);
     });
   }

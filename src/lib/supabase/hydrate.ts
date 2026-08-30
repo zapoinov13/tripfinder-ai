@@ -580,8 +580,11 @@ async function loadUserData(userId: string): Promise<UserDataResult> {
             email: str(r["email"]),
             password: "",
             name: str(r["name"]),
-            city: str(r["city"], "Алматы"),
+            // Города не выдумываем: подставленная «Алматы» уже приводила к
+            // вопросу «откуда он взялся, я вводил другой».
+            city: str(r["city"]),
             phone: str(r["phone"]),
+            birthday: str(r["birthday"]),
             role: str(r["role"], "TOURIST") as PlatformState["users"][number]["role"],
             status: str(r["status"], "active") as PlatformState["users"][number]["status"],
             ...(r["organization_id"] ? { organizationId: str(r["organization_id"]) } : {}),

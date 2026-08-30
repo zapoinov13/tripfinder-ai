@@ -46,6 +46,8 @@ export type PlatformUser = {
   organizationId?: string;
   /** Личный телефон. У компании свой, в Organization.phone. */
   phone?: string;
+  /** День рождения (YYYY-MM-DD). По желанию — нужен для бонусов. */
+  birthday?: string;
   /** Какие уведомления получать: пустое поле = все. */
   notifyPrefs?: NotifyPrefs;
   createdAt: string;
