@@ -5,6 +5,7 @@ import { useState } from "react";
 import { SiteLayout } from "@/components/site/site-layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PhoneInput } from "@/components/ui/phone-input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/lib/platform/auth";
@@ -31,6 +32,10 @@ function RegistrationPage() {
   const [tourist, setTourist] = useState({
     name: "",
     city: "",
+    phone: "",
+    // Дата рождения — по желанию. Спрашиваем ради бонусов и прямо об этом
+    // пишем: поле без объяснения выглядит как лишний сбор данных.
+    birthday: "",
     email: "",
     // Пустой, а не запасной пароль из кода. Предзаполненное поле большинство
     // оставляет как есть — а этот пароль уезжает в браузер вместе с бандлом,
@@ -81,6 +86,15 @@ function RegistrationPage() {
                 className="grid gap-4 sm:grid-cols-2"
                 onSubmit={async (e) => {
                   e.preventDefault();
+                  setError("");
+                  if (!tourist.name.trim()) {
+                    setError("Как вас зовут?");
+                    return;
+                  }
+                  if (tourist.phone.trim().length < 10) {
+                    setError("Проверьте телефон: по нему с вами свяжется компания");
+                    return;
+                  }
                   if (tourist.password.trim().length < 8) {
                     setError("Придумайте пароль не короче 8 символов");
                     return;
@@ -106,13 +120,37 @@ function RegistrationPage() {
                   />
                 </div>
                 <div className="space-y-2">
+                  <Label htmlFor="tourist-phone">Телефон</Label>
+                  <PhoneInput
+                    id="tourist-phone"
+                    value={tourist.phone}
+                    onChange={(value) => setTourist({ ...tourist, phone: value })}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    По нему с вами свяжется компания по заявке.
+                  </p>
+                </div>
+                <div className="space-y-2">
                   <Label htmlFor="tourist-city">Город (необязательно)</Label>
                   <Input
                     id="tourist-city"
-                    placeholder="Алматы"
+                    placeholder="Где вы живёте"
                     value={tourist.city}
                     onChange={(e) => setTourist({ ...tourist, city: e.target.value })}
                   />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="tourist-birthday">День рождения (необязательно)</Label>
+                  <Input
+                    id="tourist-birthday"
+                    type="date"
+                    max={new Date().toISOString().slice(0, 10)}
+                    value={tourist.birthday}
+                    onChange={(e) => setTourist({ ...tourist, birthday: e.target.value })}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Пришлём бонус ко дню рождения. Не хотите — оставьте пустым.
+                  </p>
                 </div>
                 <div className="space-y-2 sm:col-span-2">
                   <Label htmlFor="tourist-email">Email</Label>
@@ -123,6 +161,10 @@ function RegistrationPage() {
                     value={tourist.email}
                     onChange={(e) => setTourist({ ...tourist, email: e.target.value })}
                   />
+                  <p className="text-xs text-muted-foreground">
+                    Нужен для входа: пароль восстанавливается письмом. Вход по одному телефону
+                    появится, когда подключим отправку SMS.
+                  </p>
                 </div>
                 <div className="space-y-2 sm:col-span-2">
                   <Label htmlFor="tourist-password">Пароль</Label>

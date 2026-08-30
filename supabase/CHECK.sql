@@ -70,6 +70,18 @@ with checks(part, kind, name, present) as (
   select 'Счётчик посещаемости', 'функция', 'public.traffic_stats',
          to_regprocedure('public.traffic_stats(int)') is not null
 
+  -- Отдельно: личные поля профиля
+  union all
+  select 'Профиль', 'колонка', 'profiles.phone',
+         exists (select 1 from information_schema.columns
+                  where table_schema = 'public' and table_name = 'profiles'
+                    and column_name = 'phone')
+  union all
+  select 'Профиль', 'колонка', 'profiles.birthday',
+         exists (select 1 from information_schema.columns
+                  where table_schema = 'public' and table_name = 'profiles'
+                    and column_name = 'birthday')
+
   -- Отдельно: документы компаний на проверку
   union all
   select 'Документы компаний', 'бакет', 'company-docs',

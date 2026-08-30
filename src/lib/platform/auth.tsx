@@ -14,6 +14,7 @@ import { AppSplash } from "@/components/site/app-splash";
 import { authorizeAppleSignIn, type AppleAuthResult } from "@/lib/native/apple-auth";
 import { rolePermissions, type Role } from "@/lib/platform-contracts";
 import { getSupabase, getSupabasePublicConfig, isSupabaseConfigured } from "@/lib/supabase/client";
+import { writeWithOptional } from "@/lib/supabase/optional-columns";
 import { hydrateUserDataFromSupabase } from "@/lib/supabase/hydrate";
 import { startPlatformSync } from "@/lib/supabase/sync";
 import { appendAudit, pushNotification, trackEvent } from "./catalog";
@@ -39,6 +40,9 @@ type AuthCtx = {
     name: string;
     email: string;
     city: string;
+    phone: string;
+    /** YYYY-MM-DD, по желанию. */
+    birthday?: string;
     password?: string;
   }) => Promise<AuthResult>;
   registerOperator: (input: {
@@ -76,6 +80,8 @@ function upsertLocalUser(profile: {
   role: Role;
   status?: PlatformUser["status"];
   organization_id?: string | null;
+  phone?: string | null;
+  birthday?: string | null;
 }) {
   const user: PlatformUser = {
     id: profile.id,
@@ -85,6 +91,8 @@ function upsertLocalUser(profile: {
     city: profile.city,
     role: profile.role,
     status: profile.status ?? "active",
+    ...(profile.phone ? { phone: profile.phone } : {}),
+    ...(profile.birthday ? { birthday: profile.birthday } : {}),
     ...(profile.organization_id ? { organizationId: profile.organization_id } : {}),
     createdAt: nowIso(),
   };
@@ -107,6 +115,8 @@ async function fetchProfile(userId: string) {
     console.warn("[supabase] profile", error.message);
     return null;
   }
+  // Телефон и день рождения приезжают только после своих миграций: до этого
+  // ключей в строке просто нет, поэтому они необязательные.
   return data as {
     id: string;
     email: string;
@@ -115,6 +125,8 @@ async function fetchProfile(userId: string) {
     role: Role;
     status: PlatformUser["status"];
     organization_id: string | null;
+    phone?: string | null;
+    birthday?: string | null;
   } | null;
 }
 
@@ -281,7 +293,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             id: data.user.id,
             email: data.user.email ?? "",
             name: String(data.user.user_metadata?.["name"] ?? "Пользователь"),
-            city: String(data.user.user_metadata?.["city"] ?? "Алматы"),
+            city: String(data.user.user_metadata?.["city"] ?? ""),
             role: String(data.user.app_metadata?.["role"] ?? "TOURIST") as Role,
             organization_id: null,
           });
@@ -363,7 +375,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           id: data.user.id,
           email: data.user.email ?? email.trim().toLowerCase(),
           name: String(data.user.user_metadata?.["name"] ?? "Пользователь"),
-          city: String(data.user.user_metadata?.["city"] ?? "Алматы"),
+          city: String(data.user.user_metadata?.["city"] ?? ""),
           role: String(data.user.app_metadata?.["role"] ?? "TOURIST") as Role,
           organization_id: null,
         });
@@ -451,7 +463,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         id: data.user.id,
         email: flow.email ?? data.user.email ?? "apple@tourgo.app",
         name: flow.givenName?.trim() || "Apple User",
-        city: "Алматы",
+        city: "",
         role: "TOURIST",
         status: "active",
       });
@@ -542,19 +554,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       name: string;
       email: string;
       city: string;
+      phone: string;
+      birthday?: string;
       password?: string;
     }): Promise<AuthResult> => {
       const email = input.email.trim().toLowerCase();
-      if (!email || !input.name.trim()) return { ok: false, error: "Заполните имя и email" };
+      const name = input.name.trim();
+      const phone = input.phone.trim();
+      // Город не подставляем: человек не называл Алматы, а видел его в своём
+      // профиле и не понимал, откуда он взялся.
+      const city = input.city.trim();
+      const birthday = input.birthday?.trim() ?? "";
+      if (!name) return { ok: false, error: "Как вас зовут?" };
+      if (!phone) return { ok: false, error: "Укажите телефон: по нему с вами свяжется компания" };
+      if (!email) return { ok: false, error: "Укажите email — по нему вы входите в кабинет" };
       const password = input.password || DEMO_PASSWORD;
       const sb = getSupabase();
       if (sb) {
         const { data, error } = await sb.auth.signUp({
           email,
           password,
-          options: {
-            data: { name: input.name.trim(), city: input.city.trim() || "Алматы" },
-          },
+          options: { data: { name, city, phone } },
         });
         if (error || !data.user) {
           return {
@@ -573,21 +593,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             };
           }
         }
-        const { error: profileErr } = await sb.from("profiles").upsert({
-          id: data.user.id,
-          email,
-          name: input.name.trim(),
-          city: input.city.trim() || "Алматы",
-          role: "TOURIST",
-          status: "active",
-        });
+        // Телефон и день рождения — поля из поздних миграций. Если колонки
+        // ещё нет, профиль всё равно должен создаться: аккаунт без даты
+        // рождения куда лучше, чем аккаунт без имени и города.
+        const { error: profileErr } = await writeWithOptional(
+          {
+            id: data.user.id,
+            email,
+            name,
+            city,
+            role: "TOURIST",
+            status: "active",
+          },
+          { phone, birthday: birthday || null },
+          async (payload) => await sb.from("profiles").upsert(payload),
+        );
         if (profileErr) console.warn("[supabase] profiles.upsert", profileErr.message);
         upsertLocalUser({
           id: data.user.id,
           email,
-          name: input.name.trim(),
-          city: input.city.trim() || "Алматы",
+          name,
+          city,
           role: "TOURIST",
+          phone,
+          ...(birthday ? { birthday } : {}),
         });
         toast.success("Аккаунт создан в Supabase");
         return { ok: true };
@@ -600,8 +629,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         id: uid(),
         email,
         password,
-        name: input.name.trim(),
-        city: input.city.trim() || "Алматы",
+        name,
+        city,
+        phone,
+        ...(birthday ? { birthday } : {}),
         role: "TOURIST",
         status: "active",
         createdAt: nowIso(),
@@ -646,7 +677,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         id: sessionUser.id,
         email: sessionUser.email ?? "",
         name: company.contactPerson || "Поставщик",
-        city: company.city || "Алматы",
+        city: company.city,
         role: "OPERATOR_ADMIN",
         organization_id: org.id,
       });
@@ -723,7 +754,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           id: data.user.id,
           email,
           name: input.name.trim() || input.company.contactPerson || "Поставщик",
-          city: input.company.city || "Алматы",
+          city: input.company.city,
           role: "OPERATOR_ADMIN",
           organization_id: org.id,
         });
@@ -753,7 +784,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         email,
         password,
         name: input.name.trim() || input.company.contactPerson || "Поставщик",
-        city: input.company.city || "Алматы",
+        city: input.company.city,
         role: "OPERATOR_ADMIN",
         status: "active",
         organizationId: orgId,
