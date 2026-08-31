@@ -60,26 +60,33 @@ function Index() {
     <SiteLayout>
       {/* Первый экран телефона — ровно это: обложка, подбор и разделы.
           Витрина направлений начинается уже за сгибом, поэтому блок занимает
-          высоту экрана за вычетом шапки и таб-бара, а плитки растягиваются на
-          оставшееся место, вместо того чтобы оставлять пустоту. */}
-      <div className="flex min-h-[calc(100svh-8.1rem)] flex-col md:min-h-0">
-        <section className="md:container-page md:py-14">
-          <div className="relative overflow-hidden md:rounded-[2.5rem]">
+          высоту экрана за вычетом шапки и таб-бара.
+
+          Свободную высоту забирает обложка, а не плитки. Раньше было наоборот:
+          картинке отвели фиксированные 8.25rem — меньше, чем занимает лежащий
+          на ней заголовок, — фотографии не оставалось вовсе, а внизу зияла
+          дыра в полтора десятка сантиметров. Теперь высота обложки — это то,
+          что осталось от экрана, и на любом телефоне первый экран заполнен
+          целиком. Нижняя граница нужна маленьким экранам: на них лучше увести
+          плитки чуть за сгиб, чем сплющить заголовок. */}
+      <div className="flex min-h-[calc(100svh-8.5rem-env(safe-area-inset-bottom))] flex-col md:min-h-0">
+        <section className="flex min-h-[11rem] flex-1 max-md:[@media(max-height:700px)]:min-h-[8.5rem] md:container-page md:block md:min-h-0 md:flex-none md:py-14">
+          <div className="relative w-full overflow-hidden md:rounded-[2.5rem]">
             <img
               src={heroImage}
               alt="Пляж и курорт: подбор туров на TourGo"
-              className="h-[8.25rem] w-full object-cover object-[center_32%] animate-soft-zoom sm:h-[13rem] md:h-[32rem]"
+              className="absolute inset-0 h-full w-full object-cover object-[center_32%] animate-soft-zoom md:static md:h-[32rem]"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/45 to-ink/10" />
             <div className="absolute inset-x-0 bottom-0 px-4 pb-5 pt-8 text-primary-foreground md:p-10">
               <p className="hidden font-display text-3xl font-semibold tracking-tight md:mb-5 md:block">
                 TourGo
               </p>
-              <h1 className="font-display text-[1.4rem] font-semibold leading-[1.1] tracking-tight sm:text-5xl md:text-6xl">
+              <h1 className="font-display text-[1.6rem] font-semibold leading-[1.1] tracking-tight sm:text-5xl md:text-6xl">
                 Сравните цены
                 <br />и купите выгоднее
               </h1>
-              <p className="mt-1 max-w-md text-[12.5px] leading-snug text-primary-foreground/85 md:mt-5 md:text-xl md:leading-relaxed">
+              <p className="mt-1.5 max-w-md text-[13px] leading-snug text-primary-foreground/85 max-md:[@media(max-height:700px)]:hidden md:mt-5 md:text-xl md:leading-relaxed">
                 Туры, жильё, авто и помощь от компаний
               </p>
             </div>
@@ -91,7 +98,7 @@ function Index() {
             чего хочет, и не мешает тому, кто пришёл смотреть. */}
         <AiSearchWidget />
 
-        <section className="flex flex-1 flex-col px-4 pb-4 md:container-page md:px-8 md:pb-0">
+        <section className="flex flex-col px-4 pb-4 md:container-page md:px-8 md:pb-0">
           <h2 className="mt-5 font-display text-[17px] font-semibold md:mt-12 md:text-2xl">
             Или выберите раздел
           </h2>
@@ -104,7 +111,7 @@ function Index() {
                 key={item.id}
                 to={item.to}
                 search={{} as never}
-                className="flex h-16 items-center gap-2.5 rounded-2xl bg-card px-2.5 ring-1 ring-black/[0.06] md:gap-3 md:px-6 md:surface-card md:h-auto md:min-h-[11.5rem] md:flex-col md:items-start md:justify-between md:gap-5 md:p-6 md:ring-0 md:transition-transform md:hover:-translate-y-1"
+                className="flex h-16 items-center gap-2.5 rounded-2xl bg-card px-2.5 ring-1 ring-black/[0.06] max-md:[@media(max-height:700px)]:h-14 md:gap-3 md:px-6 md:surface-card md:h-auto md:min-h-[11.5rem] md:flex-col md:items-start md:justify-between md:gap-5 md:p-6 md:ring-0 md:transition-transform md:hover:-translate-y-1"
               >
                 <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-ink text-primary-foreground md:size-12 md:rounded-2xl">
                   <item.icon className="size-5 md:size-[1.35rem]" strokeWidth={1.75} aria-hidden />
@@ -124,10 +131,6 @@ function Index() {
               </Link>
             ))}
           </div>
-
-          {/* Остаток экрана — свободным местом внизу: так витрина направлений
-              всегда начинается со второго экрана, а плитки сохраняют размер. */}
-          <div className="flex-1 md:hidden" />
 
           <Link
             to={b2bNav.to}
