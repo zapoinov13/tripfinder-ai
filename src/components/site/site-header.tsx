@@ -22,9 +22,17 @@ export function SiteHeader({ compact = false }: { compact?: boolean }) {
         : "/profile";
 
   return (
+    // Отступ под строку состояния — всегда, а не только в приложении.
+    //
+    // Страница объявлена `viewport-fit=cover`, то есть рисуется под вырезом и
+    // часами. Запас под них брался по классу `native-app`, но его ставит
+    // обёртка Capacitor — а тем же краем в экран упирается сайт, добавленный
+    // на домашний экран, и любой браузер, который рисует от края до края.
+    // Там часы и уровень сигнала ложились прямо на логотип и бургер.
+    // В обычной вкладке значение равно нулю, и ничего не меняется.
     <header
       className={cn(
-        "sticky top-0 z-40 border-b border-border/70 bg-background/85 backdrop-blur-xl transition-colors duration-300 native-app:pt-[env(safe-area-inset-top)]",
+        "sticky top-0 z-40 border-b border-border/70 bg-background/85 pt-[env(safe-area-inset-top)] backdrop-blur-xl transition-colors duration-300",
       )}
     >
       <div className="container-page grid h-16 grid-cols-[minmax(0,1fr)_auto] items-center gap-4 md:h-[72px] md:grid-cols-[auto_1fr_auto]">
